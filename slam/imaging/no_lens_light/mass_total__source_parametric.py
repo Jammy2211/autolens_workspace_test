@@ -5,17 +5,16 @@ This SLaM pipeline runner loads a strong lens dataset and analyses it using a SL
 
 __THIS RUNNER__
 
-Using two source pipelines and a mass pipeline this runner fits `Imaging` of a strong lens system, where in the final
+Using a source pipeline and a mass pipeline this runner fits `Imaging` of a strong lens system, where in the final
 phase of the pipeline:
 
  - The lens `Galaxy`'s light is omitted from the data and model.
  - The lens `Galaxy`'s total mass distribution is modeled as an `EllipticalPowerLaw`.
- - The source galaxy is modeled using an `Inversion`.
+ - The source galaxy is modeled as an `EllipticalSersic`.
 
 This uses the SLaM pipelines:
 
  `slam/imaging/no_lens_light/pipelines/source__mass_sie__source_parametric.py`.
- `slam/imaging/no_lens_light/pipelines/source__mass_sie__source_inversion.py`.
  `slam/imaging/no_lens_light/pipelines/mass__mass_power_law__source.py`.
 
 Check them out for a detailed description of the analysis!
@@ -57,20 +56,8 @@ The settings chosen here are applied to all phases in the pipeline.
 
 settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid, sub_size=2)
 
-"""
-`Inversion`'s may infer unphysical solution where the source reconstruction is a demagnified reconstruction of the 
-lensed source (see **HowToLens** chapter 4). 
-
-To prevent this, auto-positioning is used, which uses the lens mass model of earlier phases to automatically set 
-positions and a threshold that resample inaccurate mass models (see `examples/model/positions.py`).
-
-The `auto_positions_factor` is a factor that the threshold of the inferred positions using the previous mass model are 
-multiplied by to set the threshold in the next phase. The *auto_positions_minimum_threshold* is the minimum value this
-threshold can go to, even after multiplication.
-"""
-
 settings = al.SettingsPhaseImaging(
-    settings_masked_imaging=settings_masked_imaging, settings_lens=al.SettingsLens()
+    settings_masked_imaging=settings_masked_imaging,
 )
 
 """
@@ -85,8 +72,8 @@ which is equivalent to the `SetupPipeline` object, customizing the analysis in t
 has its own `SetupMass` and `SetupSourceParametric` object.
 
 The `Setup` used in earlier pipelines determine the model used in later pipelines. For example, if the `Source` 
-pipeline is given a `Pixelization` and `Regularization`, than this `Inversion` will be used in the subsequent 
-`SLaMPipelineMass` pipeline.
+pipeline is given an `EllipticalSersic` parametric profile, then this `LightProfile` will be used in the subsequent 
+`SLaMPipelineMass`.
 
 The `Setup` again tags the path structure of every pipeline in a unique way, such than combinations of different
 SLaM pipelines can be used to fit lenses with different models. If the earlier pipelines are identical (e.g. they use
@@ -135,39 +122,15 @@ setup_mass = al.SetupMassTotal(
     with_shear=False,
     mass_centre=(0.0, 0.0),
 )
-setup_source = al.SetupSourceParametric()
+setup_source = al.SetupSourceParametric(
+    bulge_prior_model=al.lp.EllipticalExponential,
+    disk_prior_model=None,
+    envelope_prior_model=None,
+)
 
 pipeline_source_parametric = al.SLaMPipelineSourceParametric(
     setup_mass=setup_mass, setup_source=setup_source
 )
-
-"""
-__SLaMPipelineSourceInversion__
-
-The Source inversion pipeline aims to initialize a robust model for the source galaxy using an `Inversion`.
-
-_SLaMPipelineSourceInversion_ determines the `Inversion` used by the inversion source pipeline. A full description 
-of all options can be found ? and ?.
-
-By default, this again assumes `EllipticalIsothermal` profile for the lens `Galaxy`'s mass model.
-
-For this runner the `SLaMPipelineSourceInversion` customizes:
-
- - The `Pixelization` used by the `Inversion` of this pipeline.
- - The `Regularization` scheme used by the `Inversion` of this pipeline.
-
-The `SLaMPipelineSourceInversion` use`s the `SetupMass` of the `SLaMPipelineSourceParametric`.
-
-The `SLaMPipelineSourceInversion` determines the source model used in the `SLaMPipelineLightParametric` and 
-`SLaMPipelineMass` pipelines, which in this example therefore both use an `Inversion`.
-"""
-
-setup_source = al.SetupSourceInversion(
-    pixelization_prior_model=al.pix.VoronoiBrightnessImage,
-    regularization_prior_model=al.reg.AdaptiveBrightness,
-)
-
-pipeline_source_inversion = al.SLaMPipelineSourceInversion(setup_source=setup_source)
 
 """
 __SLaMPipelineMass__
@@ -205,7 +168,6 @@ slam = al.SLaM(
     path_prefix=path.join("slam", dataset_name),
     setup_hyper=hyper,
     pipeline_source_parametric=pipeline_source_parametric,
-    pipeline_source_inversion=pipeline_source_inversion,
     pipeline_mass=pipeline_mass,
 )
 
@@ -218,16 +180,10 @@ We then run each pipeline, passing the results of previous pipelines to subseque
 """
 
 from pipelines import source__parametric
-from pipelines import source__inversion
 from pipelines import mass__total
 
 source__parametric = source__parametric.make_pipeline(slam=slam, settings=settings)
 source_results = source__parametric.run(dataset=imaging, mask=mask)
-
-source__inversion = source__inversion.make_pipeline(
-    slam=slam, settings=settings, source_parametric_results=source_results
-)
-source_results = source__inversion.run(dataset=imaging, mask=mask)
 
 mass__total = mass__total.make_pipeline(
     slam=slam, settings=settings, source_results=source_results

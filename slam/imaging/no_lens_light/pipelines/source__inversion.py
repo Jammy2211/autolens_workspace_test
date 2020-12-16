@@ -110,10 +110,6 @@ def make_pipeline(slam, settings, source_parametric_results):
         settings=settings,
     )
 
-    phase1 = phase1.extend_with_hyper_phase(
-        setup_hyper=slam.setup_hyper,
-    )
-
     """
     Phase 2: Fit the lens`s mass and source galaxy using the magnification `Inversion`, where we:
 
@@ -128,23 +124,19 @@ def make_pipeline(slam, settings, source_parametric_results):
         galaxies=af.CollectionPriorModel(
             lens=al.GalaxyModel(
                 redshift=slam.redshift_lens,
-                mass=source_parametric_results[-1].model.galaxies.lens.mass,
-                shear=source_parametric_results[-1].model.galaxies.lens.shear,
+                mass=source_parametric_results.last.model.galaxies.lens.mass,
+                shear=source_parametric_results.last.model.galaxies.lens.shear,
             ),
             source=al.GalaxyModel(
                 redshift=slam.redshift_source,
                 pixelization=phase1.result.instance.galaxies.source.pixelization,
                 regularization=phase1.result.instance.galaxies.source.regularization,
-                hyper_galaxy=phase1.result.hyper.instance.optional.galaxies.source.hyper_galaxy,
+                hyper_galaxy=phase1.result.instance.optional.galaxies.source.hyper_galaxy,
             ),
         ),
-        hyper_image_sky=phase1.result.hyper.instance.optional.hyper_image_sky,
-        hyper_background_noise=phase1.result.hyper.instance.optional.hyper_background_noise,
+        hyper_image_sky=phase1.result.instance.hyper_image_sky,
+        hyper_background_noise=phase1.result.instance.hyper_background_noise,
         settings=settings,
-    )
-
-    phase2 = phase2.extend_with_hyper_phase(
-        setup_hyper=slam.setup_hyper,
     )
 
     """
@@ -170,16 +162,12 @@ def make_pipeline(slam, settings, source_parametric_results):
                 redshift=slam.redshift_source,
                 pixelization=slam.pipeline_source_inversion.setup_source.pixelization_prior_model,
                 regularization=slam.pipeline_source_inversion.setup_source.regularization_prior_model,
-                hyper_galaxy=phase2.result.hyper.instance.optional.galaxies.source.hyper_galaxy,
+                hyper_galaxy=phase2.result.instance.optional.galaxies.source.hyper_galaxy,
             ),
         ),
-        hyper_image_sky=phase2.result.hyper.instance.optional.hyper_image_sky,
-        hyper_background_noise=phase2.result.hyper.instance.optional.hyper_background_noise,
+        hyper_image_sky=phase2.result.instance.hyper_image_sky,
+        hyper_background_noise=phase2.result.instance.hyper_background_noise,
         settings=settings,
-    )
-
-    phase3 = phase3.extend_with_hyper_phase(
-        setup_hyper=slam.setup_hyper,
     )
 
     """
@@ -207,11 +195,11 @@ def make_pipeline(slam, settings, source_parametric_results):
                 redshift=slam.redshift_source,
                 pixelization=phase3.result.instance.galaxies.source.pixelization,
                 regularization=phase3.result.instance.galaxies.source.regularization,
-                hyper_galaxy=phase3.result.hyper.instance.optional.galaxies.source.hyper_galaxy,
+                hyper_galaxy=phase3.result.instance.optional.galaxies.source.hyper_galaxy,
             ),
         ),
-        hyper_image_sky=phase3.result.hyper.instance.optional.hyper_image_sky,
-        hyper_background_noise=phase3.result.hyper.instance.optional.hyper_background_noise,
+        hyper_image_sky=phase3.result.instance.hyper_image_sky,
+        hyper_background_noise=phase3.result.instance.hyper_background_noise,
         settings=settings,
     )
 

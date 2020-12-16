@@ -8,7 +8,7 @@ __THIS RUNNER__
 Using two source pipelines and a mass pipeline this runner fits `Imaging` of a strong lens system, where in the final
 phase of the pipeline:
 
- - The lens `Galaxy`'s light is omitted from the data and model.
+ - The lens `Galaxy`'s light is modeled parametrically as an `EllipticalSersic`.
  - The lens `Galaxy`'s total mass distribution is modeled as an `EllipticalPowerLaw`.
  - The source galaxy is modeled using an `Inversion`.
 
@@ -21,6 +21,7 @@ This uses the SLaM pipelines:
 Check them out for a detailed description of the analysis!
 """
 from os import path
+import autofit as af
 import autolens as al
 import autolens.plot as aplt
 
@@ -82,11 +83,12 @@ for example if a shear was included in the mass model and the model used for the
 SLaM pipelines break the analysis down into multiple pipelines which focus on modeling a specific aspect of the strong 
 lens, first the Source, then the (lens) Light and finally the Mass. Each of these pipelines has it own setup object 
 which is equivalent to the `SetupPipeline` object, customizing the analysis in that pipeline. Each pipeline therefore
-has its own `SetupMass` and `SetupSourceParametric` object.
+has its own `SetupMass`, `SetupLightParametric` and `SetupSourceParametric` object.
 
 The `Setup` used in earlier pipelines determine the model used in later pipelines. For example, if the `Source` 
 pipeline is given a `Pixelization` and `Regularization`, than this `Inversion` will be used in the subsequent 
-`SLaMPipelineMass` pipeline.
+`SLaMPipelineLightParametric` and  Mass pipelines. The assumptions regarding the lens light chosen by the `Light` 
+object are carried forward to the  `Mass`  pipeline.
 
 The `Setup` again tags the path structure of every pipeline in a unique way, such than combinations of different
 SLaM pipelines can be used to fit lenses with different models. If the earlier pipelines are identical (e.g. they use
@@ -106,10 +108,12 @@ _SLaMPipelineLight_ and `SLaMPipelineMass` pipelines, model comparison can be pe
 """
 
 hyper = al.SetupHyper(
-    hyper_galaxies_lens=False,
-    hyper_galaxies_source=False,
-    hyper_image_sky=None,
-    hyper_background_noise=None,
+    hyper_search_no_inversion=af.DynestyStatic(maxcall=5),
+    hyper_search_with_inversion=af.DynestyStatic(maxcall=5),
+    hyper_galaxies_lens=True,
+    hyper_galaxies_source=True,
+    hyper_image_sky=al.hyper_data.HyperImageSky,
+    hyper_background_noise=al.hyper_data.HyperBackgroundNoise,
 )
 
 """

@@ -40,7 +40,7 @@ def make_pipeline(slam, settings, real_space_mask, source_results):
 
     """SLaM: Set whether shear is included in the mass model."""
 
-    shear = slam.pipeline_mass.shear_from_results(results=source_results)
+    shear = slam.pipeline_mass.shear_from_result(result=source_results.last)
 
     """
     Phase 1: Fit the lens`s `MassProfile`'s and source, where we:
@@ -86,8 +86,6 @@ def make_pipeline(slam, settings, real_space_mask, source_results):
 
     if not slam.setup_hyper.hyper_fixed_after_source:
 
-        phase1 = phase1.extend_with_hyper_phase(
-            setup_hyper=slam.setup_hyper, include_inversion=True
-        )
+        phase1 = phase1.extend_with_hyper_phase(setup_hyper=slam.setup_hyper)
 
     return al.PipelineDataset(pipeline_name, path_prefix, source_results, phase1)

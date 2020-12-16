@@ -70,12 +70,11 @@ for example if a shear was included in the mass model and the model used for the
 SLaM pipelines break the analysis down into multiple pipelines which focus on modeling a specific aspect of the strong 
 lens, first the Source, then the (lens) Light and finally the Mass. Each of these pipelines has it own setup object 
 which is equivalent to the `SetupPipeline` object, customizing the analysis in that pipeline. Each pipeline therefore
-has its own `SetupMass`, `SetupLightParametric` and `SetupSourceParametric` object.
+has its own `SetupMass` and `SetupSourceParametric` object.
 
 The `Setup` used in earlier pipelines determine the model used in later pipelines. For example, if the `Source` 
-pipeline is given a `Pixelization` and `Regularization`, than this `Inversion` will be used in the subsequent `SLaMPipelineLightParametric` and 
-Mass pipelines. The assumptions regarding the lens light chosen by the `Light` object are carried forward to the 
-`Mass`  pipeline.
+pipeline is given an `EllipticalSersic` parametric profile, then this `LightProfile` will be used in the subsequent 
+`SLaMPipelineMass`.
 
 The `Setup` again tags the path structure of every pipeline in a unique way, such than combinations of different
 SLaM pipelines can be used to fit lenses with different models. If the earlier pipelines are identical (e.g. they use
@@ -121,7 +120,11 @@ For this runner the `SLaMPipelineSourceParametric` customizes:
 setup_mass = al.SetupMassTotal(
     mass_prior_model=al.mp.EllipticalIsothermal, with_shear=True, mass_centre=(0.0, 0.0)
 )
-setup_source = al.SetupSourceParametric(bulge_prior_model=al.lp.EllipticalSersic)
+setup_source = al.SetupSourceParametric(
+    bulge_prior_model=al.lp.EllipticalExponential,
+    disk_prior_model=None,
+    envelope_prior_model=None,
+)
 
 pipeline_source_parametric = al.SLaMPipelineSourceParametric(
     setup_mass=setup_mass, setup_source=setup_source
@@ -192,7 +195,7 @@ __PIPELINE CREATION__
 
 We import and make pipelines as per usual, albeit we'll now be doing this for multiple pipelines!
 
-We then add the pipelines together and run this summed pipeline, which runs each individual pipeline back-to-back.
+We then run each pipeline, passing the results of previous pipelines to subsequent pipelines.
 """
 
 from pipelines import source__parametric

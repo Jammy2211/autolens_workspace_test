@@ -47,7 +47,7 @@ The perform a fit, we need two masks, firstly a ‘real-space mask’ which defi
 source galaxy is evaluated using.
 """
 
-real_space_mask = al.Mask2D.circular(shape_2d=(200, 200), pixel_scales=0.2, radius=3.0)
+real_space_mask = al.Mask2D.circular(shape_2d=(200, 200), pixel_scales=0.05, radius=3.0)
 
 """We also need a ‘visibilities mask’ which defining which visibilities are omitted from the chi-squared evaluation."""
 
@@ -203,7 +203,7 @@ __PIPELINE CREATION__
 
 We import and make pipelines as per usual, albeit we'll now be doing this for multiple pipelines!
 
-We then add the pipelines together and run this summed pipeline, which runs each individual pipeline back-to-back.
+We then run each pipeline, passing the results of previous pipelines to subsequent pipelines.
 """
 
 from pipelines import source__parametric

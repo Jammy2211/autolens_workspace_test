@@ -123,9 +123,6 @@ For this runner the `SLaMPipelineSourceParametric` customizes:
 """
 
 setup_light = al.SetupLightParametric(
-    bulge_prior_model=al.lp.EllipticalSersic,
-    disk_prior_model=None,
-    envelope_prior_model=None,
     light_centre=(0.0, 0.0),
 )
 setup_mass = al.SetupMassTotal(
@@ -156,7 +153,12 @@ The `SLaMPipelineLightParametric` uses the mass model fitted in the previous `SL
 The `SLaMPipelineLightParametric` and imported light pipelines determine the lens light model used in `Mass` pipelines.
 """
 
-setup_light = al.SetupLightParametric(light_centre=(0.0, 0.0))
+setup_light = al.SetupLightParametric(
+    bulge_prior_model=al.lp.EllipticalSersic,
+    disk_prior_model=None,
+    envelope_prior_model=None,
+    light_centre=(0.0, 0.0),
+)
 
 pipeline_light = al.SLaMPipelineLightParametric(setup_light=setup_light)
 
@@ -176,7 +178,13 @@ For this runner the `SLaMPipelineMass` customizes:
  - If there is an `ExternalShear` in the mass model or not.
 """
 
-setup_mass = al.SetupMassLightDark(with_shear=True, mass_centre=(0.0, 0.0))
+setup_mass = al.SetupMassLightDark(
+    bulge_prior_model=al.lmp.EllipticalSersic,
+    disk_prior_model=None,
+    envelope_prior_model=None,
+    with_shear=True,
+    mass_centre=(0.0, 0.0),
+)
 
 pipeline_mass = al.SLaMPipelineMass(setup_mass=setup_mass)
 
@@ -202,7 +210,7 @@ __PIPELINE CREATION__
 
 We import and make pipelines as per usual, albeit we'll now be doing this for multiple pipelines!
 
-We then add the pipelines together and run this summed pipeline, which runs each individual pipeline back-to-back.
+We then run each pipeline, passing the results of previous pipelines to subsequent pipelines.
 """
 
 from pipelines import source__parametric
@@ -223,4 +231,4 @@ mass__light_dark = mass__light_dark.make_pipeline(
     source_results=source_results,
     light_results=light_results,
 )
-mass_results = mass__light_dark(dataset=imaging, mask=mask)
+mass_results = mass__light_dark.run(dataset=imaging, mask=mask)

@@ -151,10 +151,18 @@ mass = af.PriorModel(al.mp.EllipticalIsothermal)
 
 mass.centre = phase1_result.model.galaxies.lens.bulge.centre
 
+bulge = af.PriorModel(al.lmp.EllipticalSersic)
+disk = af.PriorModel(al.lmp.EllipticalSersic)
+
+bulge.take_attributes(source=phase1_result.instance.galaxies.lens.bulge)
+disk.take_attributes(source=phase1_result.instance.galaxies.lens.disk)
+
 lens = al.GalaxyModel(
     redshift=0.5,
-    bulge=phase1_result.instance.galaxies.lens.bulge,
-    disk=phase1_result.instance.galaxies.lens.disk,
+    #   bulge=phase1_result.instance.galaxies.lens.bulge,
+    #   disk=phase1_result.instance.galaxies.lens.disk,
+    bulge=bulge,
+    disk=disk,
     mass=mass,
 )
 source = al.GalaxyModel(redshift=1.0, bulge=al.lp.EllipticalSersic)

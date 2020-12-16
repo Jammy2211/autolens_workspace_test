@@ -62,8 +62,8 @@ def make_pipeline(slam, settings, source_results, light_results):
 
     """SLaM: Set whether shear is Included in the mass model."""
 
-    shear = slam.pipeline_mass.shear_from_results(
-        results=source_results, as_instance=True
+    shear = slam.pipeline_mass.shear_from_result(
+        result=source_results.last, as_instance=True
     )
 
     """
@@ -82,7 +82,6 @@ def make_pipeline(slam, settings, source_results, light_results):
     bulge = slam.pipeline_mass.setup_mass.bulge_prior_model_with_updated_priors(
         results=light_results, as_instance=True
     )
-    print(bulge)
     disk = slam.pipeline_mass.setup_mass.disk_prior_model_with_updated_priors(
         results=light_results, as_instance=True
     )
@@ -117,7 +116,7 @@ def make_pipeline(slam, settings, source_results, light_results):
     phase1 = al.PhaseImaging(
         search=af.DynestyStatic(
             name="phase[1]_light[fixed]_mass[light_dark]_source[fixed]",
-            n_live_points=30,
+            n_live_points=50,
         ),
         galaxies=af.CollectionPriorModel(lens=lens, source=source),
         hyper_image_sky=slam.setup_hyper.hyper_image_sky_from_result(
@@ -157,13 +156,13 @@ def make_pipeline(slam, settings, source_results, light_results):
         hyper_galaxy=phase1.result.hyper.instance.optional.galaxies.lens.hyper_galaxy,
     )
 
+    source = slam.source_from_results_model_if_parametric(results=source_results)
+
     phase2 = al.PhaseImaging(
         search=af.DynestyStatic(
             name="phase[2]_light[parametric]_mass[light_dark]_source", n_live_points=100
         ),
-        galaxies=af.CollectionPriorModel(
-            lens=lens, source=phase1.result.model.galaxies.source
-        ),
+        galaxies=af.CollectionPriorModel(lens=lens, source=source),
         hyper_image_sky=phase1.result.hyper.instance.optional.hyper_image_sky,
         hyper_background_noise=phase1.result.hyper.instance.optional.hyper_background_noise,
         settings=settings,

@@ -145,23 +145,6 @@ The fit outputs visualization on-the-fly, so checkout the path
 result = phase.run(dataset=imaging, mask=mask)
 
 """
-The phase above returned a result, which, for example, includes the lens model corresponding to the maximum
-log likelihood solution in parameter space.
-"""
-
-print(result.max_log_likelihood_instance)
-
-"""
-It also contains instances of the maximum log likelihood Tracer and FitImaging, which can be used to visualize
-the fit.
-"""
-
-aplt.Tracer.subplot_tracer(
-    tracer=result.max_log_likelihood_tracer, grid=mask.geometry.masked_grid_sub_1
-)
-aplt.FitImaging.subplot_fit_imaging(fit=result.max_log_likelihood_fit)
-
-"""
 Checkout `/path/to/autolens_workspace/examples/model/results.py` for a full description of the result object.
 """
 
@@ -221,8 +204,11 @@ def simulate_function(instance):
     #     ),
     # )
 
+    print(instance)
+    print(dir(instance))
+
     tracer = al.Tracer.from_galaxies(
-        galaxies=[lens_galaxy, source_galaxy, instance.perturbation]
+        galaxies=[instance.lens_galaxy, instance.source_galaxy, instance.perturbation]
     )
 
     grid = al.GridIterate.uniform(

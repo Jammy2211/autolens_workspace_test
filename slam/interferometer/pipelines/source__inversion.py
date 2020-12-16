@@ -108,10 +108,6 @@ def make_pipeline(slam, settings, real_space_mask, source_parametric_results):
         real_space_mask=real_space_mask,
     )
 
-    phase1 = phase1.extend_with_hyper_phase(
-        setup_hyper=slam.setup_hyper, include_inversion=False
-    )
-
     """
     Phase 2: Fit the lens`s mass and source galaxy using the magnification `Inversion`, where we:
 
@@ -133,16 +129,13 @@ def make_pipeline(slam, settings, real_space_mask, source_parametric_results):
                 redshift=slam.redshift_source,
                 pixelization=phase1.result.instance.galaxies.source.pixelization,
                 regularization=phase1.result.instance.galaxies.source.regularization,
-                hyper_galaxy=phase1.result.hyper.instance.optional.galaxies.source.hyper_galaxy,
+                hyper_galaxy=phase1.result.instance.optional.galaxies.source.hyper_galaxy,
             ),
         ),
-        hyper_background_noise=phase1.result.hyper.instance.optional.hyper_background_noise,
+        hyper_background_noise=phase1.result.instance.hyper_background_noise,
         settings=settings,
         real_space_mask=real_space_mask,
-    )
-
-    phase2 = phase2.extend_with_hyper_phase(
-        setup_hyper=slam.setup_hyper, include_inversion=False
+        use_as_hyper_dataset=True,
     )
 
     """
@@ -168,16 +161,13 @@ def make_pipeline(slam, settings, real_space_mask, source_parametric_results):
                 redshift=slam.redshift_source,
                 pixelization=slam.pipeline_source_inversion.setup_source.pixelization_prior_model,
                 regularization=slam.pipeline_source_inversion.setup_source.regularization_prior_model,
-                hyper_galaxy=phase2.result.hyper.instance.optional.galaxies.source.hyper_galaxy,
+                hyper_galaxy=phase2.result.instance.optional.galaxies.source.hyper_galaxy,
             ),
         ),
-        hyper_background_noise=phase2.result.hyper.instance.optional.hyper_background_noise,
+        hyper_background_noise=phase2.result.instance.hyper_background_noise,
         settings=settings,
         real_space_mask=real_space_mask,
-    )
-
-    phase3 = phase3.extend_with_hyper_phase(
-        setup_hyper=slam.setup_hyper, include_inversion=False
+        use_as_hyper_dataset=True,
     )
 
     """
@@ -205,17 +195,15 @@ def make_pipeline(slam, settings, real_space_mask, source_parametric_results):
                 redshift=slam.redshift_source,
                 pixelization=phase3.result.instance.galaxies.source.pixelization,
                 regularization=phase3.result.instance.galaxies.source.regularization,
-                hyper_galaxy=phase3.result.hyper.instance.optional.galaxies.source.hyper_galaxy,
+                hyper_galaxy=phase3.result.instance.optional.galaxies.source.hyper_galaxy,
             ),
         ),
-        hyper_background_noise=phase3.result.hyper.instance.optional.hyper_background_noise,
+        hyper_background_noise=phase3.result.instance.hyper_background_noise,
         settings=settings,
         real_space_mask=real_space_mask,
     )
 
-    phase4 = phase4.extend_with_hyper_phase(
-        setup_hyper=slam.setup_hyper, include_inversion=True
-    )
+    phase4 = phase4.extend_with_hyper_phase(setup_hyper=slam.setup_hyper)
 
     return al.PipelineDataset(
         pipeline_name,

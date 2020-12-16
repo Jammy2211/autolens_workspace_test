@@ -1,24 +1,24 @@
 """
 __SLaM (Source, Light and Mass)__
 
-This SLaM pipeline runner loads a strong lens dataset and analyses it using a SLaM lens modeling
-pipeline.
+This SLaM pipeline runner loads a strong lens dataset and analyses it using a SLaM lens modeling pipeline.
 
 __THIS RUNNER__
 
-Using 1 source pipeline, a mass pipeline and a subhalo pipeline this runner fits `Imaging` of a strong lens system,
+Using a source pipeline, a light pipeline and a mass pipeline this runner fits `Imaging` of a strong lens system
 where in the final phase of the pipeline:
 
- - The lens `Galaxy`'s light is omitted from the data and model.
- - The lens `Galaxy`'s total mass distribution is modeled as an `EllipticalIsothermal`.
- - A dark matter subhalo`s within the lens galaxy is modeled as a `SphericalNFWMCRLudLow`.
- - The source galaxy is modeled as an `EllipticalSersic`.
+ - The lens `Galaxy`'s `LightProfile`'s are modeled as an `EllipticalSersic` + `EllipticalExponential`, representing
+   a bulge + disk model.
+ - The lens `Galaxy`'s light matter mass distribution is fitted using the `EllipticalSersic` + EllipticalExponential of the
+    `LightProfile`, where it is converted to a stellar mass distribution via constant mass-to-light ratios.
+ - The source `Galaxy`'s light is modeled parametrically using an `EllipticalSersic`.
 
 This runner uses the SLaM pipelines:
 
- `slam/imaging/no_lens_light/pipelines/source__mass_sie__source_parametric.py`.
- `slam/imaging/no_lens_light/pipelines/mass__mass_power_law__source.py`.
- `slam/imaging/no_lens_light/pipelines/subhalo__mass__subhalo_nfw__source.py`.
+ `slam/imaging/with_lens_light/source__parametric.py`.
+ `slam/imaging/with_lens_light/light__parametric.py`.
+ `slam/imaging/with_lens_light/mass__light_dark.py`.
 
 Check them out for a detailed description of the analysis!
 """
@@ -26,10 +26,12 @@ from os import path
 import autolens as al
 import autolens.plot as aplt
 
-dataset_name = "mass_sie__subhalo_nfw__source_sersic"
+"""Specify the dataset type, label and name, which we use to determine the path we load the data from."""
+
+dataset_name = "light_sersic__mass_mlr_nfw__source_sersic"
 pixel_scales = 0.2
 
-dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
+dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
 
 """Using the dataset path, load the data (image, noise-map, PSF) as an `Imaging` object from .fits files."""
 
@@ -73,14 +75,14 @@ which is equivalent to the `SetupPipeline` object, customizing the analysis in t
 has its own `SetupMass`, `SetupLightParametric` and `SetupSourceParametric` object.
 
 The `Setup` used in earlier pipelines determine the model used in later pipelines. For example, if the `Source` 
-pipeline is given a `Pixelization` and `Regularization`, than this `Inversion` will be used in the subsequent `SLaMPipelineLightParametric` and 
-Mass pipelines. The assumptions regarding the lens light chosen by the `Light` object are carried forward to the 
-`Mass`  pipeline.
+pipeline is given a `Pixelization` and `Regularization`, than this `Inversion` will be used in the subsequent 
+_SLaMPipelineLight_ and Mass pipelines. The assumptions regarding the lens light chosen by the `Light` object are 
+carried forward to the `Mass`  pipeline.
 
 The `Setup` again tags the path structure of every pipeline in a unique way, such than combinations of different
 SLaM pipelines can be used to fit lenses with different models. If the earlier pipelines are identical (e.g. they use
-the same `SLaMPipelineSource`. they will reuse those results before branching off to fit different models in the `SLaMPipelineLightParametric` 
-and / or `SLaMPipelineMass` pipelines. 
+the same `SLaMPipelineSource`. they will reuse those results before branching off to fit different models in the 
+_SLaMPipelineLight_ and / or `SLaMPipelineMass` pipelines. 
 """
 
 """
@@ -95,10 +97,11 @@ _SLaMPipelineLight_ and `SLaMPipelineMass` pipelines, model comparison can be pe
 """
 
 hyper = al.SetupHyper(
-    hyper_galaxies_lens=True,
-    hyper_galaxies_source=True,
+    hyper_galaxies_lens=False,
+    hyper_galaxies_source=False,
     hyper_image_sky=None,
     hyper_background_noise=None,
+    hyper_fixed_after_source=True,
 )
 
 """
@@ -109,66 +112,83 @@ The parametric source pipeline aims to initialize a robust model for the source 
 _SLaMPipelineSourceParametric_ determines the source model used by the parametric source pipeline. A full description of all 
 options can be found ? and ?.
 
-By default, this assumes an `EllipticalIsothermal` profile for the lens `Galaxy`'s mass. Our experience with lens 
-modeling has shown they are the simpliest models that provide a good fit to the majority of strong lenses.
+By default, this assumes an `EllipticalIsothermal` profile for the lens `Galaxy`'s mass and an `EllipticalSersic` + 
+`EllipticalExponential` model for the lens `Galaxy`'s light. Our experience with lens modeling has shown they are the 
+simplest models that provide a good fit to the majority of strong lenses.
 
 For this runner the `SLaMPipelineSourceParametric` customizes:
 
- - The `MassProfile` fitted by the pipeline (and the following `SLaMPipelineSourceInversion`.
+ - The `MassProfile` fitted by the pipeline (and the following `SLaMPipelineSourceInversion`..
  - If there is an `ExternalShear` in the mass model or not.
 """
 
+setup_light = al.SetupLightParametric(
+    bulge_prior_model=al.lp.EllipticalSersic,
+    disk_prior_model=None,
+    envelope_prior_model=None,
+    light_centre=(0.0, 0.0),
+)
 setup_mass = al.SetupMassTotal(
     mass_prior_model=al.mp.EllipticalIsothermal, with_shear=True, mass_centre=(0.0, 0.0)
 )
-setup_source = al.SetupSourceParametric(bulge_prior_model=al.lp.EllipticalSersic)
+setup_source = al.SetupSourceParametric()
 
 pipeline_source_parametric = al.SLaMPipelineSourceParametric(
-    setup_mass=setup_mass, setup_source=setup_source
+    setup_light=setup_light, setup_mass=setup_mass, setup_source=setup_source
 )
 
 """
-__SLaMPipelineMassTotal__
+__SLaMPipelineLight__
 
-The `SLaMPipelineMassTotal` pipeline fits the model for the lens `Galaxy`'s total mass distribution. 
+The `SLaMPipelineLightParametric` pipeline fits the model for the lens `Galaxy`'s bulge + disk light model. 
 
 A full description of all options can be found ? and ?.
 
-The model used to represent the lens `Galaxy`'s mass is input into `SLaMPipelineMass` and this runner uses an 
-`EllipticalIsothermal` in this example.
+The model used to represent the lens `Galaxy`'s light is input into `SLaMPipelineLightParametric` below and this runner uses an 
+ `EllipticalSersic`.
+ 
+For this runner the `SLaMPipelineLightParametric` customizes:
+
+ - That the `LightProfile` centre is fixed to (0.0, 0.0).
+
+The `SLaMPipelineLightParametric` uses the mass model fitted in the previous `SLaMPipelineSource`'s.
+
+The `SLaMPipelineLightParametric` and imported light pipelines determine the lens light model used in `Mass` pipelines.
+"""
+
+setup_light = al.SetupLightParametric(
+    bulge_prior_model=al.lp.EllipticalSersic,
+    disk_prior_model=al.lp.EllipticalSersic,
+    envelope_prior_model=al.lp.EllipticalSersic,
+)
+
+pipeline_light = al.SLaMPipelineLightParametric(setup_light=setup_light)
+
+"""
+__SLaMPipelineMass__
+
+The `SLaMPipelineMass` pipeline fits the model for the lens `Galaxy`'s decomposed stellar and dark matter mass distribution. 
+
+A full description of all options can be found ? and ?.
+
+The model used to represent the lens `Galaxy`'s mass is an `EllipticalSersic` and `EllipticalExponential` 
+_LightMassProfile_ representing the bulge and disk fitted in the previous pipeline, alongside a `SphericalNFW` for the
+dark matter halo.
 
 For this runner the `SLaMPipelineMass` customizes:
 
- - The `MassProfile` fitted by the pipeline.
  - If there is an `ExternalShear` in the mass model or not.
 """
 
-setup_mass = al.SetupMassTotal(
-    mass_prior_model=al.mp.EllipticalIsothermal, with_shear=True
+setup_mass = al.SetupMassLightDark(
+    bulge_prior_model=al.lmp.EllipticalSersic,
+    disk_prior_model=al.lmp.EllipticalSersic,
+    envelope_prior_model=al.lmp.EllipticalSersic,
+    align_bulge_dark_centre=True,
+    constant_mass_to_light_ratio=False,
 )
 
 pipeline_mass = al.SLaMPipelineMass(setup_mass=setup_mass)
-
-"""
-__SetupSubhalo__
-
-The final pipeline fits the lens and source model including a `SphericalNFW` subhalo, using a grid-search of non-linear
-searches. 
-
-A full description of all options can be found ? and ?.
-
-The models used to represent the lens `Galaxy`'s mass and the source are those used in the previous pipelines.
-
-For this runner the `SetupSubhalo` customizes:
-
- - If the lens galaxy mass is treated as a model (all free parameters) or instance (all fixed) during the subhalo 
-   detection grid search.
- - If the source galaxy (parametric or _Inversion) is treated as a model (all free parameters) or instance (all fixed) 
-   during the subhalo detection grid search.
- - The NxN size of the grid-search.
-"""
-
-setup_subhalo = al.SetupSubhalo(mass_is_model=True, source_is_model=True, grid_size=2)
 
 """
 __SLaM__
@@ -183,8 +203,8 @@ slam = al.SLaM(
     path_prefix=path.join("slam", dataset_name),
     setup_hyper=hyper,
     pipeline_source_parametric=pipeline_source_parametric,
+    pipeline_light_parametric=pipeline_light,
     pipeline_mass=pipeline_mass,
-    setup_subhalo=setup_subhalo,
 )
 
 """
@@ -192,20 +212,25 @@ __PIPELINE CREATION__
 
 We import and make pipelines as per usual, albeit we'll now be doing this for multiple pipelines!
 
-We then add the pipelines together and run this summed pipeline, which runs each individual pipeline back-to-back.
+We then run each pipeline, passing the results of previous pipelines to subsequent pipelines.
 """
 
 from pipelines import source__parametric
-from pipelines import mass__total
-from pipelines import subhalo
+from pipelines import light__parametric
+from pipelines import mass__light_dark
 
 source__parametric = source__parametric.make_pipeline(slam=slam, settings=settings)
 source_results = source__parametric.run(dataset=imaging, mask=mask)
 
-mass__total = mass__total.make_pipeline(
+light__parametric = light__parametric.make_pipeline(
     slam=slam, settings=settings, source_results=source_results
 )
-mass_results = mass__total.run(dataset=imaging, mask=mask)
+light_results = light__parametric.run(dataset=imaging, mask=mask)
 
-subhalo = subhalo.make_pipeline(slam=slam, settings=settings, mass_results=mass_results)
-subhalo.run(dataset=imaging, mask=mask)
+mass__light_dark = mass__light_dark.make_pipeline(
+    slam=slam,
+    settings=settings,
+    source_results=source_results,
+    light_results=light_results,
+)
+mass_results = mass__light_dark.run(dataset=imaging, mask=mask)

@@ -40,7 +40,7 @@ def make_pipeline(slam, settings, source_results):
 
     """SLaM: Set whether shear is included in the mass model."""
 
-    shear = slam.pipeline_mass.shear_from_results(results=source_results)
+    shear = slam.pipeline_mass.shear_from_result(result=source_results.last)
 
     """
     Phase 1: Fit the lens`s `MassProfile`'s and source, where we:

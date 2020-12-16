@@ -75,12 +75,8 @@ multiplied by to set the threshold in the next phase. The *auto_positions_minimu
 threshold can go to, even after multiplication.
 """
 
-settings_lens = al.SettingsLens(
-    auto_positions_factor=3.0, auto_positions_minimum_threshold=0.8
-)
-
 settings = al.SettingsPhaseImaging(
-    settings_masked_imaging=settings_masked_imaging, settings_lens=settings_lens
+    settings_masked_imaging=settings_masked_imaging, settings_lens=al.SettingsLens()
 )
 
 """
@@ -228,7 +224,12 @@ For this runner the `SLaMPipelineMass` customizes:
  - If there is an `ExternalShear` in the mass model or not.
 """
 
-setup_mass = al.SetupMassLightDark(with_shear=True)
+setup_mass = al.SetupMassLightDark(
+    bulge_prior_model=al.lmp.EllipticalSersic,
+    disk_prior_model=al.lmp.EllipticalExponential,
+    envelope_prior_model=None,
+    with_shear=True,
+)
 
 pipeline_mass = al.SLaMPipelineMass(setup_mass=setup_mass)
 """
@@ -254,7 +255,7 @@ __PIPELINE CREATION__
 
 We import and make pipelines as per usual, albeit we'll now be doing this for multiple pipelines!
 
-We then add the pipelines together and run this summed pipeline, which runs each individual pipeline back-to-back.
+We then run each pipeline, passing the results of previous pipelines to subsequent pipelines.
 """
 
 from pipelines import source__parametric
@@ -281,4 +282,4 @@ mass__light_dark = mass__light_dark.make_pipeline(
     source_results=source_results,
     light_results=light_results,
 )
-mass_results = mass__light_dark(dataset=imaging, mask=mask)
+mass_results = mass__light_dark.run(dataset=imaging, mask=mask)

@@ -275,7 +275,7 @@ def make_pipeline(slam, settings, real_space_mask, mass_results):
     # )
     #
     # phase2 = phase2.extend_with_multiple_hyper_phases(
-    #     setup=slam.hyper, include_inversion=False
+    #     setup=slam.hyper
     # )
 
     return al.PipelineDataset(

@@ -50,7 +50,7 @@ def make_pipeline(slam, settings, source_results, light_results):
 
     """SLaM: Set whether shear is included in the mass model using the `ExternalShear` model of the Source pipeline."""
 
-    shear = slam.pipeline_mass.shear_from_results(results=source_results)
+    shear = slam.pipeline_mass.shear_from_result(result=source_results.last)
 
     """
     Phase 1: Fit the lens `Galaxy`'s light and mass and one source galaxy, where we:
