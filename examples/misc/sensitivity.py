@@ -270,7 +270,7 @@ class Analysis(a.Analysis):
 from autofit.non_linear.grid import sensitivity as s
 
 sensitivity = s.Sensitivity(
-    instance=phase.result.instance,
+    instance=result.instance,
     model=model,
     perturbation_model=subhalo,
     simulate_function=simulate_function,
