@@ -23,11 +23,12 @@ This runner uses the SLaM pipelines:
 Check them out for a detailed description of the analysis!
 """
 from os import path
+import autofit as af
 import autolens as al
 import autolens.plot as aplt
 import numpy as np
 
-dataset_name = "mass_sie__subhalo_nfw__source_sersic"
+dataset_name = "mass_sie__source_sersic"
 pixel_scales = 0.2
 
 dataset_path = path.join("dataset", "interferometer ", dataset_name)
@@ -47,7 +48,7 @@ The perform a fit, we need two masks, firstly a ‘real-space mask’ which defi
 source galaxy is evaluated using.
 """
 
-real_space_mask = al.Mask2D.circular(shape_2d=(200, 200), pixel_scales=0.05, radius=3.0)
+real_space_mask = al.Mask2D.circular(shape_2d=(200, 200), pixel_scales=0.2, radius=3.0)
 
 """We also need a ‘visibilities mask’ which defining which visibilities are omitted from the chi-squared evaluation."""
 
@@ -106,6 +107,8 @@ _SLaMPipelineLight_ and `SLaMPipelineMass` pipelines, model comparison can be pe
 """
 
 hyper = al.SetupHyper(
+    hyper_search_no_inversion=af.DynestyStatic(maxcall=1),
+    hyper_search_with_inversion=af.DynestyStatic(maxcall=1),
     hyper_galaxies_lens=False,
     hyper_galaxies_source=False,
     hyper_image_sky=None,
@@ -130,7 +133,7 @@ For this runner the `SLaMPipelineSourceParametric` customizes:
 """
 
 setup_mass = al.SetupMassTotal(
-    mass_prior_model=al.mp.EllipticalIsothermal, with_shear=True, mass_centre=(0.0, 0.0)
+    mass_prior_model=al.mp.EllipticalIsothermal, with_shear=True
 )
 setup_source = al.SetupSourceParametric(disk_prior_model=al.lp.EllipticalExponential)
 
@@ -216,7 +219,7 @@ source__parametric = source__parametric.make_pipeline(
 mass__total = mass__total.make_pipeline(
     slam=slam, settings=settings, real_space_mask=real_space_mask
 )
-subhalo = subhalo.make_pipeline(
+subhalo = subhalo.make_pipeline_single_plane(
     slam=slam, settings=settings, real_space_mask=real_space_mask
 )
 

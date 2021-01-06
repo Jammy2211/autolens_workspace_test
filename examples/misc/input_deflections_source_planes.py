@@ -32,7 +32,8 @@ imaging = al.Imaging.from_fits(
     pixel_scales=0.2,
 )
 
-aplt.Imaging.subplot_imaging(imaging=imaging)
+imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
+imaging_plotter.subplot_imaging()
 
 """
 In `autolens_workspace/examples/misc/files` you`ll find the script `make_source_plane.py`, which creates the 
@@ -133,9 +134,9 @@ source_galaxy = al.Galaxy(
 
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
-aplt.Tracer.image(tracer=tracer, grid=grid)
+aplt.Tracer.figure_image(tracer=tracer, grid=grid)
 source_plane_grid = tracer.traced_grids_of_planes_from_grid(grid=grid)[-1]
-aplt.Plane.plane_image(plane=tracer.source_plane, grid=source_plane_grid)
+aplt.plane.plane_image(plane=tracer.source_plane, grid=source_plane_grid)
 
 """
 We also apply this mask to our `Imaging` data and fit it using the standard PyAutoLens fitting API.
@@ -169,8 +170,8 @@ mapper = pixelization.mapper_from_grid_and_sparse_grid(grid=source_plane_grid)
 aplt.Mapper.subplot_image_and_mapper(
     image=imaging.image,
     mapper=mapper,
-    include=aplt.Include(grid=True),
-    source_pixel_indexes=[[312], [314], [350], [370]],
+    include=aplt.Include2D(grid=True),
+    pixelization_indexes=[[312], [314], [350], [370]],
 )
 
 """
@@ -196,8 +197,8 @@ Finally, lets plot:
  - The residuals of the fit to the `MaskedImaging`.
 """
 
-aplt.Inversion.reconstruction(inversion=inversion)
-aplt.Inversion.reconstructed_image(inversion=inversion)
+aplt.Inversion.figure_reconstruction(inversion=inversion)
+aplt.Inversion.figure_reconstructed_image(inversion=inversion)
 residual_map = masked_imaging.image - inversion.mapped_reconstructed_image
 aplt.Array(array=residual_map)
 

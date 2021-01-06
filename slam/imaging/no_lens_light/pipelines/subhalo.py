@@ -66,7 +66,7 @@ Refine the best-fit detected subhalo from the previous phase.
 """
 
 
-def make_pipeline(slam, settings, mass_results):
+def make_pipeline_single_plane(slam, settings, mass_results):
     """SETUP PIPELINE & PHASE NAMES, TAGS AND PATHS"""
 
     pipeline_name = "pipeline_subhalo"
@@ -102,7 +102,7 @@ def make_pipeline(slam, settings, mass_results):
         search=af.DynestyStatic(name="phase[1]_mass[total_refine]", n_live_points=100),
         galaxies=af.CollectionPriorModel(lens=lens, source=source),
         hyper_image_sky=slam.setup_hyper.hyper_image_sky_from_result(
-            result=mass_results.last
+            result=mass_results.last, as_model=True
         ),
         hyper_background_noise=slam.setup_hyper.hyper_background_noise_from_result(
             result=mass_results.last
@@ -169,7 +169,7 @@ def make_pipeline(slam, settings, mass_results):
 
     source = slam.source_for_subhalo_pipeline_from_results(results=mass_results)
 
-    phase2_lens_plane = GridPhase(
+    phase2 = GridPhase(
         search=af.DynestyStatic(
             name="phase[2]_mass[total]_source_subhalo[search_lens_plane]",
             n_live_points=50,
@@ -177,11 +177,108 @@ def make_pipeline(slam, settings, mass_results):
             facc=0.2,
         ),
         galaxies=af.CollectionPriorModel(lens=lens, subhalo=subhalo, source=source),
-        hyper_image_sky=phase1.result.hyper.instance.optional.hyper_image_sky,
+        hyper_image_sky=slam.setup_hyper.hyper_image_sky_from_result(
+            result=phase1.result, as_model=True
+        ),
         hyper_background_noise=phase1.result.hyper.instance.optional.hyper_background_noise,
         settings=settings,
         number_of_steps=slam.setup_subhalo.grid_size,
     )
+
+    # subhalo = al.GalaxyModel(redshift=slam.redshift_lens, mass=al.mp.SphericalNFWMCRLudlow)
+    #
+    # subhalo.mass.mass_at_200 = phase2.result.model.galaxies.subhalo.mass.mass_at_200
+    # subhalo.mass.centre = phase2.result.model.galaxies.subhalo.mass.centre
+    #
+    # subhalo.mass.redshift_object = slam.redshift_lens
+    # subhalo.mass.redshift_source = slam.redshift_source
+    #
+    # phase3 = al.PhaseImaging(
+    #     search=af.DynestyStatic(
+    #         name="phase[3]_subhalo[single_plane_refine]",
+    #         path_prefix=path_prefix,
+    #         n_live_points=100,
+    #     ),
+    #     galaxies=af.CollectionPriorModel(
+    #         lens=phase2.result.model.galaxies.lens,
+    #         subhalo=subhalo,
+    #         source=phase2.result.model.galaxies.source,
+    #     ),
+    # #    hyper_image_sky=phase1.result.instance.optional.hyper_image_sky,
+    # #    hyper_background_noise=phase2.result.hyper.instance.optional.hyper_background_noise,
+    #     settings=settings,
+    # )
+
+    return al.PipelineDataset(
+        pipeline_name,
+        path_prefix,
+        mass_results,
+        phase1,
+        phase2,
+        #     phase3,
+    )
+
+
+def make_pipeline_multi_plane(slam, settings, mass_results):
+    """SETUP PIPELINE & PHASE NAMES, TAGS AND PATHS"""
+
+    pipeline_name = "pipeline_subhalo"
+
+    """
+    This pipeline is tagged according to whether:
+
+        1) Hyper-fitting settings (galaxies, sky, background noise) are used.
+        2) The lens galaxy mass model includes an  `ExternalShear`.
+    """
+
+    path_prefix = path.join(
+        slam.path_prefix,
+        pipeline_name,
+        slam.source_tag,
+        slam.mass_tag,
+        slam.setup_subhalo.tag,
+    )
+
+    """
+    Phase1 : Refit the lens`s `MassProfile`'s and source, where we:
+
+        1) Use the source galaxy model of the `source` pipeline.
+        2) Fit this source as a model if it is parametric and as an instance if it is an `Inversion`.
+    """
+
+    """SLaM: Setup the lens and source passing them from the previous pipelines in the same way as described above."""
+
+    lens = slam.lens_for_subhalo_pipeline_from_results(results=mass_results)
+    source = slam.source_from_results_model_if_parametric(results=mass_results)
+
+    phase1 = al.PhaseImaging(
+        search=af.DynestyStatic(name="phase[1]_mass[total_refine]", n_live_points=100),
+        galaxies=af.CollectionPriorModel(lens=lens, source=source),
+        hyper_image_sky=slam.setup_hyper.hyper_image_sky_from_result(
+            result=mass_results.last, as_model=True
+        ),
+        hyper_background_noise=slam.setup_hyper.hyper_background_noise_from_result(
+            result=mass_results.last
+        ),
+        settings=settings,
+    )
+
+    """
+    This `GridPhase` is used for all 3 subhalo detection phases, specifying that the subhalo (y,x) coordinates 
+    are fitted for on a grid of non-linear searches.
+    """
+
+    class GridPhase(
+        af.as_grid_search(
+            phase_class=al.PhaseImaging, parallel=slam.setup_subhalo.parallel
+        )
+    ):
+        @property
+        def grid_priors(self):
+            return [
+                self.model.galaxies.subhalo.mass.centre_0,
+                self.model.galaxies.subhalo.mass.centre_1,
+            ]
 
     """
     Phase multi: attempt to detect subhalos, by performing a NxN grid search of non-linear searches, where:
@@ -227,7 +324,7 @@ def make_pipeline(slam, settings, mass_results):
           `LightProfile` they are varied (this is customized using source_is_model).
     """
 
-    phase2_multi_plane = GridPhase(
+    phase2 = GridPhase(
         search=af.DynestyStatic(
             name="phase[2]_mass[total]_subhalo[search_multi_plane]",
             n_live_points=50,
@@ -237,7 +334,7 @@ def make_pipeline(slam, settings, mass_results):
         galaxies=af.CollectionPriorModel(
             lens=lens, subhalo=subhalo_z_multi, source=source
         ),
-        hyper_image_sky=phase1.result.hyper.instance.optional.hyper_image_sky,
+        hyper_image_sky=phase1.result.instance.optional.hyper_image_sky,
         hyper_background_noise=phase1.result.hyper.instance.optional.hyper_background_noise,
         settings=settings,
         number_of_steps=slam.setup_subhalo.grid_size,
@@ -245,30 +342,26 @@ def make_pipeline(slam, settings, mass_results):
 
     # subhalo = al.GalaxyModel(redshift=slam.redshift_lens, mass=al.mp.SphericalNFWMCRLudlow)
     #
-    # subhalo.mass.mass_at_200 = phase_lens_plane.result.model.galaxies.subhalo.mass.mass_at_200
-    # subhalo.mass.centre = phase_lens_plane.result.model.galaxies.subhalo.mass.centre
+    # subhalo.mass.mass_at_200 = phase2.result.model.galaxies.subhalo.mass.mass_at_200
+    # subhalo.mass.centre = phase2.result.model.galaxies.subhalo.mass.centre
     # subhalo.mass.redshift_object = slam.redshift_lens
     #
-    # source = slam.source_from_previous_pipeline_model_or_instance(
-    #     source_is_model=True, index=-1
-    # )
-    #
     # subhalo.mass.redshift_source = slam.redshift_source
-
-    # phase2 = al.PhaseImaging(
-    #     name="phase[2]__subhalo_refine",
-    #     path_prefix=path_prefix,
-    #     galaxies=af.CollectionPriorModel(
-    #         lens=mass_results.last[-1].model.galaxies.lens, source=source, subhalo=subhalo
-    #     ),
-    #     hyper_image_sky=mass_results.last.hyper.instance.optional.hyper_image_sky,
-    #     hyper_background_noise=mass_results.last.hyper.instance.optional.hyper_background_noise,
-    #     settings=settings,
-    #     search=af.DynestyStatic(n_live_points=100),
-    # )
     #
-    # phase2 = phase2.extend_with_multiple_hyper_phases(
-    #     setup=slam.hyper,
+    # phase3 = al.PhaseImaging(
+    #     search=af.DynestyStatic(
+    #         name="phase[3]__subhalo[multi_plane_refine]",
+    #         path_prefix=path_prefix,
+    #         n_live_points=100
+    #     ),
+    #     galaxies=af.CollectionPriorModel(
+    #         lens=phase2.result.model.galaxies.lens,
+    #         subhalo=subhalo,
+    #         source=phase2.result.model.galaxies.source,
+    #     ),
+    #     #     hyper_image_sky=phase1.result.instance.optional.hyper_image_sky,
+    #     #     hyper_background_noise=phase2.result.hyper.instance.optional.hyper_background_noise,
+    #     settings=settings,
     # )
 
     return al.PipelineDataset(
@@ -276,6 +369,6 @@ def make_pipeline(slam, settings, mass_results):
         path_prefix,
         mass_results,
         phase1,
-        phase2_lens_plane,
-        phase2_multi_plane,
+        phase2,
+        #    phase3,
     )

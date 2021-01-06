@@ -47,7 +47,6 @@ imaging = al.Imaging.from_fits(
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=0.2,
-    positions_path=path.join(dataset_path, "positions.dat"),
 )
 
 """

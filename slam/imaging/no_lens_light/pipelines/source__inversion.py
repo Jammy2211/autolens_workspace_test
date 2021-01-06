@@ -102,7 +102,7 @@ def make_pipeline(slam, settings, source_parametric_results):
             ),
         ),
         hyper_image_sky=slam.setup_hyper.hyper_image_sky_from_result(
-            result=source_parametric_results.last
+            result=source_parametric_results.last, as_model=False
         ),
         hyper_background_noise=slam.setup_hyper.hyper_background_noise_from_result(
             result=source_parametric_results.last
@@ -137,6 +137,7 @@ def make_pipeline(slam, settings, source_parametric_results):
         hyper_image_sky=phase1.result.instance.hyper_image_sky,
         hyper_background_noise=phase1.result.instance.hyper_background_noise,
         settings=settings,
+        use_as_hyper_dataset=True,
     )
 
     """
@@ -168,6 +169,7 @@ def make_pipeline(slam, settings, source_parametric_results):
         hyper_image_sky=phase2.result.instance.hyper_image_sky,
         hyper_background_noise=phase2.result.instance.hyper_background_noise,
         settings=settings,
+        use_as_hyper_dataset=True,
     )
 
     """
@@ -201,10 +203,11 @@ def make_pipeline(slam, settings, source_parametric_results):
         hyper_image_sky=phase3.result.instance.hyper_image_sky,
         hyper_background_noise=phase3.result.instance.hyper_background_noise,
         settings=settings,
+        use_as_hyper_dataset=True,
     )
 
     phase4 = phase4.extend_with_hyper_phase(
-        setup_hyper=slam.setup_hyper,
+        setup_hyper=slam.setup_hyper, include_hyper_image_sky=True
     )
 
     return al.PipelineDataset(

@@ -80,9 +80,7 @@ We can use the **PyAutoLens** `convert` module to determine the elliptical compo
 lens_galaxy = al.Galaxy(
     redshift=0.5,
     mass=al.mp.EllipticalIsothermal(
-        centre=(0.0, 0.0),
-        einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, phi=45.0),
+        centre=(0.0, 0.0), einstein_radius=1.6, elliptical_comps=(0.0, 0.0)
     ),
 )
 
@@ -90,10 +88,10 @@ source_galaxy = al.Galaxy(
     redshift=1.0,
     bulge=al.lp.EllipticalSersic(
         centre=(0.1, 0.1),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, phi=60.0),
-        intensity=0.3,
+        elliptical_comps=(0.0, 0.0),
+        intensity=1.0,
         effective_radius=1.0,
-        sersic_index=2.5,
+        sersic_index=2.0,
     ),
 )
 
@@ -102,9 +100,6 @@ source_galaxy = al.Galaxy(
 
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
-"""Lets look at the tracer`s image - this is the image we'll be simulating."""
-
-aplt.Tracer.image(tracer=tracer, grid=grid)
 
 """
 We can now pass this simulator a tracer, which creates the ray-traced image plotted above and simulates it as an
@@ -112,8 +107,11 @@ interferometer dataset.
 """
 interferometer = simulator.from_tracer_and_grid(tracer=tracer, grid=grid)
 
-"""Lets plot the simulated interferometer dataset before we output it to fits."""
-# aplt.Interferometer.subplot_interferometer(interferometer=interferometer)
+"""Lets plot the simulated `Imaging` dataset before we output it to fits."""
+plotter = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png"))
+aplt.Interferometer.subplot_interferometer(
+    interferometer=interferometer, plotter=plotter
+)
 
 """Output our simulated dataset to the dataset path as .fits files"""
 interferometer.output_to_fits(

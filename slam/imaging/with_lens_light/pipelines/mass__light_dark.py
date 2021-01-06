@@ -16,19 +16,19 @@ Phase 1:
     Fit the lens light and mass model as a decomposed profile, using the lens light and source model from 
     a previous pipeline. The lens `LightProfile`'s are fixed to the results of the previous pipeline to provide a fast
     initialization of the new `MassProfile` parameters.
-    
+
     Lens Light & Mass: Depends on previous Light pipeline.
     Lens Mass: `LightMassProfile`'s + SphericalNFW + ExternalShear
-    Source Light: Previous Pipeline Source.
+    Source Light: Previous Pipeline Source, model if parametric, instance if inversion.
     Previous Pipelines: source__parametric.py and / or source__inversion.py and light__parametric.py
     Prior Passing: Lens Light (instance -> previous pipeline), Source (instance -> previous pipeline)
     Notes: Fixes the lens `LightProfile` and Source to the results of the previous pipeline.
 
 Phase 2:
-    
+
     Include all previously fixed lens `LightProfile` parameters in the model, initializing the `MassProflie` parameters
     from the results of phase 1.
-    
+
     Lens Light & Mass: Depends on previous Light pipeline.
     Lens Mass: `LightMassProfile`'s + SphericalNFW + ExternalShear
     Source Light: Previous Pipeline Source.
@@ -39,7 +39,6 @@ Phase 2:
 
 
 def make_pipeline(slam, settings, source_results, light_results):
-
     """SETUP PIPELINE & PHASE NAMES, TAGS AND PATHS"""
 
     pipeline_name = "pipeline_mass[light_dark]"
@@ -60,12 +59,6 @@ def make_pipeline(slam, settings, source_results, light_results):
         slam.mass_tag,
     )
 
-    """SLaM: Set whether shear is Included in the mass model."""
-
-    shear = slam.pipeline_mass.shear_from_result(
-        result=source_results.last, as_instance=True
-    )
-
     """
     Phase 1: Fit the lens `Galaxy`'s light and mass and one source galaxy, where we:
 
@@ -79,14 +72,8 @@ def make_pipeline(slam, settings, source_results, light_results):
 
     """SLaM: Fix the `LightProfile` parameters of the bulge, disk and envelope to the results of the Light pipeline."""
 
-    bulge = slam.pipeline_mass.setup_mass.bulge_prior_model_with_updated_priors(
-        results=light_results, as_instance=True
-    )
-    disk = slam.pipeline_mass.setup_mass.disk_prior_model_with_updated_priors(
-        results=light_results, as_instance=True
-    )
-    envelope = slam.pipeline_mass.setup_mass.envelope_prior_model_with_updated_priors(
-        results=light_results, as_instance=True
+    bulge, disk, envelope = slam.pipeline_mass.setup_mass.light_and_mass_prior_models_with_updated_priors(
+        results=light_results, as_instance=False
     )
 
     dark = slam.pipeline_mass.setup_mass.dark_prior_model
@@ -94,9 +81,13 @@ def make_pipeline(slam, settings, source_results, light_results):
     dark.redshift_object = slam.redshift_lens
     dark.redshift_source = slam.redshift_source
 
+    slam.pipeline_mass.setup_mass.align_bulge_and_dark_centre(
+        results=light_results, bulge_prior_model=bulge, dark_prior_model=dark
+    )
+
     """SLaM: Include a Super-Massive Black Hole (SMBH) in the mass model is specified in `SLaMPipelineMass`."""
 
-    smbh = slam.pipeline_mass.smbh_prior_model_from_results
+    smbh = slam.pipeline_mass.smbh_prior_model_from_results(results=light_results)
 
     lens = al.GalaxyModel(
         redshift=slam.redshift_lens,
@@ -104,23 +95,22 @@ def make_pipeline(slam, settings, source_results, light_results):
         disk=disk,
         envelope=envelope,
         dark=dark,
-        shear=shear,
+        shear=source_results[-1].model.galaxies.lens.shear,
         smbh=smbh,
         hyper_galaxy=slam.setup_hyper.hyper_galaxy_lens_from_result(
             result=light_results.last
         ),
     )
 
-    source = slam.source_from_results(results=source_results, source_is_model=False)
+    source = slam.source_from_results_model_if_parametric(results=source_results)
 
     phase1 = al.PhaseImaging(
         search=af.DynestyStatic(
-            name="phase[1]_light[fixed]_mass[light_dark]_source[fixed]",
-            n_live_points=50,
+            name="phase[1]_light[fixed]_mass[light_dark]_source", n_live_points=200
         ),
         galaxies=af.CollectionPriorModel(lens=lens, source=source),
         hyper_image_sky=slam.setup_hyper.hyper_image_sky_from_result(
-            result=light_results.last
+            result=light_results.last, as_model=True
         ),
         hyper_background_noise=slam.setup_hyper.hyper_background_noise_from_result(
             result=light_results.last
@@ -128,50 +118,9 @@ def make_pipeline(slam, settings, source_results, light_results):
         settings=settings,
     )
 
-    """
-    Phase 2: Fit the lens `Galaxy`'s light and mass and source galaxy using the results of phase 1 as
-    initialization
-    """
-
-    """SLaM: Set priors on the `LightProfile` parameters of the bulge, disk and envelope to the results of the Light pipeline."""
-
-    bulge = slam.pipeline_mass.setup_mass.bulge_prior_model_with_updated_priors(
-        results=light_results
-    )
-    disk = slam.pipeline_mass.setup_mass.disk_prior_model_with_updated_priors(
-        results=light_results
-    )
-    envelope = slam.pipeline_mass.setup_mass.envelope_prior_model_with_updated_priors(
-        results=light_results
-    )
-
-    lens = al.GalaxyModel(
-        redshift=slam.redshift_lens,
-        bulge=bulge,
-        disk=disk,
-        envelope=envelope,
-        dark=phase1.result.model.galaxies.lens.dark,
-        shear=source_results.last.model.galaxies.lens.shear,
-        smbh=phase1.result.model.galaxies.lens.smbh,
-        hyper_galaxy=phase1.result.hyper.instance.optional.galaxies.lens.hyper_galaxy,
-    )
-
-    source = slam.source_from_results_model_if_parametric(results=source_results)
-
-    phase2 = al.PhaseImaging(
-        search=af.DynestyStatic(
-            name="phase[2]_light[parametric]_mass[light_dark]_source", n_live_points=100
-        ),
-        galaxies=af.CollectionPriorModel(lens=lens, source=source),
-        hyper_image_sky=phase1.result.hyper.instance.optional.hyper_image_sky,
-        hyper_background_noise=phase1.result.hyper.instance.optional.hyper_background_noise,
-        settings=settings,
-    )
-
     if not slam.setup_hyper.hyper_fixed_after_source:
-
-        phase2 = phase2.extend_with_hyper_phase(
-            setup_hyper=slam.setup_hyper,
+        phase1 = phase1.extend_with_hyper_phase(
+            setup_hyper=slam.setup_hyper, include_hyper_image_sky=True
         )
 
-    return al.PipelineDataset(pipeline_name, path_prefix, light_results, phase1, phase2)
+    return al.PipelineDataset(pipeline_name, path_prefix, light_results, phase1)

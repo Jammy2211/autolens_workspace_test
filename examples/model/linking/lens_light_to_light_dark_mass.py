@@ -44,7 +44,7 @@ import autofit as af
 import autolens as al
 import autolens.plot as aplt
 
-dataset_name = "light_sersic_exp__mass_mlr_nfw__source_sersic"
+dataset_name = "light_sersic__mass_mlr_nfw__source_sersic"
 dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
 
 imaging = al.Imaging.from_fits(
@@ -58,7 +58,10 @@ mask = al.Mask2D.circular(
     shape_2d=imaging.shape_2d, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
-aplt.Imaging.subplot_imaging(imaging=imaging, mask=mask)
+imaging_plotter = aplt.ImagingPlotter(
+    imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
+)
+imaging_plotter.subplot_imaging()
 
 """
 __Model__
@@ -121,7 +124,7 @@ the lens model.
 
 The `name` and `path_prefix` below specify the path where results are stored in the output folder:  
 
- `/autolens_workspace/output/examples/linking/lens_light_to_light_dark_mass/light_sersic_exp__mass_sie__source_sersic/phase[1]`.
+ `/autolens_workspace/output/examples/linking/lens_light_to_light_dark_mass/light_sersic__mass_sie__source_sersic/phase[1]`.
 """
 
 phase1 = al.PhaseImaging(
@@ -181,7 +184,7 @@ the lens model.
 
 The `name` and `path_prefix` below specify the path where results are stored in the output folder:  
 
- `/autolens_workspace/output/examples/linking/lens_light_to_light_dark_mass/light_sersic_exp__mass_sie__source_sersic/phase[2]`.
+ `/autolens_workspace/output/examples/linking/lens_light_to_light_dark_mass/light_sersic__mass_sie__source_sersic/phase[2]`.
 
 Note how the `lens` passed to this phase was set up above using the results of phase 1!
 """

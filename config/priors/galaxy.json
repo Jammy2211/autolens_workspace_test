@@ -18,7 +18,7 @@
         "contribution_factor": {
             "type": "Uniform",
             "lower_limit": 0.0,
-            "upper_limit": 20.0,
+            "upper_limit": 0.00000001,
             "width_modifier": {
                 "type": "Relative",
                 "value": 0.01
@@ -31,7 +31,7 @@
         "noise_factor": {
             "type": "Uniform",
             "lower_limit": 0.0,
-            "upper_limit": 10.0,
+            "upper_limit": 0.000001,
             "width_modifier": {
                 "type": "Relative",
                 "value": 0.01
@@ -43,8 +43,8 @@
         },
         "noise_power": {
             "type": "Uniform",
-            "lower_limit": -10.0,
-            "upper_limit": 10.0,
+            "lower_limit": 0.999,
+            "upper_limit": 1.0001,
             "width_modifier": {
                 "type": "Relative",
                 "value": 0.01

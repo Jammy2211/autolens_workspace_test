@@ -2,11 +2,11 @@
     "Constant": {
         "coefficient": {
             "type": "LogUniform",
-            "lower_limit": 1e-06,
-            "upper_limit": 1000000.0,
+            "lower_limit": 0.999,
+            "upper_limit": 1.001,
             "width_modifier": {
                 "type": "Relative",
-                "value": 0.01
+                "value": 0.00001
             },
             "gaussian_limits": {
                 "lower": 0.0,
@@ -17,11 +17,11 @@
     "AdaptiveBrightness": {
         "inner_coefficient": {
             "type": "LogUniform",
-            "lower_limit": 1e-06,
-            "upper_limit": 1000000.0,
+            "lower_limit": 0.999,
+            "upper_limit": 1.001,
             "width_modifier": {
                 "type": "Relative",
-                "value": 0.01
+                "value": 0.00001
             },
             "gaussian_limits": {
                 "lower": 0.0,
@@ -30,11 +30,11 @@
         },
         "outer_coefficient": {
             "type": "LogUniform",
-            "lower_limit": 1e-06,
-            "upper_limit": 1000000.0,
+            "lower_limit": 0.999,
+            "upper_limit": 1.001,
             "width_modifier": {
                 "type": "Relative",
-                "value": 0.01
+                "value": 0.00001
             },
             "gaussian_limits": {
                 "lower": 0.0,

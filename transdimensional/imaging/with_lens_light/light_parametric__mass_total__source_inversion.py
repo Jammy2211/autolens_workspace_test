@@ -19,7 +19,7 @@ from os import path
 import autolens as al
 import autolens.plot as aplt
 
-dataset_name = "light_sersic_exp__mass_sie__source_sersic"
+dataset_name = "light_sersic__mass_sie__source_sersic"
 pixel_scales = 0.2
 
 dataset_path = f"dataset/{dataset_name}"
@@ -41,7 +41,10 @@ mask = al.Mask2D.circular(
 
 """Make a quick subplot to make sure the data looks as we expect."""
 
-aplt.Imaging.subplot_imaging(imaging=imaging, mask=mask)
+imaging_plotter = aplt.ImagingPlotter(
+    imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
+)
+imaging_plotter.subplot_imaging()
 
 """
 __Settings__
@@ -138,7 +141,7 @@ to different output folders and thus not clash with one another!
 The `path_prefix` below specifies the path the pipeline results are written to, which is:
 
  `autolens_workspace/output/transdimensional/dataset_type/dataset_name` 
- `autolens_workspace/output/transdimensional/imaging/light_sersic_exp__mass_sie__source_sersic/`
+ `autolens_workspace/output/transdimensional/imaging/light_sersic__mass_sie__source_sersic/`
 
 
 The redshift of the lens and source galaxies are also input (see `examples/model/customize/redshift.py`) for a 

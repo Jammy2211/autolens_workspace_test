@@ -42,7 +42,10 @@ mask = al.Mask2D.circular(
 
 """Make a quick subplot to make sure the data looks as we expect."""
 
-aplt.Imaging.subplot_imaging(imaging=imaging, mask=mask)
+imaging_plotter = aplt.ImagingPlotter(
+    imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
+)
+imaging_plotter.subplot_imaging()
 
 """
 __Settings__

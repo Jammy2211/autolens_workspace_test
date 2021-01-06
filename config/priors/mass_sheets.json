@@ -2,11 +2,11 @@
     "ExternalShear": {
         "elliptical_comps_0": {
             "type": "Uniform",
-            "lower_limit": -0.2,
-            "upper_limit": 0.2,
+            "lower_limit": -0.00001,
+            "upper_limit": 0.00001,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0000001
             },
             "gaussian_limits": {
                 "lower": "-inf",
@@ -15,11 +15,11 @@
         },
         "elliptical_comps_1": {
             "type": "Uniform",
-            "lower_limit": -0.2,
-            "upper_limit": 0.2,
+            "lower_limit": -0.00001,
+            "upper_limit": 0.00001,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0000001
             },
             "gaussian_limits": {
                 "lower": "-inf",

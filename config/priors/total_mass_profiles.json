@@ -6,10 +6,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -21,10 +21,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -32,11 +32,11 @@
         },
         "einstein_radius": {
             "type": "Uniform",
-            "lower_limit": 0.0,
-            "upper_limit": 3.0,
+            "lower_limit": 1.5999,
+            "upper_limit": 1.6001,
             "width_modifier": {
                 "type": "Relative",
-                "value": 0.25
+                "value": 0.0001
             },
             "gaussian_limits": {
                 "lower": 0.0,
@@ -51,10 +51,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -66,10 +66,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -77,11 +77,11 @@
         },
         "einstein_radius": {
             "type": "Uniform",
-            "lower_limit": 0.0,
-            "upper_limit": 3.0,
+            "lower_limit": 1.5999,
+            "upper_limit": 1.6001,
             "width_modifier": {
                 "type": "Relative",
-                "value": 0.25
+                "value": 0.0001
             },
             "gaussian_limits": {
                 "lower": 0.0,
@@ -96,10 +96,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -111,10 +111,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -122,11 +122,11 @@
         },
         "elliptical_comps_0": {
             "type": "Uniform",
-            "lower_limit": -1.0,
-            "upper_limit": 1.0,
+            "lower_limit": -0.001,
+            "upper_limit": 0.001,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.00001
             },
             "gaussian_limits": {
                 "lower": -1.0,
@@ -135,11 +135,11 @@
         },
         "elliptical_comps_1": {
             "type": "Uniform",
-            "lower_limit": -1.0,
-            "upper_limit": 1.0,
+            "lower_limit": -0.001,
+            "upper_limit": 0.001,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.00001
             },
             "gaussian_limits": {
                 "lower": "-1.0",
@@ -148,11 +148,11 @@
         },
         "einstein_radius": {
             "type": "Uniform",
-            "lower_limit": 0.0,
-            "upper_limit": 3.0,
+            "lower_limit": 1.5999,
+            "upper_limit": 1.6001,
             "width_modifier": {
                 "type": "Relative",
-                "value": 0.25
+                "value": 0.0001
             },
             "gaussian_limits": {
                 "lower": 0.0,
@@ -167,10 +167,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -182,10 +182,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -193,11 +193,11 @@
         },
         "einstein_radius": {
             "type": "Uniform",
-            "lower_limit": 0.0,
-            "upper_limit": 3.0,
+            "lower_limit": 1.5999,
+            "upper_limit": 1.6001,
             "width_modifier": {
                 "type": "Relative",
-                "value": 0.25
+                "value": 0.0001
             },
             "gaussian_limits": {
                 "lower": 0.0,
@@ -225,10 +225,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -240,10 +240,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -251,11 +251,11 @@
         },
         "elliptical_comps_0": {
             "type": "Uniform",
-            "lower_limit": -1.0,
-            "upper_limit": 1.0,
+            "lower_limit": -0.001,
+            "upper_limit": 0.001,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.00001
             },
             "gaussian_limits": {
                 "lower": -1.0,
@@ -264,11 +264,11 @@
         },
         "elliptical_comps_1": {
             "type": "Uniform",
-            "lower_limit": -1.0,
-            "upper_limit": 1.0,
+            "lower_limit": -0.001,
+            "upper_limit": 0.001,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.00001
             },
             "gaussian_limits": {
                 "lower": "-1.0",
@@ -277,11 +277,11 @@
         },
         "einstein_radius": {
             "type": "Uniform",
-            "lower_limit": 0.0,
-            "upper_limit": 3.0,
+            "lower_limit": 1.5999,
+            "upper_limit": 1.6001,
             "width_modifier": {
                 "type": "Relative",
-                "value": 0.25
+                "value": 0.0001
             },
             "gaussian_limits": {
                 "lower": 0.0,
@@ -309,10 +309,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -324,10 +324,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -335,11 +335,11 @@
         },
         "einstein_radius": {
             "type": "Uniform",
-            "lower_limit": 0.0,
-            "upper_limit": 3.0,
+            "lower_limit": 1.5999,
+            "upper_limit": 1.6001,
             "width_modifier": {
                 "type": "Relative",
-                "value": 0.25
+                "value": 0.0001
             },
             "gaussian_limits": {
                 "lower": 0.0,
@@ -352,11 +352,11 @@
             "upper_limit": 3.0,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "gaussian_limits": {
-                "lower": 1.0,
-                "upper": 3.0
+                "lower": 1.999,
+                "upper": 2.001
             }
         }
     },
@@ -367,10 +367,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -382,10 +382,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -393,11 +393,11 @@
         },
         "elliptical_comps_0": {
             "type": "Uniform",
-            "lower_limit": -1.0,
-            "upper_limit": 1.0,
+            "lower_limit": -0.001,
+            "upper_limit": 0.001,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.00001
             },
             "gaussian_limits": {
                 "lower": -1.0,
@@ -406,11 +406,11 @@
         },
         "elliptical_comps_1": {
             "type": "Uniform",
-            "lower_limit": -1.0,
-            "upper_limit": 1.0,
+            "lower_limit": -0.001,
+            "upper_limit": 0.001,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.00001
             },
             "gaussian_limits": {
                 "lower": "-1.0",
@@ -419,11 +419,11 @@
         },
         "einstein_radius": {
             "type": "Uniform",
-            "lower_limit": 0.0,
-            "upper_limit": 3.0,
+            "lower_limit": 1.5999,
+            "upper_limit": 1.6001,
             "width_modifier": {
                 "type": "Relative",
-                "value": 0.25
+                "value": 0.0001
             },
             "gaussian_limits": {
                 "lower": 0.0,
@@ -436,11 +436,11 @@
             "upper_limit": 3.0,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "gaussian_limits": {
-                "lower": 1.0,
-                "upper": 3.0
+                "lower": 1.999,
+                "upper": 2.001
             }
         }
     },
@@ -451,10 +451,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -466,10 +466,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -477,11 +477,11 @@
         },
         "einstein_radius": {
             "type": "Uniform",
-            "lower_limit": 0.0,
-            "upper_limit": 3.0,
+            "lower_limit": 1.5999,
+            "upper_limit": 1.6001,
             "width_modifier": {
                 "type": "Relative",
-                "value": 0.25
+                "value": 0.0001
             },
             "gaussian_limits": {
                 "lower": 0.0,
@@ -494,11 +494,11 @@
             "upper_limit": 3.0,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "gaussian_limits": {
-                "lower": 1.0,
-                "upper": 3.0
+                "lower": 1.999,
+                "upper": 2.001
             }
         },
         "core_radius": {
@@ -522,10 +522,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -537,10 +537,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -548,11 +548,11 @@
         },
         "elliptical_comps_0": {
             "type": "Uniform",
-            "lower_limit": -1.0,
-            "upper_limit": 1.0,
+            "lower_limit": -0.001,
+            "upper_limit": 0.001,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.00001
             },
             "gaussian_limits": {
                 "lower": -1.0,
@@ -561,11 +561,11 @@
         },
         "elliptical_comps_1": {
             "type": "Uniform",
-            "lower_limit": -1.0,
-            "upper_limit": 1.0,
+            "lower_limit": -0.001,
+            "upper_limit": 0.001,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.00001
             },
             "gaussian_limits": {
                 "lower": "-1.0",
@@ -574,11 +574,11 @@
         },
         "einstein_radius": {
             "type": "Uniform",
-            "lower_limit": 0.0,
-            "upper_limit": 3.0,
+            "lower_limit": 1.5999,
+            "upper_limit": 1.6001,
             "width_modifier": {
                 "type": "Relative",
-                "value": 0.25
+                "value": 0.0001
             },
             "gaussian_limits": {
                 "lower": 0.0,
@@ -591,11 +591,11 @@
             "upper_limit": 3.0,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "gaussian_limits": {
-                "lower": 1.0,
-                "upper": 3.0
+                "lower": 1.999,
+                "upper": 2.001
             }
         },
         "core_radius": {
@@ -619,10 +619,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -634,10 +634,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -645,11 +645,11 @@
         },
         "einstein_radius": {
             "type": "Uniform",
-            "lower_limit": 0.0,
-            "upper_limit": 3.0,
+            "lower_limit": 1.5999,
+            "upper_limit": 1.6001,
             "width_modifier": {
                 "type": "Relative",
-                "value": 0.25
+                "value": 0.0001
             },
             "gaussian_limits": {
                 "lower": 0.0,
@@ -703,10 +703,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -718,10 +718,10 @@
             "upper_limit": "inf",
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.0001
             },
             "mean": 0.0,
-            "sigma": 0.1,
+            "sigma": 0.001,
             "gaussian_limits": {
                 "lower": "-inf",
                 "upper": "inf"
@@ -729,11 +729,11 @@
         },
         "elliptical_comps_0": {
             "type": "Uniform",
-            "lower_limit": -1.0,
-            "upper_limit": 1.0,
+            "lower_limit": -0.001,
+            "upper_limit": 0.001,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.00001
             },
             "gaussian_limits": {
                 "lower": -1.0,
@@ -742,11 +742,11 @@
         },
         "elliptical_comps_1": {
             "type": "Uniform",
-            "lower_limit": -1.0,
-            "upper_limit": 1.0,
+            "lower_limit": -0.001,
+            "upper_limit": 0.001,
             "width_modifier": {
                 "type": "Absolute",
-                "value": 0.01
+                "value": 0.00001
             },
             "gaussian_limits": {
                 "lower": "-1.0",
@@ -755,11 +755,11 @@
         },
         "einstein_radius": {
             "type": "Uniform",
-            "lower_limit": 0.0,
-            "upper_limit": 3.0,
+            "lower_limit": 1.5999,
+            "upper_limit": 1.6001,
             "width_modifier": {
                 "type": "Relative",
-                "value": 0.25
+                "value": 0.0001
             },
             "gaussian_limits": {
                 "lower": 0.0,

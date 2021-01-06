@@ -41,7 +41,7 @@ total flux emitted within a pixel.
 """
 
 grid = al.GridIterate.uniform(
-    shape_2d=(50, 50),
+    shape_2d=(75, 75),
     pixel_scales=0.2,
     fractional_accuracy=0.9999,
     sub_steps=[2, 4, 8, 16, 24],
@@ -79,27 +79,24 @@ lens_galaxy = al.Galaxy(
     redshift=0.5,
     bulge=al.lp.EllipticalSersic(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, phi=45.0),
+        elliptical_comps=(0.0, 0.0),
         intensity=1.0,
-        effective_radius=0.8,
-        sersic_index=4.0,
+        effective_radius=1.0,
+        sersic_index=2.0,
     ),
     mass=al.mp.EllipticalIsothermal(
-        centre=(0.0, 0.0),
-        einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, phi=45.0),
+        centre=(0.0, 0.0), einstein_radius=1.6, elliptical_comps=(0.0, 0.0)
     ),
-    shear=al.mp.ExternalShear(elliptical_comps=(0.0, 0.05)),
 )
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
     bulge=al.lp.EllipticalSersic(
-        centre=(0.1, 0.1),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, phi=60.0),
-        intensity=0.3,
+        centre=(0.0, 0.0),
+        elliptical_comps=(0.0, 0.0),
+        intensity=1.0,
         effective_radius=1.0,
-        sersic_index=2.5,
+        sersic_index=2.0,
     ),
 )
 
@@ -107,10 +104,6 @@ source_galaxy = al.Galaxy(
 """Use these galaxies to setup a tracer, which will generate the image for the simulated `Imaging` dataset."""
 
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
-
-"""Lets look at the tracer`s image - this is the image we'll be simulating."""
-
-aplt.Tracer.image(tracer=tracer, grid=grid)
 
 """
 We can now pass this simulator a tracer, which creates the ray-traced image plotted above and simulates it as an
@@ -120,8 +113,8 @@ imaging dataset.
 imaging = simulator.from_tracer_and_grid(tracer=tracer, grid=grid)
 
 """Lets plot the simulated `Imaging` dataset before we output it to fits."""
-
-aplt.Imaging.subplot_imaging(imaging=imaging)
+plotter = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png"))
+aplt.Imaging.subplot_imaging(imaging=imaging, plotter=plotter)
 
 """Output our simulated dataset to the dataset path as .fits files"""
 

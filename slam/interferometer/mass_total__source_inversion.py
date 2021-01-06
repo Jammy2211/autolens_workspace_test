@@ -21,6 +21,7 @@ This uses the SLaM pipelines:
 Check them out for a detailed description of the analysis!
 """
 from os import path
+import autofit as af
 import autolens as al
 import autolens.plot as aplt
 import numpy as np
@@ -45,7 +46,7 @@ The perform a fit, we need two masks, firstly a ‘real-space mask’ which defi
 source galaxy is evaluated using.
 """
 
-real_space_mask = al.Mask2D.circular(shape_2d=(200, 200), pixel_scales=0.05, radius=3.0)
+real_space_mask = al.Mask2D.circular(shape_2d=(200, 200), pixel_scales=0.2, radius=3.0)
 
 """We also need a ‘visibilities mask’ which defining which visibilities are omitted from the chi-squared evaluation."""
 
@@ -143,6 +144,8 @@ _SLaMPipelineLight_ and `SLaMPipelineMass` pipelines, model comparison can be pe
 """
 
 hyper = al.SetupHyper(
+    hyper_search_no_inversion=af.DynestyStatic(maxcall=1),
+    hyper_search_with_inversion=af.DynestyStatic(maxcall=1),
     hyper_galaxies_lens=False,
     hyper_galaxies_source=False,
     hyper_image_sky=None,
@@ -167,12 +170,12 @@ For this runner the `SLaMPipelineSourceParametric` customizes:
    we do not include it in the mass model).
 """
 
-setup_mass = al.SetupMassTotal(
-    mass_prior_model=al.mp.EllipticalIsothermal,
-    with_shear=False,
-    mass_centre=(0.0, 0.0),
+setup_mass = al.SetupMassTotal(mass_prior_model=al.mp.EllipticalIsothermal)
+setup_source = al.SetupSourceParametric(
+    bulge_prior_model=al.lp.EllipticalSersic,
+    disk_prior_model=None,
+    envelope_prior_model=None,
 )
-setup_source = al.SetupSourceParametric()
 
 pipeline_source_parametric = al.SLaMPipelineSourceParametric(
     setup_mass=setup_mass, setup_source=setup_source
@@ -223,9 +226,7 @@ For this runner the `SLaMPipelineMass` customizes:
    we do not include it in the mass model).
 """
 
-setup_mass = al.SetupMassTotal(
-    mass_prior_model=al.mp.EllipticalPowerLaw, with_shear=False
-)
+setup_mass = al.SetupMassTotal(mass_prior_model=al.mp.EllipticalPowerLaw)
 
 pipeline_mass = al.SLaMPipelineMass(setup_mass=setup_mass)
 

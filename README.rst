@@ -3,10 +3,17 @@ PyAutoLens Workspace Test
 
 Welcome to the **PyAutoLens** test workspace.
 
-This is used by **PyAutoLens** developers to perform fast tests of scripts on the main autolens_workspace using
-low resolution datasets.
+This workspace mirrors the `autolens_workspace <https://github.com/Jammy2211/autolens_workspace>`_ but runs the example
+scripts and pipelines fast, by skipping the non-linear search. It is used by **PyAutoLens** developers to perform
+automated integration tests of example scripts.
+
+To run the pipelines in this project you must add the autolens_workspace_test directory to your PYTHONPATH:
+
+.. code-block:: bash
+
+    export PYTHONPATH=$PYTHONPATH:/mnt/c/Users/Jammy/Code/PyAuto/autolens_workspace_test
 
 Workspace Version
 =================
 
-This version of the workspace are built and tested for using **PyAutoLens v1.8.5**.
+This version of the workspace are built and tested for using **PyAutoLens v1.9.2**.
