@@ -42,7 +42,7 @@ imaging = al.Imaging.from_fits(
 """The model-fit also requires a mask defining the regions of the image we fit the lens model to the data."""
 
 mask = al.Mask2D.circular(
-    shape_2d=imaging.shape_2d, pixel_scales=imaging.pixel_scales, radius=3.0
+    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
 imaging_plotter = aplt.ImagingPlotter(
@@ -88,7 +88,7 @@ __Settings__
 Next, we specify the `SettingsPhaseImaging`, which describe how the model is fitted to the data in the log likelihood
 function. Below, we specify:
  
- - That a regular `Grid` is used to fit create the model-image when fitting the data 
+ - That a regular `Grid2D` is used to fit create the model-image when fitting the data 
       (see `autolens_workspace/examples/grids.py` for a description of grids).
  - The sub-grid size of this grid.
 
@@ -97,7 +97,7 @@ can be found in the example script `autolens/workspace/examples/model/customize/
 link -> <link>
 """
 
-settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid, sub_size=2)
+settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid2D, sub_size=2)
 
 settings = al.SettingsPhaseImaging(settings_masked_imaging=settings_masked_imaging)
 
@@ -159,10 +159,12 @@ It also contains instances of the maximum log likelihood Tracer and FitImaging, 
 the fit.
 """
 
-aplt.Tracer.subplot_tracer(
-    tracer=result.max_log_likelihood_tracer, grid=mask.geometry.masked_grid_sub_1
+tracer_plotter = aplt.TracerPlotter(
+    tracer=result.max_log_likelihood_tracer, grid=mask.masked_grid_sub_1
 )
-aplt.FitImaging.subplot_fit_imaging(fit=result.max_log_likelihood_fit)
+tracer_plotter.subplot_tracer()
+fit_imaging_plotter = aplt.FitImagingPlotter(fit=result.max_log_likelihood_fit)
+fit_imaging_plotter.subplot_fit_imaging()
 
 """
 Checkout `/path/to/autolens_workspace/examples/model/results.py` for a full description of the result object.

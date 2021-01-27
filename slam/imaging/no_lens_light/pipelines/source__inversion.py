@@ -70,7 +70,9 @@ def make_pipeline(slam, settings, source_parametric_results):
         3) The `Pixelization` and `Regularization` scheme of the pipeline (fitted in phases 3 & 4).
     """
 
-    path_prefix = path.join(slam.path_prefix, pipeline_name, slam.source_inversion_tag)
+    path_prefix = slam.path_prefix_from(
+        slam.path_prefix, pipeline_name, slam.source_inversion_tag
+    )
 
     """
     Phase 1: Fit the `Pixelization` and `Regularization`, where we:
@@ -180,7 +182,7 @@ def make_pipeline(slam, settings, source_parametric_results):
     """
 
     mass = slam.pipeline_source_parametric.setup_mass.mass_prior_model_with_updated_priors_from_result(
-        result=phase2.result, unfix_mass_centre=True
+        result=source_parametric_results.last, unfix_mass_centre=True
     )
 
     phase4 = al.PhaseImaging(

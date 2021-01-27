@@ -23,9 +23,9 @@ imaging = al.Imaging.from_fits(
 """The mask and grid of the imaging dataset."""
 
 mask = al.Mask2D.unmasked(
-    shape_2d=imaging.shape_2d, pixel_scales=imaging.pixel_scales, sub_size=1
+    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, sub_size=1
 )
-grid = al.Grid.from_mask(mask=mask)
+grid = al.Grid2D.from_mask(mask=mask)
 
 """
 The true lens `Galaxy` of the `mass_sie__source_parametric.py` simulator script, which is required to compute the
@@ -42,8 +42,8 @@ lens_galaxy = al.Galaxy(
 )
 
 deflections = lens_galaxy.deflections_from_grid(grid=grid)
-deflections_y = al.Array.manual_mask(array=deflections.in_1d[:, 0], mask=grid.mask)
-deflections_x = al.Array.manual_mask(array=deflections.in_1d[:, 1], mask=grid.mask)
+deflections_y = al.Array2D.manual_mask(array=deflections.slim[:, 0], mask=grid.mask)
+deflections_x = al.Array2D.manual_mask(array=deflections.slim[:, 1], mask=grid.mask)
 
 mask.output_to_fits(file_path=f"examples/misc/files/mask.fits", overwrite=True)
 grid.output_to_fits(file_path=f"examples/misc/files/grid.fits", overwrite=True)

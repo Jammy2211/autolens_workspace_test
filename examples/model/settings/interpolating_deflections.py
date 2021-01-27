@@ -52,7 +52,7 @@ imaging = al.Imaging.from_fits(
 )
 
 mask = al.Mask2D.circular(
-    shape_2d=imaging.shape_2d, pixel_scales=imaging.pixel_scales, radius=3.0
+    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
 imaging_plotter = aplt.ImagingPlotter(
@@ -75,7 +75,7 @@ __Settings__
 Next, we specify the `SettingsPhaseImaging`, which describe how the model is fitted to the data in the log likelihood
 function. In this example, we specify:
 
- - The grid_class as a `GridInterpolate`, telling PyAutoLens to use interpolation when calculation deflection 
+ - The grid_class as a `Grid2DInterpolate`, telling PyAutoLens to use interpolation when calculation deflection 
       angles.
       
  - A pixel_scales_interp of 0.05, which is the resolution of the interpolation on which the deflection angles are
@@ -83,7 +83,7 @@ function. In this example, we specify:
 """
 
 settings_masked_imaging = al.SettingsMaskedImaging(
-    grid_class=al.GridInterpolate, pixel_scales_interp=0.05
+    grid_class=al.Grid2DInterpolate, pixel_scales_interp=0.05
 )
 
 settings = al.SettingsPhaseImaging(settings_masked_imaging=settings_masked_imaging)

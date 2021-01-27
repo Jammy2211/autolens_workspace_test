@@ -41,7 +41,7 @@ imaging = al.Imaging.from_fits(
 )
 
 mask = al.Mask2D.circular(
-    shape_2d=imaging.shape_2d, pixel_scales=imaging.pixel_scales, radius=3.0
+    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
 phase = al.PhaseImaging(
@@ -55,7 +55,9 @@ phase = al.PhaseImaging(
         source=al.GalaxyModel(redshift=1.0, bulge=al.lp.EllipticalSersic),
     ),
     settings=al.SettingsPhaseImaging(
-        settings_masked_imaging=al.SettingsMaskedImaging(grid_class=al.Grid, sub_size=2)
+        settings_masked_imaging=al.SettingsMaskedImaging(
+            grid_class=al.Grid2D, sub_size=2
+        )
     ),
 )
 
@@ -66,10 +68,12 @@ Great, so we have the `Result` object we'll cover in this script. As a reminder,
 `max_log_likelihood_tracer` and `max_log_likelihood_fit` to plot the results of the fit:
 """
 
-aplt.Tracer.subplot_tracer(
-    tracer=result.max_log_likelihood_tracer, grid=mask.geometry.masked_grid_sub_1
+tracer_plotter = aplt.TracerPlotter(
+    tracer=result.max_log_likelihood_tracer, grid=mask.masked_grid_sub_1
 )
-aplt.FitImaging.subplot_fit_imaging(fit=result.max_log_likelihood_fit)
+tracer_plotter.subplot_tracer()
+fit_imaging_plotter = aplt.FitImagingPlotter(fit=result.max_log_likelihood_fit)
+fit_imaging_plotter.subplot_fit_imaging()
 
 """
 The result contains a lot more information about the model-fit. 
@@ -136,7 +140,7 @@ The list of parameter names are available as a property of the `Samples`, as are
 for labeling figures.
 """
 
-print(samples.model_component_and_parameter_names)
+print(samples.model.model_component_and_parameter_names)
 print(samples.model.parameter_labels)
 
 """
@@ -172,7 +176,8 @@ is the property of the result we've used up to now!
 """
 
 ml_tracer = al.Tracer.from_galaxies(galaxies=ml_instance.galaxies)
-aplt.Tracer.subplot_tracer(tracer=ml_tracer, grid=mask.geometry.unmasked_grid_sub_1)
+tracer_plotter = aplt.TracerPlotter(tracer=ml_tracer, grid=mask.unmasked_grid_sub_1)
+tracer_plotter.subplot_tracer()
 
 """
 We can also access the `median pdf` model, which is the model computed by marginalizing over the samples of every 
@@ -241,11 +246,11 @@ print(max(samples.log_likelihoods))
 print(samples.log_evidence)
 
 """
-The Probability Density Functions (PDF`s) of the results can be plotted using the library:
+The Probability Density Functions (PDF's) of the results can be plotted using the library:
 
  corner.py: https://corner.readthedocs.io/en/latest/
 
-(In built visualization for PDF`s and non-linear searches is a future feature of PyAutoFit, but for now you`ll have to 
+(In built visualization for PDF's and non-linear searches is a future feature of PyAutoFit, but for now you`ll have to 
 use the libraries yourself!).
 """
 

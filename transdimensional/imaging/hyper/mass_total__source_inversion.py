@@ -38,7 +38,7 @@ imaging = al.Imaging.from_fits(
 """Next, we create the mask we'll fit this data-set with."""
 
 mask = al.Mask2D.circular(
-    shape_2d=imaging.shape_2d, pixel_scales=imaging.pixel_scales, radius=3.0
+    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
 """Make a quick subplot to make sure the data looks as we expect."""
@@ -54,7 +54,7 @@ __Settings__
 `SettingsPhase` behave as they did in normal pipelines.
 """
 
-settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid, sub_size=2)
+settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid2D, sub_size=2)
 
 settings = al.SettingsPhaseImaging(settings_masked_imaging=settings_masked_imaging)
 

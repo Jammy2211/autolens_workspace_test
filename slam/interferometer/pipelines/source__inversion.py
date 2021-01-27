@@ -70,7 +70,9 @@ def make_pipeline(slam, settings, real_space_mask, source_parametric_results):
         3) The `Pixelization` and `Regularization` scheme of the pipeline (fitted in phases 3 & 4).
     """
 
-    path_prefix = path.join(slam.path_prefix, pipeline_name, slam.source_inversion_tag)
+    path_prefix = slam.path_prefix_from(
+        slam.path_prefix, pipeline_name, slam.source_inversion_tag
+    )
 
     """
     Phase 1: Fit the `Pixelization` and `Regularization`, where we:

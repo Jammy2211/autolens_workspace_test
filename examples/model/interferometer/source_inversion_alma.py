@@ -56,14 +56,17 @@ interferometer = al.Interferometer.from_fits(
     uv_wavelengths_path=f"{dataset_path}/uv_wavelengths.fits",
 )
 
-aplt.Interferometer.subplot_interferometer(interferometer=interferometer)
+interferometer_plotter = aplt.InterferometerPlotter(interferometer=interferometer)
+interferometer_plotter.subplot_interferometer()
 
 """
 The perform a fit, we need two masks, firstly a ‘real-space mask’ which defines the grid the image of the lensed 
 source galaxy is evaluated using.
 """
 
-real_space_mask = al.Mask2D.circular(shape_2d=(200, 200), pixel_scales=0.2, radius=3.0)
+real_space_mask = al.Mask2D.circular(
+    shape_native=(200, 200), pixel_scales=0.2, radius=3.0
+)
 
 """We also need a ‘visibilities mask’ which defining which visibilities are omitted from the chi-squared evaluation."""
 
@@ -106,7 +109,7 @@ __Settings__
 Next, we specify the *SettingsPhaseInterferometer*, which describes how the model is fitted to the data in the log 
 likelihood function. Below, we specify:
  
- - That a regular `Grid` is used to fit create the model-image (in real space) when fitting the data 
+ - That a regular `Grid2D` is used to fit create the model-image (in real space) when fitting the data 
    (see `autolens_workspace/examples/grids.py` for a description of grids).
 
  - The sub-grid size of this real-space grid.
@@ -121,7 +124,7 @@ likelihood function. Below, we specify:
 """
 
 settings_masked_interferometer = al.SettingsMaskedInterferometer(
-    grid_class=al.Grid, sub_size=1, transformer_class=al.TransformerNUFFT
+    grid_class=al.Grid2D, sub_size=1, transformer_class=al.TransformerNUFFT
 )
 settings_inversion = al.SettingsInversion(
     use_linear_operators=True, use_preconditioner=False
@@ -191,11 +194,14 @@ It also contains instances of the maximum log likelihood Tracer and FitImaging, 
 the fit.
 """
 
-aplt.Tracer.subplot_tracer(
-    tracer=result.max_log_likelihood_tracer,
-    grid=real_space_mask.geometry.masked_grid_sub_1,
+tracer_plotter = aplt.TracerPlotter(
+    tracer=result.max_log_likelihood_tracer, grid=real_space_mask.masked_grid_sub_1
 )
-aplt.FitInterferometer.subplot_fit_interferometer(fit=result.max_log_likelihood_fit)
+tracer_plotter.subplot_tracer()
+fit_interferometer_plotter = aplt.FitInterferometerPlotter(
+    fit=result.max_log_likelihood_fit
+)
+fit_interferometer_plotter.subplot_fit_interferometer()
 
 """
 Checkout `/path/to/autolens_workspace/examples/model/results.py` for a full description of the result object.

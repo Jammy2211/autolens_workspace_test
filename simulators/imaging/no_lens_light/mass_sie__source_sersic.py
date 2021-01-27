@@ -30,8 +30,8 @@ The path where the dataset will be output, which in this case is:
 dataset_path = path.join("dataset", dataset_type, dataset_label, dataset_name)
 
 """
-For simulating an image of a strong lens, we recommend using a GridIterate object. This represents a grid of (y,x) 
-coordinates like an ordinary Grid, but when the light-profile`s image is evaluated below (using the Tracer) the 
+For simulating an image of a strong lens, we recommend using a Grid2DIterate object. This represents a grid of (y,x) 
+coordinates like an ordinary Grid2D, but when the light-profile`s image is evaluated below (using the Tracer) the 
 sub-size of the grid is iteratively increased (in steps of 2, 4, 8, 16, 24) until the input fractional accuracy of 
 99.99% is met.
 
@@ -39,8 +39,8 @@ This ensures that the divergent and bright central regions of the source galaxy 
 total flux emitted within a pixel.
 """
 
-grid = al.GridIterate.uniform(
-    shape_2d=(75, 75),
+grid = al.Grid2DIterate.uniform(
+    shape_native=(75, 75),
     pixel_scales=0.2,
     fractional_accuracy=0.9999,
     sub_steps=[2, 4, 8, 16, 24],
@@ -48,8 +48,8 @@ grid = al.GridIterate.uniform(
 
 """Simulate a simple Gaussian PSF for the image."""
 
-psf = al.Kernel.from_gaussian(
-    shape_2d=(3, 3), sigma=0.1, pixel_scales=grid.pixel_scales
+psf = al.Kernel2D.from_gaussian(
+    shape_native=(3, 3), sigma=0.1, pixel_scales=grid.pixel_scales
 )
 
 """
@@ -97,7 +97,8 @@ tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
 """Lets look at the tracer`s image - this is the image we'll be simulating."""
 
-aplt.Tracer.figure_image(tracer=tracer, grid=grid)
+tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
+tracer_plotter.figures(image=True)
 
 """
 We can now pass this simulator a tracer, which creates the ray-traced image plotted above and simulates it as an

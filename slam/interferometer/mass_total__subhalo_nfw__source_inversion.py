@@ -42,14 +42,17 @@ interferometer = al.Interferometer.from_fits(
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
 )
 
-aplt.Interferometer.subplot_interferometer(interferometer=interferometer)
+interferometer_plotter = aplt.InterferometerPlotter(interferometer=interferometer)
+interferometer_plotter.subplot_interferometer()
 
 """
 The perform a fit, we need two masks, firstly a ‘real-space mask’ which defines the grid the image of the lensed 
 source galaxy is evaluated using.
 """
 
-real_space_mask = al.Mask2D.circular(shape_2d=(200, 200), pixel_scales=0.2, radius=3.0)
+real_space_mask = al.Mask2D.circular(
+    shape_native=(200, 200), pixel_scales=0.2, radius=3.0
+)
 
 """We also need a ‘visibilities mask’ which defining which visibilities are omitted from the chi-squared evaluation."""
 
@@ -67,7 +70,7 @@ The settings chosen here are applied to all phases in the pipeline.
 """
 
 settings_masked_interferometer = al.SettingsMaskedInterferometer(
-    grid_class=al.Grid, sub_size=2
+    grid_class=al.Grid2D, sub_size=2
 )
 
 """
@@ -265,10 +268,7 @@ We import and make pipelines as per usual, albeit we'll now be doing this for mu
 We then run each pipeline, passing the results of previous pipelines to subsequent pipelines.
 """
 
-from pipelines import source__parametric
-from pipelines import source__inversion
-from pipelines import mass__total
-from pipelines import subhalo
+from pipelines import source__parametric, source__inversion, subhalo, mass__total
 
 source__parametric = source__parametric.make_pipeline(
     slam=slam, settings=settings, real_space_mask=real_space_mask

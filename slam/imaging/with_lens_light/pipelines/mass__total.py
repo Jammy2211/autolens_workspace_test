@@ -40,17 +40,13 @@ def make_pipeline(slam, settings, source_results, light_results):
         3) The lens`s light model is fixed or variable.
     """
 
-    path_prefix = path.join(
+    path_prefix = slam.path_prefix_from(
         slam.path_prefix,
         pipeline_name,
         slam.source_tag,
         slam.light_parametric_tag,
         slam.mass_tag,
     )
-
-    """SLaM: Set whether shear is included in the mass model using the `ExternalShear` model of the Source pipeline."""
-
-    shear = slam.pipeline_mass.shear_from_result(result=source_results.last)
 
     """
     Phase 1: Fit the lens `Galaxy`'s light and mass and one source galaxy, where we:
@@ -62,16 +58,20 @@ def make_pipeline(slam, settings, source_results, light_results):
     """
 
     mass = slam.pipeline_mass.setup_mass.mass_prior_model_with_updated_priors_from_result(
-        result=source_results.last, unfix_mass_centre=True
+        result=source_results[-2], unfix_mass_centre=True
     )
+
+    """SLaM: Set whether shear is included in the mass model using the `ExternalShear` model of the Source pipeline."""
+
+    shear = slam.pipeline_mass.shear_from_result(result=source_results[-2])
 
     """SLaM: Use the source and lens light models from the previous *Source* and *Light* pipelines."""
 
-    lens = slam.lens_for_mass_pipeline_from_results(
-        results=light_results, mass=mass, shear=shear
+    lens = slam.lens_for_mass_pipeline_from_result(
+        result=light_results.last, mass=mass, shear=shear
     )
 
-    source = slam.source_from_results_model_if_parametric(results=source_results)
+    source = slam.source_from_result_model_if_parametric(result=source_results[-2])
 
     phase1 = al.PhaseImaging(
         search=af.DynestyStatic(

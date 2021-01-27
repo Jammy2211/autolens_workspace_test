@@ -1,4 +1,3 @@
-from os import path
 import autofit as af
 import autolens as al
 
@@ -6,7 +5,7 @@ import autolens as al
 This pipeline performs a parametric source analysis which fits a lens model (the lens`s `LightProfile` and mass) and the
 source galaxy. 
 
-This pipeline uses four phases:
+This pipeline uses three phases:
 
 Phase 1:
 
@@ -32,24 +31,13 @@ Phase 2:
 
 Phase 3:
 
-    Refit the lens `LightProfile` using the mass model and source `LightProfile` fixed from phase 2.
+    Refit the lens `LightProfile` with origina priors, using the mass model and sources with priors from phase 2.
     
     Lens Light: EllipticalSersic + EllipticalExponential
     Lens Mass: MassProfile (default=EllipticalIsothermal) + ExternalShear
     Source Light: EllipticalSersic
     Previous Pipelines: None
     Prior Passing: lens mass and source (instance -> phase 2)
-    Notes: None
-
-Phase 4:
-
-    Refine the lens `LightProfile` and `MassProfile` and source `LightProfile`, using priors from the previous 2 phases.
-    
-    Lens Light: EllipticalSersic + EllipticalExponential
-    Lens Mass: MassProfile (default=EllipticalIsothermal) + ExternalShear
-    Source Light: EllipticalSersic
-    Previous Pipelines: None
-    Prior Passing: Lens light (model -> phase 3), lens mass and source (model -> phase 2)
     Notes: None
 """
 
@@ -67,7 +55,9 @@ def make_pipeline(slam, settings):
         2) The lens galaxy mass model includes an  `ExternalShear`.
     """
 
-    path_prefix = path.join(slam.path_prefix, pipeline_name, slam.source_parametric_tag)
+    path_prefix = slam.path_prefix_from(
+        slam.path_prefix, pipeline_name, slam.source_parametric_tag
+    )
 
     """
     Phase 1: Fit only the lens `Galaxy`'s light, where we:
@@ -86,10 +76,6 @@ def make_pipeline(slam, settings):
         search=af.DynestyStatic(name="phase[1]_light[parametric]", n_live_points=75),
         galaxies=af.CollectionPriorModel(lens=lens),
         settings=settings,
-    )
-
-    phase1 = phase1.extend_with_hyper_phase(
-        setup_hyper=slam.setup_hyper, include_hyper_image_sky=False
     )
 
     """
@@ -128,31 +114,24 @@ def make_pipeline(slam, settings):
                 envelope=phase1.result.instance.galaxies.lens.envelope,
                 mass=mass,
                 shear=slam.pipeline_source_parametric.setup_mass.shear_prior_model,
-                hyper_galaxy=phase1.result.hyper.instance.optional.galaxies.lens.hyper_galaxy,
             ),
             source=al.GalaxyModel(
                 redshift=slam.redshift_source,
                 bulge=slam.pipeline_source_parametric.setup_source.bulge_prior_model,
                 disk=slam.pipeline_source_parametric.setup_source.disk_prior_model,
                 envelope=slam.pipeline_source_parametric.setup_source.envelope_prior_model,
-                hyper_galaxy=phase1.result.hyper.instance.optional.galaxies.source.hyper_galaxy,
             ),
         ),
         hyper_background_noise=phase1.result.hyper.instance.optional.hyper_background_noise,
         settings=settings,
     )
 
-    phase2 = phase2.extend_with_hyper_phase(
-        setup_hyper=slam.setup_hyper, include_hyper_image_sky=False
-    )
-
     """
-    Phase 3: Refit the lens `Galaxy`'s bulge and disk `LightProfile`'s using fixed mass and source instances from phase 2, 
-    where we:
-
-        1) Use the light model determined from `SetupLightParametric` (e.g. `bulge_prior_model`, `disk_prior_model`, 
-           etc.).
-        2) Do not use priors from phase 1 for the lens`s `LightProfile`, assuming the source light could bias them.
+    Phase 3: Simultaneously fit the lens and source galaxies, where we:
+    
+        1) Set lens`s light model using original priors, as the model from phase 1 is too unreliable for prior 
+           initialization.
+        1) Set lens`s mass, shear and source`s light using models from phases 2.
     """
 
     lens = al.GalaxyModel(
@@ -160,24 +139,22 @@ def make_pipeline(slam, settings):
         bulge=slam.pipeline_source_parametric.setup_light.bulge_prior_model,
         disk=slam.pipeline_source_parametric.setup_light.disk_prior_model,
         envelope=slam.pipeline_source_parametric.setup_light.envelope_prior_model,
-        mass=phase2.result.instance.galaxies.lens.mass,
-        shear=phase2.result.instance.galaxies.lens.shear,
-        hyper_galaxy=phase2.result.hyper.instance.optional.galaxies.lens.hyper_galaxy,
+        mass=phase2.result.model.galaxies.lens.mass,
+        shear=phase2.result.model.galaxies.lens.shear,
     )
 
     phase3 = al.PhaseImaging(
         search=af.DynestyStatic(
-            name="phase[3]_light[parametric]_mass[fixed]_source[fixed]",
-            n_live_points=100,
+            name="phase[3]_light[parametric]_mass[total]_source[parametric]",
+            n_live_points=200,
         ),
         galaxies=af.CollectionPriorModel(
             lens=lens,
             source=al.GalaxyModel(
                 redshift=slam.redshift_source,
-                bulge=phase2.result.instance.galaxies.source.bulge,
-                disk=phase2.result.instance.galaxies.source.disk,
-                envelope=phase2.result.instance.galaxies.source.envelope,
-                hyper_galaxy=phase2.result.hyper.instance.optional.galaxies.source.hyper_galaxy,
+                bulge=phase2.result.model.galaxies.source.bulge,
+                disk=phase2.result.model.galaxies.source.disk,
+                envelope=phase2.result.model.galaxies.source.envelope,
             ),
         ),
         hyper_background_noise=phase2.result.hyper.instance.optional.hyper_background_noise,
@@ -185,46 +162,7 @@ def make_pipeline(slam, settings):
     )
 
     phase3 = phase3.extend_with_hyper_phase(
-        setup_hyper=slam.setup_hyper, include_hyper_image_sky=False
-    )
-
-    """
-    Phase 4: Simultaneously fit the lens and source galaxies, where we:
-
-        1) Set lens`s light, mass, shear and source`s light using models from phases 2 and 3.
-    """
-
-    phase4 = al.PhaseImaging(
-        search=af.DynestyStatic(
-            name="phase[4]_light[parametric]_mass[total]_source[parametric]",
-            n_live_points=100,
-        ),
-        galaxies=af.CollectionPriorModel(
-            lens=al.GalaxyModel(
-                redshift=slam.redshift_lens,
-                bulge=phase3.result.model.galaxies.lens.bulge,
-                disk=phase3.result.model.galaxies.lens.disk,
-                envelope=phase3.result.model.galaxies.lens.envelope,
-                mass=phase2.result.model.galaxies.lens.mass,
-                shear=phase2.result.model.galaxies.lens.shear,
-                hyper_galaxy=phase3.result.hyper.instance.optional.galaxies.lens.hyper_galaxy,
-            ),
-            source=al.GalaxyModel(
-                redshift=slam.redshift_source,
-                bulge=phase2.result.model.galaxies.source.bulge,
-                disk=phase2.result.model.galaxies.source.disk,
-                envelope=phase2.result.model.galaxies.source.envelope,
-                hyper_galaxy=phase3.result.hyper.instance.optional.galaxies.source.hyper_galaxy,
-            ),
-        ),
-        hyper_background_noise=phase3.result.hyper.instance.optional.hyper_background_noise,
-        settings=settings,
-    )
-
-    phase4 = phase4.extend_with_hyper_phase(
         setup_hyper=slam.setup_hyper, include_hyper_image_sky=True
     )
 
-    return al.PipelineDataset(
-        pipeline_name, path_prefix, None, phase1, phase2, phase3, phase4
-    )
+    return al.PipelineDataset(pipeline_name, path_prefix, None, phase1, phase2, phase3)

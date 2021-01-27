@@ -51,7 +51,7 @@ def make_pipeline(slam, settings, source_results, light_results):
         4) The lens galaxy mass model includes an  `ExternalShear`.
     """
 
-    path_prefix = path.join(
+    path_prefix = slam.path_prefix_from(
         slam.path_prefix,
         pipeline_name,
         slam.source_tag,
@@ -73,7 +73,7 @@ def make_pipeline(slam, settings, source_results, light_results):
     """SLaM: Fix the `LightProfile` parameters of the bulge, disk and envelope to the results of the Light pipeline."""
 
     bulge, disk, envelope = slam.pipeline_mass.setup_mass.light_and_mass_prior_models_with_updated_priors(
-        results=light_results, as_instance=False
+        result=light_results.last, as_instance=False
     )
 
     dark = slam.pipeline_mass.setup_mass.dark_prior_model
@@ -82,12 +82,16 @@ def make_pipeline(slam, settings, source_results, light_results):
     dark.redshift_source = slam.redshift_source
 
     slam.pipeline_mass.setup_mass.align_bulge_and_dark_centre(
-        results=light_results, bulge_prior_model=bulge, dark_prior_model=dark
+        bulge_prior_model=bulge, dark_prior_model=dark
     )
+
+    """SLaM: Set whether shear is included in the mass model using the `ExternalShear` model of the Source pipeline."""
+
+    shear = slam.pipeline_mass.shear_from_result(result=source_results[-2])
 
     """SLaM: Include a Super-Massive Black Hole (SMBH) in the mass model is specified in `SLaMPipelineMass`."""
 
-    smbh = slam.pipeline_mass.smbh_prior_model_from_results(results=light_results)
+    smbh = slam.pipeline_mass.smbh_prior_model_from_result(result=light_results.last)
 
     lens = al.GalaxyModel(
         redshift=slam.redshift_lens,
@@ -95,14 +99,14 @@ def make_pipeline(slam, settings, source_results, light_results):
         disk=disk,
         envelope=envelope,
         dark=dark,
-        shear=source_results[-1].model.galaxies.lens.shear,
+        shear=shear,
         smbh=smbh,
         hyper_galaxy=slam.setup_hyper.hyper_galaxy_lens_from_result(
             result=light_results.last
         ),
     )
 
-    source = slam.source_from_results_model_if_parametric(results=source_results)
+    source = slam.source_from_result_model_if_parametric(result=source_results[-2])
 
     phase1 = al.PhaseImaging(
         search=af.DynestyStatic(

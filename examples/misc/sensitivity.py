@@ -42,7 +42,7 @@ imaging = al.Imaging.from_fits(
 """The model-fit also requires a mask defining the regions of the image we fit the lens model to the data."""
 
 mask = al.Mask2D.circular(
-    shape_2d=imaging.shape_2d, pixel_scales=imaging.pixel_scales, radius=3.0
+    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
 imaging_plotter = aplt.ImagingPlotter(
@@ -88,7 +88,7 @@ __Settings__
 Next, we specify the `SettingsPhaseImaging`, which describe how the model is fitted to the data in the log likelihood
 function. Below, we specify:
 
- - That a regular `Grid` is used to fit create the model-image when fitting the data 
+ - That a regular `Grid2D` is used to fit create the model-image when fitting the data 
       (see `autolens_workspace/examples/grids.py` for a description of grids).
  - The sub-grid size of this grid.
 
@@ -97,7 +97,7 @@ can be found in the example script `autolens/workspace/examples/model/customize/
 link -> <link>
 """
 
-settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid, sub_size=2)
+settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid2D, sub_size=2)
 
 settings = al.SettingsPhaseImaging(settings_masked_imaging=settings_masked_imaging)
 
@@ -173,11 +173,11 @@ subhalo.mass.redshift_source = 1.0
 class SimulatorImagingSensitivity(al.SimulatorImaging):
     def __init__(
         self,
-        grid: al.Grid,
+        grid: al.Grid2D,
         mask: al.Mask2D,
         exposure_time: float,
         background_sky_level: float = 0.0,
-        psf: al.Kernel = None,
+        psf: al.Kernel2D = None,
         renormalize_psf: bool = True,
         read_noise: float = None,
         add_poisson_noise: bool = True,
@@ -189,7 +189,7 @@ class SimulatorImagingSensitivity(al.SimulatorImaging):
 
         Parameters
         ----------
-        psf : Kernel
+        psf : Kernel2D
             An arrays describing the PSF kernel of the image.
         exposure_time : float
             The exposure time of the simulated imaging.
@@ -239,11 +239,14 @@ class SimulatorImagingSensitivity(al.SimulatorImaging):
 
 
 mask = al.Mask2D.circular(
-    shape_2d=imaging.shape_2d, pixel_scales=imaging.pixel_scales, sub_size=1, radius=3.0
+    shape_native=imaging.shape_native,
+    pixel_scales=imaging.pixel_scales,
+    sub_size=1,
+    radius=3.0,
 )
 
-grid = al.GridIterate.uniform(
-    shape_2d=imaging.shape_2d,
+grid = al.Grid2DIterate.uniform(
+    shape_native=imaging.shape_native,
     pixel_scales=imaging.pixel_scales,
     fractional_accuracy=0.9999,
     sub_steps=[2, 4, 8, 16, 24],
@@ -278,8 +281,8 @@ class Analysis(a.Analysis):
 from autofit.non_linear.grid import sensitivity as s
 
 sensitivity = s.Sensitivity(
-    instance=result.instance,
-    model=result.model,
+    base_instance=result.instance,
+    base_model=result.model,
     perturbation_model=subhalo,
     simulate_function=simulator.from_instance,
     analysis_class=Analysis,

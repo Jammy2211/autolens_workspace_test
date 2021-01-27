@@ -35,7 +35,9 @@ def make_pipeline(slam, settings):
            etc.)
     """
 
-    path_prefix = path.join(slam.path_prefix, pipeline_name, slam.source_parametric_tag)
+    path_prefix = slam.path_prefix_from(
+        slam.path_prefix, pipeline_name, slam.source_parametric_tag
+    )
 
     """
     Phase 1: Fit the lens`s `MassProfile`'s and source galaxy.

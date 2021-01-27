@@ -42,7 +42,7 @@ def make_pipeline(slam, settings, source_results):
         3) The lens galaxy mass model includes an  `ExternalShear`.
     """
 
-    path_prefix = path.join(
+    path_prefix = slam.path_prefix_from(
         slam.path_prefix, pipeline_name, slam.source_tag, slam.light_parametric_tag
     )
 
@@ -72,7 +72,7 @@ def make_pipeline(slam, settings, source_results):
 
     """SLaM: Use the Source pipeline source as an instance (whether its parametric or an Inversion)."""
 
-    source = slam.source_from_results(results=source_results, source_is_model=False)
+    source = slam.source_from_result(result=source_results.last, source_is_model=False)
 
     phase1 = al.PhaseImaging(
         search=af.DynestyStatic(

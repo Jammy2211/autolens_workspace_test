@@ -34,7 +34,7 @@ def make_pipeline(slam, settings, real_space_mask, source_results):
         2) The lens galaxy mass model includes an  `ExternalShear`.
     """
 
-    path_prefix = path.join(
+    path_prefix = slam.path_prefix_from(
         slam.path_prefix, pipeline_name, slam.source_tag, slam.mass_tag
     )
 
@@ -61,7 +61,7 @@ def make_pipeline(slam, settings, real_space_mask, source_results):
     SLaM: Setup the source model, which uses a variable parametric profile or fixed `Inversion` model.
     """
 
-    source = slam.source_from_results_model_if_parametric(results=source_results)
+    source = slam.source_from_result_model_if_parametric(result=source_results.last)
 
     phase1 = al.PhaseInterferometer(
         search=af.DynestyStatic(name="phase[1]_mass[total]_source", n_live_points=100),

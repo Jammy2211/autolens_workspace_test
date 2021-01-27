@@ -42,29 +42,30 @@ imaging_plotter.subplot_imaging()
 
 """
 In `autolens_workspace/examples/misc/files` you`ll find the script `make_source_plane.py`, which creates the image-plane 
-`Grid` and deflection angles we use in this example (which are identical to those used in the 
+`Grid2D` and deflection angles we use in this example (which are identical to those used in the 
 `mass_sie__source_parametric.py` simulator). 
 """
 
 """Lets load the input deflection angle map from a .fits files (which is created in the code mentioned above)."""
-deflections_y = al.Array.from_fits(
+deflections_y = al.Array2D.from_fits(
     file_path=f"examples/misc/files/deflections_y.fits",
     pixel_scales=imaging.pixel_scales,
 )
-deflections_x = al.Array.from_fits(
+deflections_x = al.Array2D.from_fits(
     file_path=f"examples/misc/files/deflections_x.fits",
     pixel_scales=imaging.pixel_scales,
 )
 
 """Lets plot the deflection angles to make sure they look like what we expect!"""
-aplt.Array(array=deflections_y)
-aplt.Array(array=deflections_x)
+aplt.Array2D(array=deflections_y)
+aplt.Array2D(array=deflections_x)
 
 """Lets next load and plot the image-plane grid"""
-grid = al.Grid.from_fits(
+grid = al.Grid2D.from_fits(
     file_path=f"examples/misc/files/grid.fits", pixel_scales=imaging.pixel_scales
 )
-aplt.Grid(grid=grid)
+grid_plotter = aplt.Grid2DPlotter(grid=grid)
+grid_plotter.figure()
 
 ### --------------------------------------------------------------------------------------------------------------- ###
 
@@ -75,10 +76,13 @@ likelihood, etc is calculated.
 """
 
 mask = al.Mask2D.circular(
-    shape_2d=imaging.shape_2d, pixel_scales=imaging.pixel_scales, radius=3.0, sub_size=2
+    shape_native=imaging.shape_native,
+    pixel_scales=imaging.pixel_scales,
+    radius=3.0,
+    sub_size=2,
 )
 
-grid = al.Grid.from_mask(mask=mask)
+grid = al.Grid2D.from_mask(mask=mask)
 
 """
 We create the `InputDeflections` `MassProfile`.almosst the same as the previous example. This is going to be passed to 
@@ -92,16 +96,16 @@ lens model we fit to the data we`d waste a lot of time. However, because our def
 this expensive repeated calculation and speed up the code significantly. Yay!
 """
 
-image_plane_grid = al.Grid.uniform(
-    shape_2d=imaging.shape_2d, pixel_scales=imaging.pixel_scales, sub_size=1
+image_plane_grid = al.Grid2D.uniform(
+    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, sub_size=1
 )
 input_deflections = al.mp.InputDeflections(
     deflections_y=deflections_y,
     deflections_x=deflections_x,
     image_plane_grid=image_plane_grid,
     preload_grid=grid,
-    preload_blurring_grid=al.Grid.blurring_grid_from_mask_and_kernel_shape(
-        mask=mask, kernel_shape_2d=imaging.psf.shape_2d
+    preload_blurring_grid=al.Grid2D.blurring_grid_from_mask_and_kernel_shape(
+        mask=mask, kernel_shape_native=imaging.psf.shape_native
     ),
 )
 
@@ -125,7 +129,7 @@ The `preload_grid` input into the `InputDelections`
 """
 
 settings_masked_imaging = al.SettingsMaskedImaging(
-    grid_class=al.Grid, sub_size=mask.sub_size
+    grid_class=al.Grid2D, sub_size=mask.sub_size
 )
 
 settings = al.SettingsPhaseImaging(settings_masked_imaging=settings_masked_imaging)

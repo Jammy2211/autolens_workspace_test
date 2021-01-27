@@ -76,7 +76,9 @@ def make_pipeline(slam, settings, source_parametric_results):
         4) The lens light model used in the previous pipeline.
     """
 
-    path_prefix = path.join(slam.path_prefix, pipeline_name, slam.source_inversion_tag)
+    path_prefix = slam.path_prefix_from(
+        slam.path_prefix, pipeline_name, slam.source_inversion_tag
+    )
 
     """
     Phase 1: fit the `Pixelization` and `Regularization`, where we:
@@ -198,7 +200,7 @@ def make_pipeline(slam, settings, source_parametric_results):
     """
 
     mass = slam.pipeline_source_parametric.setup_mass.mass_prior_model_with_updated_priors_from_result(
-        result=phase2.result, unfix_mass_centre=True
+        result=source_parametric_results.last, unfix_mass_centre=True
     )
 
     phase4 = al.PhaseImaging(

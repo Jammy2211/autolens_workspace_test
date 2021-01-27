@@ -37,33 +37,34 @@ imaging_plotter.subplot_imaging()
 
 """
 In `autolens_workspace/examples/misc/files` you`ll find the script `make_source_plane.py`, which creates the 
-image-plane  `Grid` and deflection angles we use in this example (which are identical to those used in the 
+image-plane  `Grid2D` and deflection angles we use in this example (which are identical to those used in the 
 `mass_sie__source_parametric.py` simulator). 
 """
 
 """Lets load the input deflection angle map from a .fits files (which is created in the code mentioned above)."""
 
-deflections_y = al.Array.from_fits(
+deflections_y = al.Array2D.from_fits(
     file_path=path.join("examples", "misc", "files", "deflections_y.fits"),
     pixel_scales=imaging.pixel_scales,
 )
-deflections_x = al.Array.from_fits(
+deflections_x = al.Array2D.from_fits(
     file_path=path.join("examples", "misc", "files", "deflections_x.fits"),
     pixel_scales=imaging.pixel_scales,
 )
 
 """Lets plot the deflection angles to make sure they look like what we expect!"""
 
-aplt.Array(array=deflections_y)
-aplt.Array(array=deflections_x)
+aplt.Array2D(array=deflections_y)
+aplt.Array2D(array=deflections_x)
 
 """Lets next load and plot the image-plane grid"""
 
-grid = al.Grid.from_fits(
+grid = al.Grid2D.from_fits(
     file_path=path.join("examples", "misc", "files", "grid.fits"),
     pixel_scales=imaging.pixel_scales,
 )
-aplt.Grid(grid=grid)
+grid_plotter = aplt.Grid2DPlotter(grid=grid)
+grid_plotter.figure()
 
 """
 We now create our `InputDeflections` `MassProfile`, which represents our input deflection angle map as a 
@@ -73,8 +74,8 @@ This takes as input both the input deflection angles and their corresponding ima
 compute new sets of deflection angles from the input deflections via interpolation.
 """
 
-image_plane_grid = al.Grid.uniform(
-    shape_2d=imaging.shape_2d, pixel_scales=imaging.pixel_scales
+image_plane_grid = al.Grid2D.uniform(
+    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales
 )
 input_deflections = al.mp.InputDeflections(
     deflections_y=deflections_y,
@@ -92,24 +93,25 @@ the (masked) grid we want its interpolated deflection angles from.
 """
 
 mask = al.Mask2D.circular(
-    shape_2d=grid.shape_2d, pixel_scales=imaging.pixel_scales, radius=3.0
+    shape_native=grid.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
-grid = al.Grid.from_mask(mask=mask)
+grid = al.Grid2D.from_mask(mask=mask)
 
-"""The deflections will be computed only in the regions included on the `Grid`, e.g. the 3.0" mask we defined above."""
+"""The deflections will be computed only in the regions included on the `Grid2D`, e.g. the 3.0" mask we defined above."""
 
 deflections_y = input_deflections.deflections_from_grid(grid=grid)
 deflections_x = input_deflections.deflections_from_grid(grid=grid)
-aplt.Grid(grid=grid)
-aplt.Array(
-    array=al.Array.manual_2d(
-        array=deflections_y.in_2d[:, :, 0], pixel_scales=imaging.pixel_scales
+grid_plotter = aplt.Grid2DPlotter(grid=grid)
+grid_plotter.figure()
+aplt.Array2D(
+    array=al.Array2D.manual_native(
+        array=deflections_y.native[:, :, 0], pixel_scales=imaging.pixel_scales
     )
 )
-aplt.Array(
-    array=al.Array.manual_2d(
-        array=deflections_y.in_2d[:, :, 1], pixel_scales=imaging.pixel_scales
+aplt.Array2D(
+    array=al.Array2D.manual_native(
+        array=deflections_y.native[:, :, 1], pixel_scales=imaging.pixel_scales
     )
 )
 
@@ -134,11 +136,11 @@ source_galaxy = al.Galaxy(
 
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
-aplt.Tracer.figure_image(tracer=tracer, grid=grid)
+tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
+tracer_plotter.figures(image=True)
 source_plane_grid = tracer.traced_grids_of_planes_from_grid(grid=grid)[-1]
-aplt.plane.plane_image(plane=tracer.source_plane, grid=source_plane_grid)
-
-"""
+plane_plotter = aplt.PlanePlotter(plane=tracer.source_plane, grid=source_plane_grid)
+plane_plotter.figures(plane_image=True)"""
 We also apply this mask to our `Imaging` data and fit it using the standard PyAutoLens fitting API.
 
 This means we can ask a crucial question - how well does the source `Galaxy` used above in combination with 
@@ -200,7 +202,7 @@ Finally, lets plot:
 aplt.Inversion.figure_reconstruction(inversion=inversion)
 aplt.Inversion.figure_reconstructed_image(inversion=inversion)
 residual_map = masked_imaging.image - inversion.mapped_reconstructed_image
-aplt.Array(array=residual_map)
+aplt.Array2D(array=residual_map)
 
 """
 In this example, we assumed the source `Galaxy`'s true `LightProfile` or guessed a value for the `Regularization` 

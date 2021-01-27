@@ -46,7 +46,7 @@ imaging = al.Imaging.from_fits(
 )
 
 mask = al.Mask2D.circular(
-    shape_2d=imaging.shape_2d, pixel_scales=pixel_scales, radius=3.0
+    shape_native=imaging.shape_native, pixel_scales=pixel_scales, radius=3.0, sub_size=2
 )
 
 imaging_plotter = aplt.ImagingPlotter(
@@ -65,7 +65,7 @@ complete description of all settings given in `autolens_workspace/examples/model
 The settings chosen here are applied to all phases in the pipeline.
 """
 
-settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid, sub_size=2)
+settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid2D, sub_size=2)
 
 """
 `Inversion`'s may infer unphysical solution where the source reconstruction is a demagnified reconstruction of the 
@@ -144,7 +144,9 @@ For this runner the `SLaMPipelineSourceParametric` customizes:
  - If there is an `ExternalShear` in the mass model or not.
 """
 
-setup_light = al.SetupLightParametric()
+setup_light = al.SetupLightParametric(
+    light_centre_prior_mean=af.GaussianPrior(mean=0.0, sigma=0.1)
+)
 setup_mass = al.SetupMassTotal(
     mass_prior_model=al.mp.EllipticalIsothermal, with_shear=True
 )
@@ -209,6 +211,7 @@ The `SLaMPipelineLightParametric` and imported light pipelines determine the len
 """
 
 setup_light = al.SetupLightParametric(
+    light_centre_prior_mean=af.GaussianPrior(mean=0.0, sigma=0.1),
     bulge_prior_model=al.lp.EllipticalSersic,
     disk_prior_model=al.lp.EllipticalExponential,
     envelope_prior_model=None,

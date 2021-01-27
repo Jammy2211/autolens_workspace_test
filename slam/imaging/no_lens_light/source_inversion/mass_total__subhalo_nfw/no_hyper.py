@@ -43,7 +43,7 @@ imaging = al.Imaging.from_fits(
 )
 
 mask = al.Mask2D.circular(
-    shape_2d=imaging.shape_2d, pixel_scales=pixel_scales, radius=3.0
+    shape_native=imaging.shape_native, pixel_scales=pixel_scales, radius=3.0
 )
 
 imaging_plotter = aplt.ImagingPlotter(
@@ -62,7 +62,7 @@ complete description of all settings given in `autolens_workspace/examples/model
 The settings chosen here are applied to all phases in the pipeline.
 """
 
-settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid, sub_size=2)
+settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid2D, sub_size=2)
 
 settings = al.SettingsPhaseImaging(settings_masked_imaging=settings_masked_imaging)
 

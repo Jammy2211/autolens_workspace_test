@@ -78,7 +78,7 @@ def make_pipeline_single_plane(slam, settings, mass_results):
         2) The lens galaxy mass model includes an  `ExternalShear`.
     """
 
-    path_prefix = path.join(
+    path_prefix = slam.path_prefix_from(
         slam.path_prefix,
         pipeline_name,
         slam.source_tag,
@@ -95,8 +95,8 @@ def make_pipeline_single_plane(slam, settings, mass_results):
 
     """SLaM: Setup the lens and source passing them from the previous pipelines in the same way as described above."""
 
-    lens = slam.lens_for_subhalo_pipeline_from_results(results=mass_results)
-    source = slam.source_from_results_model_if_parametric(results=mass_results)
+    lens = slam.lens_for_subhalo_pipeline_from_result(result=mass_results.last)
+    source = slam.source_from_result_model_if_parametric(result=mass_results.last)
 
     phase1 = al.PhaseImaging(
         search=af.DynestyStatic(name="phase[1]_mass[total_refine]", n_live_points=100),
@@ -160,14 +160,14 @@ def make_pipeline_single_plane(slam, settings, mass_results):
           *mass_is_model* parameter of `SetupSubhalo`.
     """
 
-    lens = slam.lens_for_subhalo_pipeline_from_results(results=mass_results)
+    lens = slam.lens_for_subhalo_pipeline_from_result(result=mass_results.last)
 
     """
     SLaM: Setup the source model, which uses the the phase1 result is a model or instance depending on the 
     *source_is_model* parameter of `SetupSubhalo`.
     """
 
-    source = slam.source_for_subhalo_pipeline_from_results(results=mass_results)
+    source = slam.source_for_subhalo_pipeline_from_result(result=mass_results.last)
 
     phase2 = GridPhase(
         search=af.DynestyStatic(
@@ -231,7 +231,7 @@ def make_pipeline_multi_plane(slam, settings, mass_results):
         2) The lens galaxy mass model includes an  `ExternalShear`.
     """
 
-    path_prefix = path.join(
+    path_prefix = slam.path_prefix_from(
         slam.path_prefix,
         pipeline_name,
         slam.source_tag,
@@ -248,8 +248,8 @@ def make_pipeline_multi_plane(slam, settings, mass_results):
 
     """SLaM: Setup the lens and source passing them from the previous pipelines in the same way as described above."""
 
-    lens = slam.lens_for_subhalo_pipeline_from_results(results=mass_results)
-    source = slam.source_from_results_model_if_parametric(results=mass_results)
+    lens = slam.lens_for_subhalo_pipeline_from_result(result=mass_results.last)
+    source = slam.source_from_result_model_if_parametric(result=mass_results.last)
 
     phase1 = al.PhaseImaging(
         search=af.DynestyStatic(name="phase[1]_mass[total_refine]", n_live_points=100),

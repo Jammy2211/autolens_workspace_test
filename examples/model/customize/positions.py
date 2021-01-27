@@ -52,20 +52,23 @@ imaging = al.Imaging.from_fits(
 """
 The model-fit also requires a mask, which defines the regions of the image we use to fit the lens model to the data.
 
-We can easily check the image-positions are accurate by plotting them using our `Imaging` `Plotter`.(they are the 
+We can easily check the image-positions are accurate by plotting them using our `ImagingPlotter`.(they are the 
 black dots on the image).
 """
 
 mask = al.Mask2D.circular(
-    shape_2d=imaging.shape_2d, pixel_scales=imaging.pixel_scales, radius=3.0
+    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
-aplt.Imaging.subplot_imaging(imaging=imaging, mask=mask, positions=imaging.positions)
+visuals_2d = aplt.Visuals2D(mask=mask, positions=imaging.positions)
+
+imaging_plotter = aplt.ImagingPlotter(imaging=imaging, visuals_2d=visuals_2d)
+imaging_plotter.subplot_imaging()
 
 """
 Alternatively, the positions can be set up manually in the runner script after loading the data. To do this, we use the 
-_GridIrregularGrouped_ object, which is used by PyAutoLens to specify lists of (y,x) coordinates that are not on a uniform
-or regular grid (which the (y,x) coordinates of a `Grid` object are).
+_Grid2DIrregularGrouped_ object, which is used by PyAutoLens to specify lists of (y,x) coordinates that are not on a uniform
+or regular grid (which the (y,x) coordinates of a `Grid2D` object are).
 """
 
 imaging = al.Imaging.from_fits(
@@ -75,11 +78,14 @@ imaging = al.Imaging.from_fits(
     pixel_scales=0.2,
 )
 
-imaging.positions = al.GridIrregularGrouped(
+imaging.positions = al.Grid2DIrregularGrouped(
     [(1.55, -0.55), (1.15, 1.15), (-0.65, 1.55), (-0.95, -0.95)]
 )
 
-aplt.Imaging.subplot_imaging(imaging=imaging, mask=mask, positions=imaging.positions)
+visuals_2d = aplt.Visuals2D(mask=mask, positions=imaging.positions)
+
+imaging_plotter = aplt.ImagingPlotter(imaging=imaging, visuals_2d=visuals_2d)
+imaging_plotter.subplot_imaging()
 
 """
 __Model__
@@ -114,7 +120,7 @@ We do not want to risk inferring an incorrect mass model because our position th
 solutions!
 """
 
-settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid, sub_size=2)
+settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid2D, sub_size=2)
 settings_lens = al.SettingsLens(positions_threshold=0.5)
 
 settings = al.SettingsPhaseImaging(
@@ -177,7 +183,7 @@ PyAutoLens supports the following more advanced use of positional information:
 
  - If the unlensed source contains multiple components or clumps of light, one may wish to mark positions that 
       signify they correspond to these different regions of the source-plane. To do this, a list of list of tuples
-      can be input into the GridIrregularGrouped object, e.g:
+      can be input into the Grid2DIrregularGrouped object, e.g:
       
       [[(1.0, 1.0), (0.5, 0.5)], [(-1.0, 1.0), (-0.5, 0.5)]]
 

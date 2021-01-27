@@ -15,13 +15,13 @@ sie = al.mp.EllipticalIsothermal(einstein_radius=2.0, elliptical_comps=(0.0, 0.3
 
 """
 We can compute its Einstein Radius and Mass, which are defined as the area within the tangential critical curve. These
-are stored in the properties `einstein_radius_via_tangential_critical_curve` and 
+are stored in the properties `einstein_radius` and 
 `einstein_mass_via_tangential_critical_curve`.
 
 Lets print the Einstein Radius, which is returned in the default internal **PyAutoLens** units of arc-seconds.
 """
 
-einstein_radius = sie.einstein_radius_via_tangential_critical_curve
+einstein_radius = sie.einstein_radius_from_grid
 print("Einstein Radius (arcsec) = ", einstein_radius)
 
 """If we know the redshift of the `MassProfile` and assume an **AstroPy** cosmology we can convert this to 
@@ -41,7 +41,7 @@ provided in units of solar masses. Instead, its mass is computed in angular unit
  pi * einstein_radius (arcsec) ** 2.0
 """
 
-einstein_mass = sie.einstein_mass_angular_via_tangential_critical_curve
+einstein_mass = sie.einstein_mass_angular_from_grid
 print("Einstein Mass (angular) = ", einstein_mass)
 
 """
@@ -61,14 +61,8 @@ print("Einstein Mass (kpc) = ", "{:.4e}".format(einstein_mass_kpc))
 
 """We can also use the above methods on Galaxy objects, which may contain multiple `MassProfile`'s."""
 galaxy = al.Galaxy(redshift=0.5, mass_0=sie, mass_1=sie)
-print(
-    "Einstein Radius (arcsec) via Galaxy = ",
-    galaxy.einstein_radius_via_tangential_critical_curve,
-)
-print(
-    "Einstein Mass (angular) via Galaxy = ",
-    galaxy.einstein_mass_angular_via_tangential_critical_curve,
-)
+print("Einstein Radius (arcsec) via Galaxy = ", galaxy.einstein_radius_from_grid)
+print("Einstein Mass (angular) via Galaxy = ", galaxy.einstein_mass_angular_from_grid)
 
 """
 In principle, the Einstein Mass of a `Tracer` should be readily accessible in a `Tracer` object, given this contains
@@ -90,7 +84,7 @@ tracer = al.Tracer.from_galaxies(galaxies=[galaxy, source_galaxy])
 image_plane_galaxy = tracer.planes[0].galaxies[0]
 source_plane_galaxy = tracer.planes[1].galaxies[0]
 
-einstein_radius = image_plane_galaxy.einstein_radius_via_tangential_critical_curve
+einstein_radius = image_plane_galaxy.einstein_radius_from_grid
 print("Einstein Radius via Tracer (arcsec) = ", einstein_radius)
 
 kpc_per_arcsec = al.util.cosmology.kpc_per_arcsec_from(
@@ -99,7 +93,7 @@ kpc_per_arcsec = al.util.cosmology.kpc_per_arcsec_from(
 einstein_radius_kpc = einstein_radius * kpc_per_arcsec
 print("Einstein Radius via Tracer (kpc) = ", einstein_radius_kpc)
 
-einstein_mass = image_plane_galaxy.einstein_mass_angular_via_tangential_critical_curve
+einstein_mass = image_plane_galaxy.einstein_mass_angular_from_grid
 print("Einstein Mass via Tracer (angular) = ", einstein_mass)
 
 critical_surface_density = al.util.cosmology.critical_surface_density_between_redshifts_from(
