@@ -188,7 +188,7 @@ The `name` and `path_prefix` below specify the path where results are stored in 
 
 search = af.DynestyStatic(
     path_prefix=path.join("profiling", "inversion_magnification", instrument),
-    name="phase_mass[sie]_source[inversion]_7",
+    name="phase_mass[sie]_source[inversion]",
     maxcall=5000, # This sets how long the model-fit takes.
     n_live_points=50,
 )
