@@ -4,11 +4,8 @@ __PROFILING: DEFLECTIONS__
 This profiling script times how long deflection angles take to compute for different `MassProfile`'s
 in **PyAutoLens**. 
 """
-
-
 import autolens as al
 import time
-
 
 """
 We will compute the deflection angles within a circular `Mask2D`, which is the same object defining how

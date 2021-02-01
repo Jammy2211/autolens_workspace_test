@@ -2,7 +2,6 @@ import time
 from os import path
 import numpy as np
 
-from autoarray.structures import grids
 import autolens as al
 import autolens.plot as aplt
 
@@ -29,7 +28,7 @@ print("pixels = " + str(pixels) + "\n")
 """
 The lens galaxy used to fit the data, which is identical to the lens galaxy used to simulate the data. 
 
-It may be benefitial to profile the code for cases where the lens model is inaccurate.
+It may be beneficial to profile the code for cases where the lens model is inaccurate.
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,

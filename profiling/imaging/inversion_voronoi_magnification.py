@@ -29,7 +29,7 @@ print("pixelization shape = " + str(pixelization_shape_2d) + "\n")
 """
 The lens galaxy used to fit the data, which is identical to the lens galaxy used to simulate the data. 
 
-It may be benefitial to profile the code for cases where the lens model is inaccurate.
+It may be beneficial to profile the code for cases where the lens model is inaccurate.
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
