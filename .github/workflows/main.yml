@@ -47,8 +47,6 @@ jobs:
       if: steps.cache-pip.outputs.cache-hit != 'true'
       run: |
         pip install Cython
-        pip install numba==0.52.0
-        pip install numpy==1.20.0
         pip install -r PyAutoFit/requirements_build.txt
         pip install -r PyAutoArray/requirements_build.txt
         pip install -r PyAutoGalaxy/requirements_build.txt
