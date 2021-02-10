@@ -1,0 +1,48 @@
+name: 
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        #python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.8]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Checkout PyAutoFit
+      uses: actions/checkout@v2
+      with:
+        repository: rhayes777/PyAutoFit
+        path: PyAutoFit
+    - name: Checkout PyAutoArray
+      uses: actions/checkout@v2
+      with:
+        repository: Jammy2211/PyAutoArray
+        path: PyAutoArray
+    - name: Checkout PyAutoGalaxy
+      uses: actions/checkout@v2
+      with:
+        repository: Jammy2211/PyAutoGalaxy
+        path: PyAutoGalaxy
+    - name: Checkout PyAutoLens
+      uses: actions/checkout@v2
+      with:
+        repository: Jammy2211/PyAutoLens
+        path: PyAutoLens
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install -r PyAutoFit/requirements_build.txt
+        pip install -r PyAutoArray/requirements_build.txt
+        pip install -r PyAutoGalaxy/requirements_build.txt
+        pip install -r PyAutoLens/requirements_build.txt
+    - name: Integration test
+      run: |
+        python slam/imaging/no_lens_light/source_parametric/mass_total/no_hyper.py
