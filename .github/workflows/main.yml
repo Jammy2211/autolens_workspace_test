@@ -17,25 +17,21 @@ jobs:
       with:
         repository: rhayes777/PyAutoFit
         path: PyAutoFit
-        ref: 'develop'
     - name: Checkout PyAutoArray
       uses: actions/checkout@v2
       with:
         repository: Jammy2211/PyAutoArray
         path: PyAutoArray
-        ref: 'develop'
     - name: Checkout PyAutoGalaxy
       uses: actions/checkout@v2
       with:
         repository: Jammy2211/PyAutoGalaxy
         path: PyAutoGalaxy
-        ref: 'develop'
     - name: Checkout PyAutoLens
       uses: actions/checkout@v2
       with:
         repository: Jammy2211/PyAutoLens
         path: PyAutoLens
-        ref: 'development'
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
