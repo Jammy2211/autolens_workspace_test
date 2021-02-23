@@ -8,7 +8,7 @@ This pipeline performs a source `Inversion` analysis which fits an image with le
 Phases 1 & 2 use a magnification based `Pixelization` and constant `Regularization` scheme to reconstruct the source
 (as opposed to immediately using the `Pixelization` & `Regularization` input via the pipeline slam). This ensures
 that if the input `Pixelization` or `Regularization` scheme use hyper-images, they are initialized using
-a pixelized source-plane, which is key for lens`s with multiple or irregular sources.
+a pixelized source-plane, which is key for lens's with multiple or irregular sources.
 
 The pipeline uses 4 phases:
 
@@ -26,7 +26,7 @@ Phase 1:
 Phase 2:
 
     Refine the lens mass model using the source `Inversion`.
-    
+
     Lens Mass: MassProfile (default=EllipticalIsothermal) + ExternalShear
     Source Light: VoronoiMagnification + Constant
     Previous Pipelines: source/parametric/mass_sie__source_parametric.py
@@ -37,7 +37,7 @@ Phase 3:
 
     Fit the inversion`s `Pixelization` and `Regularization`, using the input pixelization,
     `Regularization` and the previous lens mass model.
-    
+
     Lens Mass: MassProfile (default=EllipticalIsothermal) + ExternalShear
     Source Light: slam.source.pixelization + slam.source.regularization
     Previous Pipelines: None
@@ -47,7 +47,7 @@ Phase 3:
 Phase 4:
 
     Refine the lens mass model using the `Inversion`.
-    
+
     Lens Mass: MassProfile (default=EllipticalIsothermal) + ExternalShear
     Source Light: slam.source.pixelization + slam.source.regularization
     Previous Pipelines: source/parametric/mass_sie__source_parametric.py
@@ -57,8 +57,6 @@ Phase 4:
 
 
 def make_pipeline(slam, settings, real_space_mask, source_parametric_results):
-
-    """SETUP PIPELINE & PHASE NAMES, TAGS AND PATHS"""
 
     pipeline_name = "pipeline_source[inversion]"
 
@@ -111,7 +109,7 @@ def make_pipeline(slam, settings, real_space_mask, source_parametric_results):
     )
 
     """
-    Phase 2: Fit the lens`s mass and source galaxy using the magnification `Inversion`, where we:
+    Phase 2: Fit the lens's mass and source galaxy using the magnification `Inversion`, where we:
 
         1) Fix the source `Inversion` parameters to the results of phase 1.
         2) Set priors on the lens galaxy `MassProfile`'s using the results of the previous pipeline.
@@ -173,14 +171,14 @@ def make_pipeline(slam, settings, real_space_mask, source_parametric_results):
     )
 
     """
-    Phase 4: fit the lens`s mass using the input pipeline `Pixelization` & `Regularization`, where we:
+    Phase 4: fit the lens's mass using the input pipeline `Pixelization` & `Regularization`, where we:
 
         1) Fix the source `Inversion` parameters to the results of phase 3.
         2) Set priors on the lens galaxy `MassProfile`'s using the results of phase 2.
     """
 
     mass = slam.pipeline_source_parametric.setup_mass.mass_prior_model_with_updated_priors_from_result(
-        results=phase2.result, unfix_mass_centre=True
+        result=phase2.result, unfix_mass_centre=True
     )
 
     phase4 = al.PhaseInterferometer(

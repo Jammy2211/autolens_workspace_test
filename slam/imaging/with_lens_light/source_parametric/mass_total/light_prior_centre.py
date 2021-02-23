@@ -28,14 +28,17 @@ import autofit as af
 import autolens as al
 import autolens.plot as aplt
 
-"""Specify the dataset type, label and name, which we use to determine the path we load the data from."""
+"""
+Specify the dataset type, label and name, which we use to determine the path we load the data from.
+"""
 
 dataset_name = "light_sersic__mass_sie__source_sersic"
 pixel_scales = 0.1
 dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
 
-"""Using the dataset path, load the data (image, noise-map, PSF) as an `Imaging` object from .fits files."""
-
+"""
+Using the dataset path, load the data (image, noise-map, PSF) as an `Imaging` object from .fits files.
+"""
 imaging = al.Imaging.from_fits(
     image_path=path.join(dataset_path, "image.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
@@ -137,9 +140,7 @@ setup_source = al.SetupSourceParametric(
  and `EllipticalExponential` disk.
 """
 
-setup_light = al.SetupLightParametric(
-    light_centre_gaussian_prior_values=(0.0, 0.1),
-)
+setup_light = al.SetupLightParametric(light_centre_gaussian_prior_values=(0.0, 0.1))
 
 """
  Mass: The `MassProfile` used to model the lens `Galaxy`'s mass. This is changed in the SLaM Mass pipeline that follows.

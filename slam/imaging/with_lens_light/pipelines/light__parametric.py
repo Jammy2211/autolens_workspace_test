@@ -30,8 +30,6 @@ Phase 1:
 
 def make_pipeline(slam, settings, source_results):
 
-    """SETUP PIPELINE & PHASE NAMES, TAGS AND PATHS"""
-
     pipeline_name = "pipeline_light[parametric]"
 
     """

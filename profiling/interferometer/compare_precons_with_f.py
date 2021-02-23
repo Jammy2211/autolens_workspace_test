@@ -5,8 +5,12 @@ This profiling script times how long an `Inversion` takes to fit `Interferometer
 """
 from autoarray.structures import visibilities as vis
 from autoarray.operators import transformer as trans
-from autoarray.inversion import regularization as reg, mappers, inversions as inv
-from autoarray.util import inversion_util
+from autoarray.inversion import (
+    regularization as reg,
+    mappers,
+    inversions as inv,
+    inversion_util,
+)
 from os import path
 import autolens as al
 import numpy as np
@@ -64,7 +68,6 @@ coefficients = list(np.logspace(np.log10(1e-6), np.log10(1e12), 19))
 
 transformer_class = al.TransformerDFT
 use_linear_operators = False
-use_preconditioner = False
 
 masked_interferometer = al.MaskedInterferometer(
     interferometer=interferometer,

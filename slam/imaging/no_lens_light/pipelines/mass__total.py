@@ -1,4 +1,3 @@
-from os import path
 import autofit as af
 import autolens as al
 
@@ -21,9 +20,7 @@ Phase 1:
 """
 
 
-def make_pipeline(slam, settings, source_results):
-
-    """SETUP PIPELINE & PHASE NAMES, TAGS AND PATHS"""
+def make_pipeline(slam, settings, source_results, end_stochastic=False):
 
     pipeline_name = "pipeline_mass[total]"
 
@@ -51,7 +48,7 @@ def make_pipeline(slam, settings, source_results):
         3) Fit this source as a model if it is parametric and as an instance if it is an `Inversion`.
     """
 
-    """Setup the `MassProfile`.and initialize its priors from the `EllipticalIsothermal`."""
+    """Setup the `MassProfile`.and initialize its priors from the Source pipeline mass profile."""
 
     mass = slam.pipeline_mass.setup_mass.mass_prior_model_with_updated_priors_from_result(
         result=source_results.last, unfix_mass_centre=True
@@ -79,14 +76,18 @@ def make_pipeline(slam, settings, source_results):
         use_as_hyper_dataset=True,
     )
 
-    # phase1 = phase1.extend_with_stochastic_phase(
-    #     stochastic_method="gaussian",
-    #     stochastic_sigma=0.0,
-    #     stochastic_search=af.DynestyStatic(n_live_points=100),
-    # )
+    if end_stochastic:
 
-    if not slam.setup_hyper.hyper_fixed_after_source:
+        phase1 = phase1.extend_with_stochastic_phase(
+            stochastic_method="gaussian",
+            stochastic_sigma=0.0,
+            stochastic_search=af.DynestyStatic(n_live_points=100),
+        )
 
-        phase1 = phase1.extend_with_hyper_phase(setup_hyper=slam.setup_hyper)
+    else:
+
+        if not slam.setup_hyper.hyper_fixed_after_source:
+
+            phase1 = phase1.extend_with_hyper_phase(setup_hyper=slam.setup_hyper)
 
     return al.PipelineDataset(pipeline_name, path_prefix, source_results, phase1)

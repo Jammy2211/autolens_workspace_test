@@ -44,8 +44,6 @@ Phase 3:
 
 def make_pipeline(slam, settings):
 
-    """SETUP PIPELINE & PHASE NAMES, TAGS AND PATHS"""
-
     pipeline_name = "pipeline_source[parametric]"
 
     """
@@ -159,7 +157,7 @@ def make_pipeline(slam, settings):
         ),
         hyper_background_noise=phase2.result.hyper.instance.optional.hyper_background_noise,
         settings=settings,
-        use_as_hyper_dataset=True
+        use_as_hyper_dataset=True,
     )
 
     phase3 = phase3.extend_with_hyper_phase(

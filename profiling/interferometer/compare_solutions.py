@@ -58,7 +58,6 @@ mask = al.Mask2D.circular(
 
 transformer_class = al.TransformerDFT
 use_linear_operators = False
-use_preconditioner = False
 
 masked_interferometer = al.MaskedInterferometer(
     interferometer=interferometer,
@@ -86,9 +85,7 @@ tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 fit_dft = al.FitInterferometer(
     masked_interferometer=masked_interferometer,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(
-        use_linear_operators=use_linear_operators, use_preconditioner=use_preconditioner
-    ),
+    settings_inversion=al.SettingsInversion(use_linear_operators=use_linear_operators),
 )
 
 
@@ -99,7 +96,6 @@ fit_dft = al.FitInterferometer(
 
 transformer_class = al.TransformerNUFFT
 use_linear_operators = True
-use_preconditioner = False
 
 masked_interferometer = al.MaskedInterferometer(
     interferometer=interferometer,
@@ -136,8 +132,7 @@ for coefficient in coefficients:
         masked_interferometer=masked_interferometer,
         tracer=tracer,
         settings_inversion=al.SettingsInversion(
-            use_linear_operators=use_linear_operators,
-            use_preconditioner=use_preconditioner,
+            use_linear_operators=use_linear_operators
         ),
     )
 

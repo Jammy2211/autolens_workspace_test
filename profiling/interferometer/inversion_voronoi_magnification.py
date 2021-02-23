@@ -16,19 +16,17 @@ When profiling a function, there is randomness in how long it takes to perform i
 function call multiple times and take the average run time to get a more realible run-time.
 """
 
-repeats = 1
+repeats = 3
 
 """These settings control the run-time of the `Inversion` performed on the `Interferometer` data."""
 
-transformer_class = al.TransformerNUFFT
-use_linear_operators = True
-use_preconditioner = False
+transformer_class = al.TransformerDFT
+use_linear_operators = False
 
 """Load the strong lens dataset `mass_sie__source_sersic` `from .fits files."""
 
-dataset_name = "alma"
-uv_wavelengths_name = "alma_uv_wavelengths_x5m"
-dataset_path = path.join("dataset", "instruments", dataset_name, uv_wavelengths_name)
+# dataset_path = path.join("dataset", "interferometer", "mass_sie__source_sersic")
+dataset_path = path.join("dataset", "interferometer", "instruments", "sma")
 
 interferometer = al.Interferometer.from_fits(
     visibilities_path=path.join(dataset_path, "visibilities.fits"),
@@ -40,7 +38,6 @@ interferometer = al.Interferometer.from_fits(
 Set up the lens and source galaxies used to profile the fit. The lens galaxy uses the true model, whereas the source
 galaxy includes the `Pixelization` and `Regularization` we profile.
 """
-
 lens_galaxy = al.Galaxy(
     redshift=0.5,
     mass=al.mp.EllipticalIsothermal(
@@ -62,7 +59,7 @@ Set up the `MaskedInterferometer` dataset we fit. This includes the `real_space_
 """
 
 mask = al.Mask2D.circular(
-    shape_native=(256, 256), pixel_scales=0.05, sub_size=1, radius=4.0
+    shape_native=(256, 256), pixel_scales=0.05, sub_size=1, radius=3.0
 )
 
 masked_interferometer = al.MaskedInterferometer(
@@ -93,8 +90,7 @@ for i in range(repeats):
         masked_interferometer=masked_interferometer,
         tracer=tracer,
         settings_inversion=al.SettingsInversion(
-            use_linear_operators=use_linear_operators,
-            use_preconditioner=use_preconditioner,
+            use_linear_operators=use_linear_operators
         ),
     )
 
@@ -103,7 +99,9 @@ print("Time to compute fit = {}".format(calculation_time / repeats))
 
 print(fit.figure_of_merit)
 
-aplt.FitInterferometer.subplot_fit_real_space(fit=fit)
+fit_interferometer_plotter = aplt.FitInterferometerPlotter(fit=fit)
+fit_interferometer_plotter.subplot_fit_interferometer()
+fit_interferometer_plotter.subplot_fit_real_space()
 
 """Time how long it takes to map the reconstruction of the `Inversion` back to the image-plane visibilities."""
 

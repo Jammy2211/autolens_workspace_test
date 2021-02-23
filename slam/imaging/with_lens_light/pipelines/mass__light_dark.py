@@ -38,8 +38,7 @@ Phase 2:
 """
 
 
-def make_pipeline(slam, settings, source_results, light_results):
-    """SETUP PIPELINE & PHASE NAMES, TAGS AND PATHS"""
+def make_pipeline(slam, settings, source_results, light_results, end_stochastic=False):
 
     pipeline_name = "pipeline_mass[light_dark]"
 
@@ -77,7 +76,7 @@ def make_pipeline(slam, settings, source_results, light_results):
     )
 
     dark = slam.pipeline_mass.setup_mass.dark_prior_model
-    dark.mass_at_200 = af.LogUniformPrior(lower_limit=5e8, upper_limit=5e14)
+    dark.mass_at_200 = af.LogUniformPrior(lower_limit=1e10, upper_limit=1e15)
     dark.redshift_object = slam.redshift_lens
     dark.redshift_source = slam.redshift_source
 
@@ -122,9 +121,19 @@ def make_pipeline(slam, settings, source_results, light_results):
         settings=settings,
     )
 
-    if not slam.setup_hyper.hyper_fixed_after_source:
-        phase1 = phase1.extend_with_hyper_phase(
-            setup_hyper=slam.setup_hyper, include_hyper_image_sky=True
+    if end_stochastic:
+
+        phase1 = phase1.extend_with_stochastic_phase(
+            stochastic_method="gaussian",
+            stochastic_sigma=0.0,
+            stochastic_search=af.DynestyStatic(n_live_points=100),
+            include_lens_light=True,
         )
+
+    else:
+
+        if not slam.setup_hyper.hyper_fixed_after_source:
+
+            phase1 = phase1.extend_with_hyper_phase(setup_hyper=slam.setup_hyper)
 
     return al.PipelineDataset(pipeline_name, path_prefix, light_results, phase1)

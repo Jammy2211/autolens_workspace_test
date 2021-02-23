@@ -26,9 +26,7 @@ Phase 1:
 """
 
 
-def make_pipeline(slam, settings, source_results, light_results):
-
-    """SETUP PIPELINE & PHASE NAMES, TAGS AND PATHS"""
+def make_pipeline(slam, settings, source_results, light_results, end_stochastic=False):
 
     pipeline_name = "pipeline_mass[total]"
 
@@ -88,10 +86,19 @@ def make_pipeline(slam, settings, source_results, light_results):
         use_as_hyper_dataset=True,
     )
 
-    if not slam.setup_hyper.hyper_fixed_after_source:
+    if end_stochastic:
 
-        phase1 = phase1.extend_with_hyper_phase(
-            setup_hyper=slam.setup_hyper, include_hyper_image_sky=True
+        phase1 = phase1.extend_with_stochastic_phase(
+            stochastic_method="gaussian",
+            stochastic_sigma=0.0,
+            stochastic_search=af.DynestyStatic(n_live_points=100),
+            include_lens_light=slam.pipeline_mass.light_is_model,
         )
+
+    else:
+
+        if not slam.setup_hyper.hyper_fixed_after_source:
+
+            phase1 = phase1.extend_with_hyper_phase(setup_hyper=slam.setup_hyper)
 
     return al.PipelineDataset(pipeline_name, path_prefix, light_results, phase1)

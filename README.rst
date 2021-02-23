@@ -13,6 +13,13 @@ To run the pipelines in this project you must add the autolens_workspace_test di
 
     export PYTHONPATH=$PYTHONPATH:/mnt/c/Users/Jammy/Code/PyAuto/autolens_workspace_test
 
+You can run an integration test as follows:
+
+.. code-block:: bash
+
+    python slam/imaging/no_lens_light/source_parametric/mass_total/no_hyper.py
+
+
 Workspace Version
 =================
 

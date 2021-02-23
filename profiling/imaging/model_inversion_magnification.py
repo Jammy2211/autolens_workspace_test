@@ -34,6 +34,7 @@ This is the same dataset we fitted in the `autolens/intro/fitting.py` example.
 Manually turn off test-mode so lens model is fitted fully.
 """
 from autoconf import conf
+
 conf.instance["general"]["test"]["test_mode"] = False
 
 from os import path
@@ -66,8 +67,9 @@ mask_radius = 3.0
 psf_shape_2d = (21, 21)
 pixelization_shape_2d = (36, 36)
 
-"""The model-fit also requires a mask defining the regions of the image we fit the lens model to the data."""
-
+"""
+The model-fit also requires a mask defining the regions of the image we fit the lens model to the data.
+"""
 mask = al.Mask2D.circular(
     shape_native=imaging.shape_native,
     pixel_scales=imaging.pixel_scales,
@@ -90,9 +92,7 @@ To perform lens modeling, we create a `PhaseImaging` object, which comprises:
    - The `NonLinearSearch` used to sample parameter space.
 
 Once we have create the phase, we `run` it by passing it the data and mask.
-"""
 
-"""
 __Model__
 
 We compose our lens model using `GalaxyModel` objects, which represent the galaxies we fit to our data. In this 
@@ -118,8 +118,12 @@ mass = af.PriorModel(al.mp.EllipticalIsothermal)
 
 mass.centre.centre_0 = af.UniformPrior(lower_limit=-0.02, upper_limit=0.02)
 mass.centre.centre_1 = af.UniformPrior(lower_limit=-0.02, upper_limit=0.02)
-mass.elliptical_comps.elliptical_comps_0 = af.UniformPrior(lower_limit=0.05, upper_limit=0.15)
-mass.elliptical_comps.elliptical_comps_1 = af.UniformPrior(lower_limit=-0.05, upper_limit=0.05)
+mass.elliptical_comps.elliptical_comps_0 = af.UniformPrior(
+    lower_limit=0.05, upper_limit=0.15
+)
+mass.elliptical_comps.elliptical_comps_1 = af.UniformPrior(
+    lower_limit=-0.05, upper_limit=0.05
+)
 mass.einstein_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.7)
 
 lens = al.GalaxyModel(redshift=0.5, mass=mass)
@@ -165,9 +169,7 @@ settings_masked_imaging = al.SettingsMaskedImaging(
     grid_inversion_class=al.Grid2D, sub_size=2
 )
 
-settings = al.SettingsPhaseImaging(
-    settings_masked_imaging=settings_masked_imaging,
-)
+settings = al.SettingsPhaseImaging(settings_masked_imaging=settings_masked_imaging)
 
 """
 __Search__
@@ -189,7 +191,7 @@ The `name` and `path_prefix` below specify the path where results are stored in 
 search = af.DynestyStatic(
     path_prefix=path.join("profiling", "inversion_magnification", instrument),
     name="phase_mass[sie]_source[inversion]",
-    maxcall=5000, # This sets how long the model-fit takes.
+    maxcall=5000,  # This sets how long the model-fit takes.
     n_live_points=50,
 )
 

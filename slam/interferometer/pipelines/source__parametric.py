@@ -22,8 +22,6 @@ Phase 1:
 
 def make_pipeline(slam, settings, real_space_mask):
 
-    """SETUP PIPELINE & PHASE NAMES, TAGS AND PATHS"""
-
     pipeline_name = "pipeline_source[parametric]"
 
     """

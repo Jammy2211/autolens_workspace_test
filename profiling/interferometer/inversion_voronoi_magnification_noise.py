@@ -19,7 +19,6 @@ repeats = 1
 
 transformer_class = al.TransformerNUFFT
 use_linear_operators = True
-use_preconditioner = True
 
 """Create the dataset which is an input number of visilbitieis which are just noise."""
 
@@ -95,8 +94,7 @@ for i in range(repeats):
         masked_interferometer=masked_interferometer,
         tracer=tracer,
         settings_inversion=al.SettingsInversion(
-            use_linear_operators=use_linear_operators,
-            use_preconditioner=use_preconditioner,
+            use_linear_operators=use_linear_operators
         ),
     )
 
@@ -116,9 +114,7 @@ print("Time to compute inversion mapped = {}".format(calculation_time / repeats)
 fit_no_precon = al.FitInterferometer(
     masked_interferometer=masked_interferometer,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(
-        use_linear_operators=use_linear_operators, use_preconditioner=False
-    ),
+    settings_inversion=al.SettingsInversion(use_linear_operators=use_linear_operators),
 )
 
 print(fit_no_precon.figure_of_merit)
@@ -126,9 +122,7 @@ print(fit_no_precon.figure_of_merit)
 fit_precon = al.FitInterferometer(
     masked_interferometer=masked_interferometer,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(
-        use_linear_operators=use_linear_operators, use_preconditioner=True
-    ),
+    settings_inversion=al.SettingsInversion(use_linear_operators=use_linear_operators),
 )
 
 print(fit_precon.figure_of_merit)

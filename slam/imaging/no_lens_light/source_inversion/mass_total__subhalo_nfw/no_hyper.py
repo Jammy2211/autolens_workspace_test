@@ -33,8 +33,9 @@ pixel_scales = 0.2
 
 dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
 
-"""Using the dataset path, load the data (image, noise-map, PSF) as an `Imaging` object from .fits files."""
-
+"""
+Using the dataset path, load the data (image, noise-map, PSF) as an `Imaging` object from .fits files.
+"""
 imaging = al.Imaging.from_fits(
     image_path=path.join(dataset_path, "image.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
@@ -199,14 +200,12 @@ The models used to represent the lens `Galaxy`'s mass and the source are those u
 
 For this runner the `SetupSubhalo` customizes:
 
- - If the lens galaxy mass is treated as a model (all free parameters) or instance (all fixed) during the subhalo 
-   detection grid search.
  - If the source galaxy (parametric or _Inversion) is treated as a model (all free parameters) or instance (all fixed) 
    during the subhalo detection grid search.
  - The NxN size of the grid-search.
 """
 
-setup_subhalo = al.SetupSubhalo(mass_is_model=True, source_is_model=False, grid_size=2)
+setup_subhalo = al.SetupSubhalo(source_is_model=False, number_of_steps=2)
 
 """
 __SLaM__

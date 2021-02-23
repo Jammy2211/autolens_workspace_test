@@ -29,8 +29,9 @@ pixel_scales = 0.2
 
 dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
 
-"""Using the dataset path, load the data (image, noise-map, PSF) as an `Imaging` object from .fits files."""
-
+"""
+Using the dataset path, load the data (image, noise-map, PSF) as an `Imaging` object from .fits files.
+"""
 imaging = al.Imaging.from_fits(
     image_path=path.join(dataset_path, "image.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),

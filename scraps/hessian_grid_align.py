@@ -18,21 +18,21 @@ buffer = 0.001
 
 print(
     sis.magnification_via_hessian_from_grid(
-        grid=ag.Grid2DIrregularGrouped(grid=[[(1.100039, -0.00742)]]), buffer=buffer
+        grid=ag.Grid2DIrregular(grid=[[(1.100039, -0.00742)]]), buffer=buffer
     )
 )
 print(
     sis.magnification_via_hessian_from_grid(
-        grid=ag.Grid2DIrregularGrouped(grid=[[(-0.90039, -0.00585)]]), buffer=buffer
+        grid=ag.Grid2DIrregular(grid=[[(-0.90039, -0.00585)]]), buffer=buffer
     )
 )
 print(
     sis.magnification_via_hessian_from_grid(
-        grid=ag.Grid2DIrregularGrouped(grid=[[(-0.95039, -0.00585)]]), buffer=buffer
+        grid=ag.Grid2DIrregular(grid=[[(-0.95039, -0.00585)]]), buffer=buffer
     )
 )
 print(
     sis.magnification_via_hessian_from_grid(
-        grid=ag.Grid2DIrregularGrouped(grid=[[(-1.0, -0.00585)]]), buffer=buffer
+        grid=ag.Grid2DIrregular(grid=[[(-1.0, -0.00585)]]), buffer=buffer
     )
 )

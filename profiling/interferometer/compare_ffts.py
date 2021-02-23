@@ -60,7 +60,6 @@ coefficients = list(np.logspace(np.log10(0.1), np.log10(1000.0), 12))
 
 transformer_class = al.TransformerDFT
 use_linear_operators = False
-use_preconditioner = False
 
 masked_interferometer = al.MaskedInterferometer(
     interferometer=interferometer,
@@ -94,7 +93,6 @@ evidence_matrix_dft = []
 #             tracer=tracer,
 #             settings_inversion=al.SettingsInversion(
 #                 use_linear_operators=use_linear_operators,
-#                 use_preconditioner=use_preconditioner,
 #             ),
 #         )
 #
@@ -122,7 +120,6 @@ evidence_matrix_dft = []
 #
 # transformer_class = al.TransformerNUFFT
 # use_linear_operators = False
-# use_preconditioner = False
 #
 # masked_interferometer = al.MaskedInterferometer(
 #     interferometer=interferometer,
@@ -159,8 +156,7 @@ for coefficient in coefficients:
             masked_interferometer=masked_interferometer,
             tracer=tracer,
             settings_inversion=al.SettingsInversion(
-                use_linear_operators=use_linear_operators,
-                use_preconditioner=use_preconditioner,
+                use_linear_operators=use_linear_operators
             ),
         )
 
@@ -211,7 +207,6 @@ for coefficient in coefficients:
 
 transformer_class = al.TransformerNUFFT
 use_linear_operators = True
-use_preconditioner = False
 
 masked_interferometer = al.MaskedInterferometer(
     interferometer=interferometer,
@@ -248,8 +243,7 @@ for coefficient in coefficients:
             masked_interferometer=masked_interferometer,
             tracer=tracer,
             settings_inversion=al.SettingsInversion(
-                use_linear_operators=use_linear_operators,
-                use_preconditioner=use_preconditioner,
+                use_linear_operators=use_linear_operators
             ),
         )
 
