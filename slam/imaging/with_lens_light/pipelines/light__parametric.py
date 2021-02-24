@@ -68,7 +68,9 @@ def make_pipeline(slam, settings, source_results):
         hyper_galaxy=hyper_galaxy,
     )
 
-    """SLaM: Use the Source pipeline source as an instance (whether its parametric or an Inversion)."""
+    """
+    SLaM: Use the Source pipeline source as an instance (whether its parametric or an Inversion).
+    """
 
     source = slam.source_from_result(result=source_results.last, source_is_model=False)
 
@@ -85,7 +87,6 @@ def make_pipeline(slam, settings, source_results):
             result=source_results.last
         ),
         settings=settings,
-        use_as_hyper_dataset=True,
     )
 
     if not slam.setup_hyper.hyper_fixed_after_source:

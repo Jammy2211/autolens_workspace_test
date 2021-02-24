@@ -73,7 +73,6 @@ def make_pipeline(slam, settings, source_results, end_stochastic=False):
             result=source_results.last
         ),
         settings=settings,
-        use_as_hyper_dataset=True,
     )
 
     if end_stochastic:

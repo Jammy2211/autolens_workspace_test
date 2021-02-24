@@ -73,7 +73,6 @@ def make_pipeline(
         ),
         settings=settings,
         real_space_mask=real_space_mask,
-        use_as_hyper_dataset=True,
     )
 
     if end_stochastic:
