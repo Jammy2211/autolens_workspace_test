@@ -161,29 +161,31 @@ def make_pipeline_single_plane(slam, settings, mass_results):
         settings=settings,
     )
 
-    # subhalo = al.GalaxyModel(redshift=slam.redshift_lens, mass=al.mp.SphericalNFWMCRLudlow)
-    #
-    # subhalo.mass.mass_at_200 = phase2.result.model.galaxies.subhalo.mass.mass_at_200
-    # subhalo.mass.centre = phase2.result.model.galaxies.subhalo.mass.centre
-    #
-    # subhalo.mass.redshift_object = slam.redshift_lens
-    # subhalo.mass.redshift_source = slam.redshift_source
-    #
-    # phase3 = al.PhaseImaging(
-    #     search=af.DynestyStatic(
-    #         name="phase[3]_subhalo[single_plane_refine]",
-    #         path_prefix=path_prefix,
-    #         n_live_points=100,
-    #     ),
-    #     galaxies=af.CollectionPriorModel(
-    #         lens=phase2.result.model.galaxies.lens,
-    #         subhalo=subhalo,
-    #         source=phase2.result.model.galaxies.source,
-    #     ),
-    # #    hyper_image_sky=phase1.result.instance.optional.hyper_image_sky,
-    # #    hyper_background_noise=phase2.result.hyper.instance.optional.hyper_background_noise,
-    #     settings=settings,
-    # )
+    subhalo = al.GalaxyModel(redshift=slam.redshift_lens, mass=al.mp.SphericalNFWMCRLudlow)
+
+    subhalo.mass.mass_at_200 = phase2.result.model.galaxies.subhalo.mass.mass_at_200
+    subhalo.mass.centre = phase2.result.model.galaxies.subhalo.mass.centre
+
+    subhalo.mass.redshift_object = slam.redshift_lens
+    subhalo.mass.redshift_source = slam.redshift_source
+
+    phase3 = al.PhaseImaging(
+        search=af.DynestyStatic(
+            name="phase[3]_subhalo[single_plane_refine]",
+            path_prefix=path_prefix,
+            n_live_points=100,
+        ),
+        galaxies=af.CollectionPriorModel(
+            lens=phase2.result.model.galaxies.lens,
+            subhalo=subhalo,
+            source=phase2.result.model.galaxies.source,
+        ),
+        hyper_image_sky=slam.setup_hyper.hyper_image_sky_from_result(
+            result=phase1.result, as_model=True
+        ),
+        hyper_background_noise=phase1.result.hyper.instance.optional.hyper_background_noise,
+        settings=settings,
+    )
 
     return al.PipelineDataset(
         pipeline_name,
@@ -191,7 +193,7 @@ def make_pipeline_single_plane(slam, settings, mass_results):
         mass_results,
         phase1,
         phase2,
-        #     phase3,
+        phase3,
     )
 
 

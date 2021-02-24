@@ -16,6 +16,13 @@ import autolens as al
 import autolens.plot as aplt
 
 """
+The path all profiling results are output.
+"""
+file_path = os.path.join(
+    "profiling", "times", al.__version__, "inversion_voronoi_magnification_high_reg"
+)
+
+"""
 The number of repeats used to estimate the `Inversion` run time.
 """
 repeats = 10
@@ -28,7 +35,7 @@ These settings control various aspects of how long a fit takes. The values below
 sub_size = 4
 mask_radius = 3.5
 psf_shape_2d = (21, 21)
-pixelization_shape_2d = (60, 60)
+pixelization_shape_2d = (57, 57)
 
 print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
@@ -69,7 +76,7 @@ pixelization = al.pix.VoronoiMagnification(shape=pixelization_shape_2d)
 source_galaxy = al.Galaxy(
     redshift=1.0,
     pixelization=pixelization,
-    regularization=al.reg.Constant(coefficient=1.0),
+    regularization=al.reg.Constant(coefficient=1e4),
 )
 
 """
@@ -320,7 +327,7 @@ for i in range(repeats):
 profiling_dict["Ray Tracing (Decomposed)"] = (time.time() - start) / repeats
 
 """
-__Image-plane Pixelization__
+__Image-plane Pixelization (Gridding)__
 
 The `VoronoiMagnification` begins by determining what will become its the source-pixel centres by calculating them 
 in the image-plane. 
@@ -339,7 +346,7 @@ for i in range(repeats):
         grid=masked_imaging.grid, unmasked_sparse_shape=pixelization.shape
     )
 
-profiling_dict["Image-plane Pixelization"] = (time.time() - start) / repeats
+profiling_dict["Image-plane Pixelization (Gridding)"] = (time.time() - start) / repeats
 
 traced_sparse_grid = tracer.traced_sparse_grids_of_planes_from_grid(
     grid=masked_imaging.grid
@@ -630,10 +637,6 @@ profile run times.
 This is stored in a folder using the **PyAutoLens** version number so that profiling run times can be tracked through
 **PyAutoLens** development.
 """
-file_path = os.path.join(
-    "profiling", "times", al.__version__, "inversion_voronoi_magnification"
-)
-
 if not os.path.exists(file_path):
     os.makedirs(file_path)
 
