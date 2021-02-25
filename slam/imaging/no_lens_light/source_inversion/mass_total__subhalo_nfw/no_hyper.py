@@ -65,7 +65,10 @@ The settings chosen here are applied to all phases in the pipeline.
 
 settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid2D, sub_size=2)
 
-settings = al.SettingsPhaseImaging(settings_masked_imaging=settings_masked_imaging)
+settings = al.SettingsPhaseImaging(
+    settings_masked_imaging=settings_masked_imaging,
+    settings_lens=al.SettingsLens(stochastic_samples=1),
+)
 
 """
 __PIPELINE SETUP__
@@ -252,6 +255,6 @@ mass__total = mass__total.make_pipeline(
 mass_results = mass__total.run(dataset=imaging, mask=mask)
 
 subhalo = subhalo.make_pipeline_single_plane(
-    slam=slam, settings=settings, mass_results=mass_results
+    slam=slam, settings=settings, mass_results=mass_results, end_stochastic=True
 )
 subhalo.run(dataset=imaging, mask=mask)

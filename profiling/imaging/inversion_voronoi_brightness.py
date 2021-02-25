@@ -135,14 +135,18 @@ lens_galaxy.hyper_model_image = hyper_model_image
 """
 The source galaxy whose `VoronoiBrightness` `Pixelization` fits the data.
 """
-pixelization = al.pix.VoronoiBrightnessImage(pixels=pixels, weight_floor=0.3, weight_power=15.0)
+pixelization = al.pix.VoronoiBrightnessImage(
+    pixels=pixels, weight_floor=0.3, weight_power=15.0
+)
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
     pixelization=pixelization,
-    regularization=al.reg.AdaptiveBrightness(inner_coefficient=0.001, outer_coefficient=100.0, signal_scale=0.05),
+    regularization=al.reg.AdaptiveBrightness(
+        inner_coefficient=0.001, outer_coefficient=100.0, signal_scale=0.05
+    ),
     hyper_galaxy_image=source_hyper_image,
-    hyper_model_image=hyper_model_image
+    hyper_model_image=hyper_model_image,
 )
 
 """
@@ -253,7 +257,6 @@ increases depending on a required fractional accuracy of the light profile.
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/two_d/grid_2d_iterate.py
 """
-
 masked_imaging_iterate = al.MaskedImaging(
     imaging=imaging,
     mask=mask,
@@ -320,7 +323,6 @@ for i in range(repeats):
 
 profiling_dict["Ray Tracing (SIE)"] = (time.time() - start) / repeats
 
-
 """
 __Ray Tracing (Power-Law)__
 
@@ -334,7 +336,6 @@ for i in range(repeats):
     )[-1]
 
 profiling_dict["Ray Tracing (Power-Law)"] = (time.time() - start) / repeats
-
 
 """
 __Ray Tracing (Decomposed)__
@@ -464,7 +465,7 @@ mapper = mappers.MapperVoronoi(
     source_grid_slim=relocated_grid,
     source_pixelization_grid=grid_voronoi,
     data_pixelization_grid=sparse_image_plane_grid,
-    hyper_image=source_galaxy.hyper_galaxy_image
+    hyper_image=source_galaxy.hyper_galaxy_image,
 )
 
 """
@@ -610,7 +611,7 @@ for i in range(repeats):
     regularization_weights = al.util.regularization.adaptive_regularization_weights_from(
         inner_coefficient=source_galaxy.regularization.inner_coefficient,
         outer_coefficient=source_galaxy.regularization.outer_coefficient,
-        pixel_signals=pixel_signals
+        pixel_signals=pixel_signals,
     )
 profiling_dict["Source Pixel Signal Scales"] = (time.time() - start) / repeats
 

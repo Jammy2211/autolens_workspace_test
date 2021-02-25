@@ -88,8 +88,6 @@ def make_pipeline(slam, settings, source_results, light_results, end_stochastic=
     if end_stochastic:
 
         phase1 = phase1.extend_with_stochastic_phase(
-            stochastic_method="gaussian",
-            stochastic_sigma=0.0,
             stochastic_search=af.DynestyStatic(n_live_points=100),
             include_lens_light=slam.pipeline_mass.light_is_model,
         )

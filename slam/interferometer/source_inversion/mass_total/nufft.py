@@ -102,7 +102,7 @@ threshold can go to, even after multiplication.
 """
 
 settings_lens = al.SettingsLens(
-    auto_positions_factor=3.0, auto_positions_minimum_threshold=0.8
+    auto_positions_factor=3.0, auto_positions_minimum_threshold=0.8, stochastic_samples=1
 )
 
 settings = al.SettingsPhaseInterferometer(

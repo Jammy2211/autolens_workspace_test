@@ -93,10 +93,12 @@ By default we use the linear operators approach.
 """
 
 settings_inversion = al.SettingsInversion(use_linear_operators=True)
+settings_lens=al.SettingsLens(stochastic_samples=1)
 
 settings = al.SettingsPhaseInterferometer(
     settings_masked_interferometer=settings_masked_interferometer,
     settings_inversion=settings_inversion,
+    settings_lens=settings_lens
 )
 
 """

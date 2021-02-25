@@ -78,9 +78,7 @@ def make_pipeline(
     if end_stochastic:
 
         phase1 = phase1.extend_with_stochastic_phase(
-            stochastic_method="gaussian",
-            stochastic_sigma=0.0,
-            stochastic_search=af.DynestyStatic(n_live_points=100),
+            stochastic_search=af.DynestyStatic(n_live_points=100)
         )
 
     else:

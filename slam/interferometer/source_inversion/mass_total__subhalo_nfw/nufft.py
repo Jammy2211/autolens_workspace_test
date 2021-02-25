@@ -92,9 +92,12 @@ By default we use the linear operators approach.
 
 settings_inversion = al.SettingsInversion(use_linear_operators=True)
 
+settings_lens = al.SettingsLens(stochastic_samples=1)
+
 settings = al.SettingsPhaseInterferometer(
     settings_masked_interferometer=settings_masked_interferometer,
     settings_inversion=settings_inversion,
+    settings_lens=settings_lens
 )
 
 """
@@ -294,5 +297,6 @@ subhalo = subhalo.make_pipeline_single_plane(
     settings=settings,
     real_space_mask=real_space_mask,
     mass_results=mass_results,
+    end_stochastic=True,
 )
 subhalo.run(dataset=interferometer, mask=visibilities_mask)

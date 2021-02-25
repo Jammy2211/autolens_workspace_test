@@ -27,7 +27,6 @@ Phase 1:
     Notes: Can be customized to vary the lens mass and source.
 """
 
-
 def make_pipeline(slam, settings, source_results):
 
     pipeline_name = "pipeline_light[parametric]"
@@ -71,7 +70,6 @@ def make_pipeline(slam, settings, source_results):
     """
     SLaM: Use the Source pipeline source as an instance (whether its parametric or an Inversion).
     """
-
     source = slam.source_from_result(result=source_results.last, source_is_model=False)
 
     phase1 = al.PhaseImaging(
@@ -89,8 +87,10 @@ def make_pipeline(slam, settings, source_results):
         settings=settings,
     )
 
-    if not slam.setup_hyper.hyper_fixed_after_source:
+    if slam.pipeline_source_inversion is not None:
+        phase1.preload_inversion = True
 
+    if not slam.setup_hyper.hyper_fixed_after_source:
         phase1 = phase1.extend_with_hyper_phase(setup_hyper=slam.setup_hyper)
 
     return al.PipelineDataset(pipeline_name, path_prefix, source_results, phase1)

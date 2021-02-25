@@ -83,7 +83,8 @@ threshold can go to, even after multiplication.
 """
 
 settings = al.SettingsPhaseImaging(
-    settings_masked_imaging=settings_masked_imaging, settings_lens=al.SettingsLens()
+    settings_masked_imaging=settings_masked_imaging,
+    settings_lens=al.SettingsLens(stochastic_samples=1),
 )
 
 """
@@ -322,6 +323,6 @@ mass_results = mass__light_dark.run(dataset=imaging, mask=mask)
 
 
 subhalo = subhalo.make_pipeline_single_plane(
-    slam=slam, settings=settings, mass_results=mass_results
+    slam=slam, settings=settings, mass_results=mass_results, end_stochastic=True
 )
 subhalo.run(dataset=imaging, mask=mask)

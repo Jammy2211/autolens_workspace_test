@@ -65,7 +65,7 @@ The settings chosen here are applied to all phases in the pipeline.
 
 settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid2D, sub_size=2)
 
-settings = al.SettingsPhaseImaging(settings_masked_imaging=settings_masked_imaging)
+settings = al.SettingsPhaseImaging(settings_masked_imaging=settings_masked_imaging, settings_lens=al.SettingsLens(stochastic_samples=1))
 
 """
 __PIPELINE SETUP__

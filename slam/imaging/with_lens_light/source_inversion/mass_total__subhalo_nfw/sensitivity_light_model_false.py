@@ -84,7 +84,8 @@ threshold can go to, even after multiplication.
 """
 
 settings = al.SettingsPhaseImaging(
-    settings_masked_imaging=settings_masked_imaging, settings_lens=al.SettingsLens()
+    settings_masked_imaging=settings_masked_imaging,
+    settings_lens=al.SettingsLens(stochastic_samples=1),
 )
 
 """
