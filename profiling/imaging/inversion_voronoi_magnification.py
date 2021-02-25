@@ -19,7 +19,7 @@ import autolens.plot as aplt
 The path all profiling results are output.
 """
 file_path = os.path.join(
-    "profiling", "times", al.__version__, "inversion_voronoi_magnification_high_reg"
+    "profiling", "times", al.__version__, "inversion_voronoi_magnification"
 )
 
 """
@@ -76,7 +76,7 @@ pixelization = al.pix.VoronoiMagnification(shape=pixelization_shape_2d)
 source_galaxy = al.Galaxy(
     redshift=1.0,
     pixelization=pixelization,
-    regularization=al.reg.Constant(coefficient=1e4),
+    regularization=al.reg.Constant(coefficient=1.0),
 )
 
 """
