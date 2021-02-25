@@ -50,7 +50,7 @@ instrument = "hst"
 # instrument = "hst_up"
 # instrument = "ao"
 
-dataset_path = path.join("dataset", "instruments", instrument)
+dataset_path = path.join("dataset", "imaging", instrument)
 
 imaging = al.Imaging.from_fits(
     image_path=path.join(dataset_path, "image.fits"),
