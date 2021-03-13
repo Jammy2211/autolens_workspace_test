@@ -47,7 +47,7 @@ uv_full = fits.getdata(
         "simulators",
         "interferometer",
         "uv_wavelengths",
-        "../../autolens_files/uv_wavelengths/alma_uv.fits",
+        "../../auto_files/uv_wavelengths/alma_uv.fits",
     )
 )
 

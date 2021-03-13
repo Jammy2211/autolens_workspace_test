@@ -192,7 +192,7 @@ def make_pipeline_single_plane(slam, settings, mass_results, end_stochastic=Fals
     if end_stochastic:
 
         phase3 = phase3.extend_with_stochastic_phase(
-            stochastic_search=af.DynestyStatic(n_live_points=100)
+            stochastic_search=af.DynestyStatic(n_live_points=100),
         )
 
     return al.PipelineDataset(

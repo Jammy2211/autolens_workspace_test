@@ -35,7 +35,9 @@ def make_pipeline(slam, settings, source_results, end_stochastic=False):
         slam.path_prefix, pipeline_name, slam.source_tag, slam.mass_tag
     )
 
-    """SLaM: Set whether shear is included in the mass model."""
+    """
+    SLaM: Set whether shear is included in the mass model.
+    """
 
     shear = slam.pipeline_mass.shear_from_result(result=source_results.last)
 
