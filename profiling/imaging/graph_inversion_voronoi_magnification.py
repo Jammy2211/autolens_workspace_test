@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 """
 The path containing all profiling results to be plotted is in a folder with the PyAutoLens version number.
 """
-profiling_name = "inversion_voronoi_magnification_lens_subtract_high"
+profiling_name = "inversion_voronoi_magnification"
 
 profiling_path = os.path.join("profiling", "times", al.__version__, profiling_name)
 
