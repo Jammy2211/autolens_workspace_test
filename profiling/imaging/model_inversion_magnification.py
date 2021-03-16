@@ -256,9 +256,6 @@ __Phase__
 We can now combine the model, settings and `NonLinearSearch` above to create and run a phase, fitting our data with
 the lens model.
 """
-
-### BEGIN PROFILING HERE ###
-
 phase = al.PhaseImaging(
     search=search,
     galaxies=af.CollectionPriorModel(lens=lens, source=source),
@@ -272,6 +269,8 @@ the model to the data.
 The fit outputs visualization on-the-fly, so checkout the path 
 `/path/to/autolens_workspace/output/examples/phase_mass[sie]_source[inversion]` to see how your fit is doing!
 """
+### BEGIN PROFILING HERE ###
+
 result = phase.run(dataset=imaging, mask=mask)
 
 """
