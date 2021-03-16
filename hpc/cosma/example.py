@@ -121,7 +121,6 @@ A lot of the code below is what you are used to in runner scripts not on COSMA. 
 """
 
 # %%
-import autofit as af
 import autolens as al
 import autolens.plot as aplt
 
