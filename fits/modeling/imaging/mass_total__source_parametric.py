@@ -47,10 +47,7 @@ mask = al.Mask2D.circular(
     shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
-masked_imaging = al.MaskedImaging(
-    imaging=imaging,
-    mask=mask,
-)
+masked_imaging = al.MaskedImaging(imaging=imaging, mask=mask)
 
 imaging_plotter = aplt.ImagingPlotter(
     imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
@@ -134,8 +131,7 @@ The search returns a result object, which includes:
 print(result.max_log_likelihood_instance)
 
 tracer_plotter = aplt.TracerPlotter(
-    tracer=result.max_log_likelihood_tracer,
-    grid=result.grid
+    tracer=result.max_log_likelihood_tracer, grid=result.grid
 )
 tracer_plotter.subplot_tracer()
 

@@ -100,14 +100,16 @@ Add results to database.
 """
 from autofit.database.aggregator import Aggregator
 
-database_file = path.join("output", "imaging", "database", "dataset_x2", "database.sqlite")
+database_file = path.join(
+    "output", "imaging", "database", "dataset_x2", "database.sqlite"
+)
 
 if path.isfile(database_file):
     os.remove(database_file)
 
 agg = Aggregator.from_database(database_file)
 
-agg.add_directory(path.join("output",  "imaging", "database", "dataset_x2"))
+agg.add_directory(path.join("output", "imaging", "database", "dataset_x2"))
 
 agg = Aggregator.from_database(database_file)
 

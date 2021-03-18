@@ -76,9 +76,11 @@ DATASET:
 __Dataset (with customization)__
 """
 masked_imaging = al.MaskedImaging(
-    imaging=imaging, 
-    mask=mask, 
-    settings=al.SettingsMaskedImaging(signal_to_noise_limit=10.0, signal_to_noise_limit_radii=0.3)
+    imaging=imaging,
+    mask=mask,
+    settings=al.SettingsMaskedImaging(
+        signal_to_noise_limit=10.0, signal_to_noise_limit_radii=0.3
+    ),
 )
 
 search = af.DynestyStatic(
@@ -98,14 +100,16 @@ Add results to database.
 """
 from autofit.database.aggregator import Aggregator
 
-database_file = path.join("output", "imaging", "database", "dataset_custom", "database.sqlite")
+database_file = path.join(
+    "output", "imaging", "database", "dataset_custom", "database.sqlite"
+)
 
 if path.isfile(database_file):
     os.remove(database_file)
 
 agg = Aggregator.from_database(database_file)
 
-agg.add_directory(path.join("output",  "imaging", "database", "dataset_custom"))
+agg.add_directory(path.join("output", "imaging", "database", "dataset_custom"))
 
 agg = Aggregator.from_database(database_file)
 

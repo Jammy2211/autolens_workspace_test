@@ -1,89 +1,95 @@
 """
-__SLaM (Source, Light and Mass)__
+SLaM (Source, Light and Mass): Mass Total + Source Parametric
+=============================================================
 
-This SLaM pipeline runner loads a strong lens dataset and analyses it using a SLaM lens modeling pipeline.
+SLaM pipelines break the analysis down into multiple pipelines which focus on modeling a specific aspect of the strong
+lens, first the Source, then the (lens) Light and finally the Mass. Each of these pipelines has it own inputs which
+which customize the model and analysis in that pipeline.
 
-__THIS RUNNER__
+The models fitted in earlier pipelines determine the model used in later pipelines. For example, if the SOURCE PIPELINE
+uses a parametric `EllipticalSersic` profile for the bulge, this will be used in the subsequent MASS PIPELINE.
 
-Using a source pipeline and a mass pipeline this runner fits `Imaging` of a strong lens system, where in the final
-phase of the pipeline:
+Using a parametric source pipeline and a mass pipeline this SLaM script fits `Imaging` of a strong lens system, where
+in the final model:
 
- - The lens `Galaxy`'s light is omitted from the data and model.
- - The lens `Galaxy`'s total mass distribution is an `EllipticalPowerLaw`.
- - The source galaxy is an `EllipticalSersic`.
+ - The lens galaxy's light is omitted from the data and model.
+ - The lens galaxy's total mass distribution is an `EllipticalPowerLaw`.
+ - The source galaxy's light is a parametric `EllipticalSersic`.
 
 This uses the SLaM pipelines:
 
- `slam/imaging/no_lens_light/pipelines/source__mass_sie__source_parametric.py`.
- `slam/imaging/no_lens_light/pipelines/mass__mass_power_law__source.py`.
+ `source__parametric/source_parametric__no_lens_light`
+ `mass__total/mass__total__no_lens_light`
 
-Check them out for a detailed description of the analysis!
+Check them out for a full description of the analysis!
 """
+# %matplotlib inline
+# from pyprojroot import here
+# workspace_path = str(here())
+# %cd $workspace_path
+# print(f"Working Directory has been set to `{workspace_path}`")
+
 from os import path
+from fits.slam.imaging.pipelines import source__parametric, mass__total
 import autofit as af
 import autolens as al
 import autolens.plot as aplt
 
-dataset_name = "mass_sie__source_sersic"
-pixel_scales = 0.2
+"""
+__Dataset + Masking__ 
 
+Load, plot and mask the `Imaging` data.
+"""
+dataset_name = "mass_sie__source_sersic"
 dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
 
-"""
-Using the dataset path, load the data (image, noise-map, PSF) as an `Imaging` object from .fits files.
-"""
 imaging = al.Imaging.from_fits(
     image_path=path.join(dataset_path, "image.fits"),
-    psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    pixel_scales=pixel_scales,
-    positions_path=path.join(dataset_path, "positions.dat"),
+    psf_path=path.join(dataset_path, "psf.fits"),
+    pixel_scales=0.2,
 )
 
 mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native, pixel_scales=pixel_scales, radius=3.0
+    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
+masked_imaging = al.MaskedImaging(imaging=imaging, mask=mask)
+
 imaging_plotter = aplt.ImagingPlotter(
-    imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
+    imaging=masked_imaging, visuals_2d=aplt.Visuals2D(mask=mask)
 )
 imaging_plotter.subplot_imaging()
 
 """
-__Settings__
+__Paths__
 
-The `SettingsPhaseImaging` describe how the model is fitted to the data in the log likelihood function.
-
-These settings are used and described throughout the `autolens_workspace/examples/model` example scripts, with a 
-complete description of all settings given in `autolens_workspace/examples/model/customize/settings.py`.
-
-The settings chosen here are applied to all phases in the pipeline.
+The path the results of all chained searches are output:
 """
-
-settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid2D, sub_size=2)
-
-settings = al.SettingsPhaseImaging(settings_masked_imaging=settings_masked_imaging)
+path_prefix = path.join("imaging", "slam", "mass_total__source_parametric", "positions")
 
 """
-__PIPELINE SETUP__
+__Redshifts__
 
-Transdimensional pipelines used the `SetupPipeline` object to customize the analysis performed by the pipeline,
-for example if a shear was included in the mass model and the model used for the source galaxy.
-
-SLaM pipelines break the analysis down into multiple pipelines which focus on modeling a specific aspect of the strong 
-lens, first the Source, then the (lens) Light and finally the Mass. Each of these pipelines has it own setup object 
-which is equivalent to the `SetupPipeline` object, customizing the analysis in that pipeline. Each pipeline therefore
-has its own `SetupMass` and `SetupSourceParametric` object.
-
-The `Setup` used in earlier pipelines determine the model used in later pipelines. For example, if the `Source` 
-pipeline is given an `EllipticalSersic` parametric profile, then this `LightProfile` will be used in the subsequent 
-`SLaMPipelineMass`.
-
-The `Setup` again tags the path structure of every pipeline in a unique way, such than combinations of different
-SLaM pipelines can be used to fit lenses with different models. If the earlier pipelines are identical (e.g. they use
-the same `SLaMPipelineSource`. they will reuse those results before branching off to fit different models in the 
-`SLaMPipelineLightParametric` and / or `SLaMPipelineMass` pipelines. 
+The redshifts of the lens and source galaxies, which are used to perform unit converions of the model and data (e.g. 
+from arc-seconds to kiloparsecs, masses to solar masses, etc.).
 """
+redshift_lens = 0.5
+redshift_source = 1.0
+
+"""
+__Positions__
+
+We use the `auto_positions` feature, described in `chaining/examples/parametric_to_inversion.py` to remove unphysical
+solutions from the `Inversion` model-fitting.
+"""
+positions = al.Grid2DIrregular.from_json(
+    file_path=path.join(dataset_path, "positions.json")
+)
+
+settings_lens = al.SettingsLens(
+    auto_positions_factor=3.0, auto_positions_minimum_threshold=0.2
+)
 
 """
 __HYPER SETUP__
@@ -91,101 +97,65 @@ __HYPER SETUP__
 The `SetupHyper` determines which hyper-mode features are used during the model-fit as is used identically to the
 hyper pipeline examples.
 
-The `SetupHyper` object has a new input available, `hyper_fixed_after_source`, which fixes the hyper-parameters to
-the values computed by the hyper-phase at the end of the Source pipeline. By fixing the hyper-parameter values in the
-_SLaMPipelineLight_ and `SLaMPipelineMass` pipelines, model comparison can be performed in a consistent fashion.
+The `SetupHyper` input `hyper_fixed_after_source` fixes the hyper-parameters to the values computed by the hyper 
+extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter values at this point, model comparison 
+of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
-
-hyper = al.SetupHyper(
-    hyper_search_no_inversion=af.DynestyStatic(maxcall=1),
-    hyper_search_with_inversion=af.DynestyStatic(maxcall=1),
+setup_hyper = al.SetupHyper(
     hyper_galaxies_lens=False,
     hyper_galaxies_source=False,
     hyper_image_sky=None,
     hyper_background_noise=None,
+    hyper_fixed_after_source=False,
 )
 
 """
-__SLaMPipelineSourceParametric__
+__SOURCE PARAMETRIC PIPELINE__
 
-The parametric source pipeline aims to initialize a robust model for the source galaxy using `LightProfile` objects. 
-
-_SLaMPipelineSourceParametric_ determines the source model used by the parametric source pipeline. A full description 
-of all options can be found ? and ?.
-
-By default, this assumes an `EllipticalIsothermal` profile for the lens `Galaxy`'s mass. Our experience with lens 
-modeling has shown they are the simpliest models that provide a good fit to the majority of strong lenses.
-
-For this runner the `SLaMPipelineSourceParametric` customizes:
-
- - The `MassProfile` fitted by the pipeline (and the following `SLaMPipelineSourceInversion`.
- - If there is an `ExternalShear` in the mass model or not (this lens was not simulated with shear and 
-   we do not include it in the mass model).
+The SOURCE PARAMETRIC PIPELINE uses one search to initialize a robust model for the source galaxy's light, which in
+this example:
+ 
+ - Uses a parametric `EllipticalSersic` bulge for the source's light (omitting a disk / envelope).
+ - Uses an `EllipticalIsothermal` model for the lens's total mass distribution with an `ExternalShear`.
 """
-
-setup_mass = al.SetupMassTotal(mass_prior_model=al.mp.EllipticalIsothermal)
-setup_source = al.SetupSourceParametric(
-    bulge_prior_model=al.lp.EllipticalSersic,
-    disk_prior_model=None,
-    envelope_prior_model=None,
+source_results = source__parametric.source_parametric__no_lens_light(
+    path_prefix=path_prefix,
+    analysis=al.AnalysisImaging(
+        dataset=masked_imaging, positions=positions, settings_lens=settings_lens
+    ),
+    setup_hyper=setup_hyper,
+    mass=af.PriorModel(al.mp.EllipticalIsothermal),
+    shear=af.PriorModel(al.mp.ExternalShear),
+    source_bulge=af.PriorModel(al.lp.EllipticalSersic),
+    redshift_lens=0.5,
+    redshift_source=1.0,
 )
 
-pipeline_source_parametric = al.SLaMPipelineSourceParametric(
-    setup_mass=setup_mass, setup_source=setup_source
-)
 
 """
-__SLaMPipelineMass__
+__MASS TOTAL PIPELINE__
 
-The `SLaMPipelineMass` pipeline fits the model for the lens `Galaxy`'s total mass distribution. 
+The MASS TOTAL PIPELINE fits a complex lens mass model to a high level of accuracy, using the lens mass model and 
+source model of the SOURCE PIPELINE to initialize the model priors.
 
-A full description of all options can be found ? and ?.
+In this runner the MASS PIPELINE:  
 
-The model used to represent the lens `Galaxy`'s mass is input into `SLaMPipelineMassTotal` and this runner uses the 
-default of an `EllipticalPowerLaw` in this example.
-
-For this runner the `SLaMPipelineMass` customizes:
-
- - The `MassProfile` fitted by the pipeline.
- - If there is an `ExternalShear` in the mass model or not (this lens was not simulated with shear and 
-   we do not include it in the mass model).
+ - Uses an `EllipticalPowerLaw` model for the lens's total mass distribution (the centre input above is unfixed).
+ - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
-
-setup_mass = al.SetupMassTotal(mass_prior_model=al.mp.EllipticalPowerLaw)
-
-pipeline_mass = al.SLaMPipelineMass(setup_mass=setup_mass)
-
-"""
-__SLaM__
-
-We combine all of the above `SLaM` pipelines into a `SLaM` object.
-
-The `SLaM` object contains a number of methods used in the make_pipeline functions which are used to compose the model 
-based on the input values. It also handles pipeline tagging and path structure.
-"""
-
-slam = al.SLaM(
-    path_prefix=path.join("slam", dataset_name),
-    setup_hyper=hyper,
-    pipeline_source_parametric=pipeline_source_parametric,
-    pipeline_mass=pipeline_mass,
+mass_results = mass__total.mass__total__no_lens_light(
+    path_prefix=path_prefix,
+    analysis=al.AnalysisImaging(
+        dataset=masked_imaging,
+        results=source_results,
+        positions=positions,
+        settings_lens=settings_lens,
+    ),
+    setup_hyper=setup_hyper,
+    source_results=source_results,
+    mass=af.PriorModel(al.mp.EllipticalPowerLaw),
 )
 
 """
-__PIPELINE CREATION__
-
-We import and make pipelines as per usual, albeit we'll now be doing this for multiple pipelines!
-
-We then run each pipeline, passing the results of previous pipelines to subsequent pipelines.
+Finish.
 """
-
-import source__parametric
-import mass__total
-
-source__parametric = source__parametric.make_pipeline(slam=slam, settings=settings)
-source_results = source__parametric.run(dataset=imaging, mask=mask)
-
-mass__total = mass__total.make_pipeline(
-    slam=slam, settings=settings, source_results=source_results
-)
-mass_results = mass__total.run(dataset=imaging, mask=mask)

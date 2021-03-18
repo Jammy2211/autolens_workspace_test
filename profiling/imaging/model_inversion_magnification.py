@@ -223,8 +223,7 @@ can be found in the example script `autolens/workspace/examples/model/customize/
 link -> <link>
 """
 settings_masked_imaging = al.SettingsMaskedImaging(
-    grid_class=al.Grid2DIterate,
-    grid_inversion_class=al.Grid2D, sub_size=4
+    grid_class=al.Grid2DIterate, grid_inversion_class=al.Grid2D, sub_size=4
 )
 
 settings = al.SettingsPhaseImaging(settings_masked_imaging=settings_masked_imaging)

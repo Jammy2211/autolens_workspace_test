@@ -84,7 +84,9 @@ result_1 = search.fit(model=model, analysis=analysis)
 __Model (Search 2)__
 """
 model = af.CollectionPriorModel(
-    galaxies=af.CollectionPriorModel(lens=result_1.model.galaxies.lens, source=result_1.model.galaxies.source)
+    galaxies=af.CollectionPriorModel(
+        lens=result_1.model.galaxies.lens, source=result_1.model.galaxies.source
+    )
 )
 
 """
@@ -111,7 +113,7 @@ if path.isfile(database_file):
 
 agg = Aggregator.from_database(database_file)
 
-agg.add_directory(path.join("output",  "imaging", "database", "chaining"))
+agg.add_directory(path.join("output", "imaging", "database", "chaining"))
 
 agg = Aggregator.from_database(database_file)
 

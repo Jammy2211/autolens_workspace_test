@@ -1,12 +1,18 @@
-def curvature_matrix_from_blurred_mapping_matrix_jit(self, blurred_mapping, noise_vector):
+def curvature_matrix_from_blurred_mapping_matrix_jit(
+    self, blurred_mapping, noise_vector
+):
     flist = np.zeros(blurred_mapping.shape[0])
-    iflist = np.zeros(blurred_mapping.shape[0], dtype='int')
-    return self.curvature_matrix_from_blurred_mapping_jitted(blurred_mapping, noise_vector, flist, iflist)
+    iflist = np.zeros(blurred_mapping.shape[0], dtype="int")
+    return self.curvature_matrix_from_blurred_mapping_jitted(
+        blurred_mapping, noise_vector, flist, iflist
+    )
 
 
 @staticmethod
 @numba.jit(nopython=True)
-def curvature_matrix_from_blurred_mapping_jitted(blurred_mapping, noise_vector, flist, iflist):
+def curvature_matrix_from_blurred_mapping_jitted(
+    blurred_mapping, noise_vector, flist, iflist
+):
     mapping_shape = blurred_mapping.shape
 
     covariance_matrix = np.zeros((mapping_shape[1], mapping_shape[1]))
@@ -16,7 +22,9 @@ def curvature_matrix_from_blurred_mapping_jitted(blurred_mapping, noise_vector, 
         for pix_index in range(mapping_shape[1]):
             if blurred_mapping[image_index, pix_index] > 0.0:
                 index += 1
-                flist[index] = blurred_mapping[image_index, pix_index] / noise_vector[image_index]
+                flist[index] = (
+                    blurred_mapping[image_index, pix_index] / noise_vector[image_index]
+                )
                 iflist[index] = pix_index
 
         if index > 0:

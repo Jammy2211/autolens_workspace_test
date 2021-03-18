@@ -46,7 +46,9 @@ __Model__
 lens = al.GalaxyModel(
     redshift=0.5, mass=al.mp.EllipticalIsothermal, shear=al.mp.ExternalShear
 )
-source = al.GalaxyModel(redshift=1.0, pixelization=al.pix.Rectangular, regularization=al.reg.Constant)
+source = al.GalaxyModel(
+    redshift=1.0, pixelization=al.pix.Rectangular, regularization=al.reg.Constant
+)
 
 model = af.CollectionPriorModel(
     galaxies=af.CollectionPriorModel(lens=lens, source=source)
@@ -63,7 +65,7 @@ search = af.DynestyStatic(
 
 analysis = al.AnalysisImaging(
     dataset=masked_imaging,
-    settings_pixelization=al.SettingsPixelization(use_border=True)
+    settings_pixelization=al.SettingsPixelization(use_border=True),
 )
 
 search.fit(model=model, analysis=analysis)
@@ -79,7 +81,7 @@ search = af.DynestyStatic(
 
 analysis = al.AnalysisImaging(
     dataset=masked_imaging,
-    settings_pixelization=al.SettingsPixelization(use_border=False)
+    settings_pixelization=al.SettingsPixelization(use_border=False),
 )
 
 search.fit(model=model, analysis=analysis)
@@ -91,14 +93,16 @@ Add results to database.
 """
 from autofit.database.aggregator import Aggregator
 
-database_file = path.join("output", "imaging", "database", "pixelization_settings", "database.sqlite")
+database_file = path.join(
+    "output", "imaging", "database", "pixelization_settings", "database.sqlite"
+)
 
 if path.isfile(database_file):
     os.remove(database_file)
 
 agg = Aggregator.from_database(database_file)
 
-agg.add_directory(path.join("output",  "imaging", "database", "pixelization_settings"))
+agg.add_directory(path.join("output", "imaging", "database", "pixelization_settings"))
 
 agg = Aggregator.from_database(database_file)
 
