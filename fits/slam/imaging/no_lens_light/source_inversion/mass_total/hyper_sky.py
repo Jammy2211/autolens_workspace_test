@@ -31,14 +31,10 @@ Check them out for a detailed description of the analysis!
 # print(f"Working Directory has been set to `{workspace_path}`")
 
 from os import path
-from fits.slam.imaging.pipelines import (
-    source__parametric,
-    source__inversion,
-    mass__total,
-)
 import autofit as af
 import autolens as al
 import autolens.plot as aplt
+from fits.slam.imaging import slam
 
 """
 __Dataset + Masking__ 
@@ -107,6 +103,7 @@ extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter value
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_hyper = al.SetupHyper(
+    search=af.DynestyStatic(maxcall=1),
     hyper_galaxies_lens=False,
     hyper_galaxies_source=False,
     hyper_image_sky=al.hyper_data.HyperImageSky,
@@ -123,7 +120,7 @@ light, which in this example:
  - Uses an `EllipticalIsothermal` model for the lens's total mass distribution with an `ExternalShear`.
  - Fixes the mass profile centre to (0.0, 0.0) (this assumption will be relaxed in the MASS PIPELINE).
 """
-source_parametric_results = source__parametric.source_parametric__no_lens_light(
+source_parametric_results = slam.source_parametric.no_lens_light(
     path_prefix=path_prefix,
     analysis=al.AnalysisImaging(dataset=masked_imaging),
     setup_hyper=setup_hyper,
@@ -145,9 +142,13 @@ to set up the model and hyper images, and then:
  - Uses a `VoronoiBrightnessImage` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
 """
-source_inversion_results = source__inversion.source__inversion__no_lens_light(
+source_inversion_results = slam.source_inversion.no_lens_light(
     path_prefix=path_prefix,
-    analysis=al.AnalysisImaging(dataset=masked_imaging, results=source_parametric_results, settings_lens=settings_lens),
+    analysis=al.AnalysisImaging(
+        dataset=masked_imaging,
+        results=source_parametric_results,
+        settings_lens=settings_lens,
+    ),
     setup_hyper=setup_hyper,
     source_parametric_results=source_parametric_results,
     pixelization=al.pix.VoronoiBrightnessImage,
@@ -163,7 +164,7 @@ using the lens mass model and source model of the SOURCE PIPELINE to initialize 
  - Uses an `EllipticalPowerLaw` model for the lens's total mass distribution [The centre if unfixed from (0.0, 0.0)].
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
-mass_results = mass__total.mass__total__no_lens_light(
+mass_results = slam.mass_total.no_lens_light(
     path_prefix=path_prefix,
     analysis=al.AnalysisImaging(
         dataset=masked_imaging, results=source_inversion_results
