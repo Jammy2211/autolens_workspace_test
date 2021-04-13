@@ -124,7 +124,7 @@ plt.close()
 print("Saved" + path.join(output_path, "find_warm_pixels.png"))
 
 """
-Serialize the `LineCollection` so we can load it and convert it to a `CIImaging` dataset in the script 
+Serialize the `LineCollection` so we can load it and convert it to a `ImagingCI` dataset in the script 
 `line_collection_to_ci.py`.
 """
 

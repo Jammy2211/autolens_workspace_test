@@ -4,13 +4,13 @@ print(grid.native[28, 47])
 print(grid.native[67, 48])
 print(grid.native[68, 48])
 
-sis = MockEllipticalIsothermal(
+sis = MockEllIsothermal(
     centre=(0.0, 0.0), elliptical_comps=(0.001, 0.001), einstein_radius=1.0
 )
 
-print(sis.magnification_from_grid(grid=grid).native[28, 47])
-print(sis.magnification_from_grid(grid=grid).native[67, 48])
-print(sis.magnification_from_grid(grid=grid).native[68, 48])
+print(sis.magnification_2d_from_grid(grid=grid).native[28, 47])
+print(sis.magnification_2d_from_grid(grid=grid).native[67, 48])
+print(sis.magnification_2d_from_grid(grid=grid).native[68, 48])
 
 print()
 

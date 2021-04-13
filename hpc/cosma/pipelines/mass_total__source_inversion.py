@@ -7,7 +7,7 @@ modeling pipeline.
 Using a pipeline composed of three phases this runner fits `Imaging` of a strong lens system, where in the final model:
 .
  - The lens `Galaxy`'s light is omitted from the data and model.
- - The lens `Galaxy`'s total mass distribution is an input total `MassProfile` (default=`EllipticalPowerLaw`).
+ - The lens `Galaxy`'s total mass distribution is an input total `MassProfile` (default=`EllPowerLaw`).
  - The source galaxy is modeled using an `Inversion`.
 
 This uses the pipeline (Check it out full description of the pipeline):
@@ -58,7 +58,7 @@ complete description of all settings given in `autolens_workspace/examples/model
 The settings chosen here are applied to all phases in the pipeline.
 """
 
-settings_masked_imaging = al.SettingsMaskedImaging(grid_class=al.Grid2D, sub_size=2)
+settings_masked_imaging = al.SettingsImaging(grid_class=al.Grid2D, sub_size=2)
 
 """
 `Inversion`'s may infer unphysical solution where the source reconstruction is a demagnified reconstruction of the 
@@ -91,9 +91,7 @@ First, we create a `SetupMassTotal`, which customizes:
  - If there is an `ExternalShear` in the mass model or not.
 """
 
-setup_mass = al.SetupMassTotal(
-    mass_prior_model=al.mp.EllipticalPowerLaw, with_shear=True
-)
+setup_mass = al.SetupMassTotal(mass_prior_model=al.mp.EllPowerLaw, with_shear=True)
 
 """
 Next, we create a `SetupSourceInversion` which customizes:

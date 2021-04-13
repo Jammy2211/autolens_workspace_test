@@ -38,19 +38,17 @@ mask = al.Mask2D.circular(
     shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
-masked_imaging = al.MaskedImaging(imaging=imaging, mask=mask)
+masked_imaging = imaging.apply_mask(mask=mask)
 
 """
 __Model__
 """
-lens = al.GalaxyModel(
-    redshift=0.5, mass=al.mp.EllipticalIsothermal, shear=al.mp.ExternalShear
+lens = al.GalaxyModel(redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear)
+source = al.GalaxyModel(
+    redshift=1.0, pixelization=al.pix.Rectangular, regularization=al.reg.Constant
 )
-source = al.GalaxyModel(redshift=1.0, pixelization=al.pix.Rectangular, regularization=al.reg.Constant)
 
-model = af.CollectionPriorModel(
-    galaxies=af.CollectionPriorModel(lens=lens, source=source)
-)
+model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
 """
 __Search + Analysis + Model-Fit (Use Border)__
@@ -58,12 +56,12 @@ __Search + Analysis + Model-Fit (Use Border)__
 search = af.DynestyStatic(
     name="pixelization_use_border",
     path_prefix=path.join("imaging", "database", "pixelization_settings"),
-    n_live_points=50,
+    nlive=50,
 )
 
 analysis = al.AnalysisImaging(
     dataset=masked_imaging,
-    settings_pixelization=al.SettingsPixelization(use_border=True)
+    settings_pixelization=al.SettingsPixelization(use_border=True),
 )
 
 search.fit(model=model, analysis=analysis)
@@ -74,12 +72,12 @@ __Search + Analysis + Model-Fit (Not Use Border)__
 search = af.DynestyStatic(
     name="pixelization_not_use_border",
     path_prefix=path.join("imaging", "database", "pixelization_settings"),
-    n_live_points=50,
+    nlive=50,
 )
 
 analysis = al.AnalysisImaging(
     dataset=masked_imaging,
-    settings_pixelization=al.SettingsPixelization(use_border=False)
+    settings_pixelization=al.SettingsPixelization(use_border=False),
 )
 
 search.fit(model=model, analysis=analysis)
@@ -91,20 +89,22 @@ Add results to database.
 """
 from autofit.database.aggregator import Aggregator
 
-database_file = path.join("output", "imaging", "database", "pixelization_settings", "database.sqlite")
+database_file = path.join(
+    "output", "imaging", "database", "pixelization_settings", "database.sqlite"
+)
 
 if path.isfile(database_file):
     os.remove(database_file)
 
 agg = Aggregator.from_database(database_file)
 
-agg.add_directory(path.join("output",  "imaging", "database", "pixelization_settings"))
+agg.add_directory(path.join("output", "imaging", "database", "pixelization_settings"))
 
 agg = Aggregator.from_database(database_file)
 
 """
 Check Aggregator works (This should load one mp_instance).
 """
-agg_query = agg.query(agg.galaxies.lens.mass == al.mp.EllipticalIsothermal)
+agg_query = agg.query(agg.galaxies.lens.mass == al.mp.EllIsothermal)
 mp_instances = [samps.median_pdf_instance for samps in agg.values("samples")]
 print(mp_instances)

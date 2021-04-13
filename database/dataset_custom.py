@@ -27,14 +27,10 @@ import autolens as al
 """
 __Model__
 """
-lens = al.GalaxyModel(
-    redshift=0.5, mass=al.mp.EllipticalIsothermal, shear=al.mp.ExternalShear
-)
-source = al.GalaxyModel(redshift=1.0, bulge=al.lp.EllipticalSersic)
+lens = al.GalaxyModel(redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
 
-model = af.CollectionPriorModel(
-    galaxies=af.CollectionPriorModel(lens=lens, source=source)
-)
+model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
 """
 DATASET:
@@ -55,7 +51,7 @@ mask = al.Mask2D.circular(
     shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
-masked_imaging = al.MaskedImaging(imaging=imaging, mask=mask)
+masked_imaging = imaging.apply_mask(mask=mask)
 
 """
 __Masking + Search + Analysis + Model-Fit__
@@ -63,7 +59,7 @@ __Masking + Search + Analysis + Model-Fit__
 search = af.DynestyStatic(
     name="search_dataset_normal",
     path_prefix=path.join("imaging", "database", "dataset_custom"),
-    n_live_points=50,
+    nlive=50,
 )
 
 analysis = al.AnalysisImaging(dataset=masked_imaging)
@@ -76,15 +72,17 @@ DATASET:
 __Dataset (with customization)__
 """
 masked_imaging = al.MaskedImaging(
-    imaging=imaging, 
-    mask=mask, 
-    settings=al.SettingsMaskedImaging(signal_to_noise_limit=10.0, signal_to_noise_limit_radii=0.3)
+    imaging=imaging,
+    mask=mask,
+    settings=al.SettingsImaging(
+        signal_to_noise_limit=10.0, signal_to_noise_limit_radii=0.3
+    ),
 )
 
 search = af.DynestyStatic(
     name="search_dataset_custom",
     path_prefix=path.join("imaging", "database", "dataset_custom"),
-    n_live_points=50,
+    nlive=50,
 )
 
 analysis = al.AnalysisImaging(dataset=masked_imaging)
@@ -98,20 +96,22 @@ Add results to database.
 """
 from autofit.database.aggregator import Aggregator
 
-database_file = path.join("output", "imaging", "database", "dataset_custom", "database.sqlite")
+database_file = path.join(
+    "output", "imaging", "database", "dataset_custom", "database.sqlite"
+)
 
 if path.isfile(database_file):
     os.remove(database_file)
 
 agg = Aggregator.from_database(database_file)
 
-agg.add_directory(path.join("output",  "imaging", "database", "dataset_custom"))
+agg.add_directory(path.join("output", "imaging", "database", "dataset_custom"))
 
 agg = Aggregator.from_database(database_file)
 
 """
 Check Aggregator works (This should load two mp_instances).
 """
-agg_query = agg.query(agg.galaxies.lens.mass == al.mp.EllipticalIsothermal)
+agg_query = agg.query(agg.galaxies.lens.mass == al.mp.EllIsothermal)
 mp_instances = [samps.median_pdf_instance for samps in agg.values("samples")]
 print(mp_instances)

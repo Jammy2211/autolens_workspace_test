@@ -7,10 +7,10 @@ in **PyAutoLens**.
 Deflections angles calculations are performed following one of three methods:
 
  1) When analytic formulae for the deflection angles are available these are used via NumPy array calculations (e.g.,
- `EllipticalIsothermal`).
+ `EllIsothermal`).
 
  2) When not available, numerical integration may be performed via `pyquad`, a Python wrapper to the GSL integration
- libraries (e.g. `EllipticalCoredPowerLaw).
+ libraries (e.g. `EllPowerLawCored).
 
  3) The `MassProfile` convergence may be decomposed into a superposition of 20-30 Gaussian's where analytic expressions
  of a Gaussians deflection angle then offer fast computation (see https://arxiv.org/abs/1906.08263).
@@ -51,10 +51,10 @@ The function below times the deflection angle calculation on an input `MassProfi
 """
 
 
-def time_deflections_from_grid(mass_profile):
+def time_deflections_2d_from_grid(mass_profile):
     start = time.time()
     for i in range(repeats):
-        mass_profile.deflections_from_grid(grid=grid)
+        mass_profile.deflections_2d_from_grid(grid=grid)
     return (time.time() - start) / repeats
 
 
@@ -67,7 +67,7 @@ profiling_dict = {}
 We now iterate through every dark mass profile in PyAutoLens and compute how long the deflection angle calculation
 takes.
 """
-mass_profile = al.mp.EllipticalChameleon(
+mass_profile = al.mp.EllChameleon(
     centre=(0.0, 0.0),
     elliptical_comps=(0.0, 0.1),
     intensity=1.0,
@@ -75,58 +75,58 @@ mass_profile = al.mp.EllipticalChameleon(
     core_radius_1=1.0,
     mass_to_light_ratio=1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.SphericalChameleon(
+mass_profile = al.mp.SphChameleon(
     centre=(0.0, 0.0),
     intensity=1.0,
     core_radius_0=0.05,
     core_radius_1=1.0,
     mass_to_light_ratio=1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.EllipticalExponential(
+mass_profile = al.mp.EllExponential(
     centre=(0.0, 0.0),
     elliptical_comps=(0.0, 0.1),
     intensity=1.0,
     effective_radius=1.0,
     mass_to_light_ratio=1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.SphericalExponential(
+mass_profile = al.mp.SphExponential(
     centre=(0.0, 0.0), intensity=1.0, effective_radius=1.0, mass_to_light_ratio=1.0
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.EllipticalDevVaucouleurs(
+mass_profile = al.mp.EllDevVaucouleurs(
     centre=(0.0, 0.0),
     elliptical_comps=(0.0, 0.1),
     intensity=1.0,
     effective_radius=1.0,
     mass_to_light_ratio=1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.SphericalDevVaucouleurs(
+mass_profile = al.mp.SphDevVaucouleurs(
     centre=(0.0, 0.0), intensity=1.0, effective_radius=1.0, mass_to_light_ratio=1.0
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.EllipticalSersic(
+mass_profile = al.mp.EllSersic(
     centre=(0.0, 0.0),
     elliptical_comps=(0.0, 0.1),
     intensity=1.0,
@@ -134,22 +134,22 @@ mass_profile = al.mp.EllipticalSersic(
     sersic_index=2.5,
     mass_to_light_ratio=1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.SphericalSersic(
+mass_profile = al.mp.SphSersic(
     centre=(0.0, 0.0),
     intensity=1.0,
     effective_radius=1.0,
     sersic_index=2.5,
     mass_to_light_ratio=1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.EllipticalSersicRadialGradient(
+mass_profile = al.mp.EllSersicRadialGradient(
     centre=(0.0, 0.0),
     elliptical_comps=(0.0, 0.1),
     intensity=1.0,
@@ -158,11 +158,11 @@ mass_profile = al.mp.EllipticalSersicRadialGradient(
     mass_to_light_ratio=1.0,
     mass_to_light_gradient=-1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.SphericalSersicRadialGradient(
+mass_profile = al.mp.SphSersicRadialGradient(
     centre=(0.0, 0.0),
     intensity=1.0,
     effective_radius=1.0,
@@ -170,13 +170,13 @@ mass_profile = al.mp.SphericalSersicRadialGradient(
     mass_to_light_ratio=1.0,
     mass_to_light_gradient=-1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.EllipticalCoreSersic(
+mass_profile = al.mp.EllSersicCore(
     centre=(1.0, 2.0),
-    elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.5, phi=70.0),
+    elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.5, angle=70.0),
     intensity_break=0.45,
     effective_radius=0.5,
     radius_break=0.01,
@@ -185,11 +185,11 @@ mass_profile = al.mp.EllipticalCoreSersic(
     sersic_index=2.2,
 )
 
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.SphericalCoreSersic(
+mass_profile = al.mp.SphSersicCore(
     centre=(1.0, 2.0),
     intensity_break=0.45,
     effective_radius=0.5,
@@ -198,18 +198,18 @@ mass_profile = al.mp.SphericalCoreSersic(
     alpha=2.0,
     sersic_index=2.2,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.EllipticalGaussian(
+mass_profile = al.mp.EllGaussian(
     centre=(0.0, 0.0),
-    elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.6, phi=0.0),
+    elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.6, angle=0.0),
     intensity=1.0,
     sigma=10.0,
     mass_to_light_ratio=1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 

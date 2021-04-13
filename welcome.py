@@ -65,14 +65,14 @@ grid = al.Grid2D.uniform(
     pixel_scales=0.2,  # <- The pixel-scale describes the conversion from pixel units to arc-seconds.
 )
 
-sersic_light_profile = al.lp.EllipticalExponential(
+sersic_light_profile = al.lp.EllExponential(
     centre=(0.3, 0.2), elliptical_comps=(0.2, 0.0), intensity=0.05, effective_radius=1.0
 )
 
 light_profile_plotter = aplt.LightProfilePlotter(
     light_profile=sersic_light_profile, grid=grid
 )
-light_profile_plotter.figures(image=True)
+light_profile_plotter.figures_2d(image=True)
 
 input(
     "\n"
@@ -92,14 +92,14 @@ input(
     """
 )
 
-isothermal_mass_profile = al.mp.EllipticalIsothermal(
+isothermal_mass_profile = al.mp.EllIsothermal(
     centre=(0.0, 0.0), elliptical_comps=(0.1, 0.0), einstein_radius=1.6
 )
 
 mass_profile_plotter = aplt.MassProfilePlotter(
     mass_profile=isothermal_mass_profile, grid=grid
 )
-mass_profile_plotter.figures(
+mass_profile_plotter.figures_2d(
     convergence=True, potential=True, deflections_y=True, deflections_x=True
 )
 
@@ -127,7 +127,7 @@ tracer = al.Tracer.from_galaxies(
 )
 
 tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
-tracer_plotter.figures(image=True)
+tracer_plotter.figures_2d(image=True)
 
 input(
     "\n"

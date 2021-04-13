@@ -33,10 +33,10 @@ galaxy includes the `Pixelization` and `Regularization` we profile.
 
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    mass=al.mp.EllipticalIsothermal(
+    mass=al.mp.EllIsothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, phi=45.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
     ),
 )
 
@@ -61,13 +61,13 @@ coefficients = list(np.logspace(np.log10(0.1), np.log10(1000.0), 12))
 transformer_class = al.TransformerDFT
 use_linear_operators = False
 
-masked_interferometer = al.MaskedInterferometer(
+interferometer = al.MaskedInterferometer(
     interferometer=interferometer,
     real_space_mask=mask,
     visibilities_mask=np.full(
         fill_value=False, shape=interferometer.visibilities.shape
     ),
-    settings=al.SettingsMaskedInterferometer(transformer_class=transformer_class),
+    settings=al.SettingsInterferometer(transformer_class=transformer_class),
 )
 
 coefficients_matrix_dft = []
@@ -89,7 +89,7 @@ evidence_matrix_dft = []
 #     try:
 #
 #         fit = al.FitInterferometer(
-#             masked_interferometer=masked_interferometer,
+#             interferometer=interferometer,
 #             tracer=tracer,
 #             settings_inversion=al.SettingsInversion(
 #                 use_linear_operators=use_linear_operators,
@@ -121,7 +121,7 @@ evidence_matrix_dft = []
 # transformer_class = al.TransformerNUFFT
 # use_linear_operators = False
 #
-# masked_interferometer = al.MaskedInterferometer(
+# interferometer = al.MaskedInterferometer(
 #     interferometer=interferometer,
 #     real_space_mask=mask,
 #     visibilities_mask=np.full(
@@ -153,7 +153,7 @@ for coefficient in coefficients:
     try:
 
         fit = al.FitInterferometer(
-            masked_interferometer=masked_interferometer,
+            interferometer=interferometer,
             tracer=tracer,
             settings_inversion=al.SettingsInversion(
                 use_linear_operators=use_linear_operators
@@ -208,13 +208,13 @@ for coefficient in coefficients:
 transformer_class = al.TransformerNUFFT
 use_linear_operators = True
 
-masked_interferometer = al.MaskedInterferometer(
+interferometer = al.MaskedInterferometer(
     interferometer=interferometer,
     real_space_mask=mask,
     visibilities_mask=np.full(
         fill_value=False, shape=interferometer.visibilities.shape
     ),
-    settings=al.SettingsMaskedInterferometer(transformer_class=transformer_class),
+    settings=al.SettingsInterferometer(transformer_class=transformer_class),
 )
 
 coefficients_lops_nufft = []
@@ -240,7 +240,7 @@ for coefficient in coefficients:
     try:
 
         fit = al.FitInterferometer(
-            masked_interferometer=masked_interferometer,
+            interferometer=interferometer,
             tracer=tracer,
             settings_inversion=al.SettingsInversion(
                 use_linear_operators=use_linear_operators
