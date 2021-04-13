@@ -16,13 +16,13 @@ In this script, we will fit the warm pixel data converted to charge injection im
 
  - The CTI model consists of two parallel `Trap` species.
  - The `CCD` volume fill parameterization is a simple form with just a `well_fill_power` parameter.
- - The `CIImaging` is warm-pixel data from ACS.
+ - The `ImagingCI` is warm-pixel data from ACS.
 
 """
 
 
 """
-Load the `CIImagings` from the .pickle file create in `line_collection_to_ci.py`, which is the dataset we will
+Load the `ImagingCIs` from the .pickle file create in `line_collection_to_ci.py`, which is the dataset we will
 use to perform CTI modeling.
 """
 
@@ -33,15 +33,15 @@ import autocti.plot as aplt
 from os import path
 import pickle
 
-dataset_name = "jc0a01h8q_ci_imagings"
+dataset_name = "jc0a01h8q_imaging_cis"
 dataset_path = path.join("dataset", "examples", "acs", "lines")
 
 with open(path.join(dataset_path, dataset_name, ".pickle"), "rb") as f:
     imaging_list = pickle.load(f)
 
 
-"""Lets plot the first `CIImaging`"""
-imaging_plotter = aplt.CIImagingPlotter(imaging=imaging_list[0])
+"""Lets plot the first `ImagingCI`"""
+imaging_plotter = aplt.ImagingCIPlotter(imaging=imaging_list[0])
 imaging_plotter.subplot_imaging()
 
 
@@ -58,7 +58,7 @@ clocker = ac.Clocker(parallel_express=2)
 """
 __Phase__
 
-To perform lens modeling, we create a *PhaseCIImaging* object, which comprises:
+To perform lens modeling, we create a *PhaseImagingCI* object, which comprises:
 
    - The `Trap`'s and `CCD` models used to fit the data.
    - The `SettingsPhase` which customize how the model is fitted to the data.
@@ -78,10 +78,10 @@ The number of free parameters and therefore the dimensionality of non-linear par
 """
 
 
-parallel_trap_0 = af.PriorModel(ac.TrapInstantCapture)
-parallel_trap_1 = af.PriorModel(ac.TrapInstantCapture)
+parallel_trap_0 = af.Model(ac.TrapInstantCapture)
+parallel_trap_1 = af.Model(ac.TrapInstantCapture)
 parallel_traps = [parallel_trap_0, parallel_trap_1]
-parallel_ccd = af.PriorModel(ac.CCD)
+parallel_ccd = af.Model(ac.CCD)
 # parallel_ccd.well_notch_depth = 0.0
 # parallel_ccd.full_well_depth = 84700
 
@@ -89,7 +89,7 @@ parallel_ccd = af.PriorModel(ac.CCD)
 """
 __Settings__
 
-Next, we specify the *SettingsPhaseCIImaging*, which describes how the model is fitted to the data in the 
+Next, we specify the *SettingsPhaseImagingCI*, which describes how the model is fitted to the data in the 
 log likelihood function. Below, we specify:
 
 Different `SettingsPhase` are used in different example model scripts and a full description of all `SettingsPhase`
@@ -98,8 +98,8 @@ link -> <link>
 """
 
 
-settings = ac.SettingsPhaseCIImaging(
-    settings_ci_mask=ac.ci.SettingsCIMask(parallel_front_edge_rows=(0, 1))
+settings = ac.SettingsPhaseImagingCI(
+    settings_ci_mask=ac.ci.SettingsMask2DCI(parallel_front_edge_rows=(0, 1))
 )
 
 
@@ -118,7 +118,7 @@ operates, checkout chapters 1 and 2 of the HowToCTI lecture series.
 search = af.DynestyStatic(
     path_prefix=path.join("acs", dataset_name),
     name="phase_parallel[x2]",
-    n_live_points=50,
+    nlive=50,
 )
 
 
@@ -134,7 +134,7 @@ The name and folders inputs below specify the path where results are stored in t
 """
 
 
-phase = ac.PhaseCIImaging(
+phase = ac.PhaseImagingCI(
     parallel_traps=parallel_traps,
     parallel_ccd=parallel_ccd,
     settings=settings,
@@ -169,8 +169,8 @@ the fit.
 """
 
 
-ci_fit_plotter = aplt.CIFitPlotter(fit=result.max_log_likelihood_fit)
-ci_fit_plotter.subplot_fit_imaging()
+fit_ci_plotter = aplt.FitImagingCIPlotter(fit=result.max_log_likelihood_fit)
+fit_ci_plotter.subplot_fit_imaging()
 
 
 """

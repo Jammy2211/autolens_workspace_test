@@ -22,14 +22,10 @@ import autolens as al
 """
 __Model__
 """
-lens = al.GalaxyModel(
-    redshift=0.5, mass=al.mp.EllipticalIsothermal, shear=al.mp.ExternalShear
-)
-source = al.GalaxyModel(redshift=1.0, bulge=al.lp.EllipticalSersic)
+lens = al.GalaxyModel(redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
 
-model = af.CollectionPriorModel(
-    galaxies=af.CollectionPriorModel(lens=lens, source=source)
-)
+model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
 """
 DATASET 1:
@@ -50,12 +46,12 @@ mask = al.Mask2D.circular(
     shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
-masked_imaging = al.MaskedImaging(imaging=imaging, mask=mask)
+masked_imaging = imaging.apply_mask(mask=mask)
 
 search = af.DynestyStatic(
     name="search_dataset_1",
     path_prefix=path.join("imaging", "database", "dataset_x2"),
-    n_live_points=50,
+    nlive=50,
 )
 
 analysis = al.AnalysisImaging(dataset=masked_imaging)
@@ -81,12 +77,12 @@ mask = al.Mask2D.circular(
     shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
-masked_imaging = al.MaskedImaging(imaging=imaging, mask=mask)
+masked_imaging = imaging.apply_mask(mask=mask)
 
 search = af.DynestyStatic(
     name="search_dataset_2",
     path_prefix=path.join("imaging", "database", "dataset_x2"),
-    n_live_points=50,
+    nlive=50,
 )
 
 analysis = al.AnalysisImaging(dataset=masked_imaging)
@@ -116,6 +112,6 @@ agg = Aggregator.from_database(database_file)
 """
 Check Aggregator works (This should load two mp_instances).
 """
-agg_query = agg.query(agg.galaxies.lens.mass == al.mp.EllipticalIsothermal)
+agg_query = agg.query(agg.galaxies.lens.mass == al.mp.EllIsothermal)
 mp_instances = [samps.median_pdf_instance for samps in agg.values("samples")]
 print(mp_instances)

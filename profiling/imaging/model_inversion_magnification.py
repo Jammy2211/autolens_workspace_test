@@ -10,7 +10,7 @@ both to perform the model-fit.
 In this script, we fit `Imaging` of a strong lens system where:
 
  - The lens `Galaxy`'s light is omitted (and is not present in the simulated data).
- - The lens `Galaxy`'s total mass distribution is an `EllipticalIsothermal`.
+ - The lens `Galaxy`'s total mass distribution is an `EllIsothermal`.
  - The source `Galaxy`'s surface-brightness is modeled using an `Inversion`.
 
 An `Inversion` reconstructs the source`s light using a pixel-grid, which is regularized using a prior that forces
@@ -86,29 +86,30 @@ mask = al.Mask2D.circular(
     radius=mask_radius,
 )
 
-masked_imaging = al.MaskedImaging(
-    imaging=imaging, mask=mask, settings=al.SettingsMaskedImaging(sub_size=sub_size)
-)
+masked_imaging = imaging.apply_mask(mask=mask)
+# masked_imaging = masked_imaging.apply_settings(
+#     settings=al.SettingsImaging(grid_class=al.Grid2DIterate, grid_inversion_class=al.Grid2D, sub_size_inversion=sub_size)
+# )
 
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    bulge=al.lp.EllipticalSersic(
+    bulge=al.lp.EllSersic(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, phi=45.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
         intensity=4.0,
         effective_radius=0.6,
         sersic_index=3.0,
     ),
-    disk=al.lp.EllipticalExponential(
+    disk=al.lp.EllExponential(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, phi=30.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
         intensity=2.0,
         effective_radius=1.6,
     ),
-    mass=al.mp.EllipticalIsothermal(
+    mass=al.mp.EllIsothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, phi=45.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
     ),
     shear=al.mp.ExternalShear(elliptical_comps=(0.001, 0.001)),
 )
@@ -124,7 +125,7 @@ source_galaxy = al.Galaxy(
 
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
-fit = al.FitImaging(masked_imaging=masked_imaging, tracer=tracer)
+fit = al.FitImaging(imaging=masked_imaging, tracer=tracer)
 fit.log_evidence
 
 """
@@ -143,7 +144,7 @@ __Model__
 We compose our lens model using `GalaxyModel` objects, which represent the galaxies we fit to our data. In this 
 example our lens model is:
 
- - An `EllipticalIsothermal` `MassProfile` for the lens `Galaxy`'s mass (5 parameters).
+ - An `EllIsothermal` `MassProfile` for the lens `Galaxy`'s mass (5 parameters).
  - A `Rectangular` `Pixelization`.which reconstructs the source `Galaxy`'s light. We will fix its resolution to 
    30 x 30 pixels, which balances fast-run time with sufficient resolution to reconstruct its light. (0 parameters).
  - A `Constant` `Regularization`.scheme which imposes a smooothness prior on the source reconstruction (1 parameter). 
@@ -158,21 +159,21 @@ with the priors on the lens `MassProfile` coordinates set accordingly. if for yo
 (0.0", 0.0"), we recommend you reduce your data so it is (see `autolens_workspace/preprocess`). Alternatively, you can 
 manually override the priors (see `autolens_workspace/examples/customize/priors.py`).
 """
-bulge = al.lp.EllipticalSersic(
+bulge = al.lp.EllSersic(
     centre=(0.0, 0.0),
-    elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, phi=45.0),
+    elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
     intensity=4.0,
     effective_radius=0.6,
     sersic_index=3.0,
 )
-disk = al.lp.EllipticalExponential(
+disk = al.lp.EllExponential(
     centre=(0.0, 0.0),
-    elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, phi=30.0),
+    elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
     intensity=2.0,
     effective_radius=1.6,
 )
 
-mass = af.PriorModel(al.mp.EllipticalIsothermal)
+mass = af.Model(al.mp.EllIsothermal)
 
 mass.centre.centre_0 = af.UniformPrior(lower_limit=-0.02, upper_limit=0.02)
 mass.centre.centre_1 = af.UniformPrior(lower_limit=-0.02, upper_limit=0.02)
@@ -184,49 +185,15 @@ mass.elliptical_comps.elliptical_comps_1 = af.UniformPrior(
 )
 mass.einstein_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.7)
 
-lens = al.GalaxyModel(redshift=0.5, bulge=bulge, disk=disk, mass=mass)
-source = al.GalaxyModel(
+lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, disk=disk, mass=mass)
+source = af.Model(
+    al.Galaxy,
     redshift=1.0,
     pixelization=al.pix.VoronoiMagnification(shape=pixelization_shape_2d),
     regularization=al.reg.Constant,
 )
 
-"""
-__Settings__
-
-Next, we specify the `SettingsPhaseImaging`, which describe how the model is fitted to the data in the log likelihood
-function. Below, we specify:
-
- - That a regular `Grid2D` is used to fit create the model-image when fitting the data 
-      (see `autolens_workspace/examples/grids.py` for a description of grids).
- - The sub-grid size of this grid.
-
-We specifically specify the grid that is used to perform the `Inversion`. In **PyAutoLens** it is possible to fit
-data simultaneously with `LightProfile`'s and an `Inversion`. Each fit uses a different grid, which are specified 
-independently.
-
-`Inversion`'s suffer a problem where they reconstruct unphysical lens models, where the reconstructed soruce appears
-as a demagnified reconstruction of the lensed source. These are covered in more detail in chapter 4 of **HowToLens**. 
-To prevent these solutions impacting this fit we use position thresholding, which is describe fully in the 
-script `autolens_workspace/examples/model/customize/positions.py`, Therefore, we also specify:
-
- - A positions_threshold of 0.5, meaning that the four (y,x) coordinates specified by our positions must trace
-   within 0.5" of one another in the source-plane for a mass model to be accepted. If not, it is discarded and
-   a new model is sampled.
-
-The threshold of 0.5" is large. For an accurate lens model we would anticipate the positions trace within < 0.01" of
-one another. However, we only want the threshold to aid the `NonLinearSearch` with the generation of the initial 
-mass models. 
-
-Different `SettingsPhase` are used in different example model scripts and a full description of all `SettingsPhase` 
-can be found in the example script `autolens/workspace/examples/model/customize/settings.py` and the following 
-link -> <link>
-"""
-settings_masked_imaging = al.SettingsMaskedImaging(
-    grid_class=al.Grid2DIterate, grid_inversion_class=al.Grid2D, sub_size=4
-)
-
-settings = al.SettingsPhaseImaging(settings_masked_imaging=settings_masked_imaging)
+model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
 """
 __Search__
@@ -246,32 +213,14 @@ search = af.DynestyStatic(
     path_prefix=path.join("profiling", "inversion_magnification", instrument),
     name="phase_mass[sie]_source[inversion]",
     maxcall=1000,  # This sets how long the model-fit takes.
-    n_live_points=50,
+    nlive=50,
 )
 
-"""
-__Phase__
-
-We can now combine the model, settings and `NonLinearSearch` above to create and run a phase, fitting our data with
-the lens model.
-"""
+analysis = al.AnalysisImaging(dataset=masked_imaging)
 
 ### BEGIN PROFILING HERE ###
 
-phase = al.PhaseImaging(
-    search=search,
-    galaxies=af.CollectionPriorModel(lens=lens, source=source),
-    settings=settings,
-)
-
-"""
-We can now begin the fit by passing the dataset and mask to the phase, which will use the `NonLinearSearch` to fit
-the model to the data. 
-
-The fit outputs visualization on-the-fly, so checkout the path 
-`/path/to/autolens_workspace/output/examples/phase_mass[sie]_source[inversion]` to see how your fit is doing!
-"""
-result = phase.run(dataset=imaging, mask=mask)
+result = search.fit(model=model, analysis=analysis)
 
 """
 The phase above returned a result, which, for example, includes the lens model corresponding to the maximum

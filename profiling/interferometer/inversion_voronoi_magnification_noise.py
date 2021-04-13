@@ -43,10 +43,10 @@ galaxy includes the `Pixelization` and `Regularization` we profile.
 
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    mass=al.mp.EllipticalIsothermal(
+    mass=al.mp.EllIsothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, phi=45.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
     ),
     shear=al.mp.ExternalShear(elliptical_comps=(0.0, 0.05)),
 )
@@ -66,21 +66,19 @@ mask = al.Mask2D.circular(
     shape_native=(256, 256), pixel_scales=0.05, sub_size=1, radius=3.0
 )
 
-masked_interferometer = al.MaskedInterferometer(
+interferometer = al.MaskedInterferometer(
     interferometer=interferometer,
     real_space_mask=mask,
     visibilities_mask=np.full(
         fill_value=False, shape=interferometer.visibilities.shape
     ),
-    settings=al.SettingsMaskedInterferometer(transformer_class=transformer_class),
+    settings=al.SettingsInterferometer(transformer_class=transformer_class),
 )
 
 """Print the size of the real-space mask and number of visiblities, which drive the run-time of the fit."""
 
-print(
-    f"Number of points in real space = {masked_interferometer.grid.sub_shape_slim} \n"
-)
-print(f"Number of visibilities = {masked_interferometer.visibilities.shape_slim}\n")
+print(f"Number of points in real space = {interferometer.grid.sub_shape_slim} \n")
+print(f"Number of visibilities = {interferometer.visibilities.shape_slim}\n")
 
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
@@ -91,7 +89,7 @@ start_overall = time.time()
 start = time.time()
 for i in range(repeats):
     fit = al.FitInterferometer(
-        masked_interferometer=masked_interferometer,
+        interferometer=interferometer,
         tracer=tracer,
         settings_inversion=al.SettingsInversion(
             use_linear_operators=use_linear_operators
@@ -112,7 +110,7 @@ print("Time to compute inversion mapped = {}".format(calculation_time / repeats)
 
 
 fit_no_precon = al.FitInterferometer(
-    masked_interferometer=masked_interferometer,
+    interferometer=interferometer,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_linear_operators=use_linear_operators),
 )
@@ -120,7 +118,7 @@ fit_no_precon = al.FitInterferometer(
 print(fit_no_precon.figure_of_merit)
 
 fit_precon = al.FitInterferometer(
-    masked_interferometer=masked_interferometer,
+    interferometer=interferometer,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_linear_operators=use_linear_operators),
 )

@@ -33,10 +33,10 @@ galaxy includes the `Pixelization` and `Regularization` we profile.
 
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    mass=al.mp.EllipticalIsothermal(
+    mass=al.mp.EllIsothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, phi=45.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
     ),
 )
 
@@ -59,13 +59,13 @@ mask = al.Mask2D.circular(
 transformer_class = al.TransformerDFT
 use_linear_operators = False
 
-masked_interferometer = al.MaskedInterferometer(
+interferometer = al.MaskedInterferometer(
     interferometer=interferometer,
     real_space_mask=mask,
     visibilities_mask=np.full(
         fill_value=False, shape=interferometer.visibilities.shape
     ),
-    settings=al.SettingsMaskedInterferometer(transformer_class=transformer_class),
+    settings=al.SettingsInterferometer(transformer_class=transformer_class),
 )
 
 coefficients_matrix_dft = []
@@ -83,7 +83,7 @@ source_galaxy = al.Galaxy(
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
 fit_dft = al.FitInterferometer(
-    masked_interferometer=masked_interferometer,
+    interferometer=interferometer,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_linear_operators=use_linear_operators),
 )
@@ -97,13 +97,13 @@ fit_dft = al.FitInterferometer(
 transformer_class = al.TransformerNUFFT
 use_linear_operators = True
 
-masked_interferometer = al.MaskedInterferometer(
+interferometer = al.MaskedInterferometer(
     interferometer=interferometer,
     real_space_mask=mask,
     visibilities_mask=np.full(
         fill_value=False, shape=interferometer.visibilities.shape
     ),
-    settings=al.SettingsMaskedInterferometer(transformer_class=transformer_class),
+    settings=al.SettingsInterferometer(transformer_class=transformer_class),
 )
 
 print("Matrix NUFFT:")
@@ -129,7 +129,7 @@ for coefficient in coefficients:
     tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
     fit = al.FitInterferometer(
-        masked_interferometer=masked_interferometer,
+        interferometer=interferometer,
         tracer=tracer,
         settings_inversion=al.SettingsInversion(
             use_linear_operators=use_linear_operators

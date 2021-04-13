@@ -47,23 +47,23 @@ The lens galaxy used to fit the data, which is identical to the lens galaxy used
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    bulge=al.lp.EllipticalSersic(
+    bulge=al.lp.EllSersic(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, phi=45.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
         intensity=4.0,
         effective_radius=0.6,
         sersic_index=3.0,
     ),
-    disk=al.lp.EllipticalExponential(
+    disk=al.lp.EllExponential(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, phi=30.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
         intensity=2.0,
         effective_radius=1.6,
     ),
-    mass=al.mp.EllipticalIsothermal(
+    mass=al.mp.EllIsothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, phi=45.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
     ),
     shear=al.mp.ExternalShear(elliptical_comps=(0.001, 0.001)),
 )
@@ -120,7 +120,7 @@ mask = al.Mask2D.circular(
 )
 
 masked_imaging = al.MaskedImaging(
-    imaging=imaging, mask=mask, settings=al.SettingsMaskedImaging(sub_size=sub_size)
+    imaging=imaging, mask=mask, settings=al.SettingsImaging(sub_size=sub_size)
 )
 
 """
@@ -128,10 +128,10 @@ Tracers using a power-law and decomposed mass model, just to provide run times o
 """
 lens_galaxy_power_law = al.Galaxy(
     redshift=0.5,
-    mass=al.mp.EllipticalPowerLaw(
+    mass=al.mp.EllPowerLaw(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, phi=45.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
     ),
     shear=al.mp.ExternalShear(elliptical_comps=(0.001, 0.001)),
 )
@@ -141,22 +141,22 @@ tracer_power_law = al.Tracer.from_galaxies(
 
 lens_galaxy_decomposed = al.Galaxy(
     redshift=0.5,
-    bulge=al.lmp.EllipticalSersic(
+    bulge=al.lmp.EllSersic(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, phi=45.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
         intensity=4.0,
         effective_radius=0.6,
         sersic_index=3.0,
         mass_to_light_ratio=0.05,
     ),
-    disk=al.lmp.EllipticalExponential(
+    disk=al.lmp.EllExponential(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, phi=30.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
         intensity=2.0,
         effective_radius=1.6,
         mass_to_light_ratio=0.05,
     ),
-    dark=al.mp.EllipticalNFW(
+    dark=al.mp.EllNFW(
         centre=(0.0, 0.0),
         elliptical_comps=(0.05, 0.05),
         kappa_s=0.12,
@@ -180,12 +180,12 @@ https://github.com/Jammy2211/PyAutoLens/blob/master/autolens/fit/fit.py
 """
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
-fit = al.FitImaging(masked_imaging=masked_imaging, tracer=tracer)
+fit = al.FitImaging(imaging=masked_imaging, tracer=tracer)
 fit.log_evidence
 
 start = time.time()
 for i in range(repeats):
-    fit = al.FitImaging(masked_imaging=masked_imaging, tracer=tracer)
+    fit = al.FitImaging(imaging=masked_imaging, tracer=tracer)
     fit.log_evidence
 fit_time = (time.time() - start) / repeats
 
@@ -205,21 +205,21 @@ start_overall = time.time()
 __Lens Light (Grid2D)__
 
 Compute the light profile of the foreground lens galaxy, which for this script uses an `EllpiticalSersic` bulge and
-`EllipticalExponential` disk. This computes the `image` of each `LightProfile` and adds them together. 
+`EllExponential` disk. This computes the `image` of each `LightProfile` and adds them together. 
 
 It also includes a `blurring_image` which represents all flux values not within the mask, but which will blur into the
 mask after PSF convolution.
 
 The calculation below uses a `Grid2D` object with a fixed sub-size of 2.
 
-To see examples of `LightProfile` image calculations checkout the `image_from_grid` methods at the following link:
+To see examples of `LightProfile` image calculations checkout the `image_2d_from_grid` methods at the following link:
 
 https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/light_profiles.py
 """
 start = time.time()
 for i in range(repeats):
-    image = lens_galaxy.image_from_grid(grid=masked_imaging.grid)
-    blurring_image = lens_galaxy.image_from_grid(grid=masked_imaging.blurring_grid)
+    image = lens_galaxy.image_2d_from_grid(grid=masked_imaging.grid)
+    blurring_image = lens_galaxy.image_2d_from_grid(grid=masked_imaging.blurring_grid)
 
 profiling_dict["Lens Light (Grid2D)"] = (time.time() - start) / repeats
 
@@ -233,15 +233,13 @@ https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/
 """
 
 masked_imaging_iterate = al.MaskedImaging(
-    imaging=imaging,
-    mask=mask,
-    settings=al.SettingsMaskedImaging(grid_class=al.Grid2DIterate),
+    imaging=imaging, mask=mask, settings=al.SettingsImaging(grid_class=al.Grid2DIterate)
 )
 
 start = time.time()
 for i in range(repeats):
-    image = lens_galaxy.image_from_grid(grid=masked_imaging_iterate.grid)
-    blurring_image = lens_galaxy.image_from_grid(grid=masked_imaging.blurring_grid)
+    image = lens_galaxy.image_2d_from_grid(grid=masked_imaging_iterate.grid)
+    blurring_image = lens_galaxy.image_2d_from_grid(grid=masked_imaging.blurring_grid)
 
 profiling_dict["Lens Light (Grid2DIterate)"] = (time.time() - start) / repeats
 
@@ -256,7 +254,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/operators/convolv
 """
 start = time.time()
 for i in range(repeats):
-    convolved_image = masked_imaging.convolver.convolved_image_from_image_and_blurring_image(
+    convolved_image = masked_imaging.convolver.convolve_image(
         image=image, blurring_image=blurring_image
     )
 
@@ -266,14 +264,14 @@ profiling_dict["Lens Light Convolution"] = (time.time() - start) / repeats
 __Ray Tracing (SIE)__
 
 Compute the deflection angles and ray-trace the image-pixels to the source plane. The run-time of this step depends
-on the lens galaxy mass model, for this example we use a fast `EllipticalIsothermal` meaning this step is not the 
+on the lens galaxy mass model, for this example we use a fast `EllIsothermal` meaning this step is not the 
 bottleneck.
 
-This uses the fast `EllipticalIsothermal` profile.
+This uses the fast `EllIsothermal` profile.
 
 Deflection angle calculations are profiled fully in the package`profiling/deflections`.
 
-To see examples of deflection angle calculations checkout the `deflections_from_grid` methods at the following link:
+To see examples of deflection angle calculations checkout the `deflections_2d_from_grid` methods at the following link:
 
 https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/mass_profiles/total_mass_profiles.py
 
@@ -290,7 +288,7 @@ sparse_image_plane_grid = al.Grid2DSparse.from_grid_and_unmasked_2d_grid_shape(
 
 start = time.time()
 for i in range(repeats):
-    tracer.deflections_from_grid(grid=sparse_image_plane_grid)
+    tracer.deflections_2d_from_grid(grid=sparse_image_plane_grid)
     traced_grid = tracer.traced_grids_of_planes_from_grid(grid=masked_imaging.grid)[-1]
 
 profiling_dict["Ray Tracing (SIE)"] = (time.time() - start) / repeats
@@ -299,11 +297,11 @@ profiling_dict["Ray Tracing (SIE)"] = (time.time() - start) / repeats
 """
 __Ray Tracing (Power-Law)__
 
-Compute the deflection angles again, but now using the more expensive `EllipticalPowerLaw` profile.
+Compute the deflection angles again, but now using the more expensive `EllPowerLaw` profile.
 """
 start = time.time()
 for i in range(repeats):
-    tracer.deflections_from_grid(grid=sparse_image_plane_grid)
+    tracer.deflections_2d_from_grid(grid=sparse_image_plane_grid)
     traced_grid_power_law = tracer_power_law.traced_grids_of_planes_from_grid(
         grid=masked_imaging.grid
     )[-1]
@@ -315,11 +313,11 @@ profiling_dict["Ray Tracing (Power-Law)"] = (time.time() - start) / repeats
 __Ray Tracing (Decomposed)__
 
 Compute the deflection angles again, now using a very expensive decomposed mass model consisting of 
-two `EllipticalSersic`'s and an `EllipticalNFW`.
+two `EllSersic`'s and an `EllNFW`.
 """
 start = time.time()
 for i in range(repeats):
-    tracer.deflections_from_grid(grid=sparse_image_plane_grid)
+    tracer.deflections_2d_from_grid(grid=sparse_image_plane_grid)
     traced_grid_decomposed = tracer_decomposed.traced_grids_of_planes_from_grid(
         grid=masked_imaging.grid
     )[-1]

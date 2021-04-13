@@ -7,10 +7,10 @@ in **PyAutoLens**.
 Deflections angles calculations are performed following one of three methods:
 
  1) When analytic formulae for the deflection angles are available these are used via NumPy array calculations (e.g.,
- `EllipticalIsothermal`).
+ `EllIsothermal`).
 
  2) When not available, numerical integration may be performed via `pyquad`, a Python wrapper to the GSL integration
- libraries (e.g. `EllipticalCoredPowerLaw).
+ libraries (e.g. `EllPowerLawCored).
 
  3) The `MassProfile` convergence may be decomposed into a superposition of 20-30 Gaussian's where analytic expressions
  of a Gaussians deflection angle then offer fast computation (see https://arxiv.org/abs/1906.08263).
@@ -51,10 +51,10 @@ The function below times the deflection angle calculation on an input `MassProfi
 """
 
 
-def time_deflections_from_grid(mass_profile):
+def time_deflections_2d_from_grid(mass_profile):
     start = time.time()
     for i in range(repeats):
-        mass_profile.deflections_from_grid(grid=grid)
+        mass_profile.deflections_2d_from_grid(grid=grid)
     return (time.time() - start) / repeats
 
 
@@ -67,40 +67,40 @@ profiling_dict = {}
 We now iterate through every dark mass profile in PyAutoLens and compute how long the deflection angle calculation
 takes.
 """
-mass_profile = al.mp.SphericalNFW(centre=(0.0, 0.0), kappa_s=0.1, scale_radius=10.0)
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+mass_profile = al.mp.SphNFW(centre=(0.0, 0.0), kappa_s=0.1, scale_radius=10.0)
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.SphericalTruncatedNFW(
+mass_profile = al.mp.SphNFWTruncated(
     centre=(0.0, 0.0), kappa_s=0.1, scale_radius=10.0, truncation_radius=5.0
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.SphericalGeneralizedNFW(
+mass_profile = al.mp.SphNFWGeneralized(
     centre=(0.0, 0.0), kappa_s=0.1, scale_radius=10.0, inner_slope=0.5
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.EllipticalNFW(
+mass_profile = al.mp.EllNFW(
     centre=(0.0, 0.0), elliptical_comps=(0.111111, 0.0), kappa_s=0.1, scale_radius=10.0
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 
-mass_profile = al.mp.EllipticalGeneralizedNFW(
+mass_profile = al.mp.EllNFWGeneralized(
     centre=(0.0, 0.0),
     elliptical_comps=(0.111111, 0.0),
     kappa_s=0.1,
     scale_radius=10.0,
     inner_slope=1.8,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
     mass_profile=mass_profile
 )
 

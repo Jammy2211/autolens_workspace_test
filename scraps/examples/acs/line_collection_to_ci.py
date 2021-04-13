@@ -12,13 +12,13 @@ dataset_name = "jc0a01h8q"
 lines = ac.LineCollection()
 lines.load(filename=path.join(dataset_path, dataset_name, ".pickle"))
 
-ci_imaging_list = []
+imaging_ci_list = []
 
 delta_function_index = 9
 
 for i in range(lines.n_lines):
 
-    ci_pattern = ac.ci.CIPatternUniform(
+    pattern_ci = ac.ci.PatternCIUniform(
         regions=[(delta_function_index, delta_function_index + 1, 0, 1)],
         normalization=lines.lines[i].grid_plot[delta_function_index],
     )
@@ -40,7 +40,7 @@ for i in range(lines.n_lines):
     image = ac.ci.CIFrame.manual(
         array=lines.lines[i].grid_plot[:, None],
         pixel_scales=0.05,
-        ci_pattern=ci_pattern,
+        pattern_ci=pattern_ci,
         exposure_info=ac.ExposureInfo(readout_offsets=readout_offsets),
     )
 
@@ -48,29 +48,29 @@ for i in range(lines.n_lines):
         # array=lines.lines[i].noise_map[:,None],
         array=np.ones(shape=image.shape_native),
         pixel_scales=0.05,
-        ci_pattern=ci_pattern,
+        pattern_ci=pattern_ci,
         exposure_info=ac.ExposureInfo(readout_offsets=readout_offsets),
     )
 
-    ci_pre_cti = ci_pattern.ci_pre_cti_from(
+    pre_cti_ci = pattern_ci.pre_cti_ci_from(
         shape_native=image.shape_native, pixel_scales=image.pixel_scales
     )
 
-    ci_imaging_list.append(
-        ac.ci.CIImaging(
+    imaging_ci_list.append(
+        ac.ci.ImagingCI(
             image=image,
             noise_map=noise_map,
-            ci_pre_cti=ci_pre_cti,
+            pre_cti_ci=pre_cti_ci,
             name=lines.lines[i].name,
         )
     )
 
-"""Serialize the `CIImaging`'s so we can load them in the CTI model fitting scripts."""
+"""Serialize the `ImagingCI`'s so we can load them in the CTI model fitting scripts."""
 
 output_path = path.join("dataset", "examples", "acs", "lines")
 
 if not os.path.exists(output_path):
     os.mkdir(output_path)
 
-with open(path.join(output_path, dataset_name, "ci_imaging_list.pickle"), "wb") as f:
-    pickle.dump(ci_imaging_list, f)
+with open(path.join(output_path, dataset_name, "imaging_ci_list.pickle"), "wb") as f:
+    pickle.dump(imaging_ci_list, f)

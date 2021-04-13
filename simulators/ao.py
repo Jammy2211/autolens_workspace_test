@@ -44,7 +44,7 @@ grid = al.Grid2DIterate.uniform(
 Simulate a simple Gaussian PSF for the image.
 """
 psf = al.Kernel2D.from_gaussian(
-    shape_native=(21, 21), sigma=0.025, pixel_scales=grid.pixel_scales, renormalize=True
+    shape_native=(21, 21), sigma=0.025, pixel_scales=grid.pixel_scales, normalize=True
 )
 
 """
@@ -60,31 +60,31 @@ Setup the lens galaxy's mass (SIE+Shear) and source galaxy light (elliptical Ser
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    bulge=al.lp.EllipticalSersic(
+    bulge=al.lp.EllSersic(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, phi=45.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
         intensity=4.0,
         effective_radius=0.6,
         sersic_index=3.0,
     ),
-    disk=al.lp.EllipticalExponential(
+    disk=al.lp.EllExponential(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, phi=30.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
         intensity=2.0,
         effective_radius=1.6,
     ),
-    mass=al.mp.EllipticalIsothermal(
+    mass=al.mp.EllIsothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, phi=45.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
     ),
 )
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    bulge=al.lp.EllipticalSersic(
+    bulge=al.lp.EllSersic(
         centre=(0.1, 0.1),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, phi=60.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=60.0),
         intensity=0.3,
         effective_radius=1.0,
         sersic_index=2.5,
@@ -100,7 +100,7 @@ tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 Lets look at the tracer`s image, this is the image we'll be simulating.
 """
 tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
-tracer_plotter.figures(image=True)
+tracer_plotter.figures_2d(image=True)
 
 """
 We can now pass this simulator a tracer, which creates the ray-traced image plotted above and simulates it as an
@@ -135,7 +135,7 @@ mat_plot_2d = aplt.MatPlot2D(
 
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging, mat_plot_2d=mat_plot_2d)
 imaging_plotter.subplot_imaging()
-imaging_plotter.figures(image=True)
+imaging_plotter.figures_2d(image=True)
 
 tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d)
 tracer_plotter.subplot_tracer()

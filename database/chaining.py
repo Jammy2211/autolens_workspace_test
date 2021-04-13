@@ -51,7 +51,7 @@ mask = al.Mask2D.circular(
     shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
-masked_imaging = al.MaskedImaging(imaging=imaging, mask=mask)
+masked_imaging = imaging.apply_mask(mask=mask)
 
 """
 __Analysis__
@@ -61,14 +61,10 @@ analysis = al.AnalysisImaging(dataset=masked_imaging)
 """
 __Model (Search 1)__
 """
-lens = al.GalaxyModel(
-    redshift=0.5, mass=al.mp.EllipticalIsothermal, shear=al.mp.ExternalShear
-)
-source = al.GalaxyModel(redshift=1.0, bulge=al.lp.EllipticalSersic)
+lens = al.GalaxyModel(redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
 
-model = af.CollectionPriorModel(
-    galaxies=af.CollectionPriorModel(lens=lens, source=source)
-)
+model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
 """
 __Search + Model Fit (Search 1)__
@@ -83,8 +79,8 @@ result_1 = search.fit(model=model, analysis=analysis)
 """
 __Model (Search 2)__
 """
-model = af.CollectionPriorModel(
-    galaxies=af.CollectionPriorModel(
+model = af.Collection(
+    galaxies=af.Collection(
         lens=result_1.model.galaxies.lens, source=result_1.model.galaxies.source
     )
 )
@@ -120,6 +116,6 @@ agg = Aggregator.from_database(database_file)
 """
 Check Aggregator works (This should load two mp_instances).
 """
-agg_query = agg.query(agg.galaxies.lens.mass == al.mp.EllipticalIsothermal)
+agg_query = agg.query(agg.galaxies.lens.mass == al.mp.EllIsothermal)
 mp_instances = [samps.median_pdf_instance for samps in agg.values("samples")]
 print(mp_instances)

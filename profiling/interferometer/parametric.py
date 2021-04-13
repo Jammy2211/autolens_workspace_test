@@ -19,22 +19,22 @@ interferometer = al.Interferometer.from_fits(
 
 # lens_galaxy = al.Galaxy(
 #     redshift=0.5,
-#     mass=al.mp.EllipticalIsothermal(
+#     mass=al.mp.EllIsothermal(
 #         centre=(0.4, 0.8), einstein_radius=0.1, elliptical_comps=(0.17647, 0.0)
 #     ),
 # )
 
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    mass=al.mp.EllipticalIsothermal(
+    mass=al.mp.EllIsothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, phi=45.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
     ),
     shear=al.mp.ExternalShear(elliptical_comps=(0.0, 0.05)),
 )
 
-sersic = al.lp.EllipticalSersic(
+sersic = al.lp.EllSersic(
     centre=(0.0, 0.0),
     elliptical_comps=(0.0, 0.01),
     intensity=0.1,
@@ -48,21 +48,17 @@ mask = al.Mask2D.circular(
     shape_native=(250, 250), pixel_scales=0.05, sub_size=2, radius=5.0
 )
 
-masked_interferometer = al.MaskedInterferometer(
+interferometer = al.MaskedInterferometer(
     interferometer=interferometer,
     real_space_mask=mask,
     visibilities_mask=np.full(
         fill_value=False, shape=interferometer.visibilities.shape
     ),
-    settings=al.SettingsMaskedInterferometer(transformer_class=al.TransformerNUFFT),
+    settings=al.SettingsInterferometer(transformer_class=al.TransformerNUFFT),
 )
 
-print("Number of points = " + str(masked_interferometer.grid.sub_shape_slim) + "\n")
-print(
-    "Number of visibilities = "
-    + str(masked_interferometer.visibilities.shape_slim)
-    + "\n"
-)
+print("Number of points = " + str(interferometer.grid.sub_shape_slim) + "\n")
+print("Number of visibilities = " + str(interferometer.visibilities.shape_slim) + "\n")
 
 start_overall = time.time()
 
@@ -72,7 +68,7 @@ start = time.time()
 
 for i in range(repeats):
     fit = al.FitInterferometer(
-        masked_interferometer=masked_interferometer,
+        interferometer=interferometer,
         tracer=tracer,
         settings_inversion=al.SettingsInversion(use_linear_operators=False),
     )

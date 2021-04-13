@@ -41,10 +41,10 @@ galaxy includes the `Pixelization` and `Regularization` we profile.
 
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    mass=al.mp.EllipticalIsothermal(
+    mass=al.mp.EllIsothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, phi=45.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
     ),
 )
 
@@ -69,13 +69,13 @@ coefficients = list(np.logspace(np.log10(1e-6), np.log10(1e12), 19))
 transformer_class = al.TransformerDFT
 use_linear_operators = False
 
-masked_interferometer = al.MaskedInterferometer(
+interferometer = al.MaskedInterferometer(
     interferometer=interferometer,
     real_space_mask=mask,
     visibilities_mask=np.full(
         fill_value=False, shape=interferometer.visibilities.shape
     ),
-    settings=al.SettingsMaskedInterferometer(transformer_class=transformer_class),
+    settings=al.SettingsInterferometer(transformer_class=transformer_class),
 )
 
 coefficients_matrix_dft = []
@@ -143,13 +143,13 @@ for coefficient in coefficients:
     tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
     mapper = tracer.mappers_of_planes_from_grid(
-        grid=masked_interferometer.grid, settings_pixelization=al.SettingsPixelization()
+        grid=interferometer.grid, settings_pixelization=al.SettingsPixelization()
     )[1]
 
     curvature_matrix = compute_curvature_matrix(
-        visibilities=masked_interferometer.visibilities,
-        noise_map=masked_interferometer.noise_map,
-        transformer=masked_interferometer.transformer,
+        visibilities=interferometer.visibilities,
+        noise_map=interferometer.noise_map,
+        transformer=interferometer.transformer,
         mapper=mapper,
         regularization=reg,
     )
@@ -159,9 +159,7 @@ for coefficient in coefficients:
     preconditioner_matrix = inversion_util.preconditioner_matrix_via_mapping_matrix_from(
         mapping_matrix=mapper.mapping_matrix,
         regularization_matrix=regularization_matrix,
-        preconditioner_noise_normalization=np.sum(
-            1.0 / masked_interferometer.noise_map ** 2
-        ),
+        preconditioner_noise_normalization=np.sum(1.0 / interferometer.noise_map ** 2),
     )
 
     preconditioner_inv = np.linalg.inv(preconditioner_matrix)
