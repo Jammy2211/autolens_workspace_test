@@ -6,10 +6,17 @@ datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.
 """
-import time
-from os import path
-import numpy as np
 import os
+from os import path
+
+cwd = os.getcwd()
+
+from autoconf import conf
+
+conf.instance.push(new_path=path.join(cwd, "config", "profiling"))
+
+import time
+import numpy as np
 import json
 from autoarray.inversion import mappers
 import autolens as al
@@ -119,8 +126,9 @@ mask = al.Mask2D.circular(
     radius=mask_radius,
 )
 
-masked_imaging = al.MaskedImaging(
-    imaging=imaging, mask=mask, settings=al.SettingsImaging(sub_size=sub_size)
+masked_imaging = imaging.apply_mask(mask=mask)
+masked_imaging = masked_imaging.apply_settings(
+    settings=al.SettingsImaging(sub_size=sub_size)
 )
 
 """
@@ -186,9 +194,9 @@ increases depending on a required fractional accuracy of the light profile.
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/two_d/grid_2d_iterate.py
 """
-
-masked_imaging_iterate = al.MaskedImaging(
-    imaging=imaging, mask=mask, settings=al.SettingsImaging(grid_class=al.Grid2DIterate)
+masked_imaging_iterate = imaging.apply_mask(mask=mask)
+masked_imaging_iterate = masked_imaging_iterate.apply_settings(
+    settings=al.SettingsImaging(grid_class=al.Grid2DIterate)
 )
 
 start = time.time()

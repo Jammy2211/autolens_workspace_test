@@ -17,10 +17,12 @@ where:
 
 import os
 from os import path
+
 cwd = os.getcwd()
 
 from autoconf import conf
-conf.instance.push(new_path=path.join(cwd, "config_normal"))
+
+conf.instance.push(new_path=path.join(cwd, "config", "searches"))
 
 import autofit as af
 import autolens as al
@@ -34,7 +36,7 @@ search = af.DynestyStatic(
     name="DynestyStatic",
     nlive=50,
     walks=10,
-    iterations_per_update=200000
+    iterations_per_update=200000,
 )
 
 """

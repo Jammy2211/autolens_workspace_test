@@ -29,7 +29,15 @@ Check them out for a full description of the analysis!
 # %cd $workspace_path
 # print(f"Working Directory has been set to `{workspace_path}`")
 
+import os
 from os import path
+
+cwd = os.getcwd()
+
+from autoconf import conf
+
+conf.instance.push(new_path=path.join(cwd, "config", "slam"))
+
 import autofit as af
 import autolens as al
 import autolens.plot as aplt

@@ -116,9 +116,7 @@ operates, checkout chapters 1 and 2 of the HowToCTI lecture series.
 
 
 search = af.DynestyStatic(
-    path_prefix=path.join("acs", dataset_name),
-    name="phase_parallel[x2]",
-    nlive=50,
+    path_prefix=path.join("acs", dataset_name), name="phase_parallel[x2]", nlive=50
 )
 
 

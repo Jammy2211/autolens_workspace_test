@@ -202,7 +202,9 @@ def no_lens_light(
         hyper_background_noise=result_3.instance.hyper_background_noise,
     )
 
-    analysis.preloads = al.Preloads.setup(result=result_3, model=model, pixelization=True)
+    analysis.preloads = al.Preloads.setup(
+        result=result_3, model=model, pixelization=True
+    )
 
     search = af.DynestyStatic(
         path_prefix=path_prefix,
@@ -454,7 +456,9 @@ def with_lens_light(
         hyper_background_noise=result_3.instance.hyper_background_noise,
     )
 
-    analysis.preloads = al.Preloads.setup(result=result_3, model=model, pixelization=True)
+    analysis.preloads = al.Preloads.setup(
+        result=result_3, model=model, pixelization=True
+    )
 
     search = af.DynestyStatic(
         path_prefix=path_prefix,

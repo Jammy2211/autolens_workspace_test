@@ -3,28 +3,42 @@ __PROFILING: Interferometer Voronoi Magnification Fit__
 
 This profiling script times how long an `Inversion` takes to fit `Interferometer` data.
 """
+import os
+from os import path
+
+cwd = os.getcwd()
+
+from autoconf import conf
+
+conf.instance.push(new_path=path.join(cwd, "config", "profiling"))
 
 import autolens as al
 import autolens.plot as aplt
-
-from os import path
-import numpy as np
 import time
 
 """
 When profiling a function, there is randomness in how long it takes to perform its evaluation. We can repeat the
 function call multiple times and take the average run time to get a more realible run-time.
 """
-
 repeats = 3
 
-"""These settings control the run-time of the `Inversion` performed on the `Interferometer` data."""
-
+"""
+These settings control the run-time of the `Inversion` performed on the `Interferometer` data.
+"""
 transformer_class = al.TransformerDFT
 use_linear_operators = False
 
-"""Load the strong lens dataset `mass_sie__source_sersic` `from .fits files."""
+"""
+Set up the `Interferometer` dataset we fit. This includes the `real_space_mask` that the source galaxy's 
+`Inversion` is evaluated using via mapping to Fourier space using the `Transformer`.
+"""
+real_space_mask = al.Mask2D.circular(
+    shape_native=(256, 256), pixel_scales=0.05, sub_size=1, radius=3.0
+)
 
+"""
+Load the strong lens dataset `mass_sie__source_sersic` `from .fits files.
+"""
 # dataset_path = path.join("dataset", "interferometer", "mass_sie__source_sersic")
 dataset_path = path.join("dataset", "interferometer", "instruments", "sma")
 
@@ -32,6 +46,7 @@ interferometer = al.Interferometer.from_fits(
     visibilities_path=path.join(dataset_path, "visibilities.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
+    real_space_mask=real_space_mask,
 )
 
 """
@@ -49,37 +64,30 @@ lens_galaxy = al.Galaxy(
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    pixelization=al.pix.VoronoiMagnification(shape=(30, 30)),
-    regularization=al.reg.Constant(coefficient=1.0),
-)
-
-"""
-Set up the `MaskedInterferometer` dataset we fit. This includes the `real_space_mask` that the source galaxy's 
-`Inversion` is evaluated using via mapping to Fourier space using the `Transformer`.
-"""
-
-mask = al.Mask2D.circular(
-    shape_native=(256, 256), pixel_scales=0.05, sub_size=1, radius=3.0
-)
-
-interferometer = al.MaskedInterferometer(
-    interferometer=interferometer,
-    real_space_mask=mask,
-    visibilities_mask=np.full(
-        fill_value=False, shape=interferometer.visibilities.shape
+    light=al.lp.EllSersic(
+        centre=(0.0, 0.0),
+        elliptical_comps=(0.0, 0.01),
+        intensity=0.1,
+        effective_radius=0.2,
+        sersic_index=3.0,
     ),
-    settings=al.SettingsInterferometer(transformer_class=transformer_class),
 )
 
-"""Print the size of the real-space mask and number of visiblities, which drive the run-time of the fit."""
+interferometer = interferometer.apply_settings(
+    settings=al.SettingsInterferometer(transformer_class=transformer_class)
+)
 
+"""
+Print the size of the real-space mask and number of visiblities, which drive the run-time of the fit.
+"""
 print(f"Number of points in real space = {interferometer.grid.sub_shape_slim} \n")
 print(f"Number of visibilities = {interferometer.visibilities.shape_slim}\n")
 
 start_overall = time.time()
 
-"""Time the complete fitting procedure."""
-
+"""
+Time the complete fitting procedure.
+"""
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
 start = time.time()

@@ -15,10 +15,18 @@ Deflections angles calculations are performed following one of three methods:
  3) The `MassProfile` convergence may be decomposed into a superposition of 20-30 Gaussian's where analytic expressions
  of a Gaussians deflection angle then offer fast computation (see https://arxiv.org/abs/1906.08263).
 """
+import os
+from os import path
+
+cwd = os.getcwd()
+
+from autoconf import conf
+
+conf.instance.push(new_path=path.join(cwd, "config", "profiling"))
+
 import autolens as al
 import json
 import time
-import os
 
 """
 We will compute the deflection angles within a circular `Mask2D`, which is the same object defining how

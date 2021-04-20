@@ -29,11 +29,15 @@ This is the same dataset we fitted in the `autolens/intro/fitting.py` example.
 """
 Manually turn off test-mode so lens model is fitted fully.
 """
+import os
+from os import path
+
+cwd = os.getcwd()
+
 from autoconf import conf
 
-conf.instance["general"]["test"]["test_mode"] = False
+conf.instance.push(new_path=path.join(cwd, "config", "profiling"))
 
-from os import path
 import autofit as af
 import autolens as al
 import autolens.plot as aplt
