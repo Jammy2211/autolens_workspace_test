@@ -27,7 +27,7 @@ import autolens as al
 """
 __Model__
 """
-lens = al.GalaxyModel(redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear)
+lens = af.Model(al.Galaxy, redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear)
 source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
@@ -59,6 +59,7 @@ __Masking + Search + Analysis + Model-Fit__
 search = af.DynestyStatic(
     name="search_dataset_normal",
     path_prefix=path.join("imaging", "database", "dataset_custom"),
+    unique_tag=dataset_name,
     nlive=50,
 )
 
@@ -71,8 +72,7 @@ DATASET:
 
 __Dataset (with customization)__
 """
-masked_imaging = al.MaskedImaging(
-    imaging=imaging,
+masked_imaging = imaging.apply_mask(
     mask=mask,
     settings=al.SettingsImaging(
         signal_to_noise_limit=10.0, signal_to_noise_limit_radii=0.3
@@ -82,6 +82,7 @@ masked_imaging = al.MaskedImaging(
 search = af.DynestyStatic(
     name="search_dataset_custom",
     path_prefix=path.join("imaging", "database", "dataset_custom"),
+    unique_tag=dataset_name,
     nlive=50,
 )
 

@@ -1,0 +1,58 @@
+{
+    "Redshift": {
+        "redshift": {
+            "type": "Uniform",
+            "lower_limit": 0.0,
+            "upper_limit": 3.0,
+            "width_modifier": {
+                "type": "Absolute",
+                "value": 1.0
+            },
+            "gaussian_limits": {
+                "lower": 0.0,
+                "upper": "inf"
+            }
+        }
+    },
+    "HyperGalaxy": {
+        "contribution_factor": {
+            "type": "Uniform",
+            "lower_limit": 0.0,
+            "upper_limit": 0.00000001,
+            "width_modifier": {
+                "type": "Relative",
+                "value": 0.01
+            },
+            "gaussian_limits": {
+                "lower": 0.0,
+                "upper": "inf"
+            }
+        },
+        "noise_factor": {
+            "type": "Uniform",
+            "lower_limit": 1.0,
+            "upper_limit": 1.000001,
+            "width_modifier": {
+                "type": "Relative",
+                "value": 0.01
+            },
+            "gaussian_limits": {
+                "lower": 0.0,
+                "upper": "inf"
+            }
+        },
+        "noise_power": {
+            "type": "Uniform",
+            "lower_limit": 0.999,
+            "upper_limit": 1.0001,
+            "width_modifier": {
+                "type": "Relative",
+                "value": 0.01
+            },
+            "gaussian_limits": {
+                "lower": "-inf",
+                "upper": "inf"
+            }
+        }
+    }
+}

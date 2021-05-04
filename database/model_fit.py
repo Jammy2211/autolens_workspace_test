@@ -38,7 +38,7 @@ masked_imaging = imaging.apply_mask(mask=mask)
 """
 __Model__
 """
-lens = al.GalaxyModel(redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear)
+lens = af.Model(al.Galaxy, redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear)
 source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
@@ -48,7 +48,8 @@ __Search + Analysis + Model-Fit__
 """
 search = af.DynestyStatic(
     name="mass[sie]_source[bulge]",
-    path_prefix=path.join("imaging", "database", "model_fit", dataset_name),
+    path_prefix=path.join("imaging", "database", "model_fit"),
+    unique_tag=dataset_name,
     nlive=50,
 )
 
