@@ -38,8 +38,13 @@ path_prefix = path.join("searches", "inversion", "subhalo", dataset_name)
 """
 __Search (Search Final)__
 """
-search_4 = af.DynestyStatic(
-    path_prefix=path_prefix, name="DynestyStatic", unique_tag=dataset_name, nlive=75, iterations_per_update=200,
+search_4 = af.Zeus(
+    path_prefix=path_prefix,
+    name="Zeus",
+    unique_tag=dataset_name,
+    nwalkers=30,
+    nsteps=400,
+    iterations_per_update=20,
 )
 
 

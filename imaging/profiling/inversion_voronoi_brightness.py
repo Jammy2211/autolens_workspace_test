@@ -590,7 +590,7 @@ profiling_dict["Curvature Matrix (F)"] = (time.time() - start) / repeats
 """
 __Source Pixel Signal Scales__
 
-The pixel signal scales are used to construct the regularization weights of the `AdaptiveBrightness` `Regularization`, 
+The pixel signal scales are used to construct the regularization weight_list of the `AdaptiveBrightness` `Regularization`, 
 which adapt to the surface brightness of the source galaxy.
 
  pixel_signals_from_signal_scale:
@@ -605,17 +605,17 @@ for i in range(repeats):
 profiling_dict["Source Pixel Signal Scales"] = (time.time() - start) / repeats
 
 """
-__Regularization Weights__
+__Regularization weight_list__
 
-The pixel signal scales are now used to construct the regularization weights.
+The pixel signal scales are now used to construct the regularization weight_list.
 
- adaptive_regularization_weights_from:
+ adaptive_regularization_weight_list_from:
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/regularization_util.py
 """
 start = time.time()
 for i in range(repeats):
-    regularization_weights = al.util.regularization.adaptive_regularization_weights_from(
+    regularization_weight_list = al.util.regularization.adaptive_regularization_weight_list_from(
         inner_coefficient=source_galaxy.regularization.inner_coefficient,
         outer_coefficient=source_galaxy.regularization.outer_coefficient,
         pixel_signals=pixel_signals,
@@ -637,7 +637,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/regular
 start = time.time()
 for i in range(repeats):
     regularization_matrix = al.util.regularization.weighted_regularization_matrix_from(
-        regularization_weights=regularization_weights,
+        regularization_weight_list=regularization_weight_list,
         pixel_neighbors=mapper.source_pixelization_grid.pixel_neighbors,
         pixel_neighbors_size=mapper.source_pixelization_grid.pixel_neighbors_size,
     )

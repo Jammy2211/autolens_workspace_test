@@ -38,6 +38,7 @@ path_prefix = path.join("searches", "parametric", "initialization")
 """
 __Search__
 """
+stepsampler_cls = None
 stepsampler_cls = "RegionMHSampler"
 # stepsampler_cls = "AHARMSampler"
 # stepsampler_cls = "CubeMHSampler"
@@ -49,9 +50,10 @@ search = af.UltraNest(
     name=f"UltraNest_{stepsampler_cls}",
     unique_tag=dataset_name,
     stepsampler_cls=stepsampler_cls,
-    nsteps=6,
+    nsteps=5,
+    show_status=False,
     min_num_live_points=50,
-    iterations_per_update=5000,
+    iterations_per_update=50000,
 )
 
 """
@@ -63,7 +65,7 @@ imaging = al.Imaging.from_fits(
     image_path=path.join(dataset_path, "image.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    pixel_scales=0.1,
+    pixel_scales=0.05,
 )
 
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
@@ -87,6 +89,7 @@ lens = af.Model(
     al.Galaxy, redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear
 )
 source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
+source.bulge.intensity = af.UniformPrior(lower_limit=1e-2, upper_limit=1e2)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 

@@ -15,7 +15,7 @@ def with_lens_light(
     lens_disk: af.Model(al.lp.LightProfile) = None,
     lens_envelope: af.Model(al.lp.LightProfile) = None,
     end_with_hyper_extension: bool = False,
-    unique_tag : Optional[str] = None,
+    unique_tag: Optional[str] = None,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """

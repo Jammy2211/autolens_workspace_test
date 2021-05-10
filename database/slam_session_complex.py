@@ -77,9 +77,15 @@ __Paths__
 
 The path the results of all chained searches are output:
 """
-path_prefix = path.join(
-    "database", "slam_session_complex"
-)
+path_prefix = path.join("database", "slam_session_complex")
+
+"""
+___Session__
+
+To output results directly to the database, we start a session, which includes the name of the database `.sqlite` file
+where results are stored.
+"""
+session = af.db.open_database("database.sqlite")
 
 """
 __Redshifts__
@@ -215,7 +221,7 @@ initialize the model priors . In this example it:
  light and its stellar mass [12 parameters: fixed from LIGHT PARAMETRIC PIPELINE].
 
  - The lens galaxy's dark matter mass distribution is a `EllNFWMCRLudlow` whose centre is aligned with bulge of 
- the light and stellar mass mdoel above [5 parameters].
+ the light and stellar mass model above [5 parameters].
 
  - Uses an `Inversion` for the source's light [priors fixed from SOURCE INVERSION PIPELINE].
 

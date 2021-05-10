@@ -75,9 +75,7 @@ __Paths__
 
 The path the results of all chained searches are output:
 """
-path_prefix = path.join(
-    "database", "slam_session_simple"
-)
+path_prefix = path.join("database", "slam_session_simple")
 
 """
 ___Session__
@@ -168,7 +166,9 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-analysis = al.AnalysisImaging(dataset=masked_imaging, hyper_result=source_parametric_results.last)
+analysis = al.AnalysisImaging(
+    dataset=masked_imaging, hyper_result=source_parametric_results.last
+)
 
 bulge = af.Model(al.lp.EllSersic)
 disk = af.Model(al.lp.EllExponential)

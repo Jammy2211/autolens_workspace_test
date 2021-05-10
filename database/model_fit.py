@@ -38,7 +38,9 @@ masked_imaging = imaging.apply_mask(mask=mask)
 """
 __Model__
 """
-lens = af.Model(al.Galaxy, redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear)
+lens = af.Model(
+    al.Galaxy, redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear
+)
 source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))

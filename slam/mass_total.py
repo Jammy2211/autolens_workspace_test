@@ -15,7 +15,7 @@ def no_lens_light(
     smbh: af.Model(al.mp.MassProfile) = None,
     mass_centre: Optional[Tuple[float, float]] = None,
     end_with_hyper_extension: bool = False,
-    unique_tag : Optional[str] = None,
+    unique_tag: Optional[str] = None,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """
@@ -128,7 +128,7 @@ def with_lens_light(
     smbh: af.Model(al.mp.MassProfile) = None,
     mass_centre: Optional[Tuple[float, float]] = None,
     end_with_hyper_extension: bool = False,
-    unique_tag : Optional[str] = None,
+    unique_tag: Optional[str] = None,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """

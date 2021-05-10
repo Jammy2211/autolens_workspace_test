@@ -43,7 +43,7 @@ search_3 = af.Zeus(
     name="Zeus",
     unique_tag=dataset_name,
     nwalkers=40,
-    nsteps=400,
+    nsteps=800,
 )
 
 

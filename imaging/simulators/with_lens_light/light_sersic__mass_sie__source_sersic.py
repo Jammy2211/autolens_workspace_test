@@ -50,8 +50,8 @@ This ensures that the divergent and bright central regions of the source galaxy 
 total flux emitted within a pixel.
 """
 grid = al.Grid2DIterate.uniform(
-    shape_native=(100, 100),
-    pixel_scales=0.1,
+    shape_native=(150, 150),
+    pixel_scales=0.05,
     fractional_accuracy=0.9999,
     sub_steps=[2, 4, 8, 16, 24],
 )

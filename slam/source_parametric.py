@@ -17,7 +17,7 @@ def no_lens_light(
     redshift_lens: float = 0.5,
     redshift_source: float = 1.0,
     mass_centre: Optional[Tuple[float, float]] = None,
-    unique_tag : Optional[str] = None,
+    unique_tag: Optional[str] = None,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """
@@ -129,7 +129,7 @@ def with_lens_light(
     redshift_lens: float = 0.5,
     redshift_source: float = 1.0,
     mass_centre: Optional[Tuple[float, float]] = None,
-    unique_tag : Optional[str] = None,
+    unique_tag: Optional[str] = None,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """

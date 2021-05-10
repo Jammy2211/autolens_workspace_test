@@ -39,10 +39,23 @@ path_prefix = path.join("searches", "inversion", "sie_to_power_law")
 """
 __Search (Search Final)__
 """
-search_3 = af.DynestyStatic(
-    path_prefix=path_prefix, name="DynestyStatic", unique_tag=dataset_name, nlive=50
-)
+stepsampler_cls = None
+# stepsampler_cls = "RegionMHSampler"
+# stepsampler_cls = "AHARMSampler"
+# stepsampler_cls = "CubeMHSampler"
+# stepsampler_cls = "CubeSliceSampler"
+# stepsampler_cls = "RegionSliceSampler"
 
+search_3 = af.UltraNest(
+    path_prefix=path_prefix,
+#    name=f"UltraNest_{stepsampler_cls}",
+    name=f"UltraNest",
+    unique_tag=dataset_name,
+    stepsampler_cls=stepsampler_cls,
+    nsteps=5,
+    min_num_live_points=50,
+    iterations_per_update=10000,
+)
 
 """
 __Dataset + Masking__ 
@@ -53,7 +66,7 @@ imaging = al.Imaging.from_fits(
     image_path=path.join(dataset_path, "image.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
-    pixel_scales=0.1,
+    pixel_scales=0.05,
 )
 
 mask = al.Mask2D.circular(

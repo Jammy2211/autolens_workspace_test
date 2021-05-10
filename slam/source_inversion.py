@@ -15,7 +15,7 @@ def no_lens_light(
         al.pix.VoronoiBrightnessImage
     ),
     regularization: af.Model(al.reg.Regularization) = af.Model(al.reg.Constant),
-    unique_tag : Optional[str] = None,
+    unique_tag: Optional[str] = None,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """
@@ -256,7 +256,7 @@ def with_lens_light(
         al.pix.VoronoiBrightnessImage
     ),
     regularization: af.Model(al.reg.Regularization) = af.Model(al.reg.Constant),
-    unique_tag : Optional[str] = None,
+    unique_tag: Optional[str] = None,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """

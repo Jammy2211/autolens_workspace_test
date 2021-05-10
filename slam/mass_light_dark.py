@@ -19,7 +19,7 @@ def with_lens_light(
     smbh: af.Model(al.mp.MassProfile) = None,
     einstein_mass_range: Optional[Tuple[float, float]] = (0.01, 5.0),
     end_with_hyper_extension: bool = False,
-    unique_tag : Optional[str] = None,
+    unique_tag: Optional[str] = None,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """

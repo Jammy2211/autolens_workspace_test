@@ -44,7 +44,6 @@ search_3 = af.DynestyStatic(
     path_prefix=path_prefix, name="DynestyStatic", unique_tag=dataset_name, nlive=75
 )
 
-
 """
 __Dataset + Masking__ 
 """
@@ -72,12 +71,17 @@ __Model + Search + Analysis + Model-Fit (Search 1)__
 lens = af.Model(
     al.Galaxy, redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear
 )
+
 source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
+
+lens.mass.einstein_radius = af.UniformPrior(lower_limit=1.59, upper_limit=1.61)
+source.bulge.centre_0 = af.UniformPrior(lower_limit=0.05, upper_limit=0.15)
+source.bulge.centre_1 = af.UniformPrior(lower_limit=-0.05, upper_limit=0.05)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
 search_1 = af.DynestyStatic(
-    path_prefix=path_prefix, name="search[1]_sie", unique_tag=dataset_name, nlive=50
+    path_prefix=path_prefix, name="search[1]_sie", unique_tag=dataset_name, nlive=150
 )
 
 analysis = al.AnalysisImaging(dataset=imaging)

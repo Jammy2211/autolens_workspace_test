@@ -83,7 +83,7 @@ lens_galaxy = al.Galaxy(
         einstein_radius=1.6,
         elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
     ),
-    subhalo=al.mp.SphNFWTruncatedMCRLudlow(centre=(1.601, 0.0), mass_at_200=1.0e10),
+    subhalo=al.mp.SphNFWTruncatedMCRLudlow(centre=(1.601, -0.3), mass_at_200=1.0e10),
     shear=al.mp.ExternalShear(elliptical_comps=(0.05, 0.05)),
 )
 
@@ -92,7 +92,7 @@ source_galaxy = al.Galaxy(
     bulge=al.lp.EllSersic(
         centre=(0.1, 0.0),
         elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=60.0),
-        intensity=0.3,
+        intensity=1.0,
         effective_radius=0.02,
         sersic_index=3.5,
     ),

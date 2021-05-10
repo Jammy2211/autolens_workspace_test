@@ -39,10 +39,7 @@ path_prefix = path.join("searches", "parametric", "sie_to_power_law")
 __Search (Search Final)__
 """
 search_2 = af.DynestyStatic(
-    path_prefix=path_prefix,
-    name="DynestyStatic",
-    unique_tag=dataset_name,
-    nlive=75,
+    path_prefix=path_prefix, name="DynestyStatic", unique_tag=dataset_name, nlive=75
 )
 
 
@@ -55,7 +52,7 @@ imaging = al.Imaging.from_fits(
     image_path=path.join(dataset_path, "image.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
-    pixel_scales=0.1,
+    pixel_scales=0.05,
 )
 
 mask = al.Mask2D.circular(

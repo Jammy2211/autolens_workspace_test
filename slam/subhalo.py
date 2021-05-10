@@ -16,7 +16,7 @@ def detection_single_plane(
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
     number_of_cores: int = 1,
-    unique_tag : Optional[str] = None,
+    unique_tag: Optional[str] = None,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """
@@ -219,7 +219,7 @@ def detection_multi_plane(
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
     number_of_cores: int = 1,
-    unique_tag : Optional[str] = None,
+    unique_tag: Optional[str] = None,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """
@@ -427,7 +427,7 @@ def sensitivity_mapping_imaging(
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
     number_of_cores: int = 1,
-    unique_tag : Optional[str] = None,
+    unique_tag: Optional[str] = None,
     session: Optional[bool] = None,
 ):
     """
@@ -637,7 +637,7 @@ def sensitivity_mapping_interferometer(
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
     number_of_cores: int = 1,
-    unique_tag : Optional[str] = None,
+    unique_tag: Optional[str] = None,
     session: Optional[bool] = None,
 ):
     """
