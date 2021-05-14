@@ -90,6 +90,12 @@ The path the results of all chained searches are output:
 path_prefix = path.join("interferometer", "slam", "hyper_all")
 
 """
+___Number of Cores + Session
+"""
+number_of_cores = 1
+session = None
+
+"""
 __Redshifts__
 
 The redshifts of the lens and source galaxies, which are used to perform unit converions of the model and data (e.g. 

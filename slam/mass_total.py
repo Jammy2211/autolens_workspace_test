@@ -16,6 +16,7 @@ def no_lens_light(
     mass_centre: Optional[Tuple[float, float]] = None,
     end_with_hyper_extension: bool = False,
     unique_tag: Optional[str] = None,
+    number_of_cores: int = 1,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """
@@ -89,6 +90,7 @@ def no_lens_light(
         path_prefix=path_prefix,
         name="mass_total[1]_mass[total]_source",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=100,
     )
@@ -129,6 +131,7 @@ def with_lens_light(
     mass_centre: Optional[Tuple[float, float]] = None,
     end_with_hyper_extension: bool = False,
     unique_tag: Optional[str] = None,
+    number_of_cores: int = 1,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """
@@ -210,6 +213,7 @@ def with_lens_light(
         path_prefix=path_prefix,
         name="mass_total[1]_light[parametric]_mass[total]_source",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=100,
     )

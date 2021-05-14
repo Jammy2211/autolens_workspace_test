@@ -79,6 +79,12 @@ path_prefix = path.join(
 )
 
 """
+___Number of Cores + Session
+"""
+number_of_cores = 1
+session = None
+
+"""
 __Redshifts__
 
 The redshifts of the lens and source galaxies, which are used to perform unit converions of the model and data (e.g. 

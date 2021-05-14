@@ -78,6 +78,12 @@ The path the results of all chained searches are output:
 path_prefix = path.join("imaging", "slam", "mass_total__source_inversion", "hyper_all")
 
 """
+___Number of Cores + Session
+"""
+number_of_cores = 1
+session = None
+
+"""
 __Redshifts__
 
 The redshifts of the lens and source galaxies, which are used to perform unit converions of the model and data (e.g. 
@@ -142,6 +148,7 @@ analysis = al.AnalysisImaging(
 
 source_inversion_results = slam.source_inversion.no_lens_light(
     path_prefix=path_prefix,
+    number_of_cores=number_of_cores,
     unique_tag=dataset_name,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -165,6 +172,7 @@ analysis = al.AnalysisImaging(
 
 mass_results = slam.mass_total.no_lens_light(
     path_prefix=path_prefix,
+    number_of_cores=number_of_cores,
     unique_tag=dataset_name,
     analysis=analysis,
     setup_hyper=setup_hyper,

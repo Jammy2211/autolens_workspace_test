@@ -18,6 +18,7 @@ def no_lens_light(
     redshift_source: float = 1.0,
     mass_centre: Optional[Tuple[float, float]] = None,
     unique_tag: Optional[str] = None,
+    number_of_cores: int = 1,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """
@@ -88,6 +89,7 @@ def no_lens_light(
         path_prefix=path_prefix,
         name="source_parametric[1]_mass[total]_source[parametric]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=200,
         walks=10,
@@ -130,6 +132,7 @@ def with_lens_light(
     redshift_source: float = 1.0,
     mass_centre: Optional[Tuple[float, float]] = None,
     unique_tag: Optional[str] = None,
+    number_of_cores: int = 1,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """
@@ -205,6 +208,7 @@ def with_lens_light(
         path_prefix=path_prefix,
         name="source_parametric[1]_light[parametric]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=75,
     )
@@ -251,6 +255,7 @@ def with_lens_light(
         path_prefix=path_prefix,
         name="source_parametric[2]_light[fixed]_mass[total]_source[parametric]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=200,
         walks=10,
@@ -296,6 +301,7 @@ def with_lens_light(
         path_prefix=path_prefix,
         name="source_parametric[3]_light[parametric]_mass[total]_source[parametric]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=100,
     )

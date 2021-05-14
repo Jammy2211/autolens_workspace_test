@@ -20,6 +20,7 @@ def with_lens_light(
     einstein_mass_range: Optional[Tuple[float, float]] = (0.01, 5.0),
     end_with_hyper_extension: bool = False,
     unique_tag: Optional[str] = None,
+    number_of_cores: int = 1,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """
@@ -143,6 +144,7 @@ def with_lens_light(
         path_prefix=path_prefix,
         name="mass_light_dark[1]_light[parametric]_mass[light_dark]_source",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=100,
     )

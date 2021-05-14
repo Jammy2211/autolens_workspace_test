@@ -15,8 +15,8 @@ def detection_single_plane(
     subhalo_mass: af.Model(al.mp.MassProfile) = af.Model(al.mp.SphNFWMCRLudlow),
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
-    number_of_cores: int = 1,
     unique_tag: Optional[str] = None,
+    number_of_cores: int = 1,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """
@@ -82,6 +82,7 @@ def detection_single_plane(
         path_prefix=path_prefix,
         name="subhalo[1]_mass[total_refine]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=100,
     )
@@ -139,6 +140,7 @@ def detection_single_plane(
         path_prefix=path_prefix,
         name="subhalo[2]_mass[total]_source_subhalo[search_lens_plane]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=50,
         walks=5,
@@ -200,6 +202,7 @@ def detection_single_plane(
     search = af.DynestyStatic(
         name="subhalo[3]_subhalo[single_plane_refine]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         path_prefix=path_prefix,
         nlive=100,
@@ -218,8 +221,8 @@ def detection_multi_plane(
     subhalo_mass: af.Model(al.mp.MassProfile) = af.Model(al.mp.SphNFWMCRLudlow),
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
-    number_of_cores: int = 1,
     unique_tag: Optional[str] = None,
+    number_of_cores: int = 1,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """
@@ -285,6 +288,7 @@ def detection_multi_plane(
         path_prefix=path_prefix,
         name="subhalo[1]_mass[total_refine]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=100,
     )
@@ -344,6 +348,7 @@ def detection_multi_plane(
         path_prefix=path_prefix,
         name="subhalo[2]_mass[total]_source_subhalo[multi_plane]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=50,
         walks=5,
@@ -407,6 +412,7 @@ def detection_multi_plane(
     search = af.DynestyStatic(
         name="subhalo[3]_subhalo[multi_plane_refine]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         path_prefix=path_prefix,
         nlive=100,
@@ -426,8 +432,8 @@ def sensitivity_mapping_imaging(
     subhalo_mass: af.Model(al.mp.MassProfile) = af.Model(al.mp.SphNFWMCRLudlow),
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
-    number_of_cores: int = 1,
     unique_tag: Optional[str] = None,
+    number_of_cores: int = 1,
     session: Optional[bool] = None,
 ):
     """
@@ -636,8 +642,8 @@ def sensitivity_mapping_interferometer(
     subhalo_mass: af.Model(al.mp.MassProfile) = af.Model(al.mp.SphNFWMCRLudlow),
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
-    number_of_cores: int = 1,
     unique_tag: Optional[str] = None,
+    number_of_cores: int = 1,
     session: Optional[bool] = None,
 ):
     """

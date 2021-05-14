@@ -16,6 +16,7 @@ def no_lens_light(
     ),
     regularization: af.Model(al.reg.Regularization) = af.Model(al.reg.Constant),
     unique_tag: Optional[str] = None,
+    number_of_cores: int = 1,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """
@@ -81,6 +82,7 @@ def no_lens_light(
         path_prefix=path_prefix,
         name="source_inversion[1]_mass[fixed]_source[inversion_magnification_initialization]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=30,
     )
@@ -123,6 +125,7 @@ def no_lens_light(
         path_prefix=path_prefix,
         name="source_inversion[2]_mass[total]_source[fixed]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=50,
     )
@@ -164,6 +167,7 @@ def no_lens_light(
         path_prefix=path_prefix,
         name="source_inversion[3]_mass[fixed]_source[inversion_initialization]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=30,
         dlogz=setup_hyper.dlogz,
@@ -221,6 +225,7 @@ def no_lens_light(
         path_prefix=path_prefix,
         name="source_inversion[4]_mass[total]_source[fixed]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=50,
     )
@@ -257,6 +262,7 @@ def with_lens_light(
     ),
     regularization: af.Model(al.reg.Regularization) = af.Model(al.reg.Constant),
     unique_tag: Optional[str] = None,
+    number_of_cores: int = 1,
     session: Optional[bool] = None,
 ) -> af.ResultsCollection:
     """
@@ -330,6 +336,7 @@ def with_lens_light(
         path_prefix=path_prefix,
         name="source_inversion[1]_light[fixed]_mass[fixed]_source[inversion_magnification_initialization]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=30,
     )
@@ -378,6 +385,7 @@ def with_lens_light(
         path_prefix=path_prefix,
         name="source_inversion[2]_light[fixed]_mass[total]_source[inversion_magnification]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=50,
     )
@@ -425,6 +433,7 @@ def with_lens_light(
         path_prefix=path_prefix,
         name="source_inversion[3]_light[fixed]_mass[fixed]_source[inversion_initialization]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=30,
         dlogz=setup_hyper.dlogz,
@@ -488,6 +497,7 @@ def with_lens_light(
         path_prefix=path_prefix,
         name="source_inversion[4]_light[fixed]_mass[total]_source[inversion]",
         unique_tag=unique_tag,
+        number_of_cores=number_of_cores,
         session=session,
         nlive=50,
     )

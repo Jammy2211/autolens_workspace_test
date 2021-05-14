@@ -86,6 +86,12 @@ path_prefix = path.join(
 
 
 """
+___Number of Cores + Session
+"""
+number_of_cores = 1
+session = None
+
+"""
 __Redshifts__
 
 The redshifts of the lens and source galaxies, which are used to perform unit converions of the model and data (e.g. 
@@ -136,6 +142,7 @@ disk.centre = (0.0, 0.0)
 
 source_parametric_results = slam.source_parametric.with_lens_light(
     path_prefix=path_prefix,
+    number_of_cores=number_of_cores,
     unique_tag=dataset_name,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -168,6 +175,7 @@ analysis = al.AnalysisImaging(
 
 source_inversion_results = slam.source_inversion.no_lens_light(
     path_prefix=path_prefix,
+    number_of_cores=number_of_cores,
     unique_tag=dataset_name,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -200,6 +208,7 @@ bulge.centre = disk.centre
 
 light_results = slam.light_parametric.with_lens_light(
     path_prefix=path_prefix,
+    number_of_cores=number_of_cores,
     unique_tag=dataset_name,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -237,6 +246,7 @@ dark.centre = lens_bulge.centre
 
 mass_results = slam.mass_light_dark.with_lens_light(
     path_prefix=path_prefix,
+    number_of_cores=number_of_cores,
     unique_tag=dataset_name,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -274,6 +284,7 @@ analysis = al.AnalysisImaging(
 
 subhalo_results = slam.subhalo.detection_single_plane(
     path_prefix=path_prefix,
+    number_of_cores=number_of_cores,
     unique_tag=dataset_name,
     analysis=analysis,
     setup_hyper=setup_hyper,
