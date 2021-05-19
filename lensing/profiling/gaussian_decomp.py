@@ -57,7 +57,9 @@ effective_radius = 0.5
 sersic_index = 4.0
 mass_to_light_ratio = 2.0
 
-axis_ratio, angle = al.convert.axis_ratio_and_phi_from(elliptical_comps=elliptical_comps)
+axis_ratio, angle = al.convert.axis_ratio_and_phi_from(
+    elliptical_comps=elliptical_comps
+)
 
 sersic_constant = (
     (2 * sersic_index)
@@ -100,7 +102,7 @@ for i in range(repeats):
         radii_max=radii_max,
         func_terms=28,
         func_gaussians=20,
-        sigmas_factor=np.sqrt(axis_ratio)
+        sigmas_factor=np.sqrt(axis_ratio),
     )
 
 time_util = (time.time() - start) / repeats
@@ -115,11 +117,11 @@ for i in range(repeats):
 
     sersic = al.mp.SphSersic(
         centre=centre,
-      #  elliptical_comps=elliptical_comps,
+        #  elliptical_comps=elliptical_comps,
         intensity=intensity,
         effective_radius=effective_radius,
         sersic_index=sersic_index,
-        mass_to_light_ratio=mass_to_light_ratio
+        mass_to_light_ratio=mass_to_light_ratio,
     )
 
     deflections_sersic = sersic.deflections_2d_from_grid(grid=grid)
@@ -129,4 +131,4 @@ print(f"Time for source code function = {time_source}")
 
 print()
 print("Sanity Check:")
-print(np.max(deflections-deflections_sersic))
+print(np.max(deflections - deflections_sersic))

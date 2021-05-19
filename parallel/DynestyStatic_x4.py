@@ -39,22 +39,18 @@ __Search__
 """
 search = af.DynestyStatic(
     path_prefix=path_prefix,
-    name="DynestyStatic",
+    name="DynestyStatic_x4",
     unique_tag=dataset_name,
     nlive=50,
     walks=10,
     iterations_per_update=10000,
-    number_of_cores=2
+    number_of_cores=4,
 )
 
 """
 __Dataset + Masking__
 """
 dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
-
-# psf = al.Kernel2D.from_gaussian(shape_native=(25, 25), pixel_scales=0.05, sigma=0.05)
-# psf.output_to_fits(file_path=path.join(dataset_path, "psf_big.fits"))
-# stop
 
 imaging = al.Imaging.from_fits(
     image_path=path.join(dataset_path, "image.fits"),

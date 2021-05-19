@@ -48,7 +48,7 @@ stepsampler_cls = None
 
 search_3 = af.UltraNest(
     path_prefix=path_prefix,
-#    name=f"UltraNest_{stepsampler_cls}",
+    #    name=f"UltraNest_{stepsampler_cls}",
     name=f"UltraNest",
     unique_tag=dataset_name,
     stepsampler_cls=stepsampler_cls,

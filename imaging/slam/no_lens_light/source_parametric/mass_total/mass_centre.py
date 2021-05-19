@@ -70,19 +70,17 @@ imaging_plotter = aplt.ImagingPlotter(
 imaging_plotter.subplot_imaging()
 
 """
-__Paths__
+__Settings AutoFit__
 
-The path the results of all chained searches are output:
+The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
-path_prefix = path.join(
-    "imaging", "slam", "mass_total__source_parametric", "mass_centre"
+settings_autofit = slam.SettingsAutoFit(
+    path_prefix=path.join(
+        "imaging", "slam", "mass_total__source_parametric", "mass_centre"
+    ),
+    number_of_cores=1,
+    session=None,
 )
-
-"""
-___Number of Cores + Session
-"""
-number_of_cores = 1
-session = None
 
 """
 __Redshifts__
@@ -104,7 +102,7 @@ extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter value
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_hyper = al.SetupHyper(
-    search=af.DynestyStatic(maxcall=1),
+    search_dict={"maxcall" : 1},
     hyper_galaxies_lens=False,
     hyper_galaxies_source=False,
     hyper_image_sky=None,
@@ -123,7 +121,7 @@ In this runner the SOURCE PIPELINE:
  - Uses an `EllIsothermal` model for the lens's total mass distribution with an `ExternalShear`.
 """
 source_results = slam.source_parametric.no_lens_light(
-    path_prefix=path_prefix,
+    settings_autofit=settings_autofit,
     analysis=al.AnalysisImaging(dataset=masked_imaging),
     setup_hyper=setup_hyper,
     mass=af.Model(al.mp.EllIsothermal),
@@ -147,7 +145,7 @@ In this runner the MASS PIPELINE:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 mass_results = slam.mass_total.no_lens_light(
-    path_prefix=path_prefix,
+    settings_autofit=settings_autofit,
     analysis=al.AnalysisImaging(dataset=masked_imaging),
     setup_hyper=setup_hyper,
     source_results=source_results,
