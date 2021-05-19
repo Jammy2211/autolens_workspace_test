@@ -1,8 +1,9 @@
 """
-Json: Simple
-============
+Modeling: Mass Total + Source Parametric
+========================================
 
-This script is a simple test of whether outputting a model to json and loading it does not lead to errors.
+This script gives a profile of a `DynestyStatic` model-fit to an `Imaging` dataset where the lens model is initialized,
+where:
 
  - The lens galaxy's light is omitted (and is not present in the simulated data).
  - The lens galaxy's total mass distribution is an `EllIsothermal` and `ExternalShear`.
@@ -23,41 +24,27 @@ from autoconf import conf
 
 conf.instance.push(new_path=path.join(cwd, "config", "searches"))
 
-import json
 import autofit as af
 import autolens as al
 import autolens.plot as aplt
-
-
-"""
-__Model (including json output and load)__
-"""
-
-lens = af.Model(
-    al.Galaxy, redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear
-)
-source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
-
-model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
-
-print(model)
-
-model_path = path.join("json")
-model_file = path.join(model_path, "simple.json")
-
-with open(model_file, "w+") as f:
-    json.dump(model.dict, f, indent=4)
-
-model = af.Collection.from_json(file=model_file)
-
-print(model)
-stop
 
 """
 __Paths__
 """
 dataset_name = "mass_power_law__source_sersic"
-path_prefix = path.join("json")
+path_prefix = path.join("parallel")
+
+"""
+__Search__
+"""
+search = af.Emcee(
+    path_prefix=path_prefix,
+    name="Emcee_x4",
+    unique_tag=dataset_name,
+    nwalkers=50,
+    nsteps=1000,
+    number_of_cores=4,
+)
 
 """
 __Dataset + Masking__
@@ -84,15 +71,17 @@ imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
 imaging_plotter.subplot_imaging()
 
 """
-__Search + Analysis + Model-Fit__
+__Model + Search + Analysis + Model-Fit__
 """
-analysis = al.AnalysisImaging(dataset=imaging)
 
-search = af.DynestyStatic(
-    path_prefix=path_prefix,
-    name="simple",
-    unique_tag=dataset_name,
+lens = af.Model(
+    al.Galaxy, redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear
 )
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
+
+model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
+
+analysis = al.AnalysisImaging(dataset=imaging)
 
 result = search.fit(model=model, analysis=analysis)
 
