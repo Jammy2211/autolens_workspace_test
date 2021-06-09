@@ -11,9 +11,9 @@ def with_lens_light(
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     source_results: af.ResultsCollection,
-    lens_bulge: af.Model(al.lp.LightProfile) = af.Model(al.lp.EllSersic),
-    lens_disk: af.Model(al.lp.LightProfile) = None,
-    lens_envelope: af.Model(al.lp.LightProfile) = None,
+    lens_bulge: af.Model = af.Model(al.lp.EllSersic),
+    lens_disk: Optional[af.Model] = None,
+    lens_envelope: Optional[af.Model] = None,
     end_with_hyper_extension: bool = False,
 ) -> af.ResultsCollection:
     """
@@ -99,7 +99,7 @@ def with_lens_light(
         unique_tag=settings_autofit.unique_tag,
         number_of_cores=settings_autofit.number_of_cores,
         session=settings_autofit.session,
-        nlive=75,
+        nlive=150,
     )
 
     result_1 = search.fit(

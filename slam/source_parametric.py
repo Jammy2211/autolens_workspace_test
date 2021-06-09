@@ -10,11 +10,11 @@ def no_lens_light(
     settings_autofit: slam_util.SettingsAutoFit,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
-    mass: af.Model(al.mp.MassProfile) = af.Model(al.mp.EllIsothermal),
+    mass: af.Model = af.Model(al.mp.EllIsothermal),
     shear: af.Model(al.mp.ExternalShear) = af.Model(al.mp.ExternalShear),
-    source_bulge: af.Model(al.lp.LightProfile) = af.Model(al.lp.EllSersic),
-    source_disk: af.Model(al.lp.LightProfile) = None,
-    source_envelope: af.Model(al.lp.LightProfile) = None,
+    source_bulge: af.Model = af.Model(al.lp.EllSersic),
+    source_disk: Optional[af.Model] = None,
+    source_envelope: Optional[af.Model] = None,
     redshift_lens: float = 0.5,
     redshift_source: float = 1.0,
     mass_centre: Optional[Tuple[float, float]] = None,
@@ -113,14 +113,14 @@ def with_lens_light(
     settings_autofit: slam_util.SettingsAutoFit,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
-    lens_bulge: af.Model(al.lp.LightProfile) = af.Model(al.lp.EllSersic),
-    lens_disk: af.Model(al.lp.LightProfile) = af.Model(al.lp.EllExponential),
-    lens_envelope: af.Model(al.lp.LightProfile) = None,
-    mass: af.Model(al.mp.MassProfile) = af.Model(al.mp.EllIsothermal),
+    lens_bulge: af.Model = af.Model(al.lp.EllSersic),
+    lens_disk: af.Model = af.Model(al.lp.EllExponential),
+    lens_envelope: Optional[af.Model] = None,
+    mass: af.Model = af.Model(al.mp.EllIsothermal),
     shear: af.Model(al.mp.ExternalShear) = af.Model(al.mp.ExternalShear),
-    source_bulge: af.Model(al.lp.LightProfile) = af.Model(al.lp.EllSersic),
-    source_disk: af.Model(al.lp.LightProfile) = None,
-    source_envelope: af.Model(al.lp.LightProfile) = None,
+    source_bulge: af.Model = af.Model(al.lp.EllSersic),
+    source_disk: Optional[af.Model] = None,
+    source_envelope: Optional[af.Model] = None,
     redshift_lens: float = 0.5,
     redshift_source: float = 1.0,
     mass_centre: Optional[Tuple[float, float]] = None,
@@ -163,7 +163,7 @@ def with_lens_light(
     redshift_source
         The redshift of the source galaxy fitted, used by the pipeline for converting arc-seconds to kpc, masses to
         solMass, etc.
-    mass_centre : (float, float)
+    mass_centre
        If input, a fixed (y,x) centre of the mass profile is used which is not treated as a free parameter by the
        non-linear search.
     """
@@ -288,7 +288,8 @@ def with_lens_light(
         unique_tag=settings_autofit.unique_tag,
         number_of_cores=settings_autofit.number_of_cores,
         session=settings_autofit.session,
-        nlive=100,
+        nlive=250,
+        walks=10,
     )
 
     result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
