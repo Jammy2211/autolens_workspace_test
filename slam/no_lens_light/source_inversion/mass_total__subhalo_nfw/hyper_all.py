@@ -150,7 +150,7 @@ positions = al.Grid2DIrregular.from_json(
 )
 
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_result=source_parametric_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_parametric_results.last
 )
 
 source_inversion_results = slam.source_inversion.no_lens_light(
@@ -175,7 +175,7 @@ example it:
  PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_result=source_inversion_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_inversion_results.last
 )
 
 mass_results = slam.mass_total.no_lens_light(

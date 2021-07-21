@@ -186,7 +186,7 @@ search_4 = af.DynestyStatic(
     nlive=30,
 )
 
-analysis = al.AnalysisImaging(dataset=imaging, hyper_result=result_3)
+analysis = al.AnalysisImaging(dataset=imaging, hyper_dataset_result=result_3)
 
 result_4 = search_4.fit(model=model, analysis=analysis)
 
@@ -228,6 +228,6 @@ model = af.Collection(
 
 preloads = al.Preloads.setup(result=result_4, inversion=True)
 
-analysis = al.AnalysisImaging(dataset=imaging, hyper_result=result_4)
+analysis = al.AnalysisImaging(dataset=imaging, hyper_dataset_result=result_4)
 
 result_5 = search_5.fit(model=model, analysis=analysis)

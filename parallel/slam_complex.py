@@ -78,9 +78,9 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, databse use, etc.
 """
 settings_autofit = slam.SettingsAutoFit(
-    path_prefix=path.join("parallel", "slam"),
+    path_prefix=path.join("parallel", "slam_complex_2"),
     unique_tag=dataset_name,
-    number_of_cores=2,
+    number_of_cores=4,
 )
 
 """
@@ -129,8 +129,7 @@ analysis = al.AnalysisImaging(dataset=masked_imaging)
 
 bulge = af.Model(al.lp.EllSersic)
 disk = af.Model(al.lp.EllSersic)
-bulge.centre = (0.0, 0.0)
-disk.centre = (0.0, 0.0)
+bulge.centre = disk.centre
 
 source_parametric_results = slam.source_parametric.with_lens_light(
     settings_autofit=settings_autofit,
@@ -160,7 +159,7 @@ regularization, to set up the model and hyper images, and then:
 """
 
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_result=source_parametric_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_parametric_results.last
 )
 
 source_inversion_results = slam.source_inversion.no_lens_light(
@@ -222,7 +221,7 @@ initialize the model priors . In this example it:
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_result=source_inversion_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_inversion_results.last
 )
 
 lens_bulge = af.Model(al.lmp.EllSersic)
@@ -263,43 +262,18 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_result=source_inversion_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_inversion_results.last
 )
 
-subhalo_results = slam.subhalo.detection_single_plane(
-    settings_autofit=settings_autofit,
-    analysis=analysis,
-    setup_hyper=setup_hyper,
-    mass_results=mass_results,
-    subhalo_mass=af.Model(al.mp.SphNFWMCRLudlow),
-    grid_dimension_arcsec=3.0,
-    number_of_steps=2,
-)
-
-"""
-Tests that queries work.
-"""
-agg = af.Aggregator.from_database("database.sqlite", completed_only=True)
-
-lens = agg.galaxies.lens
-agg_query = agg.query(lens.mass == al.mp.EllIsothermal)
-samples_gen = agg_query.values("samples")
-print(
-    "Total Samples Objects via `EllIsothermal` model query = ",
-    len(list(samples_gen)),
-    "\n",
-)
-
-lens = agg.galaxies.lens
-agg_query = agg.query(lens.mass == al.mp.EllPowerLaw)
-samples_gen = agg_query.values("samples")
-print(
-    "Total Samples Objects via `EllPowerLaw` model query = ",
-    len(list(samples_gen)),
-    "\n",
-)
-
-fit_imaging_gen = al.agg.FitImaging(aggregator=agg)
+# subhalo_results = slam.subhalo.detection_single_plane(
+#     settings_autofit=settings_autofit,
+#     analysis=analysis,
+#     setup_hyper=setup_hyper,
+#     mass_results=mass_results,
+#     subhalo_mass=af.Model(al.mp.SphNFWMCRLudlow),
+#     grid_dimension_arcsec=3.0,
+#     number_of_steps=2,
+# )
 
 """
 Finish.

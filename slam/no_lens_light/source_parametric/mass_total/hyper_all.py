@@ -144,7 +144,7 @@ In this runner the MASS PIPELINE:
 mass_results = slam.mass_total.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=al.AnalysisImaging(
-        dataset=masked_imaging, hyper_result=source_results.last
+        dataset=masked_imaging, hyper_dataset_result=source_results.last
     ),
     setup_hyper=setup_hyper,
     source_results=source_results,

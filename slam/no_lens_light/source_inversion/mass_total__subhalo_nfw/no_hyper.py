@@ -146,7 +146,7 @@ regularization, to set up the model and hyper images, and then:
  - Uses an `AdaptiveBrightness` regularization.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_result=source_parametric_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_parametric_results.last
 )
 
 source_inversion_results = slam.source_inversion.no_lens_light(
@@ -170,7 +170,10 @@ example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINES through to the MASS 
  PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=masked_imaging)
+analysis = al.AnalysisImaging(
+    dataset=masked_imaging,
+    hyper_dataset_result=source_parametric_results.last
+)
 
 mass_results = slam.mass_total.no_lens_light(
     settings_autofit=settings_autofit,
@@ -196,7 +199,10 @@ For this runner the SUBHALO PIPELINE customizes:
  - The `number_of_cores` used for the gridsearch, where `number_of_cores > 1` performs the model-fits in paralle using
  the Python multiprocessing module.
 """
-analysis = al.AnalysisImaging(dataset=masked_imaging)
+analysis = al.AnalysisImaging(
+    dataset=masked_imaging,
+    hyper_dataset_result=source_parametric_results.last
+)
 
 subhalo_results = slam.subhalo.detection_single_plane(
     settings_autofit=settings_autofit,

@@ -86,10 +86,17 @@ where results are stored.
 session = af.db.open_database("database.sqlite")
 
 """
-___Number of Cores + Session
+__Settings AutoFit__
+
+The settings of autofit, which controls the output paths, parallelization, databse use, etc.
 """
-number_of_cores = 1
-session = None
+settings_autofit = slam.SettingsAutoFit(
+    path_prefix=path.join("database", "slam_session_complex"),
+    unique_tag=dataset_name,
+    number_of_cores=1,
+    session=session,
+)
+
 
 """
 __Redshifts__
@@ -136,13 +143,10 @@ analysis = al.AnalysisImaging(dataset=masked_imaging)
 
 bulge = af.Model(al.lp.EllSersic)
 disk = af.Model(al.lp.EllExponential)
-bulge.centre = (0.0, 0.0)
-disk.centre = (0.0, 0.0)
+bulge.centre = disk.centre
 
 source_parametric_results = slam.source_parametric.with_lens_light(
-    path_prefix=path_prefix,
-    number_of_cores=number_of_cores,
-    unique_tag=dataset_name,
+    settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     lens_bulge=bulge,
@@ -153,7 +157,6 @@ source_parametric_results = slam.source_parametric.with_lens_light(
     mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
-    session=session,
 )
 
 """
@@ -174,7 +177,7 @@ In this example it:
  PIPELINE [fixed values].
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_result=source_parametric_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_parametric_results.last
 )
 
 bulge = af.Model(al.lp.EllSersic)
@@ -182,15 +185,12 @@ disk = af.Model(al.lp.EllExponential)
 bulge.centre = disk.centre
 
 light_results = slam.light_parametric.with_lens_light(
-    path_prefix=path_prefix,
-    number_of_cores=number_of_cores,
-    unique_tag=dataset_name,
+    settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_results=source_parametric_results,
     lens_bulge=bulge,
     lens_disk=disk,
-    session=session,
 )
 
 """
@@ -212,25 +212,33 @@ model of the LIGHT PARAMETRIC PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_result=source_parametric_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_parametric_results.last
 )
 
 mass_results = slam.mass_total.with_lens_light(
-    path_prefix=path_prefix,
-    number_of_cores=number_of_cores,
-    unique_tag=dataset_name,
+    settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_results=source_parametric_results,
     light_results=light_results,
     mass=af.Model(al.mp.EllPowerLaw),
-    session=session,
 )
 
 """
 Tests that queries work.
 """
 agg = af.Aggregator.from_database("database.sqlite", completed_only=True)
+
+name = agg.search.name
+agg_query = agg.query(name == "mass_total[1]_mass[total]_source")
+samples_gen = agg_query.values("samples")
+print(
+    "Total Samples Objects via `EllIsothermal` model query = ",
+    len(list(samples_gen)),
+    "\n",
+)
+
+fit_imaging_gen = al.agg.FitImaging(aggregator=agg)
 
 lens = agg.galaxies.lens
 agg_query = agg.query(lens.mass == al.mp.EllIsothermal)

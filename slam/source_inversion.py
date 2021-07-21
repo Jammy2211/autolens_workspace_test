@@ -80,7 +80,7 @@ def no_lens_light(
     )
 
     result_1 = search.fit(
-        model=model, analysis=analysis.no_positions, info=settings_autofit.info
+        model=model, analysis=analysis, info=settings_autofit.info
     )
 
     """
@@ -171,7 +171,7 @@ def no_lens_light(
     analysis.set_hyper_dataset(result=result_2)
 
     result_3 = search.fit(
-        model=model, analysis=analysis.no_positions, info=settings_autofit.info
+        model=model, analysis=analysis, info=settings_autofit.info
     )
     result_3.use_as_hyper_dataset = True
 
@@ -330,7 +330,7 @@ def with_lens_light(
     )
 
     result_1 = search.fit(
-        model=model, analysis=analysis.no_positions, info=settings_autofit.info
+        model=model, analysis=analysis, info=settings_autofit.info
     )
 
     """
@@ -433,7 +433,7 @@ def with_lens_light(
     analysis.set_hyper_dataset(result=result_2)
 
     result_3 = search.fit(
-        model=model, analysis=analysis.no_positions, info=settings_autofit.info
+        model=model, analysis=analysis, info=settings_autofit.info
     )
     result_3.use_as_hyper_dataset = True
 

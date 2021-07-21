@@ -50,7 +50,7 @@ __Search + Analysis + Model-Fit__
 """
 search = af.DynestyStatic(
     name="mass[sie]_source[bulge]",
-    path_prefix=path.join("imaging", "database", "model_fit"),
+    path_prefix=path.join("database", "model_fit"),
     unique_tag=dataset_name,
     nlive=50,
 )
@@ -67,7 +67,7 @@ Add results to database.
 from autofit.database.aggregator import Aggregator
 
 database_file = path.join(
-    "output", "imaging", "database", "model_fit", "database.sqlite"
+    "output", "database", "model_fit", "database.sqlite"
 )
 
 if path.isfile(database_file):
@@ -75,13 +75,29 @@ if path.isfile(database_file):
 
 agg = Aggregator.from_database(database_file)
 
-agg.add_directory(path.join("output", "imaging", "database", "model_fit"))
+agg.add_directory(path.join("output", "database", "model_fit"))
 
 agg = Aggregator.from_database(database_file)
 
 """
 Check Aggregator works (This should load one mp_instance).
 """
-agg_query = agg.query(agg.galaxies.lens.mass == al.mp.EllIsothermal)
-mp_instances = [samps.median_pdf_instance for samps in agg.values("samples")]
-print(mp_instances)
+name = agg.fit.path_prefix
+agg_query = agg.query(name == path.join("database", "model_fit"))
+print(
+    "Total Samples Objects via `path_prefix` model query = ",
+    len(agg_query),
+    "\n",
+)
+
+name = agg.fit.name
+agg_query = agg.query(name == "mass[sie]_source[bulge]")
+print(
+    "Total Samples Objects via `name` model query = ",
+    len(agg_query),
+    "\n",
+)
+
+# agg_query = agg.query(agg.galaxies.lens.mass == al.mp.EllIsothermal)
+# mp_instances = [samps.median_pdf_instance for samps in agg.values("samples")]
+# print(mp_instances)

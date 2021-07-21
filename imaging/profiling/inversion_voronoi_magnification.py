@@ -26,13 +26,13 @@ import autolens.plot as aplt
 The path all profiling results are output.
 """
 file_path = os.path.join(
-    "profiling", "times", al.__version__, "inversion_voronoi_magnification"
+    "imaging", "profiling", "times", al.__version__, "inversion_voronoi_magnification"
 )
 
 """
 The number of repeats used to estimate the `Inversion` run time.
 """
-repeats = 10
+repeats = 1
 print("Number of repeats = " + str(repeats))
 print()
 
@@ -107,7 +107,7 @@ pixel_scale = pixel_scales_dict[instrument]
 """
 Load the dataset for this instrument / resolution.
 """
-dataset_path = path.join("dataset", "imaging", instrument)
+dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
 imaging = al.Imaging.from_fits(
     image_path=path.join(dataset_path, "image.fits"),
@@ -624,6 +624,8 @@ for i in range(repeats):
 profiling_dict["Image Reconstruction"] = (time.time() - start) / repeats
 
 """
+__Results__
+
 These two numbers are the primary driver of run time. More pixels = longer run time.
 """
 
@@ -638,6 +640,8 @@ for key, value in profiling_dict.items():
     print(key, value)
 
 """
+__Output__
+
 Output the profiling run times as a dictionary so they can be used in `profiling/graphs.py` to create graphs of the
 profile run times.
 
@@ -692,8 +696,8 @@ info_dict = {}
 info_dict["repeats"] = repeats
 info_dict["image_pixels"] = masked_imaging.grid.sub_shape_slim
 info_dict["sub_size"] = sub_size
-info_dict["mask_radius"] = 3.5
-info_dict["psf_shape_2d"] = (21, 21)
+info_dict["mask_radius"] = mask_radius
+info_dict["psf_shape_2d"] = psf_shape_2d
 info_dict["source_pixels"] = len(reconstruction)
 
 print(info_dict)

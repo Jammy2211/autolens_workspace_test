@@ -60,7 +60,7 @@ __Search + Analysis + Model-Fit (Use Border)__
 """
 search = af.DynestyStatic(
     name="pixelization_use_border",
-    path_prefix=path.join("imaging", "database", "pixelization_settings"),
+    path_prefix=path.join("database", "pixelization_settings"),
     unique_tag=dataset_name,
     nlive=50,
 )
@@ -77,7 +77,7 @@ __Search + Analysis + Model-Fit (Not Use Border)__
 """
 search = af.DynestyStatic(
     name="pixelization_not_use_border",
-    path_prefix=path.join("imaging", "database", "pixelization_settings"),
+    path_prefix=path.join("database", "pixelization_settings"),
     unique_tag=dataset_name,
     nlive=50,
 )
@@ -97,7 +97,7 @@ Add results to database.
 from autofit.database.aggregator import Aggregator
 
 database_file = path.join(
-    "output", "imaging", "database", "pixelization_settings", "database.sqlite"
+    "output", "database", "pixelization_settings", "database.sqlite"
 )
 
 if path.isfile(database_file):
@@ -105,7 +105,7 @@ if path.isfile(database_file):
 
 agg = Aggregator.from_database(database_file)
 
-agg.add_directory(path.join("output", "imaging", "database", "pixelization_settings"))
+agg.add_directory(path.join("output", "database", "pixelization_settings"))
 
 agg = Aggregator.from_database(database_file)
 

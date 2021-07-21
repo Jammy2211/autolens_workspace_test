@@ -73,13 +73,6 @@ imaging_plotter = aplt.ImagingPlotter(
 imaging_plotter.subplot_imaging()
 
 """
-__Paths__
-
-The path the results of all chained searches are output:
-"""
-path_prefix = path.join("database", "slam_session_complex")
-
-"""
 ___Session__
 
 To output results directly to the database, we start a session, which includes the name of the database `.sqlite` file
@@ -88,10 +81,16 @@ where results are stored.
 session = af.db.open_database("database.sqlite")
 
 """
-___Number of Cores + Session
+__Settings AutoFit__
+
+The settings of autofit, which controls the output paths, parallelization, databse use, etc.
 """
-number_of_cores = 1
-session = None
+settings_autofit = slam.SettingsAutoFit(
+    path_prefix=path.join("database", "slam_session_complex"),
+    unique_tag=dataset_name,
+    number_of_cores=1,
+    session=session,
+)
 
 """
 __Redshifts__
@@ -139,13 +138,10 @@ analysis = al.AnalysisImaging(dataset=masked_imaging)
 
 bulge = af.Model(al.lp.EllSersic)
 disk = af.Model(al.lp.EllSersic)
-bulge.centre = (0.0, 0.0)
-disk.centre = (0.0, 0.0)
+bulge.centre = disk.centre
 
 source_parametric_results = slam.source_parametric.with_lens_light(
-    path_prefix=path_prefix,
-    number_of_cores=number_of_cores,
-    unique_tag=dataset_name,
+    settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     lens_bulge=bulge,
@@ -172,13 +168,11 @@ regularization, to set up the model and hyper images, and then:
 """
 
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_result=source_parametric_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_parametric_results.last
 )
 
 source_inversion_results = slam.source_inversion.no_lens_light(
-    path_prefix=path_prefix,
-    number_of_cores=number_of_cores,
-    unique_tag=dataset_name,
+    settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_parametric_results=source_parametric_results,
@@ -209,9 +203,7 @@ disk = af.Model(al.lp.EllSersic)
 bulge.centre = disk.centre
 
 light_results = slam.light_parametric.with_lens_light(
-    path_prefix=path_prefix,
-    number_of_cores=number_of_cores,
-    unique_tag=dataset_name,
+    settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_results=source_inversion_results,
@@ -238,7 +230,7 @@ initialize the model priors . In this example it:
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_result=source_inversion_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_inversion_results.last
 )
 
 lens_bulge = af.Model(al.lmp.EllSersic)
@@ -247,9 +239,7 @@ dark = af.Model(al.mp.EllNFWMCRLudlow)
 dark.centre = lens_bulge.centre
 
 mass_results = slam.mass_light_dark.with_lens_light(
-    path_prefix=path_prefix,
-    number_of_cores=number_of_cores,
-    unique_tag=dataset_name,
+    settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_results=source_inversion_results,
@@ -281,13 +271,11 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_result=source_inversion_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_inversion_results.last
 )
 
 subhalo_results = slam.subhalo.detection_single_plane(
-    path_prefix=path_prefix,
-    number_of_cores=number_of_cores,
-    unique_tag=dataset_name,
+    settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     mass_results=mass_results,

@@ -60,7 +60,7 @@ __Masking + Search + Analysis + Model-Fit__
 """
 search = af.DynestyStatic(
     name="search_dataset_normal",
-    path_prefix=path.join("imaging", "database", "dataset_custom"),
+    path_prefix=path.join("database", "dataset_custom"),
     unique_tag=dataset_name,
     nlive=50,
 )
@@ -83,7 +83,7 @@ masked_imaging = imaging.apply_mask(
 
 search = af.DynestyStatic(
     name="search_dataset_custom",
-    path_prefix=path.join("imaging", "database", "dataset_custom"),
+    path_prefix=path.join("database", "dataset_custom"),
     unique_tag=dataset_name,
     nlive=50,
 )
@@ -100,7 +100,7 @@ Add results to database.
 from autofit.database.aggregator import Aggregator
 
 database_file = path.join(
-    "output", "imaging", "database", "dataset_custom", "database.sqlite"
+    "output", "database", "dataset_custom", "database.sqlite"
 )
 
 if path.isfile(database_file):
@@ -108,7 +108,7 @@ if path.isfile(database_file):
 
 agg = Aggregator.from_database(database_file)
 
-agg.add_directory(path.join("output", "imaging", "database", "dataset_custom"))
+agg.add_directory(path.join("output", "database", "dataset_custom"))
 
 agg = Aggregator.from_database(database_file)
 

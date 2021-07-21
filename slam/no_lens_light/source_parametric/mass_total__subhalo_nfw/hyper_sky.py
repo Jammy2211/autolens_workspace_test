@@ -144,7 +144,7 @@ using the lens mass model and source model of the SOURCE PIPELINE to initialize 
  - Uses an `EllPowerLaw` model for the lens's total mass distribution [The centre if unfixed from (0.0, 0.0)].
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=masked_imaging, hyper_result=source_results.last)
+analysis = al.AnalysisImaging(dataset=masked_imaging, hyper_dataset_result=source_results.last)
 
 mass_results = slam.mass_total.no_lens_light(
     settings_autofit=settings_autofit,
@@ -170,7 +170,7 @@ For this runner the `SetupSubhalo` customizes:
    subhalo detection grid search.
  - The NxN size of the grid-search.
 """
-analysis = al.AnalysisImaging(dataset=masked_imaging, hyper_result=source_results.last)
+analysis = al.AnalysisImaging(dataset=masked_imaging, hyper_dataset_result=source_results.last)
 
 subhalo_results = slam.subhalo.detection_single_plane(
     settings_autofit=settings_autofit,

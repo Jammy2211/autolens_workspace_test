@@ -147,7 +147,7 @@ using the lens mass model and source model of the SOURCE PIPELINE to initialize 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_result=source_parametric_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_parametric_results.last
 )
 
 mass_results = slam.mass_total.no_lens_light(

@@ -169,7 +169,7 @@ preloads = al.Preloads.setup(
 
 analysis = al.AnalysisImaging(
     dataset=masked_imaging,
-    hyper_result=source_inversion_results.last,
+    hyper_dataset_result=source_inversion_results.last,
     preloads=preloads,
 )
 

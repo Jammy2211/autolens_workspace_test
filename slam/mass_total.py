@@ -75,7 +75,13 @@ def no_lens_light(
                 shear=source_results.last.model.galaxies.lens.shear,
             ),
             source=source,
-        )
+        ),
+        hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
+            result=source_results.last, as_model=True
+        ),
+        hyper_background_noise=setup_hyper.hyper_background_noise_from_result(
+            result=source_results.last
+        ),
     )
 
     search = af.DynestyStatic(
@@ -190,7 +196,13 @@ def with_lens_light(
                 ),
             ),
             source=source,
-        )
+        ),
+        hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
+            result=source_results.last, as_model=True
+        ),
+        hyper_background_noise=setup_hyper.hyper_background_noise_from_result(
+            result=source_results.last
+        ),
     )
 
     search = af.DynestyStatic(

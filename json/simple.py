@@ -89,9 +89,7 @@ __Search + Analysis + Model-Fit__
 analysis = al.AnalysisImaging(dataset=imaging)
 
 search = af.DynestyStatic(
-    path_prefix=path_prefix,
-    name="simple",
-    unique_tag=dataset_name,
+    path_prefix=path_prefix, name="simple", unique_tag=dataset_name
 )
 
 result = search.fit(model=model, analysis=analysis)

@@ -179,7 +179,7 @@ In this example it:
 """
 bulge = af.Model(al.lp.EllSersic)
 disk = af.Model(al.lp.EllExponential)
-# bulge.centre = disk.centre
+bulge.centre = disk.centre
 
 light_results = slam.light_parametric.with_lens_light(
     settings_autofit=settings_autofit,
@@ -208,7 +208,7 @@ model of the LIGHT PARAMETRIC PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_result=source_inversion_results.last.hyper
+    dataset=masked_imaging, hyper_dataset_result=source_inversion_results.last.hyper
 )
 
 mass_results = slam.mass_total.with_lens_light(

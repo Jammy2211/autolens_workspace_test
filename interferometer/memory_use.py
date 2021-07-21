@@ -39,6 +39,8 @@ shape_mapping_matrix = total_visibilities * source_pixels
 
 total_shape = shape_data + shape_mapping_matrix
 
+shape_data = 2e5 ** 2
+
 print("Data Memory Use (GB) = " + str(shape_data * 8e-9))
 print("Mapping Matrix Memory Use (GB) = " + str(shape_mapping_matrix * 8e-9))
 print("Total Memory Use (GB) = " + str(total_shape * 8e-9))

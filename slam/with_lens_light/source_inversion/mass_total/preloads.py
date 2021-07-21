@@ -228,7 +228,7 @@ Preloads:
 """
 analysis = al.AnalysisImaging(
     dataset=masked_imaging,
-    hyper_result=source_inversion_results.last.hyper,
+    hyper_dataset_result=source_inversion_results.last.hyper,
     preloads=al.Preloads.setup(
         result=source_inversion_results.last.hyper, pixelization=True
     ),
