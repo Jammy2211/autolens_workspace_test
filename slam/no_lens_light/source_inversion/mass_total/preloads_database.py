@@ -63,10 +63,10 @@ mask = al.Mask2D.circular(
     shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
-masked_imaging = imaging.apply_mask(mask=mask)
+imaging = imaging.apply_mask(mask=mask)
 
 imaging_plotter = aplt.ImagingPlotter(
-    imaging=masked_imaging, visuals_2d=aplt.Visuals2D(mask=mask)
+    imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
 )
 imaging_plotter.subplot_imaging()
 
@@ -78,15 +78,24 @@ Build the database.
 database_name = "preloads"
 
 try:
-    os.remove(path.join("output", "slam", "mass_total__source_inversion", f"{database_name}.sqlite"))
+    os.remove(
+        path.join(
+            "output", "slam", "mass_total__source_inversion", f"{database_name}.sqlite"
+        )
+    )
 except FileNotFoundError:
     pass
 
 agg = af.Aggregator.from_database(
-    filename=path.join("output", "slam", "mass_total__source_inversion", f"{database_name}.sqlite"), completed_only=False
+    filename=path.join(
+        "output", "slam", "mass_total__source_inversion", f"{database_name}.sqlite"
+    ),
+    completed_only=False,
 )
 
-agg.add_directory(directory=path.join("output", "slam", "mass_total__source_inversion", database_name))
+agg.add_directory(
+    directory=path.join("output", "slam", "mass_total__source_inversion", database_name)
+)
 
 """
 __Query__

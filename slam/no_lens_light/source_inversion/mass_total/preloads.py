@@ -63,10 +63,10 @@ mask = al.Mask2D.circular(
     shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
-masked_imaging = imaging.apply_mask(mask=mask)
+imaging = imaging.apply_mask(mask=mask)
 
 imaging_plotter = aplt.ImagingPlotter(
-    imaging=masked_imaging, visuals_2d=aplt.Visuals2D(mask=mask)
+    imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
 )
 imaging_plotter.subplot_imaging()
 
@@ -120,7 +120,7 @@ light, which in this example:
 """
 source_parametric_results = slam.source_parametric.no_lens_light(
     settings_autofit=settings_autofit,
-    analysis=al.AnalysisImaging(dataset=masked_imaging),
+    analysis=al.AnalysisImaging(dataset=imaging),
     setup_hyper=setup_hyper,
     mass=af.Model(al.mp.EllIsothermal),
     shear=af.Model(al.mp.ExternalShear),
@@ -139,7 +139,7 @@ to set up the model and hyper images, and then:
  - Uses a `VoronoiBrightnessImage` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
 """
-analysis = al.AnalysisImaging(dataset=masked_imaging)
+analysis = al.AnalysisImaging(dataset=imaging)
 
 source_inversion_results = slam.source_inversion.no_lens_light(
     settings_autofit=settings_autofit,
@@ -168,7 +168,7 @@ preloads = al.Preloads.setup(
 )
 
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging,
+    dataset=imaging,
     hyper_dataset_result=source_inversion_results.last,
     preloads=preloads,
 )

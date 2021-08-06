@@ -9,6 +9,8 @@ from autoconf import conf
 
 conf.instance.push(new_path=path.join(cwd, "config", "slacs"))
 
+conf.instance["general"]["remove_files"] = False
+
 """ 
 __AUTOLENS + DATA__
 """
@@ -55,10 +57,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, databse use, etc.
 """
 settings_autofit = slam_prior_id.SettingsAutoFit(
-    path_prefix="slacs",
-    unique_tag=dataset_name,
-    number_of_cores=1,
-    session=None,
+    path_prefix="slacs", unique_tag=dataset_name, number_of_cores=1, session=None
 )
 
 """
@@ -91,9 +90,7 @@ source galaxy's light, which in this example:
 """
 mass = af.Model(al.mp.EllIsothermal)
 
-analysis = al.AnalysisImaging(
-    dataset=imaging,
-)
+analysis = al.AnalysisImaging(dataset=imaging)
 
 bulge = af.Model(al.lp.EllSersic)
 disk = af.Model(al.lp.EllExponential)
@@ -110,7 +107,7 @@ source_parametric_results = slam_prior_id.source_parametric.with_lens_light(
     source_bulge=af.Model(al.lp.EllSersic),
     mass_centre=(0.0, 0.0),
     redshift_lens=0.28,
-    redshift_source=0.982
+    redshift_source=0.982,
 )
 
 """
@@ -126,8 +123,7 @@ regularization, to set up the model and hyper images, and then:
  SOURCE INVERSION PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging,
-    hyper_dataset_result=source_parametric_results.last,
+    dataset=imaging, hyper_dataset_result=source_parametric_results.last
 )
 
 source_inversion_results = slam_prior_id.source_inversion.with_lens_light(
@@ -183,7 +179,7 @@ light_results = slam_prior_id.light_parametric.with_lens_light(
     source_results=source_inversion_results,
     lens_bulge=bulge,
     lens_disk=disk,
-    end_with_hyper_extension=True
+    end_with_hyper_extension=True,
 )
 
 
@@ -232,7 +228,7 @@ mass_results = slam_prior_id.mass_total.with_lens_light(
     source_results=source_inversion_results,
     light_results=light_results,
     mass=af.Model(al.mp.EllPowerLaw),
-    end_with_hyper_extension=True
+    end_with_hyper_extension=True,
 )
 
 """

@@ -43,16 +43,10 @@ lens = af.Model(
 )
 source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
 
-subhalo = af.Model(
-    al.Galaxy, redshift=0.5, mass=af.Model(al.mp.SphNFWMCRLudlow)
-)
+subhalo = af.Model(al.Galaxy, redshift=0.5, mass=af.Model(al.mp.SphNFWMCRLudlow))
 
-subhalo.mass.centre_0 = af.UniformPrior(
-    lower_limit=-2.0, upper_limit=2.0
-)
-subhalo.mass.centre_1 = af.UniformPrior(
-    lower_limit=-2.0, upper_limit=2.0
-)
+subhalo.mass.centre_0 = af.UniformPrior(lower_limit=-2.0, upper_limit=2.0)
+subhalo.mass.centre_1 = af.UniformPrior(lower_limit=-2.0, upper_limit=2.0)
 
 subhalo.mass.redshift_object = 0.5
 subhalo.mass.redshift_source = 1.0
@@ -71,13 +65,14 @@ search = af.DynestyStatic(
     nlive=50,
 )
 
-subhalo_grid_search = af.SearchGridSearch(
-    search=search,
-    number_of_steps=2,
-    number_of_cores=1,
+subhalo_grid_search = al.SubhaloSearch(
+    grid_search=af.SearchGridSearch(
+        search=search, number_of_steps=2, number_of_cores=1
+    ),
+    result_no_subhalo=None,
 )
 
-grid_search_result = subhalo_grid_search.fit(
+subhalo_search_result = subhalo_grid_search.fit(
     model=model,
     analysis=analysis,
     grid_priors=[
@@ -93,9 +88,7 @@ Add results to database.
 """
 from autofit.database.aggregator import Aggregator
 
-database_file = path.join(
-    "output", "database", "grid_search", "database.sqlite"
-)
+database_file = path.join("output", "database", "grid_search", "database.sqlite")
 
 if path.isfile(database_file):
     os.remove(database_file)
@@ -111,4 +104,7 @@ Check Aggregator works (This should load one mp_instance).
 """
 print(len(agg))
 
-print(agg.grid_search_result)
+print(agg.subhalo_search_result)
+
+agg_grid = agg.grid_searches()
+print("Total `agg_grid` = ", len(agg_grid), "\n")

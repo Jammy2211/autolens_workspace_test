@@ -62,10 +62,10 @@ mask = al.Mask2D.circular(
     shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
-masked_imaging = imaging.apply_mask(mask=mask)
+imaging = imaging.apply_mask(mask=mask)
 
 imaging_plotter = aplt.ImagingPlotter(
-    imaging=masked_imaging, visuals_2d=aplt.Visuals2D(mask=mask)
+    imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
 )
 imaging_plotter.subplot_imaging()
 
@@ -118,7 +118,7 @@ this example:
  - Uses an `EllIsothermal` model for the lens's total mass distribution with an `ExternalShear`.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging,
+    dataset=imaging,
     positions=positions,
     settings_lens=al.SettingsLens(positions_threshold=0.4),
 )
@@ -145,7 +145,7 @@ In this runner the MASS PIPELINE:
  - Uses an `EllPowerLaw` model for the lens's total mass distribution (the centre input above is unfixed).
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=masked_imaging, positions=positions)
+analysis = al.AnalysisImaging(dataset=imaging, positions=positions)
 
 mass_results = slam.mass_total.no_lens_light(
     settings_autofit=settings_autofit,

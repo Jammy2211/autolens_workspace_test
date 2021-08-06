@@ -102,9 +102,7 @@ def with_lens_light(
         nlive=150,
     )
 
-    result_1 = search.fit(
-        model=model, analysis=analysis, info=settings_autofit.info
-    )
+    result_1 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
 
     """
     __Hyper Extension__

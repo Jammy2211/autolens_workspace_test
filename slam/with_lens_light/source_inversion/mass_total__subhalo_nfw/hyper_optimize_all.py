@@ -131,12 +131,15 @@ mass = af.Model(al.mp.EllIsothermal)
 
 if dataset_name in ["slacs1451-0239", "slacs0841+3824"]:
 
-    mass.elliptical_comps.elliptical_comps_0 = af.UniformPrior(lower_limit=-0.2, upper_limit=0.2)
-    mass.elliptical_comps.elliptical_comps_1 = af.UniformPrior(lower_limit=-0.2, upper_limit=0.2)
+    mass.elliptical_comps.elliptical_comps_0 = af.UniformPrior(
+        lower_limit=-0.2, upper_limit=0.2
+    )
+    mass.elliptical_comps.elliptical_comps_1 = af.UniformPrior(
+        lower_limit=-0.2, upper_limit=0.2
+    )
 
 analysis = al.AnalysisImaging(
-    dataset=imaging,
-    settings_lens=al.SettingsLens(positions_threshold=0.7),
+    dataset=imaging, settings_lens=al.SettingsLens(positions_threshold=0.7)
 )
 
 source_parametric_results = slam.source_parametric.no_lens_light(
@@ -148,7 +151,7 @@ source_parametric_results = slam.source_parametric.no_lens_light(
     source_bulge=af.Model(al.lp.EllSersic),
     mass_centre=(0.0, 0.0),
     redshift_lens=0.5,
-    redshift_source=1.0
+    redshift_source=1.0,
 )
 
 """
@@ -246,12 +249,10 @@ mass_results = slam.mass_total.no_lens_light(
     setup_hyper=setup_hyper,
     source_results=source_inversion_results,
     mass=af.Model(al.mp.EllPowerLaw),
-    end_with_hyper_extension=True
+    end_with_hyper_extension=True,
 )
 
-slam.extensions.stochastic_fit(
-    result=mass_results.last, analysis=analysis,
-)
+slam.extensions.stochastic_fit(result=mass_results.last, analysis=analysis)
 
 """
 __SUBHALO PIPELINE (single plane detection)__
@@ -281,9 +282,7 @@ settings_lens = al.SettingsLens(
     )
 )
 
-preloads = al.Preloads.setup(
-    result=mass_results.last.hyper, pixelization=True
-)
+preloads = al.Preloads.setup(result=mass_results.last.hyper, pixelization=True)
 
 analysis = al.AnalysisImaging(
     dataset=imaging,

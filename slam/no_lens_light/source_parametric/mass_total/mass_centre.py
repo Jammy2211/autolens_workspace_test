@@ -62,10 +62,10 @@ mask = al.Mask2D.circular(
     shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
-masked_imaging = imaging.apply_mask(mask=mask)
+imaging = imaging.apply_mask(mask=mask)
 
 imaging_plotter = aplt.ImagingPlotter(
-    imaging=masked_imaging, visuals_2d=aplt.Visuals2D(mask=mask)
+    imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
 )
 imaging_plotter.subplot_imaging()
 
@@ -120,7 +120,7 @@ In this runner the SOURCE PIPELINE:
 """
 source_results = slam.source_parametric.no_lens_light(
     settings_autofit=settings_autofit,
-    analysis=al.AnalysisImaging(dataset=masked_imaging),
+    analysis=al.AnalysisImaging(dataset=imaging),
     setup_hyper=setup_hyper,
     mass=af.Model(al.mp.EllIsothermal),
     shear=af.Model(al.mp.ExternalShear),
@@ -144,7 +144,7 @@ In this runner the MASS PIPELINE:
 """
 mass_results = slam.mass_total.no_lens_light(
     settings_autofit=settings_autofit,
-    analysis=al.AnalysisImaging(dataset=masked_imaging),
+    analysis=al.AnalysisImaging(dataset=imaging),
     setup_hyper=setup_hyper,
     source_results=source_results,
     mass=af.Model(al.mp.EllPowerLaw),

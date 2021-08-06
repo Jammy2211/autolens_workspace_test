@@ -195,9 +195,14 @@ search = af.DynestyStatic(
 analysis = al.AnalysisImaging(dataset=masked_imaging)
 
 import cProfile
-cProfile.run('search.fit(model=model, analysis=analysis)', f'x{int(number_of_cores)}_{instrument}_model_inversion_magnification.prof')
+
+cProfile.run(
+    "search.fit(model=model, analysis=analysis)",
+    f"x{int(number_of_cores)}_{instrument}_model_inversion_magnification.prof",
+)
 
 # result = search.fit(model=model, analysis=analysis)
 
 import sys
+
 sys.exit()

@@ -108,10 +108,7 @@ lens_galaxy = al.Galaxy(
     shear=al.mp.ExternalShear(elliptical_comps=(0.001, 0.001)),
 )
 
-source_galaxy = al.Galaxy(
-    redshift=1.0,
-    bulge=al.lp.EllSersic()
-)
+source_galaxy = al.Galaxy(redshift=1.0, bulge=al.lp.EllSersic())
 
 
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
@@ -157,11 +154,7 @@ disk = al.lp.EllExponential(
 mass = af.Model(al.mp.EllIsothermal)
 
 lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, disk=disk, mass=mass)
-source = af.Model(
-    al.Galaxy,
-    redshift=1.0,
-    bulge=al.lp.EllSersic
-)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
@@ -182,10 +175,10 @@ The `name` and `path_prefix` below specify the path where results are stored in 
 search = af.DynestyStatic(
     path_prefix=path.join("profiling", "parametric", instrument),
     name="mass[sie]_source[bulge]",
- #   maxcall=1500,  # This sets how long the model-fit takes.
+    #   maxcall=1500,  # This sets how long the model-fit takes.
     nlive=50,
     number_of_cores=4,
-    iterations_per_update=500000
+    iterations_per_update=500000,
 )
 
 analysis = al.AnalysisImaging(dataset=masked_imaging)
@@ -193,4 +186,5 @@ analysis = al.AnalysisImaging(dataset=masked_imaging)
 result = search.fit(model=model, analysis=analysis)
 
 import sys
+
 sys.exit()

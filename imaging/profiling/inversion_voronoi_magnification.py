@@ -39,8 +39,8 @@ print()
 """
 These settings control various aspects of how long a fit takes. The values below are default PyAutoLens values.
 """
-sub_size = 4
-mask_radius = 3.5
+sub_size = 1
+mask_radius = 4.5
 psf_shape_2d = (21, 21)
 pixelization_shape_2d = (57, 57)
 

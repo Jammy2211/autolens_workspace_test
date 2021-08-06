@@ -100,12 +100,10 @@ def with_lens_light(
         number_of_cores=settings_autofit.number_of_cores,
         session=settings_autofit.session,
         nlive=250,
-        walks=10
+        walks=10,
     )
 
-    result_1 = search.fit(
-        model=model, analysis=analysis, info=settings_autofit.info
-    )
+    result_1 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
 
     """
     __Hyper Extension__

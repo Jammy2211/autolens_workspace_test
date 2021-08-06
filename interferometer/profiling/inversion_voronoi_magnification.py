@@ -23,7 +23,11 @@ import numpy as np
 The path all profiling results are output.
 """
 file_path = os.path.join(
-    "interferometer", "profiling", "times", al.__version__, "inversion_voronoi_magnification"
+    "interferometer",
+    "profiling",
+    "times",
+    al.__version__,
+    "inversion_voronoi_magnification",
 )
 
 """
@@ -54,7 +58,10 @@ Set up the `Interferometer` dataset we fit. This includes the `real_space_mask` 
 `Inversion` is evaluated using via mapping to Fourier space using the `Transformer`.
 """
 real_space_mask = al.Mask2D.circular(
-    shape_native=(800, 800), pixel_scales=pixel_scales, sub_size=sub_size, radius=mask_radius
+    shape_native=(800, 800),
+    pixel_scales=pixel_scales,
+    sub_size=sub_size,
+    radius=mask_radius,
 )
 
 """
@@ -109,13 +116,11 @@ lens_galaxy = al.Galaxy(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
         elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
-        slope=2.0
+        slope=2.0,
     ),
     shear=al.mp.ExternalShear(elliptical_comps=(0.001, 0.001)),
 )
-tracer = al.Tracer.from_galaxies(
-    galaxies=[lens_galaxy, source_galaxy]
-)
+tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
 """
 __Fit__
@@ -132,9 +137,7 @@ tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 fit = al.FitInterferometer(
     interferometer=interferometer,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(
-        use_linear_operators=use_linear_operators
-    ),
+    settings_inversion=al.SettingsInversion(use_linear_operators=use_linear_operators),
 )
 fit.log_evidence
 
@@ -189,9 +192,7 @@ sparse_image_plane_grid = al.Grid2DSparse.from_grid_and_unmasked_2d_grid_shape(
 start = time.time()
 for i in range(repeats):
     tracer.deflections_2d_from_grid(grid=sparse_image_plane_grid)
-    traced_grid = tracer.traced_grids_of_planes_from_grid(
-        grid=interferometer.grid
-    )[-1]
+    traced_grid = tracer.traced_grids_of_planes_from_grid(grid=interferometer.grid)[-1]
 
 profiling_dict["Ray Tracing (Power-Law)"] = (time.time() - start) / repeats
 
@@ -361,7 +362,9 @@ for i in range(repeats):
     transformed_mapping_matrix = interferometer.transformer.transform_mapping_matrix(
         mapping_matrix=mapping_matrix
     )
-profiling_dict["Transform Mapping Matrix (f_transform)"] = (time.time() - start) / repeats
+profiling_dict["Transform Mapping Matrix (f_transform)"] = (
+    time.time() - start
+) / repeats
 
 """
 __Data Vector (D)__
@@ -481,7 +484,8 @@ https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/inversi
 start = time.time()
 for i in range(repeats):
     al.util.inversion.mapped_reconstructed_visibilities_from(
-        transformed_mapping_matrix=transformed_mapping_matrix, reconstruction=reconstruction
+        transformed_mapping_matrix=transformed_mapping_matrix,
+        reconstruction=reconstruction,
     )
 profiling_dict["Visibility Reconstruction"] = (time.time() - start) / repeats
 
@@ -537,13 +541,17 @@ Output an image of the fit, so that we can inspect that it fits the data as expe
 """
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
-        path=file_path, filename=f"{instrument}_subplot_fit_interferometer", format="png"
+        path=file_path,
+        filename=f"{instrument}_subplot_fit_interferometer",
+        format="png",
     )
 )
-fit_interferometer_plotter = aplt.FitInterferometerPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_interferometer_plotter = aplt.FitInterferometerPlotter(
+    fit=fit, mat_plot_2d=mat_plot_2d
+)
 fit_interferometer_plotter.subplot_fit_interferometer()
-#fit_interferometer_plotter.subplot_fit_dirty_images()
-#fit_interferometer_plotter.subplot_fit_real_space()
+# fit_interferometer_plotter.subplot_fit_dirty_images()
+# fit_interferometer_plotter.subplot_fit_real_space()
 
 """
 The `info_dict` contains all the key information of the analysis which describes its run times.

@@ -66,9 +66,7 @@ Add results to database.
 """
 from autofit.database.aggregator import Aggregator
 
-database_file = path.join(
-    "output", "database", "model_fit", "database.sqlite"
-)
+database_file = path.join("output", "database", "model_fit", "database.sqlite")
 
 if path.isfile(database_file):
     os.remove(database_file)
@@ -84,19 +82,11 @@ Check Aggregator works (This should load one mp_instance).
 """
 name = agg.fit.path_prefix
 agg_query = agg.query(name == path.join("database", "model_fit"))
-print(
-    "Total Samples Objects via `path_prefix` model query = ",
-    len(agg_query),
-    "\n",
-)
+print("Total Samples Objects via `path_prefix` model query = ", len(agg_query), "\n")
 
 name = agg.fit.name
 agg_query = agg.query(name == "mass[sie]_source[bulge]")
-print(
-    "Total Samples Objects via `name` model query = ",
-    len(agg_query),
-    "\n",
-)
+print("Total Samples Objects via `name` model query = ", len(agg_query), "\n")
 
 # agg_query = agg.query(agg.galaxies.lens.mass == al.mp.EllIsothermal)
 # mp_instances = [samps.median_pdf_instance for samps in agg.values("samples")]

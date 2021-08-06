@@ -65,10 +65,10 @@ mask = al.Mask2D.circular(
     shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
 )
 
-masked_imaging = imaging.apply_mask(mask=mask)
+imaging = imaging.apply_mask(mask=mask)
 
 imaging_plotter = aplt.ImagingPlotter(
-    imaging=masked_imaging, visuals_2d=aplt.Visuals2D(mask=mask)
+    imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
 )
 imaging_plotter.subplot_imaging()
 
@@ -129,7 +129,7 @@ source galaxy's light, which in this example:
 
  - Mass Centre: Fix the mass profile centre to (0.0, 0.0) (this assumption will be relaxed in the MASS PIPELINE).
 """
-analysis = al.AnalysisImaging(dataset=masked_imaging)
+analysis = al.AnalysisImaging(dataset=imaging)
 
 bulge = af.Model(al.lp.EllSersic)
 disk = af.Model(al.lp.EllExponential)
@@ -198,7 +198,7 @@ model of the LIGHT PARAMETRIC PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_dataset_result=source_parametric_results.last
+    dataset=imaging, hyper_dataset_result=source_parametric_results.last
 )
 
 mass_results = slam.mass_total.with_lens_light(
@@ -227,7 +227,7 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_dataset_result=source_parametric_results.last
+    dataset=imaging, hyper_dataset_result=source_parametric_results.last
 )
 
 subhalo_results = slam.subhalo.detection_single_plane(

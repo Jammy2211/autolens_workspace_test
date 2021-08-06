@@ -63,10 +63,10 @@ mask = al.Mask2D.circular(
     shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=2.0
 )
 
-masked_imaging = imaging.apply_mask(mask=mask)
+imaging = imaging.apply_mask(mask=mask)
 
 imaging_plotter = aplt.ImagingPlotter(
-    imaging=masked_imaging, visuals_2d=aplt.Visuals2D(mask=mask)
+    imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
 )
 imaging_plotter.subplot_imaging()
 
@@ -122,7 +122,7 @@ light, which in this example:
 """
 source_parametric_results = slam.source_parametric.no_lens_light(
     settings_autofit=settings_autofit,
-    analysis=al.AnalysisImaging(dataset=masked_imaging),
+    analysis=al.AnalysisImaging(dataset=imaging),
     setup_hyper=setup_hyper,
     mass=af.Model(al.mp.EllIsothermal),
     shear=af.Model(al.mp.ExternalShear),
@@ -141,7 +141,7 @@ to set up the model and hyper images, and then:
  - Uses a `VoronoiBrightnessImage` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
 """
-analysis = al.AnalysisImaging(dataset=masked_imaging)
+analysis = al.AnalysisImaging(dataset=imaging)
 
 source_inversion_results = slam.source_inversion.no_lens_light(
     settings_autofit=settings_autofit,
@@ -161,7 +161,7 @@ using the lens mass model and source model of the SOURCE PIPELINE to initialize 
  - Uses an `EllPowerLaw` model for the lens's total mass distribution [The centre if unfixed from (0.0, 0.0)].
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=masked_imaging)
+analysis = al.AnalysisImaging(dataset=imaging)
 
 mass_results = slam.mass_total.no_lens_light(
     settings_autofit=settings_autofit,

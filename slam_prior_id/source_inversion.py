@@ -79,9 +79,7 @@ def no_lens_light(
         nlive=30,
     )
 
-    result_1 = search.fit(
-        model=model, analysis=analysis, info=settings_autofit.info
-    )
+    result_1 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
 
     """
     __Model + Search + Analysis + Model-Fit (Search 2)__
@@ -170,9 +168,7 @@ def no_lens_light(
 
     analysis.set_hyper_dataset(result=result_2)
 
-    result_3 = search.fit(
-        model=model, analysis=analysis, info=settings_autofit.info
-    )
+    result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
     result_3.use_as_hyper_dataset = True
 
     """
@@ -257,7 +253,7 @@ def with_lens_light(
         al.pix.VoronoiBrightnessImage
     ),
     regularization: af.Model(al.reg.Regularization) = af.Model(al.reg.Constant),
-    unfix_mass_centre : bool = True
+    unfix_mass_centre: bool = True,
 ) -> af.ResultsCollection:
     """
     The SLaM SOURCE INVERSION PIPELINE for fitting imaging data with a lens light component.
@@ -330,9 +326,7 @@ def with_lens_light(
         nlive=30,
     )
 
-    result_1 = search.fit(
-        model=model, analysis=analysis, info=settings_autofit.info
-    )
+    result_1 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
 
     """
     __Model + Search + Analysis + Model-Fit (Search 2)__
@@ -433,9 +427,7 @@ def with_lens_light(
 
     analysis.set_hyper_dataset(result=result_2)
 
-    result_3 = search.fit(
-        model=model, analysis=analysis, info=settings_autofit.info
-    )
+    result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
     result_3.use_as_hyper_dataset = True
 
     """
@@ -481,6 +473,8 @@ def with_lens_light(
         hyper_image_sky=result_3.instance.hyper_image_sky,
         hyper_background_noise=result_3.instance.hyper_background_noise,
     )
+
+    print(result_3)
 
     analysis.preloads = al.Preloads.setup(
         result=result_3, model=model, pixelization=True

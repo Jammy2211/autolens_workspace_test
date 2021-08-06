@@ -75,7 +75,7 @@ complete description of all settings given in `autolens_workspace/examples/model
 The settings chosen here are applied to all phases in the pipeline.
 """
 
-settings_masked_imaging = al.SettingsImaging(grid_class=al.Grid2D, sub_size=2)
+settings_imaging = al.SettingsImaging(grid_class=al.Grid2D, sub_size=2)
 
 """
 `Inversion`'s may infer unphysical solution where the source reconstruction is a demagnified reconstruction of the 
@@ -86,7 +86,7 @@ positions and a threshold that resample inaccurate mass models (see `examples/mo
 """
 
 settings = al.SettingsPhaseImaging(
-    settings_masked_imaging=settings_masked_imaging,
+    settings_imaging=settings_imaging,
     settings_lens=al.SettingsLens(stochastic_samples=1),
 )
 

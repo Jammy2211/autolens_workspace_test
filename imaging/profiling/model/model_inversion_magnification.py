@@ -198,7 +198,7 @@ search = af.DynestyStatic(
     name="mass[sie]_source[inversion]",
     maxcall=20,  # This sets how long the model-fit takes.
     nlive=20,
-    number_of_cores=1
+    number_of_cores=1,
 )
 
 analysis = al.AnalysisImaging(dataset=masked_imaging)
@@ -206,4 +206,5 @@ analysis = al.AnalysisImaging(dataset=masked_imaging)
 result = search.fit(model=model, analysis=analysis)
 
 import sys
+
 sys.exit()

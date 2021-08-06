@@ -99,9 +99,7 @@ Add results to database.
 """
 from autofit.database.aggregator import Aggregator
 
-database_file = path.join(
-    "output", "database", "dataset_custom", "database.sqlite"
-)
+database_file = path.join("output", "database", "dataset_custom", "database.sqlite")
 
 if path.isfile(database_file):
     os.remove(database_file)
