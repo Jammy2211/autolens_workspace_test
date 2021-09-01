@@ -293,7 +293,6 @@ def with_lens_light(
     )
 
     result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
-    result_3.use_as_hyper_dataset = True
 
     """
     __Hyper Extension__

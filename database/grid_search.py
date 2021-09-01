@@ -72,7 +72,7 @@ subhalo_grid_search = al.SubhaloSearch(
     result_no_subhalo=None,
 )
 
-subhalo_search_result = subhalo_grid_search.fit(
+subhalo_result = subhalo_grid_search.fit(
     model=model,
     analysis=analysis,
     grid_priors=[
@@ -104,7 +104,7 @@ Check Aggregator works (This should load one mp_instance).
 """
 print(len(agg))
 
-print(agg.subhalo_search_result)
+print(agg.subhalo_result)
 
 agg_grid = agg.grid_searches()
 print("Total `agg_grid` = ", len(agg_grid), "\n")

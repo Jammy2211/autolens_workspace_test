@@ -104,7 +104,7 @@ extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter value
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_hyper = al.SetupHyper(
-    search_dict={"maxcall": 1},
+    search_inversion_dict={"maxcall": 1},
     hyper_galaxies_lens=False,
     hyper_galaxies_source=False,
     hyper_image_sky=None,

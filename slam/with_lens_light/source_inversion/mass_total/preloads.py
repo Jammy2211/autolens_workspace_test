@@ -175,24 +175,13 @@ In this example it:
  - Uses an `Inversion` for the source's light [priors fixed from SOURCE INVERSION PIPELINE].
  
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
- PIPELINE [fixed values].
-
-__Preloads__: 
- 
- - We preload linear algebra matrices used by the inversion using the maximum likelihood hyper-result of the 
- SOURCE INVERSION PIPELINE. This ensures these matrices are not recalculated every iteration of the log likelihood 
- function, speeding up the model-fit (this is possible because the mass model and source pixelization are fixed).  
+ PIPELINE [fixed values]. 
 """
 bulge = af.Model(al.lp.EllSersic)
 disk = af.Model(al.lp.EllExponential)
 bulge.centre = disk.centre
 
-analysis = al.AnalysisImaging(
-    dataset=imaging,
-    preloads=al.Preloads.setup(
-        result=source_inversion_results.last.hyper, inversion=True
-    ),
-)
+analysis = al.AnalysisImaging(dataset=imaging)
 
 light_results = slam.light_parametric.with_lens_light(
     settings_autofit=settings_autofit,
@@ -219,19 +208,9 @@ model of the LIGHT PARAMETRIC PIPELINE. In this example it:
  - Uses an `Inversion` for the source's light [priors fixed from SOURCE INVERSION PIPELINE].
  
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
- 
-Preloads:
- 
- - We preload the pixelization using the maximum likelihood hyper-result of the SOURCE INVERSION PIPELINE. This ensures 
- the source pixel-grid is not recalculated every iteration of the log likelihood function, speeding up the model-fit 
- (this is only possible because the source pixelization is fixed). 
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging,
-    hyper_dataset_result=source_inversion_results.last.hyper,
-    preloads=al.Preloads.setup(
-        result=source_inversion_results.last.hyper, pixelization=True
-    ),
+    dataset=imaging, hyper_dataset_result=source_inversion_results.last.hyper
 )
 
 mass_results = slam.mass_total.with_lens_light(

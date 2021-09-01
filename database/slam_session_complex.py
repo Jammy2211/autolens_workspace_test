@@ -289,7 +289,7 @@ Tests that queries work.
 """
 agg = af.Aggregator.from_database("database.sqlite", completed_only=True)
 
-lens = agg.galaxies.lens
+lens = agg.model.galaxies.lens
 agg_query = agg.query(lens.mass == al.mp.EllIsothermal)
 samples_gen = agg_query.values("samples")
 print(
@@ -298,7 +298,7 @@ print(
     "\n",
 )
 
-lens = agg.galaxies.lens
+lens = agg.model.galaxies.lens
 agg_query = agg.query(lens.mass == al.mp.EllPowerLaw)
 samples_gen = agg_query.values("samples")
 print(
@@ -307,7 +307,9 @@ print(
     "\n",
 )
 
-fit_imaging_gen = al.agg.FitImaging(aggregator=agg)
+fit_imaging_agg = al.agg.FitImagingAgg(aggregator=agg)
+fit_imaging_gen = fit_imaging_agg.max_log_likelihood_gen()
+print(list(fit_imaging_gen)[0].figure_of_merit)
 
 """
 Finish.

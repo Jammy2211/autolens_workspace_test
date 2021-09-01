@@ -700,7 +700,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/inversi
 """
 start = time.time()
 for i in range(repeats):
-    al.util.inversion.mapped_reconstructed_data_from(
+    al.util.inversion.mapped_reconstructed_data_via_mapping_matrix_from(
         mapping_matrix=blurred_mapping_matrix, reconstruction=reconstruction
     )
 profiling_dict["Image Reconstruction"] = (time.time() - start) / repeats

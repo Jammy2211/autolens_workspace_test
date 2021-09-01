@@ -88,6 +88,6 @@ name = agg.fit.name
 agg_query = agg.query(name == "mass[sie]_source[bulge]")
 print("Total Samples Objects via `name` model query = ", len(agg_query), "\n")
 
-# agg_query = agg.query(agg.galaxies.lens.mass == al.mp.EllIsothermal)
+# agg_query = agg.query(agg.model.galaxies.lens.mass == al.mp.EllIsothermal)
 # mp_instances = [samps.median_pdf_instance for samps in agg.values("samples")]
 # print(mp_instances)

@@ -42,7 +42,6 @@ search_2 = af.DynestyStatic(
     path_prefix=path_prefix, name="DynestyStatic", unique_tag=dataset_name, nlive=75
 )
 
-
 """
 __Dataset + Masking__ 
 """

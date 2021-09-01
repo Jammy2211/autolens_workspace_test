@@ -84,6 +84,7 @@ To output results directly to the database, we start a session, which includes t
 where results are stored.
 """
 session = af.db.open_database("database.sqlite")
+session = None
 
 """
 __Settings AutoFit__
@@ -238,9 +239,8 @@ print(
     "\n",
 )
 
-fit_imaging_gen = al.agg.FitImaging(aggregator=agg)
 
-lens = agg.galaxies.lens
+lens = agg.model.galaxies.lens
 agg_query = agg.query(lens.mass == al.mp.EllIsothermal)
 samples_gen = agg_query.values("samples")
 print(
@@ -249,7 +249,10 @@ print(
     "\n",
 )
 
-fit_imaging_gen = al.agg.FitImaging(aggregator=agg)
+
+fit_imaging_agg = al.agg.FitImagingAgg(aggregator=agg)
+fit_imaging_gen = fit_imaging_agg.max_log_likelihood_gen()
+print(list(fit_imaging_gen)[0].figure_of_merit)
 
 """
 Finish.

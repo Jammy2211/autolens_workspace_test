@@ -58,10 +58,13 @@ def detection_single_plane(
         result=mass_results.last, setup_hyper=setup_hyper
     )
 
+    lens = mass_results.last.model.galaxies.lens
+    lens.hyper_galaxy = setup_hyper.hyper_galaxy_lens_from_result(
+        result=mass_results.last
+    )
+
     model = af.Collection(
-        galaxies=af.Collection(
-            lens=mass_results.last.model.galaxies.lens, source=source
-        ),
+        galaxies=af.Collection(lens=lens, source=source),
         hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
             result=mass_results.last, as_model=True
         ),
@@ -70,7 +73,7 @@ def detection_single_plane(
         ),
     )
 
-    search = af.DynestyStatic(
+    search_no_subhalo = af.DynestyStatic(
         path_prefix=settings_autofit.path_prefix,
         name="subhalo[1]_mass[total_refine]",
         unique_tag=settings_autofit.unique_tag,
@@ -79,7 +82,9 @@ def detection_single_plane(
         nlive=100,
     )
 
-    result_1 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_1 = search_no_subhalo.fit(
+        model=model, analysis=analysis, info=settings_autofit.info
+    )
 
     """
     __Model + Search + Analysis + Model-Fit (Search 2)__
@@ -117,9 +122,7 @@ def detection_single_plane(
     )
 
     model = af.Collection(
-        galaxies=af.Collection(
-            lens=mass_results.last.model.galaxies.lens, subhalo=subhalo, source=source
-        ),
+        galaxies=af.Collection(lens=lens, subhalo=subhalo, source=source),
         hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
             result=mass_results.last, as_model=True
         ),
@@ -139,23 +142,21 @@ def detection_single_plane(
         facc=0.2,
     )
 
-    subhalo_grid_search = al.SubhaloSearch(
-        grid_search=af.SearchGridSearch(
-            search=search,
-            number_of_steps=number_of_steps,
-            number_of_cores=settings_autofit.number_of_cores,
-        ),
-        result_no_subhalo=result_1,
+    subhalo_grid_search = af.SearchGridSearch(
+        search=search,
+        number_of_steps=number_of_steps,
+        number_of_cores=settings_autofit.number_of_cores,
     )
 
-    subhalo_search_result = subhalo_grid_search.fit(
+    subhalo_result = subhalo_grid_search.fit(
         model=model,
         analysis=analysis,
         grid_priors=[
             model.galaxies.subhalo.mass.centre_0,
             model.galaxies.subhalo.mass.centre_1,
         ],
-        info=settings_autofit.info
+        info=settings_autofit.info,
+        parent=search_no_subhalo,
     )
     """
     __Model + Search + Analysis + Model-Fit (Search 3)__
@@ -178,24 +179,20 @@ def detection_single_plane(
         al.Galaxy, redshift=result_1.instance.galaxies.lens.redshift, mass=subhalo_mass
     )
 
-    subhalo.mass.mass_at_200 = (
-        subhalo_search_result.model.galaxies.subhalo.mass.mass_at_200
-    )
-    subhalo.mass.centre = subhalo_search_result.model.galaxies.subhalo.mass.centre
+    subhalo.mass.mass_at_200 = subhalo_result.model.galaxies.subhalo.mass.mass_at_200
+    subhalo.mass.centre = subhalo_result.model.galaxies.subhalo.mass.centre
 
-    subhalo.mass.redshift_object = subhalo_search_result.instance.galaxies.lens.redshift
-    subhalo.mass.redshift_source = (
-        subhalo_search_result.instance.galaxies.source.redshift
-    )
+    subhalo.mass.redshift_object = subhalo_result.instance.galaxies.lens.redshift
+    subhalo.mass.redshift_source = subhalo_result.instance.galaxies.source.redshift
 
     model = af.Collection(
         galaxies=af.Collection(
-            lens=subhalo_search_result.model.galaxies.lens,
+            lens=subhalo_result.model.galaxies.lens,
             subhalo=subhalo,
-            source=subhalo_search_result.model.galaxies.source,
+            source=subhalo_result.model.galaxies.source,
         ),
-        hyper_image_sky=subhalo_search_result.instance.hyper_image_sky,
-        hyper_background_noise=subhalo_search_result.instance.hyper_background_noise,
+        hyper_image_sky=subhalo_result.instance.hyper_image_sky,
+        hyper_background_noise=subhalo_result.instance.hyper_background_noise,
     )
 
     search = af.DynestyStatic(
@@ -209,7 +206,7 @@ def detection_single_plane(
 
     result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
 
-    return af.ResultsCollection([result_1, subhalo_search_result, result_3])
+    return af.ResultsCollection([result_1, subhalo_result, result_3])
 
 
 def detection_multi_plane(
@@ -263,10 +260,13 @@ def detection_multi_plane(
         result=mass_results.last, setup_hyper=setup_hyper
     )
 
+    lens = mass_results.last.model.galaxies.lens
+    lens.hyper_galaxy = setup_hyper.hyper_galaxy_lens_from_result(
+        result=mass_results.last
+    )
+
     model = af.Collection(
-        galaxies=af.Collection(
-            lens=mass_results.last.model.galaxies.lens, source=source
-        ),
+        galaxies=af.Collection(lens=lens, source=source),
         hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
             result=mass_results.last, as_model=True
         ),
@@ -275,7 +275,7 @@ def detection_multi_plane(
         ),
     )
 
-    search = af.DynestyStatic(
+    search_no_subhalo = af.DynestyStatic(
         path_prefix=settings_autofit.path_prefix,
         name="subhalo[1]_mass[total_refine]",
         unique_tag=settings_autofit.unique_tag,
@@ -284,7 +284,9 @@ def detection_multi_plane(
         nlive=100,
     )
 
-    result_1 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_1 = search_no_subhalo.fit(
+        model=model, analysis=analysis, info=settings_autofit.info
+    )
 
     """
     __Model + Search + Analysis + Model-Fit (Search 2)__
@@ -324,9 +326,7 @@ def detection_multi_plane(
     )
 
     model = af.Collection(
-        galaxies=af.Collection(
-            lens=mass_results.last.model.galaxies.lens, subhalo=subhalo, source=source
-        ),
+        galaxies=af.Collection(lens=lens, subhalo=subhalo, source=source),
         hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
             result=mass_results.last, as_model=True
         ),
@@ -346,23 +346,21 @@ def detection_multi_plane(
         facc=0.2,
     )
 
-    subhalo_grid_search = al.SubhaloSearch(
-        grid_search=af.SearchGridSearch(
-            search=search,
-            number_of_steps=number_of_steps,
-            number_of_cores=settings_autofit.number_of_cores,
-        ),
-        result_no_subhalo=result_1,
+    subhalo_grid_search = af.SearchGridSearch(
+        search=search,
+        number_of_steps=number_of_steps,
+        number_of_cores=settings_autofit.number_of_cores,
     )
 
-    subhalo_search_result = subhalo_grid_search.fit(
+    subhalo_result = subhalo_grid_search.fit(
         model=model,
         analysis=analysis,
         grid_priors=[
             model.galaxies.subhalo.mass.centre_0,
             model.galaxies.subhalo.mass.centre_1,
         ],
-        info=settings_autofit.info
+        info=settings_autofit.info,
+        parent=search_no_subhalo,
     )
     """
     __Model + Search + Analysis + Model-Fit (Search 3)__
@@ -385,24 +383,22 @@ def detection_multi_plane(
         al.Galaxy, redshift=result_1.instance.galaxies.lens.redshift, mass=subhalo_mass
     )
 
-    subhalo.mass.mass_at_200 = (
-        subhalo_search_result.model.galaxies.subhalo.mass.mass_at_200
-    )
-    subhalo.mass.centre = subhalo_search_result.model.galaxies.subhalo.mass.centre
+    subhalo.mass.mass_at_200 = subhalo_result.model.galaxies.subhalo.mass.mass_at_200
+    subhalo.mass.centre = subhalo_result.model.galaxies.subhalo.mass.centre
 
-    subhalo.mass.redshift_object = subhalo_search_result.instance.galaxies.lens.redshift
+    subhalo.mass.redshift_object = subhalo_result.instance.galaxies.lens.redshift
     subhalo.mass.redshift_source = af.UniformPrior(
         lower_limit=0.0, upper_limit=result_1.instance.galaxies.source.redshift
     )
 
     model = af.Collection(
         galaxies=af.Collection(
-            lens=subhalo_search_result.model.galaxies.lens,
+            lens=subhalo_result.model.galaxies.lens,
             subhalo=subhalo,
-            source=subhalo_search_result.model.galaxies.source,
+            source=subhalo_result.model.galaxies.source,
         ),
-        hyper_image_sky=subhalo_search_result.instance.hyper_image_sky,
-        hyper_background_noise=subhalo_search_result.instance.hyper_background_noise,
+        hyper_image_sky=subhalo_result.instance.hyper_image_sky,
+        hyper_background_noise=subhalo_result.instance.hyper_background_noise,
     )
 
     search = af.DynestyStatic(
@@ -416,7 +412,7 @@ def detection_multi_plane(
 
     result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
 
-    return af.ResultsCollection([result_1, subhalo_search_result, result_3])
+    return af.ResultsCollection([result_1, subhalo_result, result_3])
 
 
 def sensitivity_mapping_imaging(
@@ -768,7 +764,6 @@ def sensitivity_mapping_interferometer(
         simulator = al.SimulatorInterferometer(
             uv_wavelengths=uv_wavelengths,
             exposure_time=300.0,
-            background_sky_level=0.1,
             noise_sigma=0.1,
             transformer_class=al.TransformerNUFFT,
         )
@@ -778,8 +773,8 @@ def sensitivity_mapping_interferometer(
         )
 
         """
-        The data generated by the simulate function is that which is fitted, so we should apply the mask for the analysis 
-        here before we return the simulated data.
+        The data generated by the simulate function is that which is fitted, so we should apply the mask for the 
+        analysis here before we return the simulated data.
         """
         return al.Interferometer(
             visibilities=simulated_interferometer.visibilities,

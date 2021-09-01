@@ -79,6 +79,7 @@ settings_autofit = slam.SettingsAutoFit(
     path_prefix=path.join("slam", "mass_total__source_inversion", "no_hyper"),
     number_of_cores=1,
     session=None,
+    info={"test": "hello"},
 )
 
 """
@@ -101,7 +102,7 @@ extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter value
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_hyper = al.SetupHyper(
-    search_dict={"maxcall": 1},
+    search_inversion_dict={"maxcall": 1},
     hyper_galaxies_lens=False,
     hyper_galaxies_source=False,
     hyper_image_sky=None,
@@ -171,7 +172,9 @@ mass_results = slam.mass_total.no_lens_light(
     mass=af.Model(al.mp.EllPowerLaw),
 )
 
-slam.extensions.stochastic_fit(result=mass_results.last, analysis=analysis)
+slam.extensions.stochastic_fit(
+    result=mass_results.last, analysis=analysis, info=settings_autofit.info
+)
 
 """
 Finish.

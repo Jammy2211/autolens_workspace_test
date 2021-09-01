@@ -169,7 +169,6 @@ def no_lens_light(
     analysis.set_hyper_dataset(result=result_2)
 
     result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
-    result_3.use_as_hyper_dataset = True
 
     """
     __Model + Search + Analysis + Model-Fit (Search 4)__
@@ -207,10 +206,6 @@ def no_lens_light(
         ),
         hyper_image_sky=result_3.instance.hyper_image_sky,
         hyper_background_noise=result_3.instance.hyper_background_noise,
-    )
-
-    analysis.preloads = al.Preloads.setup(
-        result=result_3, model=model, pixelization=True
     )
 
     search = af.DynestyStatic(
@@ -427,7 +422,6 @@ def with_lens_light(
     analysis.set_hyper_dataset(result=result_2)
 
     result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
-    result_3.use_as_hyper_dataset = True
 
     """
     __Model + Search + Analysis + Model-Fit (Search 4)__
@@ -471,10 +465,6 @@ def with_lens_light(
         ),
         hyper_image_sky=result_3.instance.hyper_image_sky,
         hyper_background_noise=result_3.instance.hyper_background_noise,
-    )
-
-    analysis.preloads = al.Preloads.setup(
-        result=result_3, model=model, pixelization=True
     )
 
     search = af.DynestyStatic(

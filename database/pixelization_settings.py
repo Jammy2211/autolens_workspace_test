@@ -60,7 +60,7 @@ __Search + Analysis + Model-Fit (Use Border)__
 """
 search = af.DynestyStatic(
     name="pixelization_use_border",
-    path_prefix=path.join("database", "pixelization_settings"),
+    path_prefix=path.join("database", "settings_pixelizations"),
     unique_tag=dataset_name,
     nlive=50,
 )
@@ -77,7 +77,7 @@ __Search + Analysis + Model-Fit (Not Use Border)__
 """
 search = af.DynestyStatic(
     name="pixelization_not_use_border",
-    path_prefix=path.join("database", "pixelization_settings"),
+    path_prefix=path.join("database", "settings_pixelizations"),
     unique_tag=dataset_name,
     nlive=50,
 )
@@ -97,7 +97,7 @@ Add results to database.
 from autofit.database.aggregator import Aggregator
 
 database_file = path.join(
-    "output", "database", "pixelization_settings", "database.sqlite"
+    "output", "database", "settings_pixelizations", "database.sqlite"
 )
 
 if path.isfile(database_file):
@@ -105,13 +105,13 @@ if path.isfile(database_file):
 
 agg = Aggregator.from_database(database_file)
 
-agg.add_directory(path.join("output", "database", "pixelization_settings"))
+agg.add_directory(path.join("output", "database", "settings_pixelizations"))
 
 agg = Aggregator.from_database(database_file)
 
 """
 Check Aggregator works (This should load one mp_instance).
 """
-agg_query = agg.query(agg.galaxies.lens.mass == al.mp.EllIsothermal)
+agg_query = agg.query(agg.model.galaxies.lens.mass == al.mp.EllIsothermal)
 mp_instances = [samps.median_pdf_instance for samps in agg.values("samples")]
 print(mp_instances)

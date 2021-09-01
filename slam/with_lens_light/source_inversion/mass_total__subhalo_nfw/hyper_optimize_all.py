@@ -218,12 +218,6 @@ __Settings__:
 
  - Positions: We update the positions and positions threshold using the previous model-fitting result (as described 
  in `chaining/examples/parametric_to_inversion.py`) to remove unphysical solutions from the `Inversion` model-fitting.
-
-__Preloads__:
-
- - Pixelization: We preload the pixelization using the maximum likelihood hyper-result of the SOURCE INVERSION PIPELINE. 
- This ensures the source pixel-grid is not recalculated every iteration of the log likelihood function, speeding up 
- the model-fit (this is only possible because the source pixelization is fixed). 
 """
 settings_lens = al.SettingsLens(
     positions_threshold=source_parametric_results.last.positions_threshold_from(
@@ -231,16 +225,11 @@ settings_lens = al.SettingsLens(
     )
 )
 
-preloads = al.Preloads.setup(
-    result=source_inversion_results.last.hyper, pixelization=True
-)
-
 analysis = al.AnalysisImaging(
     dataset=imaging,
     hyper_dataset_result=source_inversion_results.last,
     positions=source_inversion_results.last.image_plane_multiple_image_positions,
     settings_lens=settings_lens,
-    preloads=preloads,
 )
 
 mass_results = slam.mass_total.no_lens_light(
@@ -269,12 +258,6 @@ For this runner the SUBHALO PIPELINE customizes:
  - The [number_of_steps x number_of_steps] size of the grid-search, as well as the dimensions it spans in arc-seconds.
  - The `number_of_cores` used for the gridsearch, where `number_of_cores > 1` performs the model-fits in paralle using
  the Python multiprocessing module.
-
-__Preloads__:
-
- - Pixelization: We preload the pixelization using the maximum likelihood hyper-result of the SOURCE INVERSION PIPELINE. 
- This ensures the source pixel-grid is not recalculated every iteration of the log likelihood function, speeding up 
- the model-fit (this is only possible because the source pixelization is fixed).   
 """
 settings_lens = al.SettingsLens(
     positions_threshold=mass_results.last.positions_threshold_from(
@@ -282,14 +265,11 @@ settings_lens = al.SettingsLens(
     )
 )
 
-preloads = al.Preloads.setup(result=mass_results.last.hyper, pixelization=True)
-
 analysis = al.AnalysisImaging(
     dataset=imaging,
     positions=mass_results.last.image_plane_multiple_image_positions,
     hyper_dataset_result=mass_results.last,
     settings_lens=settings_lens,
-    preloads=preloads,
 )
 
 subhalo_results = slam.subhalo.detection_single_plane(

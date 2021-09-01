@@ -1,31 +1,22 @@
 """
-SLaM (Source, Light and Mass): Light Parametric + Mass Total + Subhalo NFW + Source Parametric
-==============================================================================================
+SLaM (Source, Light and Mass): Light Parametric + Mass Total + Source Inversion
+===============================================================================
 
-SLaM pipelines break the analysis down into multiple pipelines which focus on modeling a specific aspect of the strong
-lens, first the Source, then the (lens) Light and finally the Mass. Each of these pipelines has it own inputs which
-which customize the model and analysis in that pipeline.
-
-The models fitted in earlier pipelines determine the model used in later pipelines. For example, if the SOURCE PIPELINE
-uses a parametric `EllSersic` profile for the bulge, this will be used in the subsequent MASS PIPELINE.
-
-Using a SOURCE PARAMETRIC PIPELINE, LIGHT PARAMETRIC PIPELINE, MASS PIPELINE and SUBHALO PIPELINE this SLaM script
-fits `Imaging` of a strong lens system, where in the final model:
+Using two source pipelines, a light pipeline and a mass pipeline this SLaM runner fits `Imaging` of a strong lens
+system where in the final model:
 
  - The lens galaxy's light is a bulge+disk `EllSersic` and `EllExponential`.
- - The lens galaxy's total mass distribution is an `EllIsothermal`.
- - A dark matter subhalo near The lens galaxy mass is included as a`SphNFWMCRLudLow`.
- - The source galaxy is an `Inversion`.
+ - The lens galaxy's total mass distribution is an `EllPowerLaw`.
+ - The source galaxy's light is a parametric `Inversion`.
 
-This uses the SLaM pipelines:
+This runner uses the SLaM pipelines:
 
- `source_parametric/with_lens_light`
- `source__inversion/with_lens_light`
- `light_parametric/with_lens_light`
- `mass_total/with_lens_light`
- `subhalo/detection_single_plane`
+ `slam/with_lens_light/source_parametric.py`.
+ `slam/with_lens_light/source___inversion.py`.
+ `slam/with_lens_light/light__parametric.py`.
+ `slam/with_lens_light/mass_total.py`.
 
-Check them out for a full description of the analysis!
+Check them out for a detailed description of the analysis!
 """
 # %matplotlib inline
 # from pyprojroot import here
@@ -80,7 +71,7 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = slam.SettingsAutoFit(
     path_prefix=path.join(
-        "slam", "light_sersic__mass_total__source_inversion", "hyper_all"
+        "slam", "light_sersic__mass_total__source_inversion", "w_tilde"
     ),
     number_of_cores=1,
     session=None,
@@ -142,7 +133,6 @@ source_parametric_results = slam.source_parametric.with_lens_light(
     mass=af.Model(al.mp.EllIsothermal),
     shear=af.Model(al.mp.ExternalShear),
     source_bulge=af.Model(al.lp.EllSersic),
-    mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
 )
@@ -177,16 +167,16 @@ source_inversion_results = slam.source_inversion.with_lens_light(
 __LIGHT PARAMETRIC PIPELINE__
 
 The LIGHT PARAMETRIC PIPELINE uses one search to fit a complex lens light model to a high level of accuracy, using the
-lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE INVERSION PIPELINE.
+lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE PARAMETRIC PIPELINE.
 In this example it:
 
  - Uses a parametric `EllSersic` bulge and `EllSersic` disk with centres aligned for the lens galaxy's 
  light [Do not use the results of the SOURCE PARAMETRIC PIPELINE to initialize priors].
-
- - Uses an `EllIsothermal` model for the lens's total mass distribution [fixed from SOURCE INVERSION PIPELINE].
-
+ 
+ - Uses an `EllIsothermal` model for the lens's total mass distribution [fixed from SOURCE PARAMETRIC PIPELINE].
+ 
  - Uses an `Inversion` for the source's light [priors fixed from SOURCE INVERSION PIPELINE].
-
+ 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
@@ -216,8 +206,7 @@ model of the LIGHT PARAMETRIC PIPELINE. In this example it:
  - Uses an `EllPowerLaw` model for the lens's total mass distribution [priors initialized from SOURCE 
  PARAMETRIC PIPELINE + centre unfixed from (0.0, 0.0)].
  
- - Uses the `EllSersic` model representing a bulge for the source's light [priors initialized from SOURCE 
- PARAMETRIC PIPELINE].
+ - Uses an `Inversion` for the source's light [priors fixed from SOURCE INVERSION PIPELINE].
  
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
@@ -234,34 +223,8 @@ mass_results = slam.mass_total.with_lens_light(
     mass=af.Model(al.mp.EllPowerLaw),
 )
 
-"""
-__SUBHALO PIPELINE (single plane detection)__
-
-The SUBHALO PIPELINE (single plane detection) consists of the following searches:
- 
- 1) Refit the lens and source model, to refine the model evidence for comparing to the models fitted which include a 
- subhalo. This uses the same model as fitted in the MASS PIPELINE. 
- 2) Performs a grid-search of non-linear searches to attempt to detect a dark matter subhalo. 
- 3) If there is a successful detection a final search is performed to refine its parameters.
- 
-For this runner the SUBHALO PIPELINE customizes:
-
- - The [number_of_steps x number_of_steps] size of the grid-search, as well as the dimensions it spans in arc-seconds.
- - The `number_of_cores` used for the gridsearch, where `number_of_cores > 1` performs the model-fits in paralle using
- the Python multiprocessing module.
-"""
-analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_inversion_results.last
-)
-
-subhalo_results = slam.subhalo.detection_single_plane(
-    settings_autofit=settings_autofit,
-    analysis=analysis,
-    setup_hyper=setup_hyper,
-    mass_results=mass_results,
-    subhalo_mass=af.Model(al.mp.SphNFWMCRLudlow),
-    grid_dimension_arcsec=3.0,
-    number_of_steps=2,
+slam.extensions.stochastic_fit(
+    result=mass_results.last, analysis=analysis, include_lens_light=True
 )
 
 """

@@ -226,8 +226,6 @@ model = af.Collection(
     galaxies=af.Collection(lens=lens, source=result_4.instance.galaxies.source)
 )
 
-preloads = al.Preloads.setup(result=result_4, inversion=True)
-
 analysis = al.AnalysisImaging(dataset=imaging, hyper_dataset_result=result_4)
 
 result_5 = search_5.fit(model=model, analysis=analysis)
