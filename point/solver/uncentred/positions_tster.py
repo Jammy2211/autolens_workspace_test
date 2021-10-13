@@ -42,7 +42,7 @@ solver = al.PointSolver(
     use_upscaling=True,
     pixel_scale_precision=0.0000001,
     upscale_factor=2,
-    distance_from_source_centre=0.1,
+    distance_to_source_centre=0.1,
 )
 
 iters = 50

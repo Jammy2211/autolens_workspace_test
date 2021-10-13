@@ -59,10 +59,10 @@ The function below times the deflection angle calculation on an input `MassProfi
 """
 
 
-def time_deflections_2d_from_grid(mass_profile):
+def time_deflections_2d_from(mass_profile):
     start = time.time()
     for i in range(repeats):
-        mass_profile.deflections_2d_from_grid(grid=grid)
+        mass_profile.deflections_2d_from(grid=grid)
     return (time.time() - start) / repeats
 
 
@@ -76,28 +76,28 @@ We now iterate through every dark mass profile in PyAutoLens and compute how lon
 takes.
 """
 mass_profile = al.mp.SphNFW(centre=(0.0, 0.0), kappa_s=0.1, scale_radius=10.0)
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
 mass_profile = al.mp.SphNFWTruncated(
     centre=(0.0, 0.0), kappa_s=0.1, scale_radius=10.0, truncation_radius=5.0
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
 mass_profile = al.mp.SphNFWGeneralized(
     centre=(0.0, 0.0), kappa_s=0.1, scale_radius=10.0, inner_slope=0.5
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
 mass_profile = al.mp.EllNFW(
     centre=(0.0, 0.0), elliptical_comps=(0.111111, 0.0), kappa_s=0.1, scale_radius=10.0
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
@@ -108,7 +108,7 @@ mass_profile = al.mp.EllNFWGeneralized(
     scale_radius=10.0,
     inner_slope=1.8,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 

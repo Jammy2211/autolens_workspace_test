@@ -21,10 +21,10 @@ import matplotlib.pyplot as plt
 """
 The path containing all profiling results to be plotted is in a folder with the PyAutoLens version number.
 """
-profiling_name = "inversion_voronoi_magnification__w_tilde"
+profiling_name = "inversion_voronoi_magnification"
 
 profiling_path = os.path.join(
-    "imaging", "profiling", "times", al.__version__, profiling_name
+    "imaging", "profiling", "times", al.__version__, profiling_name, "w_tilde"
 )
 
 """
@@ -32,7 +32,7 @@ The path where the profiling graphs created by this script are output, which is 
 version number.
 """
 graph_path = os.path.join(
-    "imaging", "profiling", "graphs", al.__version__, profiling_name
+    "imaging", "profiling", "graphs", al.__version__, profiling_name, "w_tilde"
 )
 
 if not os.path.exists(graph_path):
@@ -72,7 +72,7 @@ def bar_deflection_profiles(
         title = f"Voronoi Magnification Inversion W-Tilde HST (total time = {np.round(fit_time, 2)})"
 
     plt.yticks(fontsize=16)
-    plt.xticks([0.0, 1.0, 2.0, 3.0], fontsize=20)
+    plt.xticks([0.0, 1.0], fontsize=20)
     plt.xlabel("Run Time (seconds)", fontsize=30)
     plt.title(title, fontsize=26)
 

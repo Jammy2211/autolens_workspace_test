@@ -167,7 +167,7 @@ lens = af.Model(
     disk=result_3.instance.galaxies.lens.disk,
     mass=result_3.instance.galaxies.lens.mass,
     shear=result_3.instance.galaxies.lens.shear,
-    hyper_galaxy=setup_hyper.hyper_galaxy_lens_from_result(result=result_3),
+    hyper_galaxy=setup_hyper.hyper_galaxy_lens_from(result=result_3),
 )
 
 source = af.Model(
@@ -200,7 +200,7 @@ result_4 = extensions.hyper_fit(
 """
 __Model + Analysis + Model-Fit (Search 5)__
 """
-hyper_galaxy = setup_hyper.hyper_galaxy_lens_from_result(
+hyper_galaxy = setup_hyper.hyper_galaxy_lens_from(
     result=result_4, noise_factor_is_model=True
 )
 

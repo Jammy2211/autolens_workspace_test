@@ -135,7 +135,7 @@ tracer_plotter.figures_2d(image=True)
 We can now pass this simulator a tracer, which creates the ray-traced image plotted above and simulates it as an
 imaging dataset.
 """
-imaging = simulator.from_tracer_and_grid(tracer=tracer, grid=grid)
+imaging = simulator.via_tracer_from(tracer=tracer, grid=grid)
 
 """
 Lets plot the simulated `Imaging` dataset before we output it to fits.

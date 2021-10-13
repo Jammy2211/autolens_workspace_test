@@ -54,21 +54,19 @@ def detection_single_plane(
     subhalo, to determine if a subhalo is detected.
     """
 
-    source = slam_util.source__from_result_model_if_parametric(
+    source = slam_util.source__from_model_if_parametric(
         result=mass_results.last, setup_hyper=setup_hyper
     )
 
     lens = mass_results.last.model.galaxies.lens
-    lens.hyper_galaxy = setup_hyper.hyper_galaxy_lens_from_result(
-        result=mass_results.last
-    )
+    lens.hyper_galaxy = setup_hyper.hyper_galaxy_lens_from(result=mass_results.last)
 
     model = af.Collection(
         galaxies=af.Collection(lens=lens, source=source),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
+        hyper_image_sky=setup_hyper.hyper_image_sky_from(
             result=mass_results.last, as_model=True
         ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from_result(
+        hyper_background_noise=setup_hyper.hyper_background_noise_from(
             result=mass_results.last
         ),
     )
@@ -117,16 +115,16 @@ def detection_single_plane(
     subhalo.mass.redshift_object = result_1.instance.galaxies.lens.redshift
     subhalo.mass.redshift_source = result_1.instance.galaxies.source.redshift
 
-    source = slam_util.source__from_result_model_if_parametric(
+    source = slam_util.source__from_model_if_parametric(
         result=mass_results.last, setup_hyper=setup_hyper
     )
 
     model = af.Collection(
         galaxies=af.Collection(lens=lens, subhalo=subhalo, source=source),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
+        hyper_image_sky=setup_hyper.hyper_image_sky_from(
             result=mass_results.last, as_model=True
         ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from_result(
+        hyper_background_noise=setup_hyper.hyper_background_noise_from(
             result=mass_results.last
         ),
     )
@@ -191,8 +189,12 @@ def detection_single_plane(
             subhalo=subhalo,
             source=subhalo_result.model.galaxies.source,
         ),
-        hyper_image_sky=subhalo_result.instance.hyper_image_sky,
-        hyper_background_noise=subhalo_result.instance.hyper_background_noise,
+        hyper_image_sky=setup_hyper.hyper_image_sky_from(
+            result=mass_results.last, as_model=True
+        ),
+        hyper_background_noise=setup_hyper.hyper_background_noise_from(
+            result=mass_results.last
+        ),
     )
 
     search = af.DynestyStatic(
@@ -256,21 +258,19 @@ def detection_multi_plane(
     subhalo, to determine if a subhalo is detected.
     """
 
-    source = slam_util.source__from_result_model_if_parametric(
+    source = slam_util.source__from_model_if_parametric(
         result=mass_results.last, setup_hyper=setup_hyper
     )
 
     lens = mass_results.last.model.galaxies.lens
-    lens.hyper_galaxy = setup_hyper.hyper_galaxy_lens_from_result(
-        result=mass_results.last
-    )
+    lens.hyper_galaxy = setup_hyper.hyper_galaxy_lens_from(result=mass_results.last)
 
     model = af.Collection(
         galaxies=af.Collection(lens=lens, source=source),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
+        hyper_image_sky=setup_hyper.hyper_image_sky_from(
             result=mass_results.last, as_model=True
         ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from_result(
+        hyper_background_noise=setup_hyper.hyper_background_noise_from(
             result=mass_results.last
         ),
     )
@@ -321,16 +321,16 @@ def detection_multi_plane(
         lower_limit=0.0, upper_limit=result_1.instance.galaxies.source.redshift
     )
 
-    source = slam_util.source__from_result_model_if_parametric(
+    source = slam_util.source__from_model_if_parametric(
         result=mass_results.last, setup_hyper=setup_hyper
     )
 
     model = af.Collection(
         galaxies=af.Collection(lens=lens, subhalo=subhalo, source=source),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
+        hyper_image_sky=setup_hyper.hyper_image_sky_from(
             result=mass_results.last, as_model=True
         ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from_result(
+        hyper_background_noise=setup_hyper.hyper_background_noise_from(
             result=mass_results.last
         ),
     )
@@ -397,8 +397,12 @@ def detection_multi_plane(
             subhalo=subhalo,
             source=subhalo_result.model.galaxies.source,
         ),
-        hyper_image_sky=subhalo_result.instance.hyper_image_sky,
-        hyper_background_noise=subhalo_result.instance.hyper_background_noise,
+        hyper_image_sky=setup_hyper.hyper_image_sky_from(
+            result=mass_results.last, as_model=True
+        ),
+        hyper_background_noise=setup_hyper.hyper_background_noise_from(
+            result=mass_results.last
+        ),
     )
 
     search = af.DynestyStatic(
@@ -562,7 +566,7 @@ def sensitivity_mapping_imaging(
             add_poisson_noise=True,
         )
 
-        simulated_imaging = simulator.from_tracer_and_grid(tracer=tracer, grid=grid)
+        simulated_imaging = simulator.via_tracer_from(tracer=tracer, grid=grid)
 
         """
         The data generated by the simulate function is that which is fitted, so we should apply the mask for the analysis 
@@ -768,9 +772,7 @@ def sensitivity_mapping_interferometer(
             transformer_class=al.TransformerNUFFT,
         )
 
-        simulated_interferometer = simulator.from_tracer_and_grid(
-            tracer=tracer, grid=grid
-        )
+        simulated_interferometer = simulator.via_tracer_from(tracer=tracer, grid=grid)
 
         """
         The data generated by the simulate function is that which is fitted, so we should apply the mask for the 

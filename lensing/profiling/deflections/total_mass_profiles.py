@@ -59,10 +59,10 @@ The function below times the deflection angle calculation on an input `MassProfi
 """
 
 
-def time_deflections_2d_from_grid(mass_profile):
+def time_deflections_2d_from(mass_profile):
     start = time.time()
     for i in range(repeats):
-        mass_profile.deflections_2d_from_grid(grid=grid)
+        mass_profile.deflections_2d_from(grid=grid)
     return (time.time() - start) / repeats
 
 
@@ -76,31 +76,31 @@ We now iterate through every total mass profile in PyAutoLens and compute how lo
 takes.
 """
 mass_profile = al.mp.PointMass(centre=(0.0, 0.0), einstein_radius=1.0)
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
 mass_profile = al.mp.EllIsothermal(
     centre=(0.0, 0.0), elliptical_comps=(0.111111, 0.0), einstein_radius=1.0
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
 mass_profile = al.mp.SphIsothermal(centre=(0.0, 0.0), einstein_radius=1.0)
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
 mass_profile = al.mp.EllPowerLaw(
     centre=(0.0, 0.0), elliptical_comps=(0.111111, 0.0), einstein_radius=1.0, slope=2.0
 )
-profiling_dict[f"{mass_profile.__class__.__name__}"] = time_deflections_2d_from_grid(
+profiling_dict[f"{mass_profile.__class__.__name__}"] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
 mass_profile = al.mp.SphPowerLaw(centre=(0.0, 0.0), einstein_radius=1.0, slope=2.0)
-profiling_dict[f"{mass_profile.__class__.__name__}"] = time_deflections_2d_from_grid(
+profiling_dict[f"{mass_profile.__class__.__name__}"] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
@@ -113,7 +113,7 @@ mass_profile = al.mp.EllPowerLawBroken(
     break_radius=0.2,
 )
 
-profiling_dict[f"{mass_profile.__class__.__name__}"] = time_deflections_2d_from_grid(
+profiling_dict[f"{mass_profile.__class__.__name__}"] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
@@ -125,7 +125,7 @@ mass_profile = al.mp.SphPowerLawBroken(
     break_radius=0.2,
 )
 
-profiling_dict[f"{mass_profile.__class__.__name__}"] = time_deflections_2d_from_grid(
+profiling_dict[f"{mass_profile.__class__.__name__}"] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
@@ -136,14 +136,14 @@ mass_profile = al.mp.EllPowerLawCored(
     slope=2.0,
     core_radius=0.1,
 )
-profiling_dict[f"{mass_profile.__class__.__name__}"] = time_deflections_2d_from_grid(
+profiling_dict[f"{mass_profile.__class__.__name__}"] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
 mass_profile = al.mp.SphPowerLawCored(
     centre=(0.0, 0.0), einstein_radius=1.0, slope=2.0, core_radius=0.1
 )
-profiling_dict[f"{mass_profile.__class__.__name__}"] = time_deflections_2d_from_grid(
+profiling_dict[f"{mass_profile.__class__.__name__}"] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 

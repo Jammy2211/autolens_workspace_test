@@ -56,28 +56,22 @@ Load the `Interferometer` data, define the visibility and real-space masks and p
 dataset_name = "mass_sie__source_sersic"
 dataset_path = path.join("dataset", "interferometer", dataset_name)
 
-interferometer = al.Interferometer.from_fits(
-    visibilities_path=path.join(dataset_path, "visibilities.fits"),
-    noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
-)
-
 real_space_mask = al.Mask2D.circular(
     shape_native=(200, 200), pixel_scales=0.05, radius=3.0, sub_size=1
 )
 
-visibilities_mask = np.full(fill_value=False, shape=interferometer.visibilities.shape)
+interferometer = al.Interferometer.from_fits(
+    visibilities_path=path.join(dataset_path, "visibilities.fits"),
+    noise_map_path=path.join(dataset_path, "noise_map.fits"),
+    uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
+    real_space_mask=real_space_mask,
+)
 
 settings_interferometer = al.SettingsInterferometer(
     transformer_class=al.TransformerNUFFT
 )
 
-interferometer = al.MaskedInterferometer(
-    interferometer=interferometer,
-    visibilities_mask=visibilities_mask,
-    real_space_mask=real_space_mask,
-    settings=settings_interferometer,
-)
+interferometer = interferometer.apply_settings(settings=settings_interferometer)
 
 interferometer_plotter = aplt.InterferometerPlotter(interferometer=interferometer)
 interferometer_plotter.subplot_interferometer()
@@ -96,6 +90,19 @@ number_of_cores = 1
 session = None
 
 """
+__Settings AutoFit__
+
+The settings of autofit, which controls the output paths, parallelization, database use, etc.
+"""
+settings_autofit = slam.SettingsAutoFit(
+    path_prefix=path.join(
+        "slam", "light_sersic__mass_total__source_inversion", "hyper_all"
+    ),
+    number_of_cores=1,
+    session=None,
+)
+
+"""
 __Redshifts__
 
 The redshifts of the lens and source galaxies, which are used to perform unit converions of the model and data (e.g. 
@@ -107,13 +114,18 @@ redshift_source = 1.0
 """
 __HYPER SETUP__
 
-The `SetupHyper` determines which hyper-mode features are used during the model-fit.
+The `SetupHyper` determines which hyper-mode features are used during the model-fit as is used identically to the
+hyper pipeline examples.
+
+The `SetupHyper` input `hyper_fixed_after_source` fixes the hyper-parameters to the values computed by the hyper 
+extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter values at this point, model comparison 
+of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_hyper = al.SetupHyper(
-    hyper_galaxies_lens=False,
-    hyper_galaxies_source=False,
+    hyper_galaxies_lens=True,
+    hyper_galaxies_source=True,
     hyper_image_sky=None,
-    hyper_background_noise=None,
+    hyper_background_noise=al.hyper_data.HyperBackgroundNoise,
 )
 
 """
@@ -138,7 +150,7 @@ disk = af.Model(al.lp.EllExponential)
 bulge.centre = disk.centre
 
 source_parametric_results = slam.source_parametric.with_lens_light(
-    path_prefix=path_prefix,
+    settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     lens_bulge=bulge,
@@ -146,7 +158,6 @@ source_parametric_results = slam.source_parametric.with_lens_light(
     mass=af.Model(al.mp.EllIsothermal),
     shear=af.Model(al.mp.ExternalShear),
     source_bulge=af.Model(al.lp.EllSersic),
-    mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
 )
@@ -177,7 +188,7 @@ analysis = al.AnalysisInterferometer(
 )
 
 source_inversion_results = slam.source_inversion.with_lens_light(
-    path_prefix=path_prefix,
+    settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_parametric_results=source_parametric_results,
@@ -220,7 +231,7 @@ disk = af.Model(al.lp.EllExponential)
 bulge.centre = disk.centre
 
 light_results = slam.light_parametric.with_lens_light(
-    path_prefix=path_prefix,
+    settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_results=source_inversion_results,
@@ -260,13 +271,18 @@ analysis = al.AnalysisInterferometer(
 )
 
 mass_results = slam.mass_total.with_lens_light(
-    path_prefix=path_prefix,
+    settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_results=source_inversion_results,
     light_results=light_results,
     mass=af.Model(al.mp.EllPowerLaw),
 )
+
+slam.extensions.stochastic_fit(
+    result=mass_results.last, analysis=analysis, include_lens_light=True
+)
+
 
 """
 __SUBHALO PIPELINE (single plane detection)__
@@ -298,14 +314,15 @@ analysis = al.AnalysisInterferometer(
 )
 
 subhalo_results = slam.subhalo.detection_single_plane(
-    path_prefix=path_prefix,
+    settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     mass_results=mass_results,
     subhalo_mass=af.Model(al.mp.SphNFWMCRLudlow),
     grid_dimension_arcsec=3.0,
-    number_of_steps=5,
+    number_of_steps=2,
 )
+
 
 """
 Finish.

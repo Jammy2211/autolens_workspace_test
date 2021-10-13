@@ -12,7 +12,7 @@ def with_lens_light(
     setup_hyper: al.SetupHyper,
     source_results: af.ResultsCollection,
     light_results: af.ResultsCollection,
-    lens_bulge: af.Model = af.Model(al.lp.EllSersic),
+    lens_bulge: Optional[af.Model] = af.Model(al.lp.EllSersic),
     lens_disk: Optional[af.Model] = None,
     lens_envelope: Optional[af.Model] = None,
     dark: af.Model = af.Model(al.mp.EllNFWMCRLudlow),
@@ -103,7 +103,7 @@ def with_lens_light(
     if smbh is not None:
         smbh.centre = lens_bulge.centre
 
-    source = slam_util.source__from_result_model_if_parametric(
+    source = slam_util.source__from_model_if_parametric(
         result=source_results.last, setup_hyper=setup_hyper
     )
 
@@ -118,16 +118,16 @@ def with_lens_light(
                 dark=dark,
                 shear=source_results.last.model.galaxies.lens.shear,
                 smbh=smbh,
-                hyper_galaxy=setup_hyper.hyper_galaxy_lens_from_result(
+                hyper_galaxy=setup_hyper.hyper_galaxy_lens_from(
                     result=light_results.last
                 ),
             ),
             source=source,
         ),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
+        hyper_image_sky=setup_hyper.hyper_image_sky_from(
             result=light_results.last, as_model=True
         ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from_result(
+        hyper_background_noise=setup_hyper.hyper_background_noise_from(
             result=light_results.last
         ),
     )

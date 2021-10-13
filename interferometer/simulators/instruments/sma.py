@@ -51,7 +51,7 @@ can be fitted extremely efficiently. The `autolens_workspace` includes ALMA uv_w
 much high resolution datasets (which can be performed by replacing "sma.fits" below with "alma.fits").
 """
 uv_wavelengths_path = path.join("dataset", "interferometer", "uv_wavelengths")
-uv_wavelengths = al.util.array_1d.numpy_array_1d_from_fits(
+uv_wavelengths = al.util.array_1d.numpy_array_1d_via_fits_from(
     file_path=path.join(uv_wavelengths_path, "sma.fits"), hdu=0
 )
 
@@ -106,7 +106,7 @@ tracer_plotter.figures_2d(image=True)
 We can now pass this simulator a tracer, which creates the ray-traced image plotted above and simulates it as an
 interferometer dataset.
 """
-interferometer = simulator.from_tracer_and_grid(tracer=tracer, grid=grid)
+interferometer = simulator.via_tracer_from(tracer=tracer, grid=grid)
 
 """
 Lets plot the simulated interferometer dataset before we output it to fits.

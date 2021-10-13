@@ -134,8 +134,8 @@ source_galaxy = al.Galaxy(
         sersic_index=2.5,
     ),
 )
-lens_hyper_image = lens_galaxy.image_2d_from_grid(grid=masked_imaging.grid).binned
-source_hyper_image = source_galaxy.image_2d_from_grid(grid=masked_imaging.grid).binned
+lens_hyper_image = lens_galaxy.image_2d_from(grid=masked_imaging.grid).binned
+source_hyper_image = source_galaxy.image_2d_from(grid=masked_imaging.grid).binned
 hyper_model_image = lens_hyper_image + source_hyper_image
 lens_galaxy.hyper_galaxy_image = lens_hyper_image
 lens_galaxy.hyper_model_image = hyper_model_image
@@ -246,14 +246,14 @@ mask after PSF convolution.
 
 The calculation below uses a `Grid2D` object with a fixed sub-size of 2.
 
-To see examples of `LightProfile` image calculations checkout the `image_2d_from_grid` methods at the following link:
+To see examples of `LightProfile` image calculations checkout the `image_2d_from` methods at the following link:
 
 https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/light_profiles.py
 """
 start = time.time()
 for i in range(repeats):
-    image = lens_galaxy.image_2d_from_grid(grid=masked_imaging.grid)
-    blurring_image = lens_galaxy.image_2d_from_grid(grid=masked_imaging.blurring_grid)
+    image = lens_galaxy.image_2d_from(grid=masked_imaging.grid)
+    blurring_image = lens_galaxy.image_2d_from(grid=masked_imaging.blurring_grid)
 
 profiling_dict["Lens Light (Grid2D)"] = (time.time() - start) / repeats
 
@@ -272,8 +272,8 @@ masked_imaging_iterate = masked_imaging_iterate.apply_settings(
 
 start = time.time()
 for i in range(repeats):
-    image = lens_galaxy.image_2d_from_grid(grid=masked_imaging_iterate.grid)
-    blurring_image = lens_galaxy.image_2d_from_grid(grid=masked_imaging.blurring_grid)
+    image = lens_galaxy.image_2d_from(grid=masked_imaging_iterate.grid)
+    blurring_image = lens_galaxy.image_2d_from(grid=masked_imaging.blurring_grid)
 
 profiling_dict["Lens Light (Grid2DIterate)"] = (time.time() - start) / repeats
 
@@ -305,7 +305,7 @@ This uses the fast `EllIsothermal` profile.
 
 Deflection angle calculations are profiled fully in the package`profiling/deflections`.
 
-To see examples of deflection angle calculations checkout the `deflections_2d_from_grid` methods at the following link:
+To see examples of deflection angle calculations checkout the `deflections_2d_from` methods at the following link:
 
 https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/mass_profiles/total_mass_profiles.py
 
@@ -316,7 +316,7 @@ https://github.com/Jammy2211/PyAutoLens/blob/master/autolens/lens/ray_tracing.py
 The image-plane pixelization computed below must be ray-traced just like the image-grid and is therefore included in
 the profiling time below.
 """
-weight_map = source_galaxy.pixelization.weight_map_from_hyper_image(
+weight_map = source_galaxy.pixelization.weight_map_from(
     hyper_image=source_galaxy.hyper_galaxy_image
 )
 sparse_image_plane_grid = al.Grid2DSparse.from_total_pixels_grid_and_weight_map(
@@ -325,8 +325,8 @@ sparse_image_plane_grid = al.Grid2DSparse.from_total_pixels_grid_and_weight_map(
 
 start = time.time()
 for i in range(repeats):
-    tracer.deflections_2d_from_grid(grid=sparse_image_plane_grid)
-    traced_grid = tracer.traced_grids_of_planes_from_grid(grid=masked_imaging.grid)[-1]
+    tracer.deflections_2d_from(grid=sparse_image_plane_grid)
+    traced_grid = tracer.traced_grids_of_planes_from(grid=masked_imaging.grid)[-1]
 
 profiling_dict["Ray Tracing (SIE)"] = (time.time() - start) / repeats
 
@@ -337,8 +337,8 @@ Compute the deflection angles again, but now using the more expensive `EllPowerL
 """
 start = time.time()
 for i in range(repeats):
-    tracer.deflections_2d_from_grid(grid=sparse_image_plane_grid)
-    traced_grid_power_law = tracer_power_law.traced_grids_of_planes_from_grid(
+    tracer.deflections_2d_from(grid=sparse_image_plane_grid)
+    traced_grid_power_law = tracer_power_law.traced_grids_of_planes_from(
         grid=masked_imaging.grid
     )[-1]
 
@@ -352,8 +352,8 @@ two `EllSersic`'s and an `EllNFW`.
 """
 start = time.time()
 for i in range(repeats):
-    tracer.deflections_2d_from_grid(grid=sparse_image_plane_grid)
-    traced_grid_decomposed = tracer_decomposed.traced_grids_of_planes_from_grid(
+    tracer.deflections_2d_from(grid=sparse_image_plane_grid)
+    traced_grid_decomposed = tracer_decomposed.traced_grids_of_planes_from(
         grid=masked_imaging.grid
     )[-1]
 
@@ -365,13 +365,13 @@ __Image-Plane Weight Map__
 To determine the image-plane pixelization a weight KMeans algorithm will be called. This requires a weight map, 
 which the code computes below using the hyper_galaxy_image of the source galaxy.
 
-Checkout the functions `VoronoiBrightnessImage.weight_map_from_hyper_image`
+Checkout the functions `VoronoiBrightnessImage.weight_map_from`
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/pixelizations.py
 """
 start = time.time()
 for i in range(repeats):
-    weight_map = source_galaxy.pixelization.weight_map_from_hyper_image(
+    weight_map = source_galaxy.pixelization.weight_map_from(
         hyper_image=source_galaxy.hyper_galaxy_image
     )
 
@@ -399,7 +399,7 @@ for i in range(repeats):
 
 profiling_dict["Image-plane Pixelization (KMeans)"] = (time.time() - start) / repeats
 
-traced_sparse_grid = tracer.traced_sparse_grids_of_planes_from_grid(
+traced_sparse_grid = tracer.traced_sparse_grids_list_of_planes_from(
     grid=masked_imaging.grid
 )[-1]
 
@@ -410,13 +410,13 @@ Coordinates that are ray-traced near the `MassProfile` centre are heavily demagn
 the source-plane. We relocate these pixels to the edge of the source-plane border (defined via the border of the 
 image-plane mask) have as described in **HowToLens** chapter 4 tutorial 5. 
 
-Checkout the function `relocated_grid_from_grid` for a full description of the method:
+Checkout the function `relocated_grid_from` for a full description of the method:
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/two_d/abstract_grid_2d.py
 """
 start = time.time()
 for i in range(repeats):
-    relocated_grid = traced_grid.relocated_grid_from_grid(grid=traced_grid)
+    relocated_grid = traced_grid.relocated_grid_from(grid=traced_grid)
 profiling_dict["Border Relocation"] = (time.time() - start) / repeats
 
 """
@@ -430,7 +430,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/
 """
 start = time.time()
 for i in range(repeats):
-    relocated_pixelization_grid = traced_grid.relocated_pixelization_grid_from_pixelization_grid(
+    relocated_pixelization_grid = traced_grid.relocated_pixelization_grid_from(
         pixelization_grid=traced_sparse_grid
     )
 profiling_dict["Border Relocation Pixelization"] = (time.time() - start) / repeats
@@ -599,7 +599,7 @@ which adapt to the surface brightness of the source galaxy.
 """
 start = time.time()
 for i in range(repeats):
-    pixel_signals = mapper.pixel_signals_from_signal_scale(
+    pixel_signals = mapper.pixel_signals_from(
         signal_scale=source_galaxy.regularization.signal_scale
     )
 profiling_dict["Source Pixel Signal Scales"] = (time.time() - start) / repeats
@@ -609,13 +609,13 @@ __Regularization weight_list__
 
 The pixel signal scales are now used to construct the regularization weight_list.
 
- adaptive_regularization_weight_list_from:
+ adaptive_regularization_weights_from:
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/regularization_util.py
 """
 start = time.time()
 for i in range(repeats):
-    regularization_weight_list = al.util.regularization.adaptive_regularization_weight_list_from(
+    regularization_weights = al.util.regularization.adaptive_regularization_weights_from(
         inner_coefficient=source_galaxy.regularization.inner_coefficient,
         outer_coefficient=source_galaxy.regularization.outer_coefficient,
         pixel_signals=pixel_signals,
@@ -637,7 +637,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/regular
 start = time.time()
 for i in range(repeats):
     regularization_matrix = al.util.regularization.weighted_regularization_matrix_from(
-        regularization_weight_list=regularization_weight_list,
+        regularization_weights=regularization_weights,
         pixel_neighbors=mapper.source_pixelization_grid.pixel_neighbors,
         pixel_neighbors_size=mapper.source_pixelization_grid.pixel_neighbors_size,
     )

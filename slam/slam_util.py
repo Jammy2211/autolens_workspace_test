@@ -187,11 +187,9 @@ def update_mass_to_light_ratio_prior(
 
     grid = result.max_log_likelihood_fit.grid
 
-    einstein_radius = result.max_log_likelihood_tracer.einstein_radius_from_grid(
-        grid=grid
-    )
+    einstein_radius = result.max_log_likelihood_tracer.einstein_radius_from(grid=grid)
 
-    einstein_mass = result.max_log_likelihood_tracer.einstein_mass_angular_from_grid(
+    einstein_mass = result.max_log_likelihood_tracer.einstein_mass_angular_from(
         grid=grid
     )
 
@@ -200,10 +198,10 @@ def update_mass_to_light_ratio_prior(
 
     instance = model.instance_from_prior_medians()
 
-    mass_to_light_ratio_lower = instance.normalization_from_mass_angular_and_radius(
+    mass_to_light_ratio_lower = instance.normalization_via_mass_angular_from(
         mass_angular=einstein_mass_lower, radius=einstein_radius, bins=bins
     )
-    mass_to_light_ratio_upper = instance.normalization_from_mass_angular_and_radius(
+    mass_to_light_ratio_upper = instance.normalization_via_mass_angular_from(
         mass_angular=einstein_mass_upper, radius=einstein_radius, bins=bins
     )
 
@@ -214,9 +212,7 @@ def update_mass_to_light_ratio_prior(
     return model
 
 
-def mass__from_result(
-    mass, result: af.Result, unfix_mass_centre: bool = False
-) -> af.Model:
+def mass__from(mass, result: af.Result, unfix_mass_centre: bool = False) -> af.Model:
     """
     Returns an updated mass `Model` whose priors are initialized from previous results in a pipeline.
 
@@ -254,7 +250,7 @@ def mass__from_result(
     return mass
 
 
-def source__from_result(
+def source__from(
     result: af.Result, setup_hyper: al.SetupHyper, source_is_model: bool = False
 ) -> af.Model:
     """
@@ -279,7 +275,7 @@ def source__from_result(
         search result it is loaded from. If `False`, it is an instance of that search's result.
     """
 
-    hyper_galaxy = setup_hyper.hyper_galaxy_source_from_result(result=result)
+    hyper_galaxy = setup_hyper.hyper_galaxy_source_from(result=result)
 
     if result.instance.galaxies.source.pixelization is None:
 
@@ -350,7 +346,7 @@ def source__from_result(
             )
 
 
-def source__from_result_model_if_parametric(
+def source__from_model_if_parametric(
     result: af.Result, setup_hyper: al.SetupHyper
 ) -> af.Model:
     """
@@ -362,7 +358,7 @@ def source__from_result_model_if_parametric(
     The source is returned as a model if it is parametric (given its parameters must be fitted for to properly compute
     a new mass model) whereas inversions are returned as an instance (as they have sufficient flexibility to not
     require updating). This behaviour can be customized in SLaM pipelines by replacing this method with the
-    `source__from_result` method.
+    `source__from` method.
 
     Parameters
     ----------
@@ -372,9 +368,7 @@ def source__from_result_model_if_parametric(
         The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
     """
     if result.instance.galaxies.source.pixelization is None:
-        return source__from_result(
+        return source__from(
             result=result, setup_hyper=setup_hyper, source_is_model=True
         )
-    return source__from_result(
-        result=result, setup_hyper=setup_hyper, source_is_model=False
-    )
+    return source__from(result=result, setup_hyper=setup_hyper, source_is_model=False)

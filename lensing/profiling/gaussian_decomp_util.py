@@ -151,7 +151,7 @@ def w_f_approx(z):
     return wz
 
 
-def zeta_from_grid(grid, amps, sigmas, axis_ratio):
+def zeta_from(grid, amps, sigmas, axis_ratio):
 
     """
     The key part to compute the deflection angle of each Gaussian.
@@ -195,7 +195,7 @@ def zeta_from_grid(grid, amps, sigmas, axis_ratio):
     return output_grid_final
 
 
-def deflections_2d_from_grid_via_gaussians(
+def deflections_2d_via_gaussians_from(
     func,
     axis_ratio,
     angle_profile,
@@ -221,7 +221,7 @@ def deflections_2d_from_grid_via_gaussians(
     )
     sigmas *= sigmas_factor
 
-    angle = zeta_from_grid(grid=grid, amps=amps, sigmas=sigmas, axis_ratio=axis_ratio)
+    angle = zeta_from(grid=grid, amps=amps, sigmas=sigmas, axis_ratio=axis_ratio)
 
     angle *= np.sqrt((2.0 * np.pi) / (1.0 - axis_ratio ** 2.0))
 

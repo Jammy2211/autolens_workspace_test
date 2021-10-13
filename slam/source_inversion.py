@@ -11,10 +11,10 @@ def no_lens_light(
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     source_parametric_results: af.ResultsCollection,
-    pixelization: af.Model(al.pix.Pixelization) = af.Model(
+    pixelization: af.Model(al.AbstractPixelization) = af.Model(
         al.pix.VoronoiBrightnessImage
     ),
-    regularization: af.Model(al.reg.Regularization) = af.Model(al.reg.Constant),
+    regularization: af.Model(al.AbstractRegularization) = af.Model(al.reg.Constant),
 ) -> af.ResultsCollection:
     """
     The S:aM SOURCE INVERSION PIPELINE for fitting imaging data without a lens light component.
@@ -57,15 +57,15 @@ def no_lens_light(
                 redshift=source_parametric_results.last.instance.galaxies.source.redshift,
                 pixelization=al.pix.VoronoiMagnification,
                 regularization=al.reg.Constant,
-                hyper_galaxy=setup_hyper.hyper_galaxy_source_from_result(
+                hyper_galaxy=setup_hyper.hyper_galaxy_source_from(
                     result=source_parametric_results.last
                 ),
             ),
         ),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
+        hyper_image_sky=setup_hyper.hyper_image_sky_from(
             result=source_parametric_results.last, as_model=False
         ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from_result(
+        hyper_background_noise=setup_hyper.hyper_background_noise_from(
             result=source_parametric_results.last
         ),
     )
@@ -182,7 +182,7 @@ def no_lens_light(
 
     This search aims to improve the lens mass model using the input `Inversion`.
     """
-    mass = slam_util.mass__from_result(
+    mass = slam_util.mass__from(
         mass=result_2.model.galaxies.lens.mass,
         result=source_parametric_results.last,
         unfix_mass_centre=True,
@@ -244,10 +244,10 @@ def with_lens_light(
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     source_parametric_results: af.ResultsCollection,
-    pixelization: af.Model(al.pix.Pixelization) = af.Model(
+    pixelization: af.Model(al.AbstractPixelization) = af.Model(
         al.pix.VoronoiBrightnessImage
     ),
-    regularization: af.Model(al.reg.Regularization) = af.Model(al.reg.Constant),
+    regularization: af.Model(al.AbstractRegularization) = af.Model(al.reg.Constant),
 ) -> af.ResultsCollection:
     """
     The SLaM SOURCE INVERSION PIPELINE for fitting imaging data with a lens light component.
@@ -289,7 +289,7 @@ def with_lens_light(
                 envelope=source_parametric_results.last.instance.galaxies.lens.envelope,
                 mass=source_parametric_results.last.instance.galaxies.lens.mass,
                 shear=source_parametric_results.last.instance.galaxies.lens.shear,
-                hyper_galaxy=setup_hyper.hyper_galaxy_lens_from_result(
+                hyper_galaxy=setup_hyper.hyper_galaxy_lens_from(
                     result=source_parametric_results.last
                 ),
             ),
@@ -298,15 +298,15 @@ def with_lens_light(
                 redshift=source_parametric_results.last.instance.galaxies.source.redshift,
                 pixelization=al.pix.VoronoiMagnification,
                 regularization=al.reg.Constant,
-                hyper_galaxy=setup_hyper.hyper_galaxy_source_from_result(
+                hyper_galaxy=setup_hyper.hyper_galaxy_source_from(
                     result=source_parametric_results.last
                 ),
             ),
         ),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
+        hyper_image_sky=setup_hyper.hyper_image_sky_from(
             result=source_parametric_results.last, as_model=False
         ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from_result(
+        hyper_background_noise=setup_hyper.hyper_background_noise_from(
             result=source_parametric_results.last
         ),
     )
@@ -437,7 +437,7 @@ def with_lens_light(
 
     This search aims to improve the lens mass model using the input `Inversion`.
     """
-    mass = slam_util.mass__from_result(
+    mass = slam_util.mass__from(
         mass=result_2.model.galaxies.lens.mass,
         result=source_parametric_results.last,
         unfix_mass_centre=True,

@@ -57,7 +57,7 @@ effective_radius = 0.5
 sersic_index = 4.0
 mass_to_light_ratio = 2.0
 
-axis_ratio, angle = al.convert.axis_ratio_and_phi_from(
+axis_ratio, angle = al.convert.axis_ratio_and_angle_from(
     elliptical_comps=elliptical_comps
 )
 
@@ -93,7 +93,7 @@ start = time.time()
 
 for i in range(repeats):
 
-    deflections = gaussian_decomp_util.deflections_2d_from_grid_via_gaussians(
+    deflections = gaussian_decomp_util.deflections_2d_via_gaussians_from(
         func=sersic_2d,
         axis_ratio=axis_ratio,
         angle_profile=angle,
@@ -124,7 +124,7 @@ for i in range(repeats):
         mass_to_light_ratio=mass_to_light_ratio,
     )
 
-    deflections_sersic = sersic.deflections_2d_from_grid(grid=grid)
+    deflections_sersic = sersic.deflections_2d_from(grid=grid)
 
 time_source = (time.time() - start) / repeats
 print(f"Time for source code function = {time_source}")

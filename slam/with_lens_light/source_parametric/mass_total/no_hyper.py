@@ -128,7 +128,6 @@ analysis = al.AnalysisImaging(dataset=imaging)
 
 bulge = af.Model(al.lp.EllSersic)
 disk = af.Model(al.lp.EllExponential)
-bulge.centre = disk.centre
 
 source_parametric_results = slam.source_parametric.with_lens_light(
     settings_autofit=settings_autofit,
@@ -166,7 +165,6 @@ analysis = al.AnalysisImaging(
 
 bulge = af.Model(al.lp.EllSersic)
 disk = af.Model(al.lp.EllExponential)
-bulge.centre = disk.centre
 
 light_results = slam.light_parametric.with_lens_light(
     settings_autofit=settings_autofit,

@@ -11,7 +11,7 @@ def with_lens_light(
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     source_results: af.ResultsCollection,
-    lens_bulge: af.Model = af.Model(al.lp.EllSersic),
+    lens_bulge: Optional[af.Model] = af.Model(al.lp.EllSersic),
     lens_disk: Optional[af.Model] = None,
     lens_envelope: Optional[af.Model] = None,
     end_with_hyper_extension: bool = False,
@@ -63,11 +63,11 @@ def with_lens_light(
     pipeline may fit the data better, requiring a reducing level of noise scaling. For this reason, the noise scaling
     normalization is included as a free parameter.
     """
-    hyper_galaxy = setup_hyper.hyper_galaxy_lens_from_result(
+    hyper_galaxy = setup_hyper.hyper_galaxy_lens_from(
         result=source_results.last, noise_factor_is_model=True
     )
 
-    source = slam_util.source__from_result(
+    source = slam_util.source__from(
         result=source_results.last, setup_hyper=setup_hyper, source_is_model=False
     )
 
@@ -85,10 +85,10 @@ def with_lens_light(
             ),
             source=source,
         ),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
+        hyper_image_sky=setup_hyper.hyper_image_sky_from(
             result=source_results.last, as_model=True
         ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from_result(
+        hyper_background_noise=setup_hyper.hyper_background_noise_from(
             result=source_results.last
         ),
     )

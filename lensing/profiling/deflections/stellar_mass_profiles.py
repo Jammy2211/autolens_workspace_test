@@ -59,10 +59,10 @@ The function below times the deflection angle calculation on an input `MassProfi
 """
 
 
-def time_deflections_2d_from_grid(mass_profile):
+def time_deflections_2d_from(mass_profile):
     start = time.time()
     for i in range(repeats):
-        mass_profile.deflections_2d_from_grid(grid=grid)
+        mass_profile.deflections_2d_from(grid=grid)
     return (time.time() - start) / repeats
 
 
@@ -83,7 +83,7 @@ mass_profile = al.mp.EllChameleon(
     core_radius_1=1.0,
     mass_to_light_ratio=1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
@@ -94,7 +94,7 @@ mass_profile = al.mp.SphChameleon(
     core_radius_1=1.0,
     mass_to_light_ratio=1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
@@ -105,14 +105,14 @@ mass_profile = al.mp.EllExponential(
     effective_radius=1.0,
     mass_to_light_ratio=1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
 mass_profile = al.mp.SphExponential(
     centre=(0.0, 0.0), intensity=1.0, effective_radius=1.0, mass_to_light_ratio=1.0
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
@@ -123,14 +123,14 @@ mass_profile = al.mp.EllDevVaucouleurs(
     effective_radius=1.0,
     mass_to_light_ratio=1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
 mass_profile = al.mp.SphDevVaucouleurs(
     centre=(0.0, 0.0), intensity=1.0, effective_radius=1.0, mass_to_light_ratio=1.0
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
@@ -142,7 +142,7 @@ mass_profile = al.mp.EllSersic(
     sersic_index=2.5,
     mass_to_light_ratio=1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
@@ -153,7 +153,7 @@ mass_profile = al.mp.SphSersic(
     sersic_index=2.5,
     mass_to_light_ratio=1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
@@ -166,7 +166,7 @@ mass_profile = al.mp.EllSersicRadialGradient(
     mass_to_light_ratio=1.0,
     mass_to_light_gradient=-1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
@@ -178,7 +178,7 @@ mass_profile = al.mp.SphSersicRadialGradient(
     mass_to_light_ratio=1.0,
     mass_to_light_gradient=-1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
@@ -193,7 +193,7 @@ mass_profile = al.mp.EllSersicCore(
     sersic_index=2.2,
 )
 
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
@@ -206,7 +206,7 @@ mass_profile = al.mp.SphSersicCore(
     alpha=2.0,
     sersic_index=2.2,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
@@ -217,7 +217,7 @@ mass_profile = al.mp.EllGaussian(
     sigma=10.0,
     mass_to_light_ratio=1.0,
 )
-profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from_grid(
+profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 

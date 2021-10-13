@@ -15,22 +15,28 @@ from autoconf import conf
 
 conf.instance.push(new_path=path.join(cwd, "config", "profiling"))
 
-import copy
 import time
 import json
 
 import autolens as al
+import autolens.plot as aplt
+
 
 """
 The path all profiling results are output.
 """
 file_path = os.path.join(
-    "imaging",
-    "profiling",
-    "times",
-    al.__version__,
-    "inversion_voronoi_magnification__w_tilde",
+    "imaging", "profiling", "times", al.__version__, "inversion_voronoi_magnification"
 )
+
+"""
+Whether w_tilde is used dictates the output folder.
+"""
+use_w_tilde = True
+if use_w_tilde:
+    file_path = os.path.join(file_path, "w_tilde")
+else:
+    file_path = os.path.join(file_path, "mapping")
 
 """
 The number of repeats used to estimate the `Inversion` run time.
@@ -46,7 +52,7 @@ sub_size = 4
 mask_radius = 3.5
 psf_shape_2d = (21, 21)
 pixelization_shape_2d = (60, 60)
-use_w_tilde = True
+
 
 print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
@@ -123,25 +129,25 @@ imaging = al.Imaging.from_fits(
 """
 Apply the 2D mask, which for the settings above is representative of the masks we typically use to model strong lenses.
 """
-# mask = al.Mask2D.circular(
-#     shape_native=imaging.shape_native,
-#     pixel_scales=imaging.pixel_scales,
-#     sub_size=sub_size,
-#     radius=mask_radius,
-# )
-
-mask = al.Mask2D.circular_annular(
+mask = al.Mask2D.circular(
     shape_native=imaging.shape_native,
     pixel_scales=imaging.pixel_scales,
     sub_size=sub_size,
-    inner_radius=1.5,
-    outer_radius=2.5,
+    radius=mask_radius,
 )
+
+# mask = al.Mask2D.circular_annular(
+#     shape_native=imaging.shape_native,
+#     pixel_scales=imaging.pixel_scales,
+#     sub_size=sub_size,
+#     inner_radius=1.5,
+#     outer_radius=2.5,
+# )
 
 masked_imaging = imaging.apply_mask(mask=mask)
 
 masked_imaging = masked_imaging.apply_settings(
-    settings=al.SettingsImaging(sub_size=sub_size),
+    settings=al.SettingsImaging(sub_size=sub_size)
 )
 
 """
@@ -156,7 +162,7 @@ fit = al.FitImaging(
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
 )
-fit.figure_of_merit
+print(fit.figure_of_merit)
 
 """
 __Fit Time__
@@ -174,6 +180,7 @@ for i in range(repeats):
 fit_time = (time.time() - start) / repeats
 print(f"Fit Time = {fit_time} \n")
 
+
 """
 __Profiling Dict__
 
@@ -181,13 +188,15 @@ Apply mask, settings and profiling dict to fit, such that timings of every indiv
 """
 profiling_dict = {}
 
-tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy], profiling_dict=profiling_dict)
+tracer = al.Tracer.from_galaxies(
+    galaxies=[lens_galaxy, source_galaxy], profiling_dict=profiling_dict
+)
 
 fit = al.FitImaging(
     imaging=masked_imaging,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
-    profiling_dict=profiling_dict
+    profiling_dict=profiling_dict,
 )
 fit.figure_of_merit
 
@@ -251,27 +260,27 @@ filename = f"{instrument}_fit_time.json"
 if os.path.exists(path.join(file_path, filename)):
     os.remove(path.join(file_path, filename))
 
-# with open(path.join(file_path, filename), "w") as outfile:
-#     json.dump(fit_time, outfile)
+with open(path.join(file_path, filename), "w") as outfile:
+    json.dump(fit_time, outfile)
 
 """
 Output an image of the fit, so that we can inspect that it fits the data as expected.
 """
-# mat_plot_2d = aplt.MatPlot2D(
-#     output=aplt.Output(
-#         path=file_path, filename=f"{instrument}_subplot_fit_imaging", format="png"
-#     )
-# )
-# fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-# fit_imaging_plotter.subplot_fit_imaging()
-#
-# mat_plot_2d = aplt.MatPlot2D(
-#     output=aplt.Output(
-#         path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"
-#     )
-# )
-# fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-# fit_imaging_plotter.subplot_of_planes(plane_index=1)
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_fit_imaging", format="png"
+    )
+)
+fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_imaging_plotter.subplot_fit_imaging()
+
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"
+    )
+)
+fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_imaging_plotter.subplot_of_planes(plane_index=1)
 
 """
 The `info_dict` contains all the key information of the analysis which describes its run times.
@@ -282,10 +291,13 @@ info_dict["image_pixels"] = masked_imaging.grid.sub_shape_slim
 info_dict["sub_size"] = sub_size
 info_dict["mask_radius"] = mask_radius
 info_dict["psf_shape_2d"] = psf_shape_2d
-# info_dict["source_pixels"] = len(reconstruction)
-# info_dict["excess_time"] = excess_time
+info_dict[
+    "w_tilde_curvature_preload_size"
+] = fit.inversion.linear_eqn.w_tilde.curvature_preload.shape[0]
+info_dict["source_pixels"] = len(fit.inversion.reconstruction)
+info_dict["excess_time"] = excess_time
 
 print(info_dict)
 
-with open(path.join(file_path, f"{instrument}_info.json"), "w") as outfile:
-    json.dump(info_dict, outfile)
+with open(path.join(file_path, f"{instrument}_info.json"), "w+") as outfile:
+    json.dump(info_dict, outfile, indent=4)

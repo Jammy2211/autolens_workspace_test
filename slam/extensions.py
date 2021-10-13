@@ -50,7 +50,7 @@ def hyper_fit(
     )
 
 
-def hyper_fit_old(
+def hyper_fit_bc(
     setup_hyper: al.SetupHyper,
     result: af.Result,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],

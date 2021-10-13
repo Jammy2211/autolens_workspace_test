@@ -1,5 +1,5 @@
 {
-    "Rectangular": {
+    "rectangular.Rectangular": {
         "shape_0": {
             "type": "Uniform",
             "lower_limit": 20.0,
@@ -27,11 +27,11 @@
             }
         }
     },
-    "VoronoiMagnification": {
+    "voronoi.VoronoiMagnification": {
         "shape_0": {
             "type": "Uniform",
             "lower_limit": 20.0,
-            "upper_limit": 20.5,
+            "upper_limit": 80.5,
             "width_modifier": {
                 "type": "Absolute",
                 "value": 0.1
@@ -44,7 +44,7 @@
         "shape_1": {
             "type": "Uniform",
             "lower_limit": 20.0,
-            "upper_limit": 20.5,
+            "upper_limit": 80.5,
             "width_modifier": {
                 "type": "Absolute",
                 "value": 0.1
@@ -55,7 +55,7 @@
             }
         }
     },
-    "VoronoiBrightnessImage": {
+    "voronoi.VoronoiBrightnessImage": {
         "pixels": {
             "type": "Uniform",
             "lower_limit": 200.0,

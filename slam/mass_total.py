@@ -51,7 +51,7 @@ def no_lens_light(
     This search aims to accurately estimate the lens mass model, using the improved mass model priors and source model 
     of the SOURCE PIPELINE
     """
-    mass = slam_util.mass__from_result(
+    mass = slam_util.mass__from(
         mass=mass, result=source_results.last, unfix_mass_centre=True
     )
 
@@ -61,7 +61,7 @@ def no_lens_light(
     if smbh is not None:
         smbh.centre = mass.centre
 
-    source = slam_util.source__from_result_model_if_parametric(
+    source = slam_util.source__from_model_if_parametric(
         result=source_results.last, setup_hyper=setup_hyper
     )
 
@@ -76,10 +76,10 @@ def no_lens_light(
             ),
             source=source,
         ),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
+        hyper_image_sky=setup_hyper.hyper_image_sky_from(
             result=source_results.last, as_model=True
         ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from_result(
+        hyper_background_noise=setup_hyper.hyper_background_noise_from(
             result=source_results.last
         ),
     )
@@ -166,7 +166,7 @@ def with_lens_light(
     This search aims to accurately estimate the lens mass model, using the improved mass model priors and source model 
     of the SOURCE PIPELINE
     """
-    mass = slam_util.mass__from_result(
+    mass = slam_util.mass__from(
         mass=mass, result=source_results.last, unfix_mass_centre=True
     )
 
@@ -176,7 +176,7 @@ def with_lens_light(
     if smbh is not None:
         smbh.centre = mass.centre
 
-    source = slam_util.source__from_result_model_if_parametric(
+    source = slam_util.source__from_model_if_parametric(
         result=source_results.last, setup_hyper=setup_hyper
     )
 
@@ -191,16 +191,16 @@ def with_lens_light(
                 mass=mass,
                 shear=source_results.last.model.galaxies.lens.shear,
                 smbh=smbh,
-                hyper_galaxy=setup_hyper.hyper_galaxy_lens_from_result(
+                hyper_galaxy=setup_hyper.hyper_galaxy_lens_from(
                     result=light_results.last
                 ),
             ),
             source=source,
         ),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from_result(
+        hyper_image_sky=setup_hyper.hyper_image_sky_from(
             result=source_results.last, as_model=True
         ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from_result(
+        hyper_background_noise=setup_hyper.hyper_background_noise_from(
             result=source_results.last
         ),
     )

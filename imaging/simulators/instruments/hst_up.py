@@ -67,11 +67,25 @@ Setup the lens galaxy's mass (SIE+Shear) and source galaxy light (elliptical Ser
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
+    bulge=al.lp.EllSersic(
+        centre=(0.0, 0.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
+        intensity=4.0,
+        effective_radius=0.6,
+        sersic_index=3.0,
+    ),
+    disk=al.lp.EllExponential(
+        centre=(0.0, 0.0),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
+        intensity=2.0,
+        effective_radius=1.6,
+    ),
     mass=al.mp.EllIsothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
         elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
     ),
+    shear=al.mp.ExternalShear(elliptical_comps=(0.001, 0.001)),
 )
 
 source_galaxy = al.Galaxy(
@@ -100,7 +114,7 @@ tracer_plotter.figures_2d(image=True)
 We can now pass this simulator a tracer, which creates the ray-traced image plotted above and simulates it as an
 imaging dataset.
 """
-imaging = simulator.from_tracer_and_grid(tracer=tracer, grid=grid)
+imaging = simulator.via_tracer_from(tracer=tracer, grid=grid)
 
 """
 Output the simulated dataset to the dataset path as .fits files.
