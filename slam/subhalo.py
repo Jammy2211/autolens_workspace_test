@@ -140,7 +140,6 @@ def detection_single_plane(
         facc=0.2,
     )
 
-
     if settings_autofit.number_of_cores > 1:
         number_of_cores = 70
     else:

@@ -176,22 +176,30 @@ agg = af.Aggregator.from_database(
 Add all results in the directory "output/slacs" to the database, which we manipulate below via the agg.
 Avoid rerunning this once the file `slacs.sqlite` has been built.
 """
-agg.add_directory(directory=path.join("output", "database", "directory", "subhalo_slam", "subhalo[2]_mass[total]_source_subhalo[search_lens_plane]"))
+agg.add_directory(directory=path.join("output", "database", "directory", "subhalo_slam"))
 
 """
 __Query__
 """
+print(len(agg))
+
 agg_grid = agg.grid_searches()
+
+print(len(agg_grid))
 
 """
 Unique Tag Query Does Not Work
 """
 agg_best_fits = agg_grid.best_fits()
 
-for best_fit in agg_best_fits:
+print(len(agg_best_fits))
 
-    parent = best_fit.parent
-    print(parent)
+stop
+
+# for best_fit in agg_best_fits:
+#
+#     parent = best_fit.parent
+#     print(parent)
 
 fit_imaging_agg = al.agg.FitImagingAgg(aggregator=agg_best_fits)
 fit_imaging_gen = fit_imaging_agg.max_log_likelihood_gen()
@@ -204,7 +212,7 @@ for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_ge
 
     subhalo_search_result = al.subhalo.SubhaloResult(
         grid_search_result=fit_grid['result'],
-        result_no_subhalo=parent,
+        result_no_subhalo=fit_grid.parent,
     #    stochastic_log_evidences=stochastic_log_evidences,
     )
 

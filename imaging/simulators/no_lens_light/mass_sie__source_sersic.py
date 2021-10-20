@@ -150,7 +150,7 @@ check how the dataset was simulated in the future.
 
 This will also be accessible via the `Aggregator` if a model-fit is performed using the dataset.
 """
-tracer.save(file_path=dataset_path, filename="true_tracer")
+tracer.output_to_json(file_path=path.join(dataset_path, "tracer.json"))
 
 """
 The dataset can be viewed in the folder `autolens_workspace/imaging/no_lens_light/mass_sie__source_sersic`.

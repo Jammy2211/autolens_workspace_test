@@ -237,7 +237,6 @@ def mass__from(mass, result: af.Result, unfix_mass_centre: bool = False) -> af.M
     """
 
     mass.take_attributes(source=result.model.galaxies.lens.mass)
-    mass.einstein_radius = result.model.galaxies.lens.mass.einstein_radius
 
     if unfix_mass_centre and isinstance(mass.centre, tuple):
 

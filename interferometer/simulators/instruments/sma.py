@@ -144,14 +144,14 @@ tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, mat_plot_2d=mat_pl
 tracer_plotter.subplot_tracer()
 
 """
-__Pickles__
+__Tracer Output__
 
-Pickle the `Tracer` in the dataset folder, ensuring the true `Tracer` is safely stored and available if we need to 
-check how the dataset was simulated in the future. 
+Save the `Tracer` in the dataset folder as a .json file, ensuring the true light profiles, mass profiles and galaxies
+are safely stored and available to check how the dataset was simulated in the future. 
 
-This will also be accessible via the `Aggregator` if a model-fit is performed using the dataset.
+This can be loaded via the method `Tracer.from_json`.
 """
-tracer.save(file_path=dataset_path, filename="true_tracer")
+tracer.output_to_json(file_path=path.join(dataset_path, "tracer.json"))
 
 """
 The dataset can be viewed in the folder `autolens_workspace/interferometer/instruments/sma`.
