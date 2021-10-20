@@ -126,18 +126,33 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
-bulge = af.Model(al.lp.EllSersic)
-disk = af.Model(al.lp.EllExponential)
+lens_bulge = af.Model(al.lp.EllSersicCore)
+lens_bulge.radius_break = 0.05
+lens_bulge.gamma = 0.
+lens_bulge.alpha = 2.0
+
+disk = af.Model(al.lp.EllExponentialCore)
+disk.radius_break = 0.05
+disk.gamma = 0.
+disk.alpha = 2.0
+
+lens_bulge.centre = disk.centre
+
+source_bulge = af.Model(al.lp.EllSersicCore)
+source_bulge.radius_break = 0.05
+source_bulge.gamma = 0.
+source_bulge.alpha = 2.0
 
 source_parametric_results = slam.source_parametric.with_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    lens_bulge=bulge,
+    lens_bulge=lens_bulge,
     lens_disk=disk,
     mass=af.Model(al.mp.EllIsothermal),
     shear=af.Model(al.mp.ExternalShear),
-    source_bulge=af.Model(al.lp.EllSersic),
+    source_bulge=source_bulge,
+    mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
 )

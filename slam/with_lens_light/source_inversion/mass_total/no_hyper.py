@@ -71,7 +71,7 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = slam.SettingsAutoFit(
     path_prefix=path.join(
-        "slam", "light_sersic__mass_total__source_inversion", "no_hyper_3"
+        "slam", "light_sersic__mass_total__source_inversion", "no_hyper"
     ),
     number_of_cores=1,
     session=None,
@@ -97,8 +97,8 @@ extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter value
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_hyper = al.SetupHyper(
-    hyper_galaxies_lens=True,
-    hyper_galaxies_source=True,
+    hyper_galaxies_lens=False,
+    hyper_galaxies_source=False,
     hyper_image_sky=None,
     hyper_background_noise=None,
 )

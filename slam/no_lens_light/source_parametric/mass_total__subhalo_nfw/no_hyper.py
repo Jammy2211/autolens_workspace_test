@@ -80,7 +80,7 @@ settings_autofit = slam.SettingsAutoFit(
     path_prefix=path.join(
         "slam", "mass_total__subhalo_nfw__source_parametric", "no_hyper"
     ),
-    number_of_cores=4,
+    number_of_cores=1,
     session=None,
 )
 

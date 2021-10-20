@@ -51,7 +51,7 @@ These settings control various aspects of how long a fit takes. The values below
 sub_size = 4
 mask_radius = 3.5
 psf_shape_2d = (21, 21)
-pixelization_shape_2d = (40, 40)
+pixelization_shape_2d = (60, 60)
 
 
 print(f"sub grid size = {sub_size}")

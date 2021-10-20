@@ -133,18 +133,24 @@ def detection_single_plane(
         path_prefix=settings_autofit.path_prefix,
         name="subhalo[2]_mass[total]_source_subhalo[search_lens_plane]",
         unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
+        # number_of_cores=settings_autofit.number_of_cores,
         session=settings_autofit.session,
         nlive=50,
         walks=5,
         facc=0.2,
     )
 
+
+    if settings_autofit.number_of_cores > 1:
+        number_of_cores = 70
+    else:
+        number_of_cores = 1
+
     subhalo_grid_search = af.SearchGridSearch(
-        search=search,
-        number_of_steps=number_of_steps,
-        number_of_cores=settings_autofit.number_of_cores,
-    )
+            search=search,
+            number_of_steps=number_of_steps,
+            number_of_cores=number_of_cores,
+        )
 
     subhalo_result = subhalo_grid_search.fit(
         model=model,
@@ -156,6 +162,7 @@ def detection_single_plane(
         info=settings_autofit.info,
         parent=search_no_subhalo,
     )
+
     """
     __Model + Search + Analysis + Model-Fit (Search 3)__
 
@@ -206,9 +213,9 @@ def detection_single_plane(
         nlive=100,
     )
 
-    result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+#    result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
 
-    return af.ResultsCollection([result_1, subhalo_result, result_3])
+    return af.ResultsCollection([result_1, subhalo_result])
 
 
 def detection_multi_plane(
