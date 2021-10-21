@@ -67,9 +67,9 @@ lens_galaxy = al.Galaxy(
         elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
         effective_radius=0.1,
         radius_break=0.05,
-        gamma=0.,
-        alpha=2.0
-    )
+        gamma=0.0,
+        alpha=2.0,
+    ),
 )
 
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy])
@@ -96,9 +96,9 @@ lens_galaxy = al.Galaxy(
         elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
         effective_radius=0.1,
         radius_break=0.05,
-        gamma=0.,
-        alpha=2.0
-    )
+        gamma=0.0,
+        alpha=2.0,
+    ),
 )
 
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy])
@@ -109,4 +109,3 @@ fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit)
 fit_imaging_plotter.subplot_fit_imaging()
 
 print(fit.figure_of_merit)
-

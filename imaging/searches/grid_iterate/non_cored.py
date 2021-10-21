@@ -78,7 +78,11 @@ __Model + Search + Analysis + Model-Fit__
 """
 
 lens = af.Model(
-    al.Galaxy, redshift=0.5, bulge=al.lp.EllSersic, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear
+    al.Galaxy,
+    redshift=0.5,
+    bulge=al.lp.EllSersic,
+    mass=al.mp.EllIsothermal,
+    shear=al.mp.ExternalShear,
 )
 source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
 

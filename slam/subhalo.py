@@ -146,10 +146,8 @@ def detection_single_plane(
         number_of_cores = 1
 
     subhalo_grid_search = af.SearchGridSearch(
-            search=search,
-            number_of_steps=number_of_steps,
-            number_of_cores=number_of_cores,
-        )
+        search=search, number_of_steps=number_of_steps, number_of_cores=number_of_cores
+    )
 
     subhalo_result = subhalo_grid_search.fit(
         model=model,
@@ -212,7 +210,7 @@ def detection_single_plane(
         nlive=100,
     )
 
-#    result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    #    result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
 
     return af.ResultsCollection([result_1, subhalo_result])
 

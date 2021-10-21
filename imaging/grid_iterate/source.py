@@ -127,4 +127,3 @@ fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit)
 fit_imaging_plotter.subplot_fit_imaging()
 
 print(fit.figure_of_merit)
-

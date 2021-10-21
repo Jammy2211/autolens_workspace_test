@@ -39,11 +39,7 @@ path_prefix = path.join("searches", "grid_iterate")
 __Search__
 """
 search = af.DynestyStatic(
-    path_prefix=path_prefix,
-    name="cored",
-    unique_tag=dataset_name,
-    nlive=100,
-    walks=10,
+    path_prefix=path_prefix, name="cored", unique_tag=dataset_name, nlive=100, walks=10
 )
 
 """
@@ -79,11 +75,15 @@ __Model + Search + Analysis + Model-Fit__
 
 bulge = af.Model(al.lp.EllSersicCore)
 bulge.radius_break = 0.001
-bulge.gamma = 0.
+bulge.gamma = 0.0
 bulge.alpha = 2.0
 
 lens = af.Model(
-    al.Galaxy, redshift=0.5, bulge=bulge, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear
+    al.Galaxy,
+    redshift=0.5,
+    bulge=bulge,
+    mass=al.mp.EllIsothermal,
+    shear=al.mp.ExternalShear,
 )
 source = af.Model(al.Galaxy, redshift=1.0, bulge=bulge)
 

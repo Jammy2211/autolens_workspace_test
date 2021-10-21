@@ -174,7 +174,7 @@ fit = al.FitImaging(
     imaging=masked_imaging,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=True),
-    preloads=preloads
+    preloads=preloads,
 )
 print(fit.figure_of_merit)
 
@@ -189,7 +189,7 @@ for i in range(repeats):
         imaging=masked_imaging,
         tracer=tracer,
         settings_inversion=al.SettingsInversion(use_w_tilde=False),
-        preloads=preloads
+        preloads=preloads,
     )
     fit.log_evidence
 fit_time = (time.time() - start) / repeats
@@ -212,7 +212,7 @@ fit = al.FitImaging(
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=False),
     profiling_dict=profiling_dict,
-    preloads=preloads
+    preloads=preloads,
 )
 fit.figure_of_merit
 

@@ -45,9 +45,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_autofit = slam.SettingsAutoFit(
-    path_prefix=path.join(
-        "database", "directory", "subhalo_slam"
-    ),
+    path_prefix=path.join("database", "directory", "subhalo_slam"),
     number_of_cores=1,
     session=None,
 )
@@ -168,15 +166,15 @@ except FileNotFoundError:
 Load the database. If the file `slacs.sqlite` does not exist, it will be made by the method below, so its fine if
 you run the code below before the file exists.
 """
-agg = af.Aggregator.from_database(
-    filename=database_file, completed_only=False
-)
+agg = af.Aggregator.from_database(filename=database_file, completed_only=False)
 
 """
 Add all results in the directory "output/slacs" to the database, which we manipulate below via the agg.
 Avoid rerunning this once the file `slacs.sqlite` has been built.
 """
-agg.add_directory(directory=path.join("output", "database", "directory", "subhalo_slam"))
+agg.add_directory(
+    directory=path.join("output", "database", "directory", "subhalo_slam")
+)
 
 """
 __Query__
@@ -194,8 +192,6 @@ agg_best_fits = agg_grid.best_fits()
 
 print(len(agg_best_fits))
 
-stop
-
 # for best_fit in agg_best_fits:
 #
 #     parent = best_fit.parent
@@ -208,12 +204,12 @@ info_gen = agg_best_fits.values("info")
 
 for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_gen):
 
- #   stochastic_log_evidences = [np.median(fit["stochastic_log_evidences"]) for fit in fit_grid.children]
+    #   stochastic_log_evidences = [np.median(fit["stochastic_log_evidences"]) for fit in fit_grid.children]
 
     subhalo_search_result = al.subhalo.SubhaloResult(
-        grid_search_result=fit_grid['result'],
+        grid_search_result=fit_grid["result"],
         result_no_subhalo=fit_grid.parent,
-    #    stochastic_log_evidences=stochastic_log_evidences,
+        #    stochastic_log_evidences=stochastic_log_evidences,
     )
 
     # plot_path = path.join(
@@ -241,23 +237,16 @@ for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_ge
     # subhalo_plotter.set_filename(filename="image_2d")
     # subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=True)
 
-    plot_path = path.join(
-        "database",
-        "plot",
-        "subhalo_slam",
-        "likelihood"
-    )
+    plot_path = path.join("database", "plot", "subhalo_slam", "likelihood")
 
-    mat_plot_2d = aplt.MatPlot2D(
-        output=aplt.Output(path=plot_path, format="png")
-    )
+    mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=plot_path, format="png"))
 
     subhalo_plotter = al.subhalo.SubhaloPlotter(
         subhalo_result=subhalo_search_result,
         fit_imaging_detect=fit_imaging_detect,
         use_log_evidences=False,
         use_stochastic_log_evidences=False,
-        mat_plot_2d=mat_plot_2d
+        mat_plot_2d=mat_plot_2d,
     )
     subhalo_plotter.subplot_detection_imaging(remove_zeros=True)
     subhalo_plotter.subplot_detection_fits()
@@ -266,23 +255,16 @@ for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_ge
     subhalo_plotter.set_filename(filename="image_2d")
     subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=True)
 
-    plot_path = path.join(
-        "database",
-        "plot",
-        "subhalo_slam",
-        "evidence"
-    )
+    plot_path = path.join("database", "plot", "subhalo_slam", "evidence")
 
-    mat_plot_2d = aplt.MatPlot2D(
-        output=aplt.Output(path=plot_path, format="png")
-    )
+    mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=plot_path, format="png"))
 
     subhalo_plotter = al.subhalo.SubhaloPlotter(
         subhalo_result=subhalo_search_result,
         fit_imaging_detect=fit_imaging_detect,
         use_log_evidences=True,
         use_stochastic_log_evidences=False,
-        mat_plot_2d=mat_plot_2d
+        mat_plot_2d=mat_plot_2d,
     )
     subhalo_plotter.subplot_detection_imaging(remove_zeros=True)
     subhalo_plotter.subplot_detection_fits()
