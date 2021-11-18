@@ -31,7 +31,7 @@ file_path = os.path.join(
 )
 
 """
-The number of repeats used to estimate the `Inversion` run time.
+The number of repeats used to estimate the run time.
 """
 repeats = conf.instance["general"]["profiling"]["repeats"]
 print("Number of repeats = " + str(repeats))
@@ -144,7 +144,7 @@ masked_imaging = masked_imaging.apply_settings(
 
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
-fit = al.FitImaging(imaging=masked_imaging, tracer=tracer)
+fit = al.FitImaging(dataset=masked_imaging, tracer=tracer)
 
 preloads = al.Preloads()
 preloads.set_w_tilde_imaging(fit_0=fit, fit_1=fit)

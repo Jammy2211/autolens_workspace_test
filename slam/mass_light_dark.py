@@ -50,7 +50,7 @@ def with_lens_light(
         The `MassProfile` `Model` used to represent the dark matter distribution of the lens galaxy's (set to None to
         omit dark matter).
     einstein_mass_range
-        The values a the estimate of the Einstein Mass in the LIGHT PIPELINE is multiplied by to set the lower and
+        The values an the estimate of the Einstein Mass in the LIGHT PIPELINE is multiplied by to set the lower and
         upper limits of the profile's mass-to-light ratio.
     end_with_hyper_extension
         If `True` a hyper extension is performed at the end of the pipeline. If this feature is used, you must be

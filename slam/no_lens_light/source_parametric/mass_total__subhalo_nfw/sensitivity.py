@@ -82,7 +82,7 @@ settings_autofit = slam.SettingsAutoFit(
     path_prefix=path.join(
         "slam", "mass_total__subhalo_nfw__source_parametric", "sensitivity"
     ),
-    number_of_cores=1,
+    number_of_cores=2,
     session=None,
 )
 
@@ -182,8 +182,8 @@ class AnalysisImagingSensitivity(al.AnalysisImaging):
         self.hyper_model_image = mass_results.last.hyper_model_image
 
 
-subhalo_results = slam.subhalo.sensitivity_mapping(
-    path_prefix=path_prefix,
+subhalo_results = slam.subhalo.sensitivity_mapping_imaging(
+    settings_autofit=settings_autofit,
     analysis_cls=AnalysisImagingSensitivity,
     mask=mask,
     psf=imaging.psf,
@@ -191,7 +191,6 @@ subhalo_results = slam.subhalo.sensitivity_mapping(
     subhalo_mass=af.Model(al.mp.SphNFWMCRLudlow),
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
-    number_of_cores=2,
 )
 
 """

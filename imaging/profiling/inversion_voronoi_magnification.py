@@ -39,7 +39,7 @@ else:
     file_path = os.path.join(file_path, "mapping")
 
 """
-The number of repeats used to estimate the `Inversion` run time.
+The number of repeats used to estimate the run time.
 """
 repeats = conf.instance["general"]["profiling"]["repeats"]
 print("Number of repeats = " + str(repeats))
@@ -158,7 +158,7 @@ Call FitImaging once to get all numba functions initialized.
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
 fit = al.FitImaging(
-    imaging=masked_imaging,
+    dataset=masked_imaging,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
 )
@@ -172,7 +172,7 @@ Time FitImaging by itself, to compare to profiling dict call.
 start = time.time()
 for i in range(repeats):
     fit = al.FitImaging(
-        imaging=masked_imaging,
+        dataset=masked_imaging,
         tracer=tracer,
         settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
     )
@@ -193,7 +193,7 @@ tracer = al.Tracer.from_galaxies(
 )
 
 fit = al.FitImaging(
-    imaging=masked_imaging,
+    dataset=masked_imaging,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
     profiling_dict=profiling_dict,

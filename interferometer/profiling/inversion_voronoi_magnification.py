@@ -129,7 +129,7 @@ __Numba Caching__
 Call FitImaging once to get all numba functions initialized.
 """
 fit = al.FitInterferometer(
-    interferometer=interferometer,
+    dataset=interferometer,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(
         use_w_tilde=use_w_tilde, use_linear_operators=use_linear_operators
@@ -145,7 +145,7 @@ Time FitImaging by itself, to compare to profiling dict call.
 start = time.time()
 for i in range(repeats):
     fit = al.FitInterferometer(
-        interferometer=interferometer,
+        dataset=interferometer,
         tracer=tracer,
         settings_inversion=al.SettingsInversion(
             use_w_tilde=use_w_tilde, use_linear_operators=use_linear_operators
@@ -167,7 +167,7 @@ tracer = al.Tracer.from_galaxies(
 )
 
 fit = al.FitInterferometer(
-    interferometer=interferometer,
+    dataset=interferometer,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(
         use_w_tilde=use_w_tilde, use_linear_operators=use_linear_operators

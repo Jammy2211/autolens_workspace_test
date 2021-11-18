@@ -581,7 +581,13 @@ def sensitivity_mapping_imaging(
     """
     We next specify the search used to perform each model fit by the sensitivity mapper.
     """
-    search = af.DynestyStatic(path_prefix=settings_autofit.path_prefix, nlive=50)
+    search = af.DynestyStatic(
+        path_prefix=settings_autofit.path_prefix,
+        name="subhalo__sensitivity",
+        unique_tag=settings_autofit.unique_tag,
+        session=settings_autofit.session,
+        nlive=50,
+    )
 
     """
     We can now combine all of the objects created above and perform sensitivity mapping. The inputs to the `Sensitivity`
@@ -792,7 +798,13 @@ def sensitivity_mapping_interferometer(
     """
     We next specify the search used to perform each model fit by the sensitivity mapper.
     """
-    search = af.DynestyStatic(path_prefix=settings_autofit.path_prefix, nlive=50)
+    search = af.DynestyStatic(
+        path_prefix=settings_autofit.path_prefix,
+        name="subhalo__sensitivity",
+        unique_tag=settings_autofit.unique_tag,
+        session=settings_autofit.session,
+        nlive=50,
+    )
 
     """
     We can now combine all of the objects created above and perform sensitivity mapping. The inputs to the `Sensitivity`

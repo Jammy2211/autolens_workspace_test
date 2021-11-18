@@ -32,7 +32,7 @@ file_path = os.path.join(
 )
 
 """
-The number of repeats used to estimate the `Inversion` run time.
+The number of repeats used to estimate the run time.
 """
 repeats = conf.instance["general"]["profiling"]["repeats"]
 repeats = 1

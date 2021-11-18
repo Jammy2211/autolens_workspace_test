@@ -32,7 +32,7 @@ def eta(p):
     return eta_list
 
 
-def decompose_convergence_into_gaussians(
+def decompose_convergence_via_mge(
     func, radii_min, radii_max, func_terms=28, func_gaussians=20
 ):
 
@@ -195,7 +195,7 @@ def zeta_from(grid, amps, sigmas, axis_ratio):
     return output_grid_final
 
 
-def deflections_2d_via_gaussians_from(
+def deflections_2d_via_mge_from(
     func,
     axis_ratio,
     angle_profile,
@@ -212,7 +212,7 @@ def deflections_2d_via_gaussians_from(
     if axis_ratio > 0.9999:
         axis_ratio = 0.9999
 
-    amps, sigmas = decompose_convergence_into_gaussians(
+    amps, sigmas = decompose_convergence_via_mge(
         func=func,
         radii_min=radii_min,
         radii_max=radii_max,

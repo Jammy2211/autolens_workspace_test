@@ -35,7 +35,7 @@ Whether w_tilde is used dictates the output folder.
 file_path = os.path.join(file_path, "sparse_preload")
 
 """
-The number of repeats used to estimate the `Inversion` run time.
+The number of repeats used to estimate the run time.
 """
 repeats = conf.instance["general"]["profiling"]["repeats"]
 print("Number of repeats = " + str(repeats))
@@ -154,7 +154,7 @@ Call FitImaging once to get all numba functions initialized.
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
 fit = al.FitImaging(
-    imaging=masked_imaging,
+    dataset=masked_imaging,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=True),
 )
@@ -171,7 +171,7 @@ preloads.set_operated_mapping_matrix_with_preloads(fit_0=fit, fit_1=fit)
 
 
 fit = al.FitImaging(
-    imaging=masked_imaging,
+    dataset=masked_imaging,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=True),
     preloads=preloads,
@@ -186,7 +186,7 @@ Time FitImaging by itself, to compare to profiling dict call.
 start = time.time()
 for i in range(repeats):
     fit = al.FitImaging(
-        imaging=masked_imaging,
+        dataset=masked_imaging,
         tracer=tracer,
         settings_inversion=al.SettingsInversion(use_w_tilde=False),
         preloads=preloads,
@@ -208,7 +208,7 @@ tracer = al.Tracer.from_galaxies(
 )
 
 fit = al.FitImaging(
-    imaging=masked_imaging,
+    dataset=masked_imaging,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=False),
     profiling_dict=profiling_dict,

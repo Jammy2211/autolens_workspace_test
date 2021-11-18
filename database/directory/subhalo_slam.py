@@ -15,6 +15,11 @@ import numpy as np
 import os
 from os import path
 
+cwd = os.getcwd()
+from autoconf import conf
+conf.instance.push(new_path=path.join(cwd, "config", "fit"))
+
+
 import autofit as af
 import autolens as al
 import autolens.plot as aplt
@@ -179,23 +184,13 @@ agg.add_directory(
 """
 __Query__
 """
-print(len(agg))
 
 agg_grid = agg.grid_searches()
-
-print(len(agg_grid))
 
 """
 Unique Tag Query Does Not Work
 """
 agg_best_fits = agg_grid.best_fits()
-
-print(len(agg_best_fits))
-
-# for best_fit in agg_best_fits:
-#
-#     parent = best_fit.parent
-#     print(parent)
 
 fit_imaging_agg = al.agg.FitImagingAgg(aggregator=agg_best_fits)
 fit_imaging_gen = fit_imaging_agg.max_log_likelihood_gen()
@@ -204,38 +199,10 @@ info_gen = agg_best_fits.values("info")
 
 for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_gen):
 
-    #   stochastic_log_evidences = [np.median(fit["stochastic_log_evidences"]) for fit in fit_grid.children]
-
     subhalo_search_result = al.subhalo.SubhaloResult(
         grid_search_result=fit_grid["result"],
         result_no_subhalo=fit_grid.parent,
-        #    stochastic_log_evidences=stochastic_log_evidences,
     )
-
-    # plot_path = path.join(
-    #     "database",
-    #     "plot",
-    #     "subhalo_slam",
-    #     "stochastic"
-    # )
-    #
-    # mat_plot_2d = aplt.MatPlot2D(
-    #     output=aplt.Output(path=plot_path, format="png")
-    # )
-    #
-    # subhalo_plotter = al.subhalo.SubhaloPlotter(
-    #     subhalo_result=subhalo_search_result,
-    #     fit_imaging_detect=fit_imaging_detect,
-    #     use_log_evidences=True,
-    #     use_stochastic_log_evidences=True,
-    #     mat_plot_2d=mat_plot_2d
-    # )
-    # subhalo_plotter.subplot_detection_imaging(remove_zeros=True)
-    # subhalo_plotter.subplot_detection_fits()
-    # subhalo_plotter.set_filename(filename="image_2d")
-    # subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=False)
-    # subhalo_plotter.set_filename(filename="image_2d")
-    # subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=True)
 
     plot_path = path.join("database", "plot", "subhalo_slam", "likelihood")
 
@@ -272,3 +239,29 @@ for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_ge
     subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=False)
     subhalo_plotter.set_filename(filename="image_2d")
     subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=True)
+
+    try:
+
+        plot_path = path.join("database", "plot", "subhalo_slam", "stochastic")
+
+        mat_plot_2d = aplt.MatPlot2D(
+            output=aplt.Output(path=plot_path, format="png")
+        )
+
+        subhalo_plotter = al.subhalo.SubhaloPlotter(
+            subhalo_result=subhalo_search_result,
+            fit_imaging_detect=fit_imaging_detect,
+            use_log_evidences=True,
+            use_stochastic_log_evidences=True,
+            mat_plot_2d=mat_plot_2d
+        )
+        subhalo_plotter.subplot_detection_imaging(remove_zeros=True)
+        subhalo_plotter.subplot_detection_fits()
+        subhalo_plotter.set_filename(filename="image_2d")
+        subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=False)
+        subhalo_plotter.set_filename(filename="image_2d")
+        subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=True)
+
+    except ValueError:
+
+        pass

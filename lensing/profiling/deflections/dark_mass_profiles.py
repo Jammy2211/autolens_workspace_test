@@ -101,6 +101,9 @@ profiling_dict[mass_profile.__class__.__name__] = time_deflections_2d_from(
     mass_profile=mass_profile
 )
 
+print(profiling_dict)
+stop
+
 mass_profile = al.mp.EllNFWGeneralized(
     centre=(0.0, 0.0),
     elliptical_comps=(0.111111, 0.0),

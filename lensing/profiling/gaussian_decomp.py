@@ -93,7 +93,7 @@ start = time.time()
 
 for i in range(repeats):
 
-    deflections = gaussian_decomp_util.deflections_2d_via_gaussians_from(
+    deflections = gaussian_decomp_util.deflections_2d_via_mge_from(
         func=sersic_2d,
         axis_ratio=axis_ratio,
         angle_profile=angle,

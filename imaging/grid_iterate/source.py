@@ -83,7 +83,7 @@ source_galaxy = al.Galaxy(
 
 tracer = al.Tracer.from_galaxies(galaxies=[source_galaxy, lens_galaxy])
 
-fit = al.FitImaging(imaging=imaging, tracer=tracer)
+fit = al.FitImaging(dataset=imaging, tracer=tracer)
 
 fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit)
 fit_imaging_plotter.subplot_fit_imaging()
@@ -121,7 +121,7 @@ source_galaxy = al.Galaxy(
 
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy])
 
-fit = al.FitImaging(imaging=imaging, tracer=tracer)
+fit = al.FitImaging(dataset=imaging, tracer=tracer)
 
 fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit)
 fit_imaging_plotter.subplot_fit_imaging()

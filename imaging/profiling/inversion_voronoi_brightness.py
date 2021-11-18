@@ -30,7 +30,7 @@ file_path = os.path.join(
 )
 
 """
-The number of repeats used to estimate the `Inversion` run time.
+The number of repeats used to estimate the run time.
 """
 repeats = 10
 print("Number of repeats = " + str(repeats))
@@ -214,12 +214,12 @@ https://github.com/Jammy2211/PyAutoLens/blob/master/autolens/fit/fit.py
 """
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
-fit = al.FitImaging(imaging=masked_imaging, tracer=tracer)
+fit = al.FitImaging(dataset=masked_imaging, tracer=tracer)
 fit.log_evidence
 
 start = time.time()
 for i in range(repeats):
-    fit = al.FitImaging(imaging=masked_imaging, tracer=tracer)
+    fit = al.FitImaging(dataset=masked_imaging, tracer=tracer)
     fit.log_evidence
 fit_time = (time.time() - start) / repeats
 
