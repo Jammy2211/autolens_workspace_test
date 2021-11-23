@@ -17,6 +17,7 @@ from os import path
 
 cwd = os.getcwd()
 from autoconf import conf
+
 conf.instance.push(new_path=path.join(cwd, "config", "fit"))
 
 import autofit as af
@@ -278,7 +279,9 @@ info_gen = agg_best_fits.values("info")
 
 for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_gen):
 
-    stochastic_log_evidences = [np.median(fit["stochastic_log_evidences"]) for fit in fit_grid.children]
+    stochastic_log_evidences = [
+        np.median(fit["stochastic_log_evidences"]) for fit in fit_grid.children
+    ]
 
     subhalo_search_result = al.subhalo.SubhaloResult(
         grid_search_result=fit_grid["result"],
@@ -286,23 +289,16 @@ for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_ge
         stochastic_log_evidences=stochastic_log_evidences,
     )
 
-    plot_path = path.join(
-        "database",
-        "plot",
-        "subhalo_slam_inversion",
-        "stochastic"
-    )
+    plot_path = path.join("database", "plot", "subhalo_slam_inversion", "stochastic")
 
-    mat_plot_2d = aplt.MatPlot2D(
-        output=aplt.Output(path=plot_path, format="png")
-    )
+    mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=plot_path, format="png"))
 
     subhalo_plotter = al.subhalo.SubhaloPlotter(
         subhalo_result=subhalo_search_result,
         fit_imaging_detect=fit_imaging_detect,
         use_log_evidences=True,
         use_stochastic_log_evidences=True,
-        mat_plot_2d=mat_plot_2d
+        mat_plot_2d=mat_plot_2d,
     )
     subhalo_plotter.subplot_detection_imaging(remove_zeros=True)
     subhalo_plotter.subplot_detection_fits()

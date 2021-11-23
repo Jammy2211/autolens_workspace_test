@@ -68,7 +68,7 @@ interferometer = al.Interferometer.from_fits(
 )
 
 settings_interferometer = al.SettingsInterferometer(
-    transformer_class=al.TransformerNUFFT,
+    transformer_class=al.TransformerNUFFT
 )
 
 interferometer = interferometer.apply_settings(settings=settings_interferometer)
@@ -145,7 +145,7 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisInterferometer(
     dataset=interferometer,
-    settings_inversion=al.SettingsInversion(use_linear_operators=True)
+    settings_inversion=al.SettingsInversion(use_linear_operators=True),
 )
 
 bulge = af.Model(al.lp.EllSersic)
@@ -188,7 +188,7 @@ analysis = al.AnalysisInterferometer(
     dataset=interferometer,
     positions=source_parametric_results.last.image_plane_multiple_image_positions,
     settings_lens=settings_lens,
-    settings_inversion=al.SettingsInversion(use_linear_operators=True)
+    settings_inversion=al.SettingsInversion(use_linear_operators=True),
 )
 
 source_inversion_results = slam.source_inversion.with_lens_light(
@@ -228,7 +228,7 @@ analysis = al.AnalysisInterferometer(
     hyper_dataset_result=source_inversion_results.last,
     positions=source_inversion_results.last.image_plane_multiple_image_positions,
     settings_lens=settings_lens,
-    settings_inversion=al.SettingsInversion(use_linear_operators=True)
+    settings_inversion=al.SettingsInversion(use_linear_operators=True),
 )
 
 bulge = af.Model(al.lp.EllSersic)
@@ -316,7 +316,7 @@ analysis = al.AnalysisInterferometer(
     positions=mass_results.last.image_plane_multiple_image_positions,
     hyper_dataset_result=source_inversion_results.last,
     settings_lens=settings_lens,
-    settings_inversion=al.SettingsInversion(use_linear_operators=True)
+    settings_inversion=al.SettingsInversion(use_linear_operators=True),
 )
 
 subhalo_results = slam.subhalo.detection_single_plane(

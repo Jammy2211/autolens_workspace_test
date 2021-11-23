@@ -25,9 +25,7 @@ import autolens.plot as aplt
 """
 The path all profiling results are output.
 """
-file_path = os.path.join(
-    "imaging", "profiling", "times", al.__version__, "parametric"
-)
+file_path = os.path.join("imaging", "profiling", "times", al.__version__, "parametric")
 
 """
 The number of repeats used to estimate the run time.
@@ -158,10 +156,7 @@ Call FitImaging once to get all numba functions initialized.
 """
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
-fit = al.FitImaging(
-    dataset=masked_imaging,
-    tracer=tracer,
-)
+fit = al.FitImaging(dataset=masked_imaging, tracer=tracer)
 print(fit.figure_of_merit)
 
 """
@@ -172,10 +167,7 @@ Time FitImaging by itself, to compare to profiling dict call.
 print()
 start = time.time()
 for i in range(repeats):
-    fit = al.FitImaging(
-        dataset=masked_imaging,
-        tracer=tracer,
-    )
+    fit = al.FitImaging(dataset=masked_imaging, tracer=tracer)
     fit.log_evidence
 fit_time = (time.time() - start) / repeats
 print(f"Fit Time = {fit_time} \n")
@@ -193,9 +185,7 @@ tracer = al.Tracer.from_galaxies(
 )
 
 fit = al.FitImaging(
-    dataset=masked_imaging,
-    tracer=tracer,
-    profiling_dict=profiling_dict,
+    dataset=masked_imaging, tracer=tracer, profiling_dict=profiling_dict
 )
 fit.figure_of_merit
 

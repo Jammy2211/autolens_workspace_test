@@ -25,7 +25,7 @@ These settings control various aspects of the fit. The values below are default 
 sub_size = 4
 mask_radius = 3.5
 psf_shape_2d = (21, 21)
-pixelization_shape_2d = (57, 57)
+pixelization_shape_2d = (30, 30)
 
 print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
@@ -78,7 +78,7 @@ pixel_scale = 0.1
 """
 Load the dataset for this instrument / resolution.
 """
-dataset_path = path.join("dataset", "imaging", instrument)
+dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
 imaging = al.Imaging.from_fits(
     image_path=path.join(dataset_path, "image.fits"),
@@ -99,7 +99,7 @@ mask = al.Mask2D.circular(
 
 masked_imaging = imaging.apply_mask(mask=mask)
 masked_imaging = masked_imaging.apply_settings(
-    settings=al.SettingsImaging(sub_size=sub_size)
+    settings=al.SettingsImaging(sub_size=sub_size, sub_size_inversion=sub_size)
 )
 
 """
@@ -110,10 +110,18 @@ final `log_evidence` values are consistent.
 
 https://github.com/Jammy2211/PyAutoLens/blob/master/autolens/lens/ray_tracing.py
 https://github.com/Jammy2211/PyAutoLens/blob/master/autolens/imaging/fit_imaging.py
+
+For this fit, we use the `mapping` formalism which performs the linear algebra via a `mapping_matrix`. The alternative
+formalism is called the `w_tilde` formalism, which we turn off below.
 """
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
-fit = al.FitImaging(dataset=masked_imaging, tracer=tracer)
+fit = al.FitImaging(
+    dataset=masked_imaging,
+    tracer=tracer,
+    settings_inversion=al.SettingsInversion(use_w_tilde=False),
+    settings_pixelization=al.SettingsPixelization(use_border=True),
+)
 fit_log_evidence = fit.log_evidence
 print(fit_log_evidence)
 
@@ -160,8 +168,8 @@ masked_imaging_iterate = masked_imaging_iterate.apply_settings(
     settings=al.SettingsImaging(grid_class=al.Grid2DIterate)
 )
 
-image = lens_galaxy.image_2d_from(grid=masked_imaging_iterate.grid)
-blurring_image = lens_galaxy.image_2d_from(grid=masked_imaging.blurring_grid)
+image_iterate = lens_galaxy.image_2d_from(grid=masked_imaging_iterate.grid)
+blurring_image_iterate = lens_galaxy.image_2d_from(grid=masked_imaging.blurring_grid)
 
 """
 __Lens Light Convolution__
@@ -178,6 +186,10 @@ exploit sparsity.
 This uses the methods in `Convolver.__init__` and `Convolver.convolve_image`. 
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/operators/convolver.py
+
+The convolved image is stored in the fit as the `blurred_image`:
+
+https://github.com/Jammy2211/PyAutoLens/blob/master/autolens/imaging/fit_imaging.py
 """
 convolved_image = masked_imaging.convolver.convolve_image(
     image=image, blurring_image=blurring_image
@@ -210,8 +222,12 @@ The grid used to perform an inversion can have a different `sub_size` than the g
 
 Thus, ray-tracing is performed for a unique grid called `grid_inversion` when performing an `Inversion`.
 """
-deflections_2d = tracer.deflections_2d_from(grid=masked_imaging.grid_inversion)
-traced_grid = tracer.traced_grids_of_planes_from(grid=masked_imaging.grid_inversion)[-1]
+deflections_2d_inversion = tracer.deflections_2d_from(
+    grid=masked_imaging.grid_inversion
+)
+traced_grid_inversion = tracer.traced_grids_of_planes_from(
+    grid=masked_imaging.grid_inversion
+)[-1]
 
 """
 __Image-plane Pixelization (Gridding)__
@@ -236,10 +252,16 @@ __Ray Tracing Sparse Grid (SIE)__
 
 This image-plane pixelization grid is also ray-traced to the source-plane, where its coordinates act as the centres
 of the Voronoi cells of the `VoronoiMagnification` pixelization.
+
+The method `traced_sparse_grids_list_of_planes_from()` returns traced grids of the input sparse grid for every plane.
+It returns this as a list of lists of numpy arrays... which is very weird. This needs to be improved, but the reason is
+to enable the use of multiple mappers that analysis double source plane lens systems.
+
+For now... this can be ignored.
 """
 traced_sparse_grid = tracer.traced_sparse_grids_list_of_planes_from(
-    grid=masked_imaging.grid
-)[-1]
+    grid=masked_imaging.grid_inversion
+)[0][-1][0]
 
 """
 __Border Relocation__
@@ -259,7 +281,7 @@ Checkout the function `relocated_grid_from` for a full description of the method
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/two_d/abstract_grid_2d.py
 """
-relocated_grid = traced_grid.relocated_grid_from(grid=traced_grid)
+relocated_grid = traced_grid.relocated_grid_from(grid=traced_grid_inversion)
 
 """
 __Border Relocation Pixelization__
@@ -310,7 +332,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers
 mapper = MapperVoronoi(
     source_grid_slim=relocated_grid,
     source_pixelization_grid=grid_voronoi,
-    data_pixelization_grid=sparse_image_plane_grid, # Only stored in a mapper for visualization of the image-plane grid.
+    data_pixelization_grid=sparse_image_plane_grid,  # Only stored in a mapper for visualization of the image-plane grid.
 )
 
 """
@@ -445,9 +467,9 @@ An `Inversion` object has a property `regularization_matrix` to perform this cal
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/inversion/abstract.py
 """
 regularization_matrix = al.util.regularization.constant_regularization_matrix_from(
-    coefficient=1.0,
+    coefficient=source_galaxy.regularization.coefficient,
     pixel_neighbors=mapper.source_pixelization_grid.pixel_neighbors,
-    pixel_neighbors_size=mapper.source_pixelization_grid.pixel_neighbors_size,
+    pixel_neighbors_sizes=mapper.source_pixelization_grid.pixel_neighbors.sizes,
 )
 
 """
@@ -484,7 +506,9 @@ An `Inversion` object has a property `log_det_curvature_reg_matrix_term` to perf
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/inversion/matrices.py
 """
-2.0 * np.sum(np.log(np.diag(np.linalg.cholesky(curvature_reg_matrix))))
+log_curvature_reg_matrix_term = 2.0 * np.sum(
+    np.log(np.diag(np.linalg.cholesky(curvature_reg_matrix)))
+)
 
 """
 __Log Det [Lambda H]__
@@ -495,7 +519,23 @@ An `Inversion` object has a property `log_det_regularization_matrix_term` to per
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/inversion/abstract.py
 """
-2.0 * np.sum(np.log(np.diag(np.linalg.cholesky(regularization_matrix))))
+log_regularization_matrix_term = 2.0 * np.sum(
+    np.log(np.diag(np.linalg.cholesky(regularization_matrix)))
+)
+
+"""
+__Regularization Term__
+
+The evidence uses a regularization term, which is the sum of the difference of all reconstructed source pixel fluxes
+multiplied by the regularization coefficient.
+
+An `Inversion` object has a property `regularization_term` to perform this calculation:
+
+https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/inversion/abstract.py
+"""
+regularization_term = np.matmul(
+    reconstruction.T, np.matmul(regularization_matrix, reconstruction)
+)
 
 """
 __Image Reconstruction__
@@ -528,14 +568,33 @@ https://arxiv.org/abs/0804.4002 - equation (5)
 """
 model_image = convolved_image + mapped_reconstructed_image
 
+residual_map = masked_imaging.image - model_image
+normalized_residual_map = residual_map / masked_imaging.noise_map
+chi_squared_map = normalized_residual_map ** 2.0
+
+chi_squared = np.sum(chi_squared_map)
+
+noise_normalization = float(np.sum(np.log(2 * np.pi * masked_imaging.noise_map ** 2.0)))
+
+log_evidence = float(
+    -0.5
+    * (
+        chi_squared
+        + regularization_term
+        + log_curvature_reg_matrix_term
+        - log_regularization_matrix_term
+        + noise_normalization
+    )
+)
+
+print(log_evidence)
+
 """
 __Plots__
 
 We now output images of the fit, so that we can inspect that it fits the data as expected.
 """
-plot_path = os.path.join(
-    "guide", "inversion", "voronoi_magnification"
-)
+plot_path = os.path.join("guide", "inversion", "voronoi_magnification")
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
@@ -552,4 +611,3 @@ mat_plot_2d = aplt.MatPlot2D(
 )
 fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
 fit_imaging_plotter.subplot_of_planes(plane_index=1)
-
