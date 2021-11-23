@@ -489,7 +489,7 @@ In the API, the `pixelization_index` refers to the source pixel index (e.g. sour
 sub_slim index refers to the index of a sub-gridded image pixel (e.g. sub pixel 0, 1, 2 etc.). The docstrings of the
 function below describes this method.
 
-VoronoiMapper.pixelization_index_for_sub_slim_index:
+MapperVoronoi.pixelization_index_for_sub_slim_index:
 
  https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers.py
  
