@@ -8,7 +8,7 @@ import numpy as np
 
 
 def detection_single_plane(
-    settings_autofit: slam_util.SettingsAutoFit,
+    settings_autofit: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     mass_results: af.ResultsCollection,
@@ -72,16 +72,13 @@ def detection_single_plane(
     )
 
     search_no_subhalo = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="subhalo[1]_mass[total_refine]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=100,
     )
 
     result_1 = search_no_subhalo.fit(
-        model=model, analysis=analysis, info=settings_autofit.info
+        model=model, analysis=analysis, **settings_autofit.fit_dict
     )
 
     """
@@ -130,20 +127,14 @@ def detection_single_plane(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="subhalo[2]_mass[total]_source_subhalo[search_lens_plane]",
-        unique_tag=settings_autofit.unique_tag,
-        # number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict_x1_core,
         nlive=50,
         walks=5,
         facc=0.2,
     )
 
-    if settings_autofit.number_of_cores > 1:
-        number_of_cores = 70
-    else:
-        number_of_cores = 1
+    number_of_cores = 2
 
     subhalo_grid_search = af.SearchGridSearch(
         search=search, number_of_steps=number_of_steps, number_of_cores=number_of_cores
@@ -153,8 +144,8 @@ def detection_single_plane(
         model=model,
         analysis=analysis,
         grid_priors=[
-            model.galaxies.subhalo.mass.centre_0,
             model.galaxies.subhalo.mass.centre_1,
+            model.galaxies.subhalo.mass.centre_0,
         ],
         info=settings_autofit.info,
         parent=search_no_subhalo,
@@ -181,8 +172,8 @@ def detection_single_plane(
         al.Galaxy, redshift=result_1.instance.galaxies.lens.redshift, mass=subhalo_mass
     )
 
-    subhalo.mass.mass_at_200 = subhalo_result.model.galaxies.subhalo.mass.mass_at_200
-    subhalo.mass.centre = subhalo_result.model.galaxies.subhalo.mass.centre
+    subhalo.mass.mass_at_200 = af.LogUniformPrior(lower_limit=1.0e6, upper_limit=1.0e11)
+    subhalo.mass.centre = subhalo_result.model_absolute(a=1.0).galaxies.subhalo.mass.centre
 
     subhalo.mass.redshift_object = subhalo_result.instance.galaxies.lens.redshift
     subhalo.mass.redshift_source = subhalo_result.instance.galaxies.source.redshift
@@ -202,21 +193,18 @@ def detection_single_plane(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="subhalo[3]_subhalo[single_plane_refine]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=100,
     )
 
-    #    result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_3 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
-    return af.ResultsCollection([result_1, subhalo_result])
+    return af.ResultsCollection([result_1, subhalo_result, result_3])
 
 
 def detection_multi_plane(
-    settings_autofit: slam_util.SettingsAutoFit,
+    settings_autofit: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     mass_results: af.ResultsCollection,
@@ -280,16 +268,13 @@ def detection_multi_plane(
     )
 
     search_no_subhalo = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="subhalo[1]_mass[total_refine]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=100,
     )
 
     result_1 = search_no_subhalo.fit(
-        model=model, analysis=analysis, info=settings_autofit.info
+        model=model, analysis=analysis, **settings_autofit.fit_dict
     )
 
     """
@@ -340,11 +325,8 @@ def detection_multi_plane(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="subhalo[2]_mass[total]_source_subhalo[multi_plane]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=50,
         walks=5,
         facc=0.2,
@@ -387,8 +369,8 @@ def detection_multi_plane(
         al.Galaxy, redshift=result_1.instance.galaxies.lens.redshift, mass=subhalo_mass
     )
 
-    subhalo.mass.mass_at_200 = subhalo_result.model.galaxies.subhalo.mass.mass_at_200
-    subhalo.mass.centre = subhalo_result.model.galaxies.subhalo.mass.centre
+    subhalo.mass.mass_at_200 = af.LogUniformPrior(lower_limit=1.0e6, upper_limit=1.0e11)
+    subhalo.mass.centre = subhalo_result.model_absolute(a=1.0).galaxies.subhalo.mass.centre
 
     subhalo.mass.redshift_object = subhalo_result.instance.galaxies.lens.redshift
     subhalo.mass.redshift_source = af.UniformPrior(
@@ -410,21 +392,18 @@ def detection_multi_plane(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="subhalo[3]_subhalo[multi_plane_refine]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=100,
     )
 
-    result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_3 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     return af.ResultsCollection([result_1, subhalo_result, result_3])
 
 
 def sensitivity_mapping_imaging(
-    settings_autofit: slam_util.SettingsAutoFit,
+    settings_autofit: af.SettingsSearch,
     mask: al.Mask2D,
     psf: al.Kernel2D,
     mass_results: af.ResultsCollection,
@@ -582,7 +561,6 @@ def sensitivity_mapping_imaging(
     We next specify the search used to perform each model fit by the sensitivity mapper.
     """
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="subhalo__sensitivity",
         unique_tag=settings_autofit.unique_tag,
         session=settings_autofit.session,
@@ -632,7 +610,7 @@ def sensitivity_mapping_imaging(
 
 
 def sensitivity_mapping_interferometer(
-    settings_autofit: slam_util.SettingsAutoFit,
+    settings_autofit: af.SettingsSearch,
     uv_wavelengths: np.ndarray,
     real_space_mask: al.Mask2D,
     mass_results: af.ResultsCollection,
@@ -799,7 +777,6 @@ def sensitivity_mapping_interferometer(
     We next specify the search used to perform each model fit by the sensitivity mapper.
     """
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="subhalo__sensitivity",
         unique_tag=settings_autofit.unique_tag,
         session=settings_autofit.session,

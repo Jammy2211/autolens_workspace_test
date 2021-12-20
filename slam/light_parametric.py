@@ -7,7 +7,7 @@ from typing import Union, Optional
 
 
 def with_lens_light(
-    settings_autofit: slam_util.SettingsAutoFit,
+    settings_autofit: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     source_results: af.ResultsCollection,
@@ -94,15 +94,12 @@ def with_lens_light(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="light[1]_light[parametric]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=150,
     )
 
-    result_1 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_1 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     """
     __Hyper Extension__

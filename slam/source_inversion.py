@@ -7,7 +7,7 @@ from typing import Union
 
 
 def no_lens_light(
-    settings_autofit: slam_util.SettingsAutoFit,
+    settings_autofit: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     source_parametric_results: af.ResultsCollection,
@@ -71,15 +71,12 @@ def no_lens_light(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="source_inversion[1]_mass[fixed]_source[inversion_magnification_initialization]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=30,
     )
 
-    result_1 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_1 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     """
     __Model + Search + Analysis + Model-Fit (Search 2)__
@@ -114,15 +111,12 @@ def no_lens_light(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="source_inversion[2]_mass[total]_source[fixed]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=50,
     )
 
-    result_2 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_2 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     """
     __Model + Search + Analysis + Model-Fit (Search 3)__
@@ -156,11 +150,8 @@ def no_lens_light(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="source_inversion[3]_mass[fixed]_source[inversion_initialization]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=30,
         dlogz=10.0,
         sample="rstagger",
@@ -168,7 +159,7 @@ def no_lens_light(
 
     analysis.set_hyper_dataset(result=result_2)
 
-    result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_3 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     """
     __Model + Search + Analysis + Model-Fit (Search 4)__
@@ -209,15 +200,12 @@ def no_lens_light(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="source_inversion[4]_mass[total]_source[fixed]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=50,
     )
 
-    result_4 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_4 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     """
     __Hyper Extension__
@@ -240,7 +228,7 @@ def no_lens_light(
 
 
 def with_lens_light(
-    settings_autofit: slam_util.SettingsAutoFit,
+    settings_autofit: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     source_parametric_results: af.ResultsCollection,
@@ -312,15 +300,12 @@ def with_lens_light(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="source_inversion[1]_light[fixed]_mass[fixed]_source[inversion_magnification_initialization]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=30,
     )
 
-    result_1 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_1 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     """
     __Model + Search + Analysis + Model-Fit (Search 2)__
@@ -361,15 +346,12 @@ def with_lens_light(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="source_inversion[2]_light[fixed]_mass[total]_source[inversion_magnification]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=50,
     )
 
-    result_2 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_2 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     """
     __Model + Search + Analysis + Model-Fit (Search 3)__
@@ -409,11 +391,8 @@ def with_lens_light(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="source_inversion[3]_light[fixed]_mass[fixed]_source[inversion_initialization]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=30,
         dlogz=10.0,
         sample="rstagger",
@@ -421,7 +400,7 @@ def with_lens_light(
 
     analysis.set_hyper_dataset(result=result_2)
 
-    result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_3 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     """
     __Model + Search + Analysis + Model-Fit (Search 4)__
@@ -468,15 +447,12 @@ def with_lens_light(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="source_inversion[4]_light[fixed]_mass[total]_source[inversion]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=50,
     )
 
-    result_4 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_4 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     """
     __Hyper Extension__

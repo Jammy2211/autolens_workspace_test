@@ -4,7 +4,7 @@ __PROFILING: DEFLECTIONS GAUSSIAN DECOMP__
 This profiling script times how long deflection angles take to compute for the gaussian decomposition method
 in **PyAutoLens**.
 
-It extracts the functionality in the `mass_profiles` module into a standalone script that makes it straight forward
+It extracts the functionality in the `mass_profile_list` module into a standalone script that makes it straight forward
 to profile and edit for optimization.
 """
 import os
@@ -48,7 +48,7 @@ repeats = 1
 
 """
 The gaussian decomposition method is used on multiple mass profiles, in this example we use it for the `EllSersic`
-mass model. We do not use the class found in the `mass_profiles` module and write the individual parameters below.
+mass model. We do not use the class found in the `mass_profile_list` module and write the individual parameters below.
 """
 centre = (0.0, 0.0)
 elliptical_comps = (0.0, 0.0)
@@ -124,7 +124,7 @@ for i in range(repeats):
         mass_to_light_ratio=mass_to_light_ratio,
     )
 
-    deflections_sersic = sersic.deflections_2d_from(grid=grid)
+    deflections_sersic = sersic.deflections_yx_2d_from(grid=grid)
 
 time_source = (time.time() - start) / repeats
 print(f"Time for source code function = {time_source}")

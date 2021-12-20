@@ -16,7 +16,7 @@ class SphIsothermal(al.mp.SphIsothermal):
     @aa.grid_dec.grid_2d_to_structure
     @aa.grid_dec.transform
     @aa.grid_dec.relocate_to_radial_minimum
-    def deflections_2d_from(self, grid):
+    def deflections_yx_2d_from(self, grid):
         grid_radii = self.grid_to_grid_radii(grid=grid)
 
         return ((3 - self.slope) / 2.0) * (grid_radii / self.einstein_radius) ** (
@@ -26,7 +26,7 @@ class SphIsothermal(al.mp.SphIsothermal):
     @aa.grid_dec.grid_2d_to_structure
     @aa.grid_dec.transform
     @aa.grid_dec.relocate_to_radial_minimum
-    def deflections_2d_from(self, grid):
+    def deflections_yx_2d_from(self, grid):
         grid_radii = self.grid_to_grid_radii(grid=grid)
 
         return self.grid_to_grid_cartesian(
@@ -110,7 +110,7 @@ print(
 # print(shear_y_via_hessian[0:5])
 # print(shear_x_via_hessian[0:5])
 #
-# shear_y_via_jacobian, shear_x_via_jacobian = point.shear_yx_via_jacobian_from(grid=grid)
+# shear_y_via_jacobian, shear_x_via_jacobian = point.shear_yx_2d_via_jacobian_from(grid=grid)
 # print(shear_y_via_jacobian[0:5])
 # print(shear_x_via_jacobian[0:5])
 
@@ -118,8 +118,8 @@ stop2
 
 sis = al.mp.SphIsothermal(centre=(0.0, 0.0), einstein_radius=1.0)
 
-shear_y_via_hessian, shear_x_via_hessian = sis.shear_yx_via_hessian_from(grid=grid)
-shear_y_via_jacobian, shear_x_via_jacobian = sis.shear_yx_via_jacobian_from(grid=grid)
+shear_y_via_hessian, shear_x_via_hessian = sis.shear_yx_2d_via_hessian_from(grid=grid)
+shear_y_via_jacobian, shear_x_via_jacobian = sis.shear_yx_2d_via_jacobian_from(grid=grid)
 
 shear_via_hessian = sis.shear_via_hessian_from(grid=grid)
 shear_via_jacobian = sis.shear_via_jacobian_from(grid=grid)

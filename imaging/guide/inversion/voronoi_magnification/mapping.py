@@ -136,7 +136,7 @@ The calculation below uses a `Grid2D` object with a fixed sub-size of 1.
 
 To see examples of `LightProfile` image calculations checkout the `image_2d_from` methods at the following link:
 
-https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/light_profiles/light_profiles.py
+https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/light_profile_list/light_profile_list.py
 """
 image = lens_galaxy.image_2d_from(grid=masked_imaging.grid)
 
@@ -200,9 +200,9 @@ __Ray Tracing (SIE)__
 
 Compute the deflection angles and ray-trace the image-pixels to the source plane, using the `EllIsothermal` profile.
 
-To see examples of deflection angle calculations checkout the `deflections_2d_from` methods at the following link:
+To see examples of deflection angle calculations checkout the `deflections_yx_2d_from` methods at the following link:
 
-https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/mass_profiles/total_mass_profiles.py
+https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/mass_profile_list/total_mass_profiles.py
 
 Ray tracing is handled in the following module:
 
@@ -211,8 +211,8 @@ https://github.com/Jammy2211/PyAutoLens/blob/master/autolens/lens/ray_tracing.py
 The image-plane pixelization computed below must be ray-traced just like the image-grid and is therefore included in
 the profiling time below.
 """
-deflections_2d = tracer.deflections_2d_from(grid=masked_imaging.grid)
-traced_grid = tracer.traced_grids_of_planes_from(grid=masked_imaging.grid)[-1]
+deflections_2d = tracer.deflections_yx_2d_from(grid=masked_imaging.grid)
+traced_grid = tracer.traced_grid_list_from(grid=masked_imaging.grid)[-1]
 
 """
 __Ray Tracing Inversion (SIE)__
@@ -222,10 +222,10 @@ The grid used to perform an inversion can have a different `sub_size` than the g
 
 Thus, ray-tracing is performed for a unique grid called `grid_inversion` when performing an `Inversion`.
 """
-deflections_2d_inversion = tracer.deflections_2d_from(
+deflections_2d_inversion = tracer.deflections_yx_2d_from(
     grid=masked_imaging.grid_inversion
 )
-traced_grid_inversion = tracer.traced_grids_of_planes_from(
+traced_grid_inversion = tracer.traced_grid_list_from(
     grid=masked_imaging.grid_inversion
 )[-1]
 
@@ -253,13 +253,13 @@ __Ray Tracing Sparse Grid (SIE)__
 This image-plane pixelization grid is also ray-traced to the source-plane, where its coordinates act as the centres
 of the Voronoi cells of the `VoronoiMagnification` pixelization.
 
-The method `traced_sparse_grids_list_of_planes_from()` returns traced grids of the input sparse grid for every plane.
+The method `traced_sparse_grids_list_from()` returns traced grids of the input sparse grid for every plane.
 It returns this as a list of lists of numpy arrays... which is very weird. This needs to be improved, but the reason is
 to enable the use of multiple mappers that analysis double source plane lens systems.
 
 For now... this can be ignored.
 """
-traced_sparse_grid = tracer.traced_sparse_grids_list_of_planes_from(
+traced_sparse_grid = tracer.traced_sparse_grid_pg_list_from(
     grid=masked_imaging.grid_inversion
 )[0][-1][0]
 
@@ -349,13 +349,13 @@ In the API, the `pixelization_index` refers to the source pixel index (e.g. sour
 sub_slim index refers to the index of a sub-gridded image pixel (e.g. sub pixel 0, 1, 2 etc.). The docstrings of the
 function below describes this method.
 
-`MapperVoronoi.pixelization_index_for_sub_slim_index`: 
+`MapperVoronoi.pix_index_for_sub_slim_index`: 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers/voronoi.py
  
 `pixelization_index_for_voronoi_sub_slim_index_from`: 
  https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/util/mapper_util.py 
 """
-pixelization_index_for_sub_slim_index = mapper.pixelization_index_for_sub_slim_index
+pix_index_for_sub_slim_index = mapper.pix_index_for_sub_slim_index
 
 
 """
@@ -371,9 +371,9 @@ It is described at the GitHub link below and in the following paper as matrix `f
 `mapping_matrix_from`: https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers/mapper_util.py
 """
 mapping_matrix = al.util.mapper.mapping_matrix_from(
-    pixelization_index_for_sub_slim_index=pixelization_index_for_sub_slim_index,
+    pix_index_for_sub_slim_index=pix_index_for_sub_slim_index,
     pixels=mapper.pixels,
-    total_mask_pixels=mapper.source_grid_slim.mask.pixels_in_mask,
+    total_mask_sub_pixels=mapper.source_grid_slim.mask.pixels_in_mask,
     slim_index_for_sub_slim_index=mapper.slim_index_for_sub_slim_index,
     sub_fraction=mapper.source_grid_slim.mask.sub_fraction,
 )
@@ -415,14 +415,14 @@ The `data_vector` has dimensions (total_source_pixels,).
 
 The calculation is performed by the method `data_vector_via_blurred_mapping_matrix_from` at:
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/linear_eqn/linear_eqn_util.py
+https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/leq/leq_util.py
 
-This function is called by `LinearEqnMapping.data_vector_from()` to make the `data_vector`:
+This function is called by `LEqMapping.data_vector_from()` to make the `data_vector`:
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/linear_eqn/imaging.py
+https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/leq/imaging.py
 """
 subtracted_image = masked_imaging.image - convolved_image
-data_vector = al.util.linear_eqn.data_vector_via_blurred_mapping_matrix_from(
+data_vector = al.util.leq.data_vector_via_blurred_mapping_matrix_from(
     blurred_mapping_matrix=blurred_mapping_matrix,
     image=subtracted_image,
     noise_map=masked_imaging.noise_map,
@@ -437,13 +437,13 @@ The `curvature_matrix` has dimensions (total_source_pixels, total_source_pixels)
 
 The calculation is performed by the method `curvature_matrix_via_mapping_matrix_from` at:
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/linear_eqn/linear_eqn_util.py
+https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/leq/leq_util.py
 
-This function is called by `LinearEqnMapping.curvature_matrix` to make the `curvature_matrix`:
+This function is called by `LEqMapping.curvature_matrix` to make the `curvature_matrix`:
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/linear_eqn/imaging.py
+https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/leq/imaging.py
 """
-curvature_matrix = al.util.linear_eqn.curvature_matrix_via_mapping_matrix_from(
+curvature_matrix = al.util.leq.curvature_matrix_via_mapping_matrix_from(
     mapping_matrix=blurred_mapping_matrix, noise_map=masked_imaging.noise_map
 )
 
@@ -545,13 +545,13 @@ the blurred mapping_matrix) and reconstruct the image data.
 
 The calculation is performed by the method `mapped_reconstructed_data_via_mapping_matrix_from` at:
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/linear_eqn/linear_eqn_util.py
+https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/leq/leq_util.py
 
 This function is called by `AbstractInversion.mapped_reconstructed_data`:
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/inversion/abstract.py
 """
-mapped_reconstructed_image = al.util.linear_eqn.mapped_reconstructed_data_via_mapping_matrix_from(
+mapped_reconstructed_image = al.util.leq.mapped_reconstructed_data_via_mapping_matrix_from(
     mapping_matrix=blurred_mapping_matrix, reconstruction=reconstruction
 )
 

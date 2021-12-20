@@ -1,4 +1,3 @@
-from .slam_util import SettingsAutoFit
 from . import source_parametric
 from . import source_inversion
 from . import light_parametric

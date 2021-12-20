@@ -26,7 +26,7 @@ import autolens.plot as aplt
 The path all profiling results are output.
 """
 file_path = os.path.join(
-    "imaging", "profiling", "times", al.__version__, "inversion_voronoi_magnification"
+    "imaging", "profiling", "times", al.__version__, "inversion", "voronoi", "magnification"
 )
 
 """

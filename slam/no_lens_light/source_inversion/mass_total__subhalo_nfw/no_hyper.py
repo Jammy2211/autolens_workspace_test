@@ -77,7 +77,7 @@ __Settings AutoFit__
 
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
-settings_autofit = slam.SettingsAutoFit(
+settings_autofit = af.SettingsSearch(
     path_prefix=path.join(
         "slam", "mass_total__subhalo_nfw__source_inversion", "no_hyper"
     ),
@@ -211,6 +211,8 @@ subhalo_results = slam.subhalo.detection_single_plane(
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
 )
+
+slam.extensions.stochastic_fit(result=subhalo_results.last, analysis=analysis, **settings_autofit.fit_dict)
 
 """
 Finish.

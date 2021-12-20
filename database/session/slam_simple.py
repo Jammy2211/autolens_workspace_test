@@ -90,7 +90,7 @@ __Settings AutoFit__
 
 The settings of autofit, which controls the output paths, parallelization, databse use, etc.
 """
-settings_autofit = slam.SettingsAutoFit(
+settings_autofit = af.SettingsSearch(
     path_prefix=path.join("database", "session", "slam_simple"),
     unique_tag=dataset_name,
     number_of_cores=1,

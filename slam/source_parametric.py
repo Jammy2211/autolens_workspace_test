@@ -1,13 +1,12 @@
 import autofit as af
 import autolens as al
 from . import extensions
-from . import slam_util
 
 from typing import Union, Optional, Tuple
 
 
 def no_lens_light(
-    settings_autofit: slam_util.SettingsAutoFit,
+    settings_autofit: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     mass: af.Model = af.Model(al.mp.EllIsothermal),
@@ -79,16 +78,13 @@ def no_lens_light(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="source_parametric[1]_mass[total]_source[parametric]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=200,
         walks=10,
     )
 
-    result_1 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_1 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     """
     __Hyper Extension__
@@ -110,7 +106,7 @@ def no_lens_light(
 
 
 def with_lens_light(
-    settings_autofit: slam_util.SettingsAutoFit,
+    settings_autofit: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     lens_bulge: Optional[af.Model] = af.Model(al.lp.EllSersic),
@@ -190,15 +186,12 @@ def with_lens_light(
     model = af.Collection(galaxies=af.Collection(lens=lens))
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="source_parametric[1]_light[parametric]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=75,
     )
 
-    result_1 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_1 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     """
     __Model + Search + Analysis + Model-Fit (Search 2)__
@@ -237,16 +230,13 @@ def with_lens_light(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="source_parametric[2]_light[fixed]_mass[total]_source[parametric]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=200,
         walks=10,
     )
 
-    result_2 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_2 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     """
     __Model + Search + Analysis + Model-Fit (Search 3)__
@@ -283,16 +273,13 @@ def with_lens_light(
     )
 
     search = af.DynestyStatic(
-        path_prefix=settings_autofit.path_prefix,
         name="source_parametric[3]_light[parametric]_mass[total]_source[parametric]",
-        unique_tag=settings_autofit.unique_tag,
-        number_of_cores=settings_autofit.number_of_cores,
-        session=settings_autofit.session,
+        **settings_autofit.search_dict,
         nlive=250,
         walks=10,
     )
 
-    result_3 = search.fit(model=model, analysis=analysis, info=settings_autofit.info)
+    result_3 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     """
     __Hyper Extension__

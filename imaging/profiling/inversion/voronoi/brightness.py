@@ -248,7 +248,7 @@ The calculation below uses a `Grid2D` object with a fixed sub-size of 2.
 
 To see examples of `LightProfile` image calculations checkout the `image_2d_from` methods at the following link:
 
-https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/light_profiles.py
+https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/light_profile_list.py
 """
 start = time.time()
 for i in range(repeats):
@@ -305,9 +305,9 @@ This uses the fast `EllIsothermal` profile.
 
 Deflection angle calculations are profiled fully in the package`profiling/deflections`.
 
-To see examples of deflection angle calculations checkout the `deflections_2d_from` methods at the following link:
+To see examples of deflection angle calculations checkout the `deflections_yx_2d_from` methods at the following link:
 
-https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/mass_profiles/total_mass_profiles.py
+https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/mass_profile_list/total_mass_profiles.py
 
 Ray tracing is handled in the following module:
 
@@ -325,8 +325,8 @@ sparse_image_plane_grid = al.Grid2DSparse.from_total_pixels_grid_and_weight_map(
 
 start = time.time()
 for i in range(repeats):
-    tracer.deflections_2d_from(grid=sparse_image_plane_grid)
-    traced_grid = tracer.traced_grids_of_planes_from(grid=masked_imaging.grid)[-1]
+    tracer.deflections_yx_2d_from(grid=sparse_image_plane_grid)
+    traced_grid = tracer.traced_grid_list_from(grid=masked_imaging.grid)[-1]
 
 profiling_dict["Ray Tracing (SIE)"] = (time.time() - start) / repeats
 
@@ -337,8 +337,8 @@ Compute the deflection angles again, but now using the more expensive `EllPowerL
 """
 start = time.time()
 for i in range(repeats):
-    tracer.deflections_2d_from(grid=sparse_image_plane_grid)
-    traced_grid_power_law = tracer_power_law.traced_grids_of_planes_from(
+    tracer.deflections_yx_2d_from(grid=sparse_image_plane_grid)
+    traced_grid_power_law = tracer_power_law.traced_grid_list_from(
         grid=masked_imaging.grid
     )[-1]
 
@@ -352,8 +352,8 @@ two `EllSersic`'s and an `EllNFW`.
 """
 start = time.time()
 for i in range(repeats):
-    tracer.deflections_2d_from(grid=sparse_image_plane_grid)
-    traced_grid_decomposed = tracer_decomposed.traced_grids_of_planes_from(
+    tracer.deflections_yx_2d_from(grid=sparse_image_plane_grid)
+    traced_grid_decomposed = tracer_decomposed.traced_grid_list_from(
         grid=masked_imaging.grid
     )[-1]
 
@@ -399,7 +399,7 @@ for i in range(repeats):
 
 profiling_dict["Image-plane Pixelization (KMeans)"] = (time.time() - start) / repeats
 
-traced_sparse_grid = tracer.traced_sparse_grids_list_of_planes_from(
+traced_sparse_grid = tracer.traced_sparse_grid_pg_list_from(
     grid=masked_imaging.grid
 )[-1]
 
@@ -489,7 +489,7 @@ In the API, the `pixelization_index` refers to the source pixel index (e.g. sour
 sub_slim index refers to the index of a sub-gridded image pixel (e.g. sub pixel 0, 1, 2 etc.). The docstrings of the
 function below describes this method.
 
-MapperVoronoi.pixelization_index_for_sub_slim_index:
+MapperVoronoi.pix_index_for_sub_slim_index:
 
  https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers.py
  
@@ -499,7 +499,7 @@ pixelization_index_for_voronoi_sub_slim_index_from:
 """
 start = time.time()
 for i in range(repeats):
-    pixelization_index_for_sub_slim_index = mapper.pixelization_index_for_sub_slim_index
+    pix_index_for_sub_slim_index = mapper.pix_index_for_sub_slim_index
 diff = (time.time() - start) / repeats
 profiling_dict["Image-Source Pairing"] = (time.time() - start) / repeats
 
@@ -518,9 +518,9 @@ start = time.time()
 for i in range(repeats):
 
     mapping_matrix = al.util.mapper.mapping_matrix_from(
-        pixelization_index_for_sub_slim_index=pixelization_index_for_sub_slim_index,
+        pix_index_for_sub_slim_index=pix_index_for_sub_slim_index,
         pixels=mapper.pixels,
-        total_mask_pixels=mapper.source_grid_slim.mask.pixels_in_mask,
+        total_mask_sub_pixels=mapper.source_grid_slim.mask.pixels_in_mask,
         slim_index_for_sub_slim_index=mapper._slim_index_for_sub_slim_index,
         sub_fraction=mapper.source_grid_slim.mask.sub_fraction,
     )

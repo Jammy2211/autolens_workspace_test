@@ -75,7 +75,7 @@ __Settings AutoFit__
 
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
-settings_autofit = slam.SettingsAutoFit(
+settings_autofit = af.SettingsSearch(
     path_prefix=path.join("slam", "mass_total__source_inversion", "hyper_all_3"),
     number_of_cores=1,
     session=None,
