@@ -1,0 +1,12 @@
+{
+    "image_pixels": 180864,
+    "stochastic_seed": 1,
+    "sub_size": 4,
+    "mask_radius": 3.0,
+    "pixelization_shape_2d": [
+        60,
+        60
+    ],
+    "source_pixels": 2764,
+    "coefficient": 1.4513812426254484
+}
