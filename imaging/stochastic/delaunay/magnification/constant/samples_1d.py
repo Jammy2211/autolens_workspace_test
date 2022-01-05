@@ -58,9 +58,9 @@ slope_lower = 1.991282
 slope_upper = 1.99129
 slope_interval = 0.0000001
 
-#slope_lower = 1.99
-#slope_upper = 2.01
-#slope_interval = 0.0001
+# slope_lower = 1.99
+# slope_upper = 2.01
+# slope_interval = 0.0001
 
 """
 These settings control various aspects of how the fit is performed and therefore how stochasticity manifests.
@@ -200,8 +200,7 @@ def func(coefficient):
 print("\nSetting Regularization Coefficient\n")
 
 # coefficient = minimize_scalar(func, method="bounded", bounds=[1e-3, 1e3]).x
-# coefficient = 1.3191267732710674
-coefficient = 10.0
+coefficient = 1.3191267732710674
 print(f"coefficient = {coefficient}")
 
 source_galaxy.regularization.coefficient = coefficient
@@ -344,8 +343,10 @@ for i, slope in enumerate(slope_list):
         mat_plot_2d = aplt.MatPlot2D(
             cmap=aplt.Cmap(vmin=-1.0, vmax=1.0),
             output=aplt.Output(
-                path=path.join(file_path, "otf_output"), filename=f"normalized_residuals_{slope}_{fit.figure_of_merit}", format="png"
-            )
+                path=path.join(file_path, "otf_output"),
+                filename=f"normalized_residuals_{slope}_{fit.figure_of_merit}",
+                format="png",
+            ),
         )
         fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
         fit_imaging_plotter.figures_2d(normalized_residual_map=True)
@@ -353,8 +354,10 @@ for i, slope in enumerate(slope_list):
         mat_plot_2d = aplt.MatPlot2D(
             cmap=aplt.Cmap(vmin=0.0, vmax=2.0),
             output=aplt.Output(
-                path=path.join(file_path, "otf_output"), filename=f"reconstruction_{slope}_{fit.figure_of_merit}", format="png"
-            )
+                path=path.join(file_path, "otf_output"),
+                filename=f"reconstruction_{slope}_{fit.figure_of_merit}",
+                format="png",
+            ),
         )
         fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
         fit_imaging_plotter.figures_2d_of_planes(plane_index=1, plane_image=True)

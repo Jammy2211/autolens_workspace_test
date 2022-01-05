@@ -243,7 +243,8 @@ traced_grids_of_planes_for_inversion = tracer.traced_grid_list_of_inversion_from
 )
 
 traced_sparse_grids_list_of_planes, sparse_image_plane_grid_list = tracer.traced_sparse_grid_pg_list_from(
-    grid=masked_imaging.grid_inversion, settings_pixelization=al.SettingsPixelization(use_border=False),
+    grid=masked_imaging.grid_inversion,
+    settings_pixelization=al.SettingsPixelization(use_border=False),
 )
 
 preloads = al.Preloads(
@@ -362,8 +363,10 @@ for i, slope in enumerate(slope_list):
         mat_plot_2d = aplt.MatPlot2D(
             cmap=aplt.Cmap(vmin=-1.0, vmax=1.0),
             output=aplt.Output(
-                path=path.join(file_path, "otf_output"), filename=f"normalized_residuals_{slope}_{fit.figure_of_merit}", format="png"
-            )
+                path=path.join(file_path, "otf_output"),
+                filename=f"normalized_residuals_{slope}_{fit.figure_of_merit}",
+                format="png",
+            ),
         )
         fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
         fit_imaging_plotter.figures_2d(normalized_residual_map=True)
@@ -371,8 +374,10 @@ for i, slope in enumerate(slope_list):
         mat_plot_2d = aplt.MatPlot2D(
             cmap=aplt.Cmap(vmin=0.0, vmax=2.0),
             output=aplt.Output(
-                path=path.join(file_path, "otf_output"), filename=f"reconstruction_{slope}_{fit.figure_of_merit}", format="png"
-            )
+                path=path.join(file_path, "otf_output"),
+                filename=f"reconstruction_{slope}_{fit.figure_of_merit}",
+                format="png",
+            ),
         )
         fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
         fit_imaging_plotter.figures_2d_of_planes(plane_index=1, plane_image=True)

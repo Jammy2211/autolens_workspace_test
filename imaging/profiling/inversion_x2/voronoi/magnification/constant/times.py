@@ -296,7 +296,7 @@ info_dict["mask_radius"] = mask_radius
 info_dict["psf_shape_2d"] = psf_shape_2d
 info_dict[
     "w_tilde_curvature_preload_size"
-] = fit.inversion.linear_eqn.w_tilde.curvature_preload.shape[0]
+] = fit.inversion.leq.w_tilde.curvature_preload.shape[0]
 info_dict["source_pixels"] = len(fit.inversion.reconstruction)
 info_dict["excess_time"] = excess_time
 

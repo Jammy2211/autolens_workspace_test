@@ -44,7 +44,7 @@ search = af.DynestyStatic(
     unique_tag=dataset_name,
     nlive=50,
     walks=10,
-    iterations_per_update=100,
+    iterations_per_update=5000,
 )
 
 """

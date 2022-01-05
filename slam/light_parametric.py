@@ -94,9 +94,7 @@ def with_lens_light(
     )
 
     search = af.DynestyStatic(
-        name="light[1]_light[parametric]",
-        **settings_autofit.search_dict,
-        nlive=150,
+        name="light[1]_light[parametric]", **settings_autofit.search_dict, nlive=150
     )
 
     result_1 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)

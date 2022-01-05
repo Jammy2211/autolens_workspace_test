@@ -78,11 +78,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_autofit = af.SettingsSearch(
-    path_prefix=path.join(
-        "slam", "rjlens",
-    ),
-    number_of_cores=1,
-    session=None,
+    path_prefix=path.join("slam", "rjlens"), number_of_cores=1, session=None
 )
 
 """
@@ -108,9 +104,7 @@ source galaxy's light, which in this example:
 
  - Uses an `EllIsothermal` model for the lens's total mass distribution with an `ExternalShear`.
 """
-analysis = al.AnalysisImaging(
-    dataset=imaging,
-)
+analysis = al.AnalysisImaging(dataset=imaging)
 
 source_parametric_results = slam.source_parametric.no_lens_light(
     settings_autofit=settings_autofit,
@@ -137,9 +131,7 @@ regularization, to set up the model and hyper images, and then:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the
  SOURCE INVERSION PIPELINE.
 """
-analysis = al.AnalysisImaging(
-    dataset=imaging,
-)
+analysis = al.AnalysisImaging(dataset=imaging)
 
 source_inversion_results = slam.source_inversion.no_lens_light(
     settings_autofit=settings_autofit,
@@ -178,8 +170,7 @@ __Settings__:
 
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging,
-    hyper_dataset_result=source_inversion_results.last,
+    dataset=imaging, hyper_dataset_result=source_inversion_results.last
 )
 
 lens_bulge = af.Model(al.mp.EllSersic)

@@ -296,11 +296,7 @@ def no_lens_light(
     if suffix is not None:
         name = f"{name}_{suffix}"
 
-    search = af.DynestyStatic(
-        name=name,
-        **settings_autofit.search_dict,
-        nlive=300,
-    )
+    search = af.DynestyStatic(name=name, **settings_autofit.search_dict, nlive=300)
 
     result_1 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 

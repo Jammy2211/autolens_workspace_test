@@ -72,9 +72,7 @@ def detection_single_plane(
     )
 
     search_no_subhalo = af.DynestyStatic(
-        name="subhalo[1]_mass[total_refine]",
-        **settings_autofit.search_dict,
-        nlive=100,
+        name="subhalo[1]_mass[total_refine]", **settings_autofit.search_dict, nlive=100
     )
 
     result_1 = search_no_subhalo.fit(
@@ -173,7 +171,9 @@ def detection_single_plane(
     )
 
     subhalo.mass.mass_at_200 = af.LogUniformPrior(lower_limit=1.0e6, upper_limit=1.0e11)
-    subhalo.mass.centre = subhalo_result.model_absolute(a=1.0).galaxies.subhalo.mass.centre
+    subhalo.mass.centre = subhalo_result.model_absolute(
+        a=1.0
+    ).galaxies.subhalo.mass.centre
 
     subhalo.mass.redshift_object = subhalo_result.instance.galaxies.lens.redshift
     subhalo.mass.redshift_source = subhalo_result.instance.galaxies.source.redshift
@@ -268,9 +268,7 @@ def detection_multi_plane(
     )
 
     search_no_subhalo = af.DynestyStatic(
-        name="subhalo[1]_mass[total_refine]",
-        **settings_autofit.search_dict,
-        nlive=100,
+        name="subhalo[1]_mass[total_refine]", **settings_autofit.search_dict, nlive=100
     )
 
     result_1 = search_no_subhalo.fit(
@@ -370,7 +368,9 @@ def detection_multi_plane(
     )
 
     subhalo.mass.mass_at_200 = af.LogUniformPrior(lower_limit=1.0e6, upper_limit=1.0e11)
-    subhalo.mass.centre = subhalo_result.model_absolute(a=1.0).galaxies.subhalo.mass.centre
+    subhalo.mass.centre = subhalo_result.model_absolute(
+        a=1.0
+    ).galaxies.subhalo.mass.centre
 
     subhalo.mass.redshift_object = subhalo_result.instance.galaxies.lens.redshift
     subhalo.mass.redshift_source = af.UniformPrior(

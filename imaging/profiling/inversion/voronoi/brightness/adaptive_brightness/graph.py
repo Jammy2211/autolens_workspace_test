@@ -19,19 +19,23 @@ from os import path
 import matplotlib.pyplot as plt
 
 """
-The path containing all profiling results to be plotted is in a folder with the PyAutoLens version number.
+The path containing all profiling results and graphs for this setup.
 """
 profiling_path = os.path.join(
-    "profiling", "times", al.__version__, "inversion_voronoi_brightness"
+    "imaging", "profiling", "inversion", "voronoi", "brightness", "adaptive_brightness"
 )
+
+"""
+The path containing all profiling results to be plotted is in a folder with the PyAutoLens version number.
+"""
+times_path = os.path.join(profiling_path, "times", al.__version__)
 
 """
 The path where the profiling graphs created by this script are output, which is again a folder with the PyAutoLens 
 version number.
 """
-graph_path = os.path.join(
-    "profiling", "graphs", al.__version__, "inversion_voronoi_brightness"
-)
+graph_path = os.path.join(profiling_path, "graphs", al.__version__)
+
 
 if not os.path.exists(graph_path):
     os.makedirs(graph_path)
@@ -89,14 +93,14 @@ def bar_deflection_profiles(
 """
 Load the `Inversion` profiling run times of the `VoronoiBrightnessImage` pixelization.
 """
-file_path = path.join(profiling_path, "hst_profiling_dict.json")
+file_path = path.join(times_path, "hst_profiling_dict.json")
 with open(file_path, "r") as f:
     profiles_dict = json.load(f)
 
 """
 Load the total run time of the `VoronoiBrightnessImage` pixelization.
 """
-file_path = path.join(profiling_path, "hst_fit_time.json")
+file_path = path.join(times_path, "hst_fit_time.json")
 with open(file_path, "r") as f:
     fit_time = json.load(f)
 
@@ -104,7 +108,7 @@ with open(file_path, "r") as f:
 """
 Load the `info_dict` of the `VoronoiBrightnessImage` pixelization run.
 """
-file_path = path.join(profiling_path, "hst_info.json")
+file_path = path.join(times_path, "hst_info.json")
 with open(file_path, "r") as f:
     info_dict = json.load(f)
 

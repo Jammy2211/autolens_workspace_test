@@ -31,15 +31,23 @@ file_path = os.path.join(
     "inversion",
     "voronoi",
     "brightness",
-    "adaptive_brightness"
-    "times",
+    "adaptive_brightness" "times",
     al.__version__,
 )
 
 """
+Whether w_tilde is used dictates the output folder.
+"""
+use_w_tilde = False
+if use_w_tilde:
+    file_path = os.path.join(file_path, "w_tilde")
+else:
+    file_path = os.path.join(file_path, "mapping")
+
+"""
 The number of repeats used to estimate the run time.
 """
-repeats = 10
+repeats = conf.instance["general"]["profiling"]["repeats"]
 print("Number of repeats = " + str(repeats))
 print()
 
@@ -104,7 +112,7 @@ pixel_scale = pixel_scales_dict[instrument]
 """
 Load the dataset for this instrument / resolution.
 """
-dataset_path = path.join("dataset", "imaging", instrument)
+dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
 imaging = al.Imaging.from_fits(
     image_path=path.join(dataset_path, "image.fits"),

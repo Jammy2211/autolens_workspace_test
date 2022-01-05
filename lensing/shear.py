@@ -119,7 +119,9 @@ stop2
 sis = al.mp.SphIsothermal(centre=(0.0, 0.0), einstein_radius=1.0)
 
 shear_y_via_hessian, shear_x_via_hessian = sis.shear_yx_2d_via_hessian_from(grid=grid)
-shear_y_via_jacobian, shear_x_via_jacobian = sis.shear_yx_2d_via_jacobian_from(grid=grid)
+shear_y_via_jacobian, shear_x_via_jacobian = sis.shear_yx_2d_via_jacobian_from(
+    grid=grid
+)
 
 shear_via_hessian = sis.shear_via_hessian_from(grid=grid)
 shear_via_jacobian = sis.shear_via_jacobian_from(grid=grid)

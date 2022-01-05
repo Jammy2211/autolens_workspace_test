@@ -235,7 +235,8 @@ traced_grids_of_planes_for_inversion = tracer.traced_grid_list_of_inversion_from
 )
 
 traced_sparse_grids_list_of_planes, sparse_image_plane_grid_list = tracer.traced_sparse_grid_pg_list_from(
-    grid=masked_imaging.grid_inversion, settings_pixelization=al.SettingsPixelization(use_border=False),
+    grid=masked_imaging.grid_inversion,
+    settings_pixelization=al.SettingsPixelization(use_border=False),
 )
 
 preloads = al.Preloads(

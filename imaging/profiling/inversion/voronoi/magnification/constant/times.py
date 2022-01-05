@@ -31,7 +31,7 @@ file_path = os.path.join(
     "inversion",
     "voronoi",
     "magnification",
-    "constant"
+    "constant",
     "times",
     al.__version__,
 )
@@ -39,7 +39,7 @@ file_path = os.path.join(
 """
 Whether w_tilde is used dictates the output folder.
 """
-use_w_tilde = True
+use_w_tilde = False
 if use_w_tilde:
     file_path = os.path.join(file_path, "w_tilde")
 else:
@@ -298,9 +298,12 @@ info_dict["image_pixels"] = masked_imaging.grid.sub_shape_slim
 info_dict["sub_size"] = sub_size
 info_dict["mask_radius"] = mask_radius
 info_dict["psf_shape_2d"] = psf_shape_2d
-info_dict[
-    "w_tilde_curvature_preload_size"
-] = fit.inversion.linear_eqn.w_tilde.curvature_preload.shape[0]
+try:
+    info_dict[
+        "w_tilde_curvature_preload_size"
+    ] = fit.inversion.leq.w_tilde.curvature_preload.shape[0]
+except AttributeError:
+    pass
 info_dict["source_pixels"] = len(fit.inversion.reconstruction)
 info_dict["excess_time"] = excess_time
 

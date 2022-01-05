@@ -195,7 +195,7 @@ def stochastic_fit(
         include_lens_light=include_lens_light,
         include_pixelization=include_pixelization,
         include_regularization=include_regularization,
-        subhalo_centre_width=1.0
+        subhalo_centre_width=1.0,
     )
 
     return al.util.model.stochastic_fit(
@@ -205,5 +205,5 @@ def stochastic_fit(
         result=result,
         analysis=analysis,
         info=info,
-        pickle_files=pickle_files
+        pickle_files=pickle_files,
     )
