@@ -233,7 +233,7 @@ analysis = al.AnalysisImaging(
     dataset=imaging, hyper_dataset_result=source_parametric_results.last
 )
 
-subhalo_results = slam.subhalo.detection_single_plane(
+subhalo_results = slam.subhalo.detection(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,

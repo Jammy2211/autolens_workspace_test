@@ -61,7 +61,7 @@ def no_lens_light(
     if smbh is not None:
         smbh.centre = mass.centre
 
-    source = slam_util.source__from_model_if_parametric(
+    source = slam_util.source__from_result_model_if_parametric(
         result=source_results.last, setup_hyper=setup_hyper
     )
 
@@ -173,7 +173,7 @@ def with_lens_light(
     if smbh is not None:
         smbh.centre = mass.centre
 
-    source = slam_util.source__from_model_if_parametric(
+    source = slam_util.source__from_result_model_if_parametric(
         result=source_results.last, setup_hyper=setup_hyper
     )
 

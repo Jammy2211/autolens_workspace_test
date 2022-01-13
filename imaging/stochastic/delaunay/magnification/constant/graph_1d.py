@@ -29,7 +29,7 @@ stochastic_path = os.path.join(
 The path containing all profiling results to be plotted is in a folder with the PyAutoLens version number.
 """
 samples_path = os.path.join(stochastic_path, "samples_1d")
-# samples_path = os.path.join(stochastic_path, "samples_1d_fixed_source_pix")
+samples_path = os.path.join(stochastic_path, "samples_1d_fixed_source_pix_0")
 
 """
 The path where the profiling graphs created by this script are output, which is again a folder with the PyAutoLens 

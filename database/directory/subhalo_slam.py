@@ -142,7 +142,7 @@ For this runner the `SetupSubhalo` customizes:
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
-subhalo_results = slam.subhalo.detection_single_plane(
+subhalo_results = slam.subhalo.detection(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,

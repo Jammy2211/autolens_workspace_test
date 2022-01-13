@@ -22,7 +22,7 @@ This runner uses the SLaM pipelines:
  `source__parametric/source_parametric__no_lens_light`
  `source_inversion/source_inversion__no_lens_light`
  `mass__total/mass__total__no_lens_light`
- `subhalo/subhalo__detection_single_plane__no_lens_light`
+ `subhalo/subhalo__detection__no_lens_light`
 
 Check them out for a detailed description of the analysis!
 """
@@ -202,12 +202,13 @@ analysis = al.AnalysisImaging(
     dataset=imaging, hyper_dataset_result=source_parametric_results.last
 )
 
-subhalo_results = slam.subhalo.detection_single_plane(
+subhalo_results = slam.subhalo.detection(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     mass_results=mass_results,
     subhalo_mass=af.Model(al.mp.SphNFWMCRLudlow),
+    free_redshift=True,
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
 )

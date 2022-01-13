@@ -42,7 +42,7 @@ if on_cosma:
         "delaunay",
         "magnification",
         "constant",
-        "samples_1d_fixed_source_pix_0",
+        "samples_1d_static_source_pix",
     )
 
 else:
@@ -52,7 +52,7 @@ else:
         "delaunay",
         "magnification",
         "constant",
-        "samples_1d_fixed_source_pix_0",
+        "samples_1d_static_source_pix",
     )
 
 """
@@ -237,11 +237,9 @@ mat_plot_2d = aplt.MatPlot2D(
 fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
 fit_imaging_plotter.subplot_of_planes(plane_index=1)
 
-
-traced_grids_of_planes_for_inversion = tracer.traced_grid_list_of_inversion_from(
-    grid=masked_imaging.grid_inversion
-)
-
+"""
+__Preload Pixelization Grid__
+"""
 traced_sparse_grids_list_of_planes, sparse_image_plane_grid_list = tracer.traced_sparse_grid_pg_list_from(
     grid=masked_imaging.grid_inversion,
     settings_pixelization=al.SettingsPixelization(use_border=False),
@@ -250,7 +248,10 @@ traced_sparse_grids_list_of_planes, sparse_image_plane_grid_list = tracer.traced
 preloads = al.Preloads(
     traced_sparse_grids_list_of_planes=traced_sparse_grids_list_of_planes,
     sparse_image_plane_grid_list=sparse_image_plane_grid_list,
+    static_pixelization=traced_sparse_grids_list_of_planes[1][0]
 )
+
+source_galaxy.pixelization = al.pix.DelaunayMagnificationStatic(shape=pixelization_shape_2d)
 
 """
 __Info__

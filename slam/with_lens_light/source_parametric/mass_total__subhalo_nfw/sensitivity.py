@@ -26,7 +26,7 @@ This uses the SLaM pipelines:
  `source__inversion/with_lens_light`
  `light_parametric/with_lens_light`
  `mass_total/with_lens_light`
- `subhalo/detection_single_plane`
+ `subhalo/detection`
 
 Check them out for a full description of the analysis!
 """

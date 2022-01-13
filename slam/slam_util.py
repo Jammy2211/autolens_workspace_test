@@ -309,7 +309,7 @@ def source__from(
             )
 
 
-def source__from_model_if_parametric(
+def source__from_result_model_if_parametric(
     result: af.Result, setup_hyper: al.SetupHyper
 ) -> af.Model:
     """

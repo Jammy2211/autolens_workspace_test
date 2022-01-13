@@ -22,7 +22,7 @@ This uses the SLaM pipelines:
  `source_parametric/with_lens_light`
  `light_parametric/with_lens_light`
  `mass_total/with_lens_light`
- `subhalo/detection_single_plane`
+ `subhalo/detection`
 
 Check them out for a full description of the analysis!
 """
@@ -230,7 +230,7 @@ analysis = al.AnalysisImaging(
     dataset=imaging, hyper_dataset_result=source_parametric_results.last
 )
 
-subhalo_results = slam.subhalo.detection_single_plane(
+subhalo_results = slam.subhalo.detection(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
