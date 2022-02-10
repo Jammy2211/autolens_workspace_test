@@ -183,7 +183,7 @@ def detection(
         al.Galaxy, redshift=result_1.instance.galaxies.lens.redshift, mass=subhalo_mass
     )
 
-  #  subhalo.mass.mass_at_200 = af.LogUniformPrior(lower_limit=1.0e6, upper_limit=1.0e11)
+    subhalo.mass.mass_at_200 = af.LogUniformPrior(lower_limit=1.0e6, upper_limit=1.0e11)
     subhalo.mass.centre = subhalo_result.model_absolute(
         a=1.0
     ).galaxies.subhalo.mass.centre
