@@ -14,7 +14,7 @@ conf.instance.push(new_path=path.join(cwd, "config", "guide"))
 
 import numpy as np
 
-from autoarray.inversion.mappers.voronoi import MapperVoronoi
+from autoarray.inversion.mappers.voronoi import MapperVoronoiNoInterp
 
 import autolens as al
 import autolens.plot as aplt
@@ -329,7 +329,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers/voronoi.py
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers/mapper_util.py
 """
-mapper = MapperVoronoi(
+mapper = MapperVoronoiNoInterp(
     source_grid_slim=relocated_grid,
     source_pixelization_grid=grid_voronoi,
     data_pixelization_grid=sparse_image_plane_grid,  # Only stored in a mapper for visualization of the image-plane grid.
@@ -349,7 +349,7 @@ In the API, the `pixelization_index` refers to the source pixel index (e.g. sour
 sub_slim index refers to the index of a sub-gridded image pixel (e.g. sub pixel 0, 1, 2 etc.). The docstrings of the
 function below describes this method.
 
-`MapperVoronoi.pix_index_for_sub_slim_index`: 
+`MapperVoronoiNoInterp.pix_index_for_sub_slim_index`: 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers/voronoi.py
  
 `pixelization_index_for_voronoi_sub_slim_index_from`: 
@@ -373,7 +373,7 @@ It is described at the GitHub link below and in the following paper as matrix `f
 mapping_matrix = al.util.mapper.mapping_matrix_from(
     pix_index_for_sub_slim_index=pix_index_for_sub_slim_index,
     pixels=mapper.pixels,
-    total_mask_sub_pixels=mapper.source_grid_slim.mask.pixels_in_mask,
+    total_mask_pixels=mapper.source_grid_slim.mask.pixels_in_mask,
     slim_index_for_sub_slim_index=mapper.slim_index_for_sub_slim_index,
     sub_fraction=mapper.source_grid_slim.mask.sub_fraction,
 )

@@ -46,21 +46,15 @@ if on_cosma:
     )
 
 else:
-    file_path = os.path.join(
-        "imaging", "stochastic", "delaunay", "magnification", "constant", "samples_1d"
-    )
+    file_path = os.path.join(path.relpath(path.dirname(__file__)), "samples_1d")
 
 """
 This script varies the slope of the lens model in 1D to create a 1D plot showing the stochasticity. These settings 
 control the range of slope values and interval over which the slope is varied.
 """
-slope_lower = 1.991282
-slope_upper = 1.99129
-slope_interval = 0.0000001
-
-# slope_lower = 1.99
-# slope_upper = 2.01
-# slope_interval = 0.0001
+slope_lower = 1.99
+slope_upper = 2.01
+slope_interval = 0.00004
 
 """
 These settings control various aspects of how the fit is performed and therefore how stochasticity manifests.
@@ -68,7 +62,7 @@ These settings control various aspects of how the fit is performed and therefore
 stochastic_seed = 1
 sub_size = 4
 mask_radius = 3.0
-pixelization_shape_2d = (60, 60)
+pixelization_shape_2d = (50, 50)
 
 print(f"stochastic_seed = {stochastic_seed}")
 print(f"sub grid size = {sub_size}")
@@ -100,6 +94,17 @@ lens_galaxy = al.Galaxy(
         slope=2.0,
     ),
     shear=al.mp.ExternalShear(elliptical_comps=(0.001, 0.001)),
+)
+
+source_galaxy_true = al.Galaxy(
+    redshift=1.0,
+    bulge=al.lp.EllSersic(
+        centre=(0.1, 0.1),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=60.0),
+        intensity=0.3,
+        effective_radius=1.0,
+        sersic_index=2.5,
+    ),
 )
 
 """
@@ -151,20 +156,20 @@ imaging = al.Imaging.from_fits(
 """
 Apply the 2D mask, which for the settings above is representative of the masks we typically use to model strong lenses.
 """
-# mask = al.Mask2D.circular(
-#     shape_native=imaging.shape_native,
-#     pixel_scales=imaging.pixel_scales,
-#     sub_size=sub_size,
-#     radius=mask_radius,
-# )
-
-mask = al.Mask2D.circular_annular(
+mask = al.Mask2D.circular(
     shape_native=imaging.shape_native,
     pixel_scales=imaging.pixel_scales,
     sub_size=sub_size,
-    inner_radius=1.0,
-    outer_radius=3.0,
+    radius=mask_radius,
 )
+
+# mask = al.Mask2D.circular_annular(
+#     shape_native=imaging.shape_native,
+#     pixel_scales=imaging.pixel_scales,
+#     sub_size=sub_size,
+#     inner_radius=1.0,
+#     outer_radius=3.0,
+# )
 
 masked_imaging = imaging.apply_mask(mask=mask)
 
@@ -187,7 +192,7 @@ def func(coefficient):
     fit = al.FitImaging(
         dataset=masked_imaging,
         tracer=tracer,
-        settings_pixelization=al.SettingsPixelization(use_border=False),
+        settings_pixelization=al.SettingsPixelization(use_border=True),
     )
 
     fom = fit.figure_of_merit
@@ -199,8 +204,8 @@ def func(coefficient):
 
 print("\nSetting Regularization Coefficient\n")
 
-# coefficient = minimize_scalar(func, method="bounded", bounds=[1e-3, 1e3]).x
-coefficient = 1.3191267732710674
+coefficient = minimize_scalar(func, method="bounded", bounds=[1e-3, 1e3]).x
+
 print(f"coefficient = {coefficient}")
 
 source_galaxy.regularization.coefficient = coefficient
@@ -210,10 +215,15 @@ Output an image of the fit, so that we can inspect that it fits the data as expe
 """
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
+source_image = source_galaxy_true.image_2d_from(grid=masked_imaging.grid)
+
+tracer.galaxies[1].hyper_galaxy_image = source_image
+tracer.galaxies[1].hyper_model_image = source_image
+
 fit = al.FitImaging(
     dataset=masked_imaging,
     tracer=tracer,
-    settings_pixelization=al.SettingsPixelization(use_border=False),
+    settings_pixelization=al.SettingsPixelization(use_border=True),
 )
 
 mat_plot_2d = aplt.MatPlot2D(
@@ -288,7 +298,7 @@ stochastic_dict = {
 output_interval = 100
 counter = 0
 
-otf_out = True
+otf_out = False
 
 for i, slope in enumerate(slope_list):
 
@@ -301,7 +311,7 @@ for i, slope in enumerate(slope_list):
     fit = al.FitImaging(
         dataset=masked_imaging,
         tracer=tracer,
-        settings_pixelization=al.SettingsPixelization(use_border=False),
+        settings_pixelization=al.SettingsPixelization(use_border=True),
     )
 
     stochastic_dict["slope_list"].append(slope)

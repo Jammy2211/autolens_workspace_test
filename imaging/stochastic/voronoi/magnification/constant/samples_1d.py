@@ -1,7 +1,7 @@
 """
-__PROFILING: Inversion VoronoiMagnification__
+__PROFILING: Inversion VoronoiNNMagnification__
 
-This profiling script times how long it takes to fit `Imaging` data with a `VoronoiMagnification` pixelization for
+This profiling script times how long it takes to fit `Imaging` data with a `VoronoiNNMagnification` pixelization for
 datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.
@@ -46,9 +46,7 @@ if on_cosma:
     )
 
 else:
-    file_path = os.path.join(
-        "imaging", "stochastic", "voronoi", "magnification", "constant", "samples_1d"
-    )
+    file_path = os.path.join(path.relpath(path.dirname(__file__)), "samples_1d")
 
 """
 This script varies the slope of the lens model in 1D to create a 1D plot showing the stochasticity. These settings 
@@ -56,7 +54,7 @@ control the range of slope values and interval over which the slope is varied.
 """
 slope_lower = 1.99
 slope_upper = 2.01
-slope_interval = 0.000001
+slope_interval = 0.00004
 
 """
 These settings control various aspects of how the fit is performed and therefore how stochasticity manifests.
@@ -64,7 +62,7 @@ These settings control various aspects of how the fit is performed and therefore
 stochastic_seed = 1
 sub_size = 4
 mask_radius = 3.0
-pixelization_shape_2d = (60, 60)
+pixelization_shape_2d = (50, 50)
 
 print(f"stochastic_seed = {stochastic_seed}")
 print(f"sub grid size = {sub_size}")
@@ -98,10 +96,21 @@ lens_galaxy = al.Galaxy(
     shear=al.mp.ExternalShear(elliptical_comps=(0.001, 0.001)),
 )
 
+source_galaxy_true = al.Galaxy(
+    redshift=1.0,
+    bulge=al.lp.EllSersic(
+        centre=(0.1, 0.1),
+        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=60.0),
+        intensity=0.3,
+        effective_radius=1.0,
+        sersic_index=2.5,
+    ),
+)
+
 """
-The source galaxy whose `VoronoiMagnification` `Pixelization` fits the data.
+The source galaxy whose `VoronoiNNMagnification` `Pixelization` fits the data.
 """
-pixelization = al.pix.VoronoiMagnification(shape=pixelization_shape_2d)
+pixelization = al.pix.VoronoiNNMagnification(shape=pixelization_shape_2d)
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
@@ -180,7 +189,11 @@ def func(coefficient):
 
     source_galaxy.regularization.coefficient = coefficient
     tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
-    fit = al.FitImaging(dataset=masked_imaging, tracer=tracer)
+    fit = al.FitImaging(
+        dataset=masked_imaging,
+        tracer=tracer,
+        settings_pixelization=al.SettingsPixelization(use_border=True),
+    )
 
     fom = fit.figure_of_merit
 
@@ -192,7 +205,7 @@ def func(coefficient):
 print("\nSetting Regularization Coefficient\n")
 
 coefficient = minimize_scalar(func, method="bounded", bounds=[1e-3, 1e3]).x
-# coefficient = 1.0
+
 print(f"coefficient = {coefficient}")
 
 source_galaxy.regularization.coefficient = coefficient
@@ -202,7 +215,16 @@ Output an image of the fit, so that we can inspect that it fits the data as expe
 """
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
-fit = al.FitImaging(dataset=masked_imaging, tracer=tracer)
+source_image = source_galaxy_true.image_2d_from(grid=masked_imaging.grid)
+
+tracer.galaxies[1].hyper_galaxy_image = source_image
+tracer.galaxies[1].hyper_model_image = source_image
+
+fit = al.FitImaging(
+    dataset=masked_imaging,
+    tracer=tracer,
+    settings_pixelization=al.SettingsPixelization(use_border=True),
+)
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
@@ -284,7 +306,11 @@ for i, slope in enumerate(slope_list):
 
     tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
-    fit = al.FitImaging(dataset=masked_imaging, tracer=tracer)
+    fit = al.FitImaging(
+        dataset=masked_imaging,
+        tracer=tracer,
+        settings_pixelization=al.SettingsPixelization(use_border=True),
+    )
 
     stochastic_dict["slope_list"].append(slope)
     stochastic_dict["figure_of_merit_list"].append(fit.figure_of_merit)
@@ -302,7 +328,7 @@ for i, slope in enumerate(slope_list):
 
     print(
         f"{i}/{slope_total}",
-        " {:>14.5f} {:>14.2f} {:>14.2f} {:>14.2f} {:>14.2f} {:>14.2f}       {:>14.6f}".format(
+        " {:>14.7f} {:>14.2f} {:>14.2f} {:>14.2f} {:>14.2f} {:>14.2f}       {:>14.6f}".format(
             slope,
             fit.chi_squared,
             fit.inversion.regularization_term,

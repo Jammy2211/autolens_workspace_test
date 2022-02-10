@@ -93,7 +93,7 @@ pixelization = al.pix.DelaunayMagnification(shape=pixelization_shape_2d)
 source_galaxy = al.Galaxy(
     redshift=1.0,
     pixelization=pixelization,
-    regularization=al.reg.Constant(coefficient=1.0),
+    regularization=al.reg.ConstantSplit(coefficient=1.0),
 )
 
 """

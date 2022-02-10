@@ -25,7 +25,7 @@ gives it a descriptive name. They define the folder the dataset is output to on 
  - The psf will be output to `/autolens_workspace/dataset/dataset_type/dataset_label/dataset_name/psf.fits`.
 """
 dataset_type = "instruments"
-dataset_instrument = "hst"
+dataset_instrument = "hst_noise"
 
 """
 The path where the dataset will be output, which in this case is:
@@ -42,9 +42,7 @@ sub-size of the grid is iteratively increased (in steps of 2, 4, 8, 16, 24) unti
 This ensures that the divergent and bright central regions of the source galaxy are fully resolved when determining the
 total flux emitted within a pixel.
 """
-grid = al.Grid2DIterate.uniform(
-    shape_native=(180, 180), pixel_scales=0.05, fractional_accuracy=0.9999
-)
+grid = al.Grid2D.uniform(shape_native=(180, 180), pixel_scales=0.05)
 
 """
 Simulate a simple Gaussian PSF for the image.
@@ -69,14 +67,14 @@ lens_galaxy = al.Galaxy(
     bulge=al.lp.EllSersic(
         centre=(0.0, 0.0),
         elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
-        intensity=4.0,
+        intensity=4.0 * 0.0,
         effective_radius=0.6,
         sersic_index=3.0,
     ),
     disk=al.lp.EllExponential(
         centre=(0.0, 0.0),
         elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
-        intensity=2.0,
+        intensity=2.0 * 0.0,
         effective_radius=1.6,
     ),
     mass=al.mp.EllIsothermal(
@@ -92,7 +90,7 @@ source_galaxy = al.Galaxy(
     bulge=al.lp.EllSersic(
         centre=(0.1, 0.1),
         elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=60.0),
-        intensity=0.3,
+        intensity=0.3 * 0.0,
         effective_radius=1.0,
         sersic_index=2.5,
     ),

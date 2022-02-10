@@ -91,7 +91,12 @@ disk = al.lp.EllExponential(
 )
 
 lens = af.Model(
-    al.Galaxy, redshift=0.5, bulge=bulge, disk=disk, mass=al.mp.EllPowerLaw, shear=al.mp.ExternalShear
+    al.Galaxy,
+    redshift=0.5,
+    bulge=bulge,
+    disk=disk,
+    mass=al.mp.EllPowerLaw,
+    shear=al.mp.ExternalShear,
 )
 
 lens.shear.elliptical_comps.elliptical_comps_0 = 0.001

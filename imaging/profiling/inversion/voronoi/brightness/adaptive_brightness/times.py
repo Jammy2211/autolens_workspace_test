@@ -483,7 +483,7 @@ Checkout the modules below for a full description of a `Mapper` and the `mapping
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers.py
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/util/mapper_util.py 
 """
-mapper = mappers.MapperVoronoi(
+mapper = mappers.MapperVoronoiNoInterp(
     source_grid_slim=relocated_grid,
     source_pixelization_grid=grid_voronoi,
     data_pixelization_grid=sparse_image_plane_grid,
@@ -504,7 +504,7 @@ In the API, the `pixelization_index` refers to the source pixel index (e.g. sour
 sub_slim index refers to the index of a sub-gridded image pixel (e.g. sub pixel 0, 1, 2 etc.). The docstrings of the
 function below describes this method.
 
-MapperVoronoi.pix_index_for_sub_slim_index:
+MapperVoronoiNoInterp.pix_index_for_sub_slim_index:
 
  https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers.py
  
@@ -535,7 +535,7 @@ for i in range(repeats):
     mapping_matrix = al.util.mapper.mapping_matrix_from(
         pix_index_for_sub_slim_index=pix_index_for_sub_slim_index,
         pixels=mapper.pixels,
-        total_mask_sub_pixels=mapper.source_grid_slim.mask.pixels_in_mask,
+        total_mask_pixels=mapper.source_grid_slim.mask.pixels_in_mask,
         slim_index_for_sub_slim_index=mapper._slim_index_for_sub_slim_index,
         sub_fraction=mapper.source_grid_slim.mask.sub_fraction,
     )

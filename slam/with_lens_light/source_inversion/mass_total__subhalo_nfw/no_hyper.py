@@ -269,6 +269,8 @@ subhalo_results = slam.subhalo.detection(
     number_of_steps=2,
 )
 
+slam.extensions.stochastic_fit(result=subhalo_results.last, analysis=analysis, **settings_autofit.fit_dict)
+
 """
 Finish.
 """

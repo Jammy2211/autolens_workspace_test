@@ -86,9 +86,9 @@ print(samples.model.prior_count)
 
 samples = samples.without_paths(
     [
-   #     ("galaxies", "lens", "mass", "centre"),
+        #     ("galaxies", "lens", "mass", "centre"),
         ("galaxies", "lens", "mass", "centre", "centre_0"),
-   #     ("galaxies", "lens", "mass", "centre", "centre_1"),
+        #     ("galaxies", "lens", "mass", "centre", "centre_1"),
     ]
 )
 

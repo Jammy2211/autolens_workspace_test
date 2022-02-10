@@ -39,7 +39,7 @@ file_path = os.path.join(
 """
 Whether w_tilde is used dictates the output folder.
 """
-use_w_tilde = False
+use_w_tilde = True
 if use_w_tilde:
     file_path = os.path.join(file_path, "w_tilde")
 else:

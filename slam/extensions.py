@@ -1,7 +1,7 @@
+from typing import Union, Dict, List, Optional
+
 import autofit as af
 import autolens as al
-
-from typing import Union, Dict, List, Optional
 
 
 def hyper_fit(
