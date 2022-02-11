@@ -514,7 +514,7 @@ pixelization_index_for_voronoi_sub_slim_index_from:
 """
 start = time.time()
 for i in range(repeats):
-    pix_index_for_sub_slim_index = mapper.pix_index_for_sub_slim_index
+    pix_index_for_sub_slim_index = mapper.pix_indexes_for_sub_slim_index
 diff = (time.time() - start) / repeats
 profiling_dict["Image-Source Pairing"] = (time.time() - start) / repeats
 

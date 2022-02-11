@@ -345,9 +345,14 @@ The `Mapper` contains:
  
 The function below pairs every image-pixel coordinate to every source-pixel centre.
 
-In the API, the `pixelization_index` refers to the source pixel index (e.g. source pixel 0, 1, 2 etc.) whereas the 
+In the API, the `pixelization_indexes` refers to the source pixel indexes (e.g. source pixel 0, 1, 2 etc.) whereas the 
 sub_slim index refers to the index of a sub-gridded image pixel (e.g. sub pixel 0, 1, 2 etc.). The docstrings of the
 function below describes this method.
+
+For the `VoronoiNoInterp` pixelization used in this example, every image-sub pixel maps to a single source Voronoi
+pixel. Therefore, the plural use of `pix_indexes` is not required. However, for other pixelizations each sub-pixel
+can map to multiple source pixels with an interpolation weight (e.g. `Delaunay` triangulation or a `Voronoi` mesh
+which uses natural neighbor interpolation).
 
 `MapperVoronoiNoInterp.pix_index_for_sub_slim_index`: 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers/voronoi.py
@@ -355,8 +360,26 @@ https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers
 `pixelization_index_for_voronoi_sub_slim_index_from`: 
  https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/util/mapper_util.py 
 """
-pix_index_for_sub_slim_index = mapper.pix_index_for_sub_slim_index
+pix_indexes_for_sub_slim_index = mapper.pix_indexes_for_sub_slim_index
 
+"""
+The number of pixels that each sub-pixel maps too is also stored and extracted. This is used for speeding up 
+the calculation of the `mapping_matrix` described next.
+
+As discussed above, because for the `VoronoiNoInterp` pixelization where every sub-pixel maps to one source pixel,
+every entry of this array will be equal to 1.
+"""
+pix_sizes_for_sub_slim_index = mapper.pix_sizes_for_sub_slim_index
+
+"""
+When each sub-pixel maps to multiple source pixels, the mappings are described via an interpolation weight. For 
+example, for a `Delaunay` triangulation, every sub-pixel maps to 3 Delaunay triangles based on which triangle
+it lands in.
+
+For the `VoronoiNoInterp` pixelization where every sub-pixel maps to a single source pixel without inteprolation,
+every entry of this weight array is 1.0.
+"""
+pix_weights_for_sub_slim_index = mapper.pix_weights_for_sub_slim_index
 
 """
 __Mapping Matrix (f)__
@@ -371,7 +394,9 @@ It is described at the GitHub link below and in the following paper as matrix `f
 `mapping_matrix_from`: https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers/mapper_util.py
 """
 mapping_matrix = al.util.mapper.mapping_matrix_from(
-    pix_index_for_sub_slim_index=pix_index_for_sub_slim_index,
+    pix_indexes_for_sub_slim_index=pix_indexes_for_sub_slim_index,
+    pix_size_for_sub_slim_index=pix_sizes_for_sub_slim_index,
+    pix_weights_for_sub_slim_index=pix_weights_for_sub_slim_index,
     pixels=mapper.pixels,
     total_mask_pixels=mapper.source_grid_slim.mask.pixels_in_mask,
     slim_index_for_sub_slim_index=mapper.slim_index_for_sub_slim_index,
