@@ -17,10 +17,7 @@ __Masking__
 Define the mask where the convergence is evaluated in.
 """
 mask = al.Mask2D.circular_annular(
-    shape_native=(100, 100),
-    pixel_scales=0.1,
-    inner_radius=0.5,
-    outer_radius=3.0,
+    shape_native=(100, 100), pixel_scales=0.1, inner_radius=0.5, outer_radius=3.0
 )
 
 """
@@ -38,10 +35,7 @@ Set up the mass profile whose analytic converge we are testing.
 # mass = al.mp.SphIsothermal(centre=(0.0, 0.0), einstein_radius=2.0)
 
 mass = al.mp.EllPowerLaw(
-    centre=(0.0, 0.0),
-    elliptical_comps=(-0.5, 0.5),
-    einstein_radius=2.0,
-    slope=2.0
+    centre=(0.0, 0.0), elliptical_comps=(-0.5, 0.5), einstein_radius=2.0, slope=2.0
 )
 
 # mass = al.mp.EllIsothermal(

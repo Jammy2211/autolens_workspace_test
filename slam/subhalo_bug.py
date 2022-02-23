@@ -99,14 +99,14 @@ def detection(
     This search aims to detect a dark matter subhalo.
     """
 
-    subhalo = af.Model(
-        al.Galaxy, mass=subhalo_mass
-    )
+    subhalo = af.Model(al.Galaxy, mass=subhalo_mass)
 
     subhalo.mass.mass_at_200 = af.LogUniformPrior(lower_limit=1.0e6, upper_limit=1.0e11)
 
     if subhalo_prior_extend:
-        subhalo.mass.mass_at_200 = af.LogUniformPrior(lower_limit=1.0e6, upper_limit=1.0e12)
+        subhalo.mass.mass_at_200 = af.LogUniformPrior(
+            lower_limit=1.0e6, upper_limit=1.0e12
+        )
 
     subhalo.mass.centre_0 = af.UniformPrior(
         lower_limit=-grid_dimension_arcsec, upper_limit=grid_dimension_arcsec
@@ -121,7 +121,9 @@ def detection(
         search_tag = "search_lens_plane"
         refine_tag = "single_plane_refine"
     else:
-        subhalo.redshift = af.UniformPrior(lower_limit=0.0, upper_limit=result_1.instance.galaxies.source.redshift)
+        subhalo.redshift = af.UniformPrior(
+            lower_limit=0.0, upper_limit=result_1.instance.galaxies.source.redshift
+        )
         subhalo.mass.redshift_object = subhalo.redshift
         search_tag = "search_multi_plane"
         refine_tag = "multi_plane_refine"
@@ -192,7 +194,9 @@ def detection(
     )
 
     if subhalo_prior_extend:
-        subhalo.mass.mass_at_200 = af.LogUniformPrior(lower_limit=1.0e6, upper_limit=1.0e12)
+        subhalo.mass.mass_at_200 = af.LogUniformPrior(
+            lower_limit=1.0e6, upper_limit=1.0e12
+        )
     subhalo.mass.centre = subhalo_result.model_absolute(
         a=1.0
     ).galaxies.subhalo.mass.centre
@@ -226,5 +230,3 @@ def detection(
     result_3 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     return af.ResultsCollection([result_1, subhalo_result, result_3])
-
-

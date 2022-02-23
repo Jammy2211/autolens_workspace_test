@@ -21,9 +21,7 @@ import matplotlib.pyplot as plt
 """
 The path containing all profiling results and graphs for this setup.
 """
-profiling_path = os.path.join(
-    "imaging", "profiling", "inversion", "voronoi", "brightness", "adaptive_brightness"
-)
+profiling_path = path.dirname(path.realpath(__file__))
 
 """
 The path containing all profiling results to be plotted is in a folder with the PyAutoLens version number.

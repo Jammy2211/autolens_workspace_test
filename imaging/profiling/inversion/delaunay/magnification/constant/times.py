@@ -25,9 +25,9 @@ import autolens.plot as aplt
 """
 The path all profiling results are output.
 """
-file_path = os.path.join(
-    "imaging", "profiling", "times", al.__version__, "inversion_delaunay_magnification"
-)
+profiling_path = path.dirname(path.realpath(__file__))
+
+file_path = os.path.join(profiling_path, "times", al.__version__)
 
 """
 Whether w_tilde is used dictates the output folder.
