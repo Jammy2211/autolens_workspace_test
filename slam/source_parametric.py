@@ -1,5 +1,6 @@
 import autofit as af
 import autolens as al
+from . import slam_util
 from . import extensions
 
 from typing import Union, Optional, Tuple
@@ -17,6 +18,7 @@ def no_lens_light(
     redshift_lens: float = 0.5,
     redshift_source: float = 1.0,
     mass_centre: Optional[Tuple[float, float]] = None,
+    clump_model: Union[al.ClumpModel, al.ClumpModelDisabled] = al.ClumpModelDisabled(),
 ) -> af.ResultsCollection:
     """
     The SlaM SOURCE PARAMETRIC PIPELINE for fitting imaging data without a lens light component.
@@ -49,6 +51,9 @@ def no_lens_light(
     mass_centre
         If input, a fixed (y,x) centre of the mass profile is used which is not treated as a free parameter by the
        non-linear search.
+    clump_model
+        Add additional clumps containing light and mass profiles to the lens model. These have a known input centre and
+        are used to model nearby line of sight galaxies.
     """
 
     """
@@ -74,7 +79,8 @@ def no_lens_light(
                 disk=source_disk,
                 envelope=source_envelope,
             ),
-        )
+        ),
+        clumps=clump_model.clumps_mass_only,
     )
 
     search = af.DynestyStatic(
@@ -120,6 +126,7 @@ def with_lens_light(
     redshift_lens: float = 0.5,
     redshift_source: float = 1.0,
     mass_centre: Optional[Tuple[float, float]] = None,
+    clump_model: Union[al.ClumpModel, al.ClumpModelDisabled] = al.ClumpModelDisabled(),
 ) -> af.ResultsCollection:
     """
     The SlaM SOURCE PARAMETRIC PIPELINE for fitting imaging data with a lens light component.
@@ -143,7 +150,6 @@ def with_lens_light(
         The `MassProfile` fitted by this pipeline.
     shear
         The model used to represent the external shear in the mass model (set to None to turn off shear).
-                bulge_prior_model : af.Model(lp.LightProfile)
     source_bulge
         The `LightProfile` `Model` used to represent the light distribution of the source galaxy's bulge (set to
         None to omit a bulge).
@@ -162,6 +168,9 @@ def with_lens_light(
     mass_centre
        If input, a fixed (y,x) centre of the mass profile is used which is not treated as a free parameter by the
        non-linear search.
+    clump_model
+        Add additional clumps containing light and mass profiles to the lens model. These have a known input centre and
+        are used to model nearby line of sight galaxies.
     """
 
     """
@@ -183,7 +192,9 @@ def with_lens_light(
         envelope=lens_envelope,
     )
 
-    model = af.Collection(galaxies=af.Collection(lens=lens))
+    model = af.Collection(
+        galaxies=af.Collection(lens=lens), clumps=clump_model.clumps_light_only,
+    )
 
     search = af.DynestyStatic(
         name="source_parametric[1]_light[parametric]",
@@ -226,7 +237,8 @@ def with_lens_light(
                 disk=source_disk,
                 envelope=source_envelope,
             ),
-        )
+        ),
+        clumps=clump_model.clumps_mass_only + slam_util.clumps_from(result=result_1),
     )
 
     search = af.DynestyStatic(
@@ -269,7 +281,8 @@ def with_lens_light(
                 disk=result_2.model.galaxies.source.disk,
                 envelope=result_2.model.galaxies.source.envelope,
             ),
-        )
+        ),
+        clumps=clump_model.clumps_light_only + slam_util.clumps_from(result=result_2, mass_as_model=True),
     )
 
     search = af.DynestyStatic(

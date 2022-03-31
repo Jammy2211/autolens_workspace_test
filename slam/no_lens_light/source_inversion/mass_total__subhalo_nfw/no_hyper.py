@@ -202,7 +202,7 @@ analysis = al.AnalysisImaging(
     dataset=imaging, hyper_dataset_result=source_parametric_results.last
 )
 
-subhalo_results = slam.subhalo_bug.detection(
+subhalo_results = slam.subhalo.detection(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,

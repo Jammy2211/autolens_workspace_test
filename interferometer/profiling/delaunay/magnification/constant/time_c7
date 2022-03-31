@@ -1,0 +1,25 @@
+#!/bin/bash -l
+
+#SBATCH -N 1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=28
+#SBATCH -J time
+#SBATCH -o output/output.%A.out
+#SBATCH -e error/error.%A.err
+#SBATCH -p cosma7
+#SBATCH -A dp004
+#SBATCH -t 00:30:00   # longest job
+#SBATCH --mail-type=END                          # notifications for job done & fail
+#SBATCH --mail-user=james.w.nightingale@durham.ac.uk
+
+source /cosma/home/dp004/dc-nigh1/rjlens/activate.sh
+
+export THREADS=28
+
+export OPENBLAS_NUM_THREADS=$THREADS
+export MKL_NUM_THREADS=$THREADS
+export OMP_NUM_THREADS=$THREADS
+export VECLIB_MAXIMUM_THREADS=$THREADS
+export NUMEXPR_NUM_THREADS=$THREADS
+
+python3 /cosma/home/dp004/dc-nigh1/interferometer/times.py

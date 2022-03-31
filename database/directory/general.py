@@ -115,7 +115,7 @@ print(
 )
 #
 # tracer_agg = al.agg.TracerAgg(aggregator=agg)
-# tracer_gen = tracer_agg.max_log_likelihood_gen()
+# tracer_gen = tracer_agg.max_log_likelihood_gen_from()
 #
 # grid = al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.1)
 #
@@ -126,7 +126,7 @@ print(
 #
 #
 # imaging_agg = al.agg.ImagingAgg(aggregator=agg)
-# imaging_gen = imaging_agg.imaging_gen()
+# imaging_gen = imaging_agg.imaging_gen_from()
 #
 # for imaging in imaging_gen:
 #
@@ -140,14 +140,14 @@ print(
 #     settings_imaging=al.SettingsImaging(sub_size=4),
 #     settings_pixelization=al.SettingsPixelization(use_border=False),
 # )
-# fit_imaging_gen = fit_agg.max_log_likelihood_gen()
+# fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
 #
 # for fit in fit_imaging_gen:
 #     fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit)
 #     fit_imaging_plotter.subplot_fit_imaging()
 #
 # fit_agg = al.agg.FitImagingAgg(aggregator=agg)
-# fit_imaging_gen = fit_agg.max_log_likelihood_gen()
+# fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
 #
 # for fit in fit_imaging_gen:
 #     mat_plot_2d = aplt.MatPlot2D(

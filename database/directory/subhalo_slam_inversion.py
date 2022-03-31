@@ -273,7 +273,7 @@ Unique Tag Query Does Not Work
 agg_best_fits = agg_grid.best_fits()
 
 fit_imaging_agg = al.agg.FitImagingAgg(aggregator=agg_best_fits)
-fit_imaging_gen = fit_imaging_agg.max_log_likelihood_gen()
+fit_imaging_gen = fit_imaging_agg.max_log_likelihood_gen_from()
 
 info_gen = agg_best_fits.values("info")
 

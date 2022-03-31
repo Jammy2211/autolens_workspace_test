@@ -44,6 +44,7 @@ def no_lens_light(
 
     This search aims to quickly estimate values for the pixelization resolution and regularization coefficient.
     """
+
     model = af.Collection(
         galaxies=af.Collection(
             lens=af.Model(
@@ -62,6 +63,7 @@ def no_lens_light(
                 ),
             ),
         ),
+        clumps=slam_util.clumps_from(result=source_parametric_results.last),
         hyper_image_sky=setup_hyper.hyper_image_sky_from(
             result=source_parametric_results.last, as_model=False
         ),
@@ -90,6 +92,7 @@ def no_lens_light(
 
     This search aims to improve the lens mass model using the search 1 `Inversion`.
     """
+
     model = af.Collection(
         galaxies=af.Collection(
             lens=af.Model(
@@ -106,6 +109,7 @@ def no_lens_light(
                 hyper_galaxy=result_1.instance.galaxies.source.hyper_galaxy,
             ),
         ),
+        clumps=slam_util.clumps_from(result=source_parametric_results.last, mass_as_model=True),
         hyper_image_sky=result_1.instance.hyper_image_sky,
         hyper_background_noise=result_1.instance.hyper_background_noise,
     )
@@ -145,6 +149,7 @@ def no_lens_light(
                 hyper_galaxy=result_2.instance.galaxies.source.hyper_galaxy,
             ),
         ),
+        clumps=slam_util.clumps_from(result=result_2),
         hyper_image_sky=result_2.instance.hyper_image_sky,
         hyper_background_noise=result_2.instance.hyper_background_noise,
     )
@@ -195,6 +200,7 @@ def no_lens_light(
                 hyper_galaxy=result_3.instance.galaxies.source.hyper_galaxy,
             ),
         ),
+        clumps=slam_util.clumps_from(result=result_2, mass_as_model=True),
         hyper_image_sky=result_3.instance.hyper_image_sky,
         hyper_background_noise=result_3.instance.hyper_background_noise,
     )
@@ -267,6 +273,7 @@ def with_lens_light(
 
     This search aims to quickly estimate values for the pixelization resolution and regularization coefficient.
     """
+
     model = af.Collection(
         galaxies=af.Collection(
             lens=af.Model(
@@ -291,6 +298,7 @@ def with_lens_light(
                 ),
             ),
         ),
+        clumps=slam_util.clumps_from(result=source_parametric_results.last),
         hyper_image_sky=setup_hyper.hyper_image_sky_from(
             result=source_parametric_results.last, as_model=False
         ),
@@ -341,6 +349,7 @@ def with_lens_light(
                 hyper_galaxy=result_1.instance.galaxies.source.hyper_galaxy,
             ),
         ),
+        clumps=slam_util.clumps_from(result=source_parametric_results.last, mass_as_model=True),
         hyper_image_sky=result_1.instance.hyper_image_sky,
         hyper_background_noise=result_1.instance.hyper_background_noise,
     )
@@ -386,6 +395,7 @@ def with_lens_light(
                 hyper_galaxy=result_2.instance.galaxies.source.hyper_galaxy,
             ),
         ),
+        clumps=slam_util.clumps_from(result=result_2),
         hyper_image_sky=result_2.instance.hyper_image_sky,
         hyper_background_noise=result_2.instance.hyper_background_noise,
     )
@@ -442,6 +452,7 @@ def with_lens_light(
                 hyper_galaxy=result_3.instance.galaxies.source.hyper_galaxy,
             ),
         ),
+        clumps=slam_util.clumps_from(result=result_2, mass_as_model=True),
         hyper_image_sky=result_3.instance.hyper_image_sky,
         hyper_background_noise=result_3.instance.hyper_background_noise,
     )

@@ -4,6 +4,5 @@ from . import light_parametric
 from . import mass_total
 from . import mass_light_dark
 from . import subhalo
-from . import subhalo_bug
 from . import extensions
 from . import slam_util as util

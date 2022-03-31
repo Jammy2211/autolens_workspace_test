@@ -223,7 +223,7 @@ initialize the model priors . In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the MASS 
  LIGHT DARK PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=imaging, hyper_dataset_result=source_inversion_results.last.hyper)
 
 lens_bulge = af.Model(al.lmp.EllSersic)
 dark = af.Model(al.mp.EllNFWMCRLudlow)
@@ -262,7 +262,7 @@ For this runner the SUBHALO PIPELINE customizes:
  - The `number_of_cores` used for the gridsearch, where `number_of_cores > 1` performs the model-fits in paralle using
  the Python multiprocessing module.
 """
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=imaging, hyper_dataset_result=source_inversion_results.last)
 
 subhalo_results = slam.subhalo.detection(
     settings_autofit=settings_autofit,

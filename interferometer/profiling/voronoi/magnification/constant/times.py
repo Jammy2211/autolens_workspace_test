@@ -43,6 +43,7 @@ else:
 The number of repeats used to estimate the `Inversion` run time.
 """
 repeats = conf.instance["general"]["profiling"]["repeats"]
+# repeats = 3
 print("Number of repeats = " + str(repeats))
 print()
 
@@ -50,13 +51,10 @@ print()
 These settings control various aspects of how long a fit takes. The values below are default PyAutoLens values.
 """
 sub_size = 1
-real_shape_native = (800, 800)
-pixel_scales = (0.025, 0.025)
 mask_radius = 3.0
 pixelization_shape_2d = (45, 45)
 
 print(f"sub grid size = {sub_size}")
-print(f"real space mask shape native = {real_shape_native}")
 print(f"circular mask mask_radius = {mask_radius}")
 print(f"pixelization shape = {pixelization_shape_2d}")
 
@@ -90,34 +88,94 @@ tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 Set up the `Interferometer` dataset we fit. This includes the `real_space_mask` that the source galaxy's 
 `Inversion` is evaluated using via mapping to Fourier space using the `Transformer`.
 """
-real_space_mask = al.Mask2D.circular_annular(
-    shape_native=real_shape_native,
-    pixel_scales=pixel_scales,
-    sub_size=sub_size,
-    inner_radius=0.7,
-    outer_radius=2.3,
-)
+instrument = "sma"
+# instrument = "alma_low_res"
+instrument = "alma_high_res"
 
-# real_space_mask = al.Mask2D.circular(
-#     shape_native=real_shape_native,
-#     pixel_scales=pixel_scales,
-#     sub_size=sub_size,
-#     radius=mask_radius,
-# )
+if instrument == "sma":
+
+    real_shape_native = (64, 64)
+    pixel_scales = (0.15625, 0.15625)
+
+    real_space_mask = al.Mask2D.circular_annular(
+        shape_native=real_shape_native,
+        pixel_scales=pixel_scales,
+        sub_size=sub_size,
+        inner_radius=0.7,
+        outer_radius=2.3,
+    )
+
+elif instrument == "alma_low_res":
+
+    real_shape_native = (256, 256)
+    pixel_scales = (0.0390625, 0.0390625)
+
+    real_space_mask = al.Mask2D.circular_annular(
+        shape_native=real_shape_native,
+        pixel_scales=pixel_scales,
+        sub_size=sub_size,
+        inner_radius=0.25,
+        outer_radius=1.15,
+        centre=(0.0, 0.05),
+    )
+
+elif instrument == "alma_high_res":
+
+    # real_shape_native = (1024, 1024)
+    # pixel_scales = (0.0048828125, 0.0048828125)
+
+    real_shape_native = (512, 512)
+    pixel_scales = (0.027, 0.027)
+
+    real_shape_native = (512, 512)
+    pixel_scales = (0.009765625, 0.009765625)
+
+    real_space_mask = al.Mask2D.circular_annular(
+        shape_native=real_shape_native,
+        pixel_scales=pixel_scales,
+        sub_size=sub_size,
+        #   inner_radius=0.25,
+        #   outer_radius=1.15,
+        inner_radius=0.5,
+        outer_radius=1.7,
+        centre=(0.0, 0.05),
+    )
+
+else:
+
+    raise Exception
 
 """
 Load the strong lens dataset `mass_sie__source_sersic` `from .fits files.
 """
+
 instrument = "sma"
 
-dataset_path = path.join("dataset", "interferometer", "instruments", instrument)
 
-interferometer = al.Interferometer.from_fits(
-    visibilities_path=path.join(dataset_path, "visibilities.fits"),
-    noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
-    real_space_mask=real_space_mask,
-)
+try:
+    dataset_path = path.join("dataset", "interferometer", "instruments", instrument)
+
+    interferometer = al.Interferometer.from_fits(
+        visibilities_path=path.join(dataset_path, "visibilities.fits"),
+        noise_map_path=path.join(dataset_path, "noise_map.fits"),
+        uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
+        real_space_mask=real_space_mask,
+    )
+
+except FileNotFoundError:
+
+    cosma_path = "/cosma7/data/dp004/dc-nigh1/autolens"
+
+    dataset_path = path.join(
+        cosma_path, "dataset", "interferometer", "instruments", instrument
+    )
+
+    interferometer = al.Interferometer.from_fits(
+        visibilities_path=path.join(dataset_path, "visibilities.fits"),
+        noise_map_path=path.join(dataset_path, "noise_map.fits"),
+        uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
+        real_space_mask=real_space_mask,
+    )
 
 """
 These settings control the run-time of the `Inversion` performed on the `Interferometer` data.

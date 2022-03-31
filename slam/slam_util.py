@@ -90,7 +90,7 @@ def pass_light_and_mass_profile_priors(
     einstein_mass_range : (float, float)
         The values a the estimate of the Einstein Mass in the LIGHT PIPELINE is multiplied by to set the lower and
         upper limits of the profile's mass-to-light ratio.
-    as_instance : bool
+    as_instance
         If `True` the prior is set up as an instance, else it is set up as a model component.
 
     Returns
@@ -233,7 +233,7 @@ def source__from(
         The result of the previous source pipeline.
     setup_hyper
         The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
-    source_is_model : bool
+    source_is_model
         If `True` the source is returned as a *model* where the parameters are fitted for using priors of the
         search result it is loaded from. If `False`, it is an instance of that search's result.
     """
@@ -335,3 +335,50 @@ def source__from_result_model_if_parametric(
             result=result, setup_hyper=setup_hyper, source_is_model=True
         )
     return source__from(result=result, setup_hyper=setup_hyper, source_is_model=False)
+
+def clean_clumps_of_hyper_images(clumps):
+
+    for clump in clumps:
+
+        if hasattr(clump, "hyper_model_image"):
+            del clump.hyper_model_image
+
+        if hasattr(clump, "hyper_galaxy_image"):
+            del clump.hyper_galaxy_image
+
+
+
+def clumps_from(result: af.Result, light_as_model:bool = False, mass_as_model:bool = False):
+
+    # ideal API:
+
+    # clumps = result.instance.clumps.as_model((al.lp.LightProfile, al.mp.MassProfile,), fixed="centre", prior_pass=True)
+
+    if mass_as_model:
+
+        clumps = result.instance.clumps.as_model((al.mp.MassProfile,))
+
+        for clump_index in range(len(result.instance.clumps)):
+
+            if hasattr(result.instance.clumps[clump_index], "mass"):
+                clumps[clump_index].mass.centre = result.instance.clumps[clump_index].mass.centre
+                clumps[clump_index].mass.einstein_radius = result.model.clumps[clump_index].mass.einstein_radius
+
+    elif light_as_model:
+
+        clumps = result.instance.clumps.as_model((al.lp.LightProfile,))
+
+        for clump_index in range(len(result.instance.clumps)):
+
+            clumps[clump_index].light.centre = result.instance.clumps[clump_index].light.centre
+       #     clumps[clump_index].light.intensity = result.model.clumps[clump_index].light.intensity
+       #     clumps[clump_index].light.effective_radius = result.model.clumps[clump_index].light.effective_radius
+       #     clumps[clump_index].light.sersic_index = result.model.clumps[clump_index].light.sersic_index
+
+    else:
+
+        clumps = result.instance.clumps.as_model(())
+
+    clean_clumps_of_hyper_images(clumps=clumps)
+
+    return clumps

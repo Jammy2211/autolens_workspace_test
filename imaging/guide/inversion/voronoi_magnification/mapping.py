@@ -1,7 +1,20 @@
 """
-__PGuide: Inversion VoronoiMagnification__
+__Log Likelihood Function: Inversion (pix.VoronoiMagnification + reg.Constant)__
 
-This script provides a step-by-step guide of fitting `Imaging` data with a `VoronoiMagnification` pixelization.
+This script provides a step-by-step guide of the **PyAutoLens** `log_likelihood_function` which is used to fit
+`Imaging` data with an inversion (specifically a `VoronoiMagnification` pixelization and `Constant`
+regularization scheme`).
+
+This script has the following aims:
+
+ - To provide a resource that authors can include in papers using **PyAutoLens**, so that readers can understand the
+ likelihood function (including references to the previous literature from which it is defined) without having to
+ write large quantities to text and equations.
+
+ - To facilitate the use of inversions in **PyAutoLens** appearing as less of a "black-box".
+
+ - To give contributors a linear run through of what functions, modules and packages in the source code are called when
+  the likelihood is evaluated.
 """
 import os
 from os import path
@@ -20,42 +33,150 @@ import autolens as al
 import autolens.plot as aplt
 
 """
-These settings control various aspects of the fit. The values below are default PyAutoLens values.
-"""
-sub_size = 4
-mask_radius = 3.5
-psf_shape_2d = (21, 21)
-pixelization_shape_2d = (30, 30)
+__Dataset__
 
-print(f"sub grid size = {sub_size}")
-print(f"circular mask mask_radius = {mask_radius}")
-print(f"psf shape = {psf_shape_2d}")
-print(f"pixelization shape = {pixelization_shape_2d}")
+In order to perform a likelihood evaluation, we first load the dataset we will fit. 
 
-"""
+This example fits a simulated strong lens which is simulated at Hubble Space Telescope resolution.
+
 The lens galaxy used to fit the data, which is identical to the lens galaxy used to simulate the data. 
 """
+dataset_path = path.join("dataset", "imaging", "instruments", "hst")
+
+imaging = al.Imaging.from_fits(
+    image_path=path.join(dataset_path, "image.fits"),
+    psf_path=path.join(dataset_path, "psf.fits"),
+    noise_map_path=path.join(dataset_path, "noise_map.fits"),
+    pixel_scales=0.05,
+)
+
+"""
+__Masking__
+
+The likelihood is only evaluated using image pixels contained within a 2D mask, which we choose before performing
+lens modeling.
+
+Below, we define a 2D circular mask with a 3.0" radius.
+"""
+mask = al.Mask2D.circular(
+    shape_native=imaging.shape_native,
+    pixel_scales=imaging.pixel_scales,
+    sub_size=1,
+    radius=3.0,
+)
+
+masked_imaging = imaging.apply_mask(mask=mask)
+
+
+"""
+__Sub Gridding__
+
+By inputting a `sub_size` above one, oversampling the image-plane grid is subgridded into sub-pixels and multiple 
+image-pixel coordinates are then ray-traced to the source plane for the source reconstruction. 
+
+For simplicity, this example does not perform oversampling of the image-grid and therefore sets `sub_size=1`. We 
+provide links to resources describing how changing the `sub_size` changes the inversion at the end of this script.
+
+(The default `sub_size_inversion` used for an inversion is 4, and if you did manually set this in an analysis you
+performed then it is likely that you did use sub-gridding with this resolution sub-grid).
+"""
+masked_imaging = masked_imaging.apply_settings(
+    settings=al.SettingsImaging(sub_size=1, sub_size_inversion=1)
+)
+
+"""
+__Lens Galaxy Light (Setup)__
+
+In order to perform a likelihood evaluation, we first compose our lens model.
+
+We first define the light profiles which represents the lens galaxy's light, which will be used to subtract the lens 
+light from the data before performing the source reconstruction.
+
+In this example, we assume our lens is composed of two light profiles, an elliptical Sersic and Exponential. 
+
+
+To see examples of all light profiles in **PyAutoLens** checkout the `light_profiles` package:
+
+ https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/light_profiles
+"""
+bulge = al.lp.EllSersic(
+    centre=(0.0, 0.0),
+    elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
+    intensity=4.0,
+    effective_radius=0.6,
+    sersic_index=3.0,
+)
+
+disk = al.lp.EllExponential(
+    centre=(0.0, 0.0),
+    elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
+    intensity=2.0,
+    effective_radius=1.6,
+)
+
+"""
+Using the masked 2D grid defined above, we can calculate and plot images of each light profile component.
+"""
+import matplotlib.pyplot as plt
+
+image_2d = bulge.image_2d_from(grid=masked_imaging.grid)
+plt.imshow(image_2d.native) # The use of 'native' maps this to a 2D numpy array for plotting.
+
+"""
+Throughout the rest of this guide, I will use **PyAutoLens**'s in-built visualization tools for plotting, which
+produce more informative visualizations.
+"""
+image_2d = disk.image_2d_from(grid=masked_imaging.grid)
+
+array_plotter = aplt.Array2DPlotter(array=image_2d)
+array_plotter.figure_2d()
+
+"""
+__Lens Galaxy Mass (Setup)__
+
+We next define the mass profiles which represents the lens galaxy's mass, which will be used to ray-trace the 
+image-plane 2D grid of (y,x) coordinates to the source-plane so that the source reconstruction can be performed.
+
+In this example, we assume our lens is composed of two mass profiles, an elliptical isothermal mass distribution
+and external shear.
+
+
+To see examples of all mass profiles in **PyAutoLens** checkout the `mass_profiles` package:
+
+https://github.com/Jammy2211/PyAutoGalaxy/tree/master/autogalaxy/profiles/mass_profiles
+"""
+mass = al.mp.EllIsothermal(
+    centre=(0.0, 0.0),
+    einstein_radius=1.6,
+    elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
+)
+
+shear = al.mp.ExternalShear(elliptical_comps=(0.001, 0.001))
+
+"""
+From each mass profile we can compute its deflection angles, which describe how image-pixels are ray-traced to
+the source plane.
+"""
+deflections_yx_2d = mass.deflections_yx_2d_from(grid=masked_imaging.grid)
+
+mass_plotter = aplt.MassProfilePlotter(mass_profile=mass, grid=masked_imaging.grid)
+mass_plotter.figures_2d(deflections_y=True, deflections_x=True)
+
+"""
+__Lens Galaxy__
+
+We now combine the light and mass profiles into a single `Galaxy` object for the lens galaxy.
+
+When computing quantities for the light and mass profiles from this object, it will compute each individual quantity 
+and then add them together. 
+
+For example, for the `bulge` and `disk`, when it computes their 2D images it compute each individually and then adds
+them together.
+"""
+
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    bulge=al.lp.EllSersic(
-        centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
-        intensity=4.0,
-        effective_radius=0.6,
-        sersic_index=3.0,
-    ),
-    disk=al.lp.EllExponential(
-        centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
-        intensity=2.0,
-        effective_radius=1.6,
-    ),
-    mass=al.mp.EllIsothermal(
-        centre=(0.0, 0.0),
-        einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
-    ),
-    shear=al.mp.ExternalShear(elliptical_comps=(0.001, 0.001)),
+    bulge=bulge, disk=disk
 )
 
 """
@@ -76,56 +197,6 @@ instrument = "euclid"
 pixel_scale = 0.1
 
 """
-Load the dataset for this instrument / resolution.
-"""
-dataset_path = path.join("dataset", "imaging", "instruments", instrument)
-
-imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
-    psf_path=path.join(dataset_path, "psf.fits"),
-    noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    pixel_scales=pixel_scale,
-)
-
-"""
-Apply the 2D mask, which for the settings above is representative of the masks we typically use to model strong lenses.
-"""
-mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native,
-    pixel_scales=imaging.pixel_scales,
-    sub_size=sub_size,
-    radius=mask_radius,
-)
-
-masked_imaging = imaging.apply_mask(mask=mask)
-masked_imaging = masked_imaging.apply_settings(
-    settings=al.SettingsImaging(sub_size=sub_size, sub_size_inversion=sub_size)
-)
-
-"""
-__Fit__
-
-Perform the complete fit, which this guides break down step-by-step, which we will use to vary that our 
-final `log_evidence` values are consistent.
-
-https://github.com/Jammy2211/PyAutoLens/blob/master/autolens/lens/ray_tracing.py
-https://github.com/Jammy2211/PyAutoLens/blob/master/autolens/imaging/fit_imaging.py
-
-For this fit, we use the `mapping` formalism which performs the linear algebra via a `mapping_matrix`. The alternative
-formalism is called the `w_tilde` formalism, which we turn off below.
-"""
-tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
-
-fit = al.FitImaging(
-    dataset=masked_imaging,
-    tracer=tracer,
-    settings_inversion=al.SettingsInversion(use_w_tilde=False),
-    settings_pixelization=al.SettingsPixelization(use_border=True),
-)
-fit_log_evidence = fit.log_evidence
-print(fit_log_evidence)
-
-"""
 __Lens Light (Grid2D)__
 
 Compute a 2D image of the foreground lens galaxy using its light profiles which for this script uses 
@@ -136,7 +207,7 @@ The calculation below uses a `Grid2D` object with a fixed sub-size of 1.
 
 To see examples of `LightProfile` image calculations checkout the `image_2d_from` methods at the following link:
 
-https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/light_profile_list/light_profile_list.py
+https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/light_profiles/light_profiles.py
 """
 image = lens_galaxy.image_2d_from(grid=masked_imaging.grid)
 
@@ -613,6 +684,29 @@ log_evidence = float(
 )
 
 print(log_evidence)
+
+"""
+__Fit__
+
+Perform the complete fit, which this guides break down step-by-step, which we will use to vary that our 
+final `log_evidence` values are consistent.
+
+https://github.com/Jammy2211/PyAutoLens/blob/master/autolens/lens/ray_tracing.py
+https://github.com/Jammy2211/PyAutoLens/blob/master/autolens/imaging/fit_imaging.py
+
+For this fit, we use the `mapping` formalism which performs the linear algebra via a `mapping_matrix`. The alternative
+formalism is called the `w_tilde` formalism, which we turn off below.
+"""
+tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
+
+fit = al.FitImaging(
+    dataset=masked_imaging,
+    tracer=tracer,
+    settings_inversion=al.SettingsInversion(use_w_tilde=False),
+    settings_pixelization=al.SettingsPixelization(use_border=True),
+)
+fit_log_evidence = fit.log_evidence
+print(fit_log_evidence)
 
 """
 __Plots__

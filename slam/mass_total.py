@@ -76,6 +76,7 @@ def no_lens_light(
             ),
             source=source,
         ),
+        clumps = slam_util.clumps_from(result=source_results.last, mass_as_model=True),
         hyper_image_sky=setup_hyper.hyper_image_sky_from(
             result=source_results.last, as_model=True
         ),
@@ -194,6 +195,7 @@ def with_lens_light(
             ),
             source=source,
         ),
+        clumps=slam_util.clumps_from(result=source_results.last, mass_as_model=True),
         hyper_image_sky=setup_hyper.hyper_image_sky_from(
             result=source_results.last, as_model=True
         ),

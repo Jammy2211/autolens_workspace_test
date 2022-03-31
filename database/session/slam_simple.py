@@ -250,7 +250,7 @@ print(
 
 
 fit_imaging_agg = al.agg.FitImagingAgg(aggregator=agg)
-fit_imaging_gen = fit_imaging_agg.max_log_likelihood_gen()
+fit_imaging_gen = fit_imaging_agg.max_log_likelihood_gen_from()
 print(list(fit_imaging_gen)[0].figure_of_merit)
 
 """

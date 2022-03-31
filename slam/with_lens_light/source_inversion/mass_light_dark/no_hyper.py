@@ -219,7 +219,7 @@ initialize the model priors . In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the MASS 
  LIGHT DARK PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=imaging, hyper_dataset_result=source_inversion_results.last)
 
 lens_bulge = af.Model(al.lmp.EllSersic)
 dark = af.Model(al.mp.EllNFWMCRLudlow)
