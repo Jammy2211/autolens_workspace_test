@@ -1,0 +1,60 @@
+Total Free Parameters = 12 
+
+model                                                                                     CollectionPriorModel (N=12)
+    galaxies                                                                              CollectionPriorModel (N=12)
+        lens                                                                              Galaxy (N=5)
+            bulge                                                                         EllSersicCore (N=0)
+            disk                                                                          EllExponentialCore (N=0)
+            mass                                                                          EllIsothermal (N=3)
+            shear                                                                         ExternalShear (N=2)
+        source                                                                            Galaxy (N=7)
+            bulge                                                                         EllSersicCore (N=7) 
+
+galaxies
+    lens
+        redshift                                                                          0.206
+        bulge
+            centre                                                                        (-0.00038604444878000485, -0.004952964860562648)
+            elliptical_comps                                                              (0.10030988438308899, -0.07964135098096323)
+            intensity                                                                     19.169065178132534
+            effective_radius                                                              0.4501826981893
+            sersic_index                                                                  4.99914565455552
+            radius_break                                                                  0.05
+            intensity_break                                                               19.169065178132534
+            alpha                                                                         2.0
+            gamma                                                                         0.0
+        disk
+            centre                                                                        (-0.00038604444878000485, -0.004952964860562648)
+            elliptical_comps                                                              (0.09990079346532799, -0.12149368368475105)
+            intensity                                                                     0.585981504824648
+            effective_radius                                                              1.91018274259445
+            sersic_index                                                                  1.0
+            radius_break                                                                  0.05
+            intensity_break                                                               0.585981504824648
+            alpha                                                                         2.0
+            gamma                                                                         0.0
+        mass
+            centre                                                                        (0.0, 0.0)
+            elliptical_comps
+                elliptical_comps_0                                                        GaussianPrior, mean = 0.0, sigma = 0.3
+                elliptical_comps_1                                                        GaussianPrior, mean = 0.0, sigma = 0.3
+            einstein_radius                                                               UniformPrior, lower_limit = 0.0, upper_limit = 8.0
+        shear
+            elliptical_comps
+                elliptical_comps_0                                                        UniformPrior, lower_limit = -0.2, upper_limit = 0.2
+                elliptical_comps_1                                                        UniformPrior, lower_limit = -0.2, upper_limit = 0.2
+    source
+        redshift                                                                          0.688
+        bulge
+            centre
+                centre_0                                                                  GaussianPrior, mean = 0.0, sigma = 0.3
+                centre_1                                                                  GaussianPrior, mean = 0.0, sigma = 0.3
+            elliptical_comps
+                elliptical_comps_0                                                        GaussianPrior, mean = 0.0, sigma = 0.3
+                elliptical_comps_1                                                        GaussianPrior, mean = 0.0, sigma = 0.3
+            effective_radius                                                              UniformPrior, lower_limit = 0.0, upper_limit = 30.0
+            sersic_index                                                                  UniformPrior, lower_limit = 0.8, upper_limit = 5.0
+            radius_break                                                                  0.05
+            intensity_break                                                               LogUniformPrior, lower_limit = 1e-05, upper_limit = 1000.0
+            gamma                                                                         0.0
+            alpha                                                                         2.0
