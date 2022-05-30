@@ -9,7 +9,7 @@ which customize the model and analysis in that pipeline.
 The models fitted in earlier pipelines determine the model used in later pipelines. For example, if the SOURCE PIPELINE
 uses a parametric `EllSersic` profile for the bulge, this will be used in the subsequent MASS PIPELINE.
 
-Using a SOURCE PARAMETRIC PIPELINE, SOURCE INVERSION PIPELINE and a MASS PIPELINE this SLaM script fits `Imaging` of a
+Using a SOURCE PARAMETRIC PIPELINE, SOURCE PIXELIZED PIPELINE and a MASS PIPELINE this SLaM script fits `Imaging` of a
 strong lens system, where in the final model:
 
  - The lens galaxy's light is omitted from the data and model.
@@ -138,16 +138,16 @@ source_parametric_results = slam.source_parametric.no_lens_light(
 )
 
 """
-__SOURCE INVERSION PIPELINE (no lens light)__
+__SOURCE PIXELIZED PIPELINE (no lens light)__
 
-The SOURCE INVERSION PIPELINE (no lens light) uses four searches to initialize a robust model for the `Inversion` that
+The SOURCE PIXELIZED PIPELINE (no lens light) uses four searches to initialize a robust model for the `Inversion` that
 reconstructs the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` 
 regularization, to set up the model and hyper images, and then:
 
  - Uses a `VoronoiBrightnessImage` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the
- SOURCE INVERSION PIPELINE.
+ SOURCE PIXELIZED PIPELINE.
 """
 positions = al.Grid2DIrregular.from_json(
     file_path=path.join(dataset_path, "positions.json")

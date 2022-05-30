@@ -131,7 +131,7 @@ clump_model = al.ClumpModel(
     centres=clump_centres,
     light_cls=al.lp.SphSersic,
     mass_cls=al.mp.SphIsothermal,
-    einstein_radius_upper_limit=1.0
+    einstein_radius_upper_limit=1.0,
 )
 
 """
@@ -171,16 +171,16 @@ source_parametric_results = slam.source_parametric.with_lens_light(
 )
 
 """
-__SOURCE INVERSION PIPELINE (with lens light)__
+__SOURCE PIXELIZED PIPELINE (with lens light)__
 
-The SOURCE INVERSION PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
+The SOURCE PIXELIZED PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
 that reconstructs the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` 
 regularization, to set up the model and hyper images, and then:
 
  - Uses a `VoronoiBrightnessImage` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the
- SOURCE INVERSION PIPELINE.
+ SOURCE PIXELIZED PIPELINE.
 """
 
 analysis = al.AnalysisImaging(dataset=imaging)
@@ -198,15 +198,15 @@ source_inversion_results = slam.source_inversion.with_lens_light(
 __LIGHT PARAMETRIC PIPELINE__
 
 The LIGHT PARAMETRIC PIPELINE uses one search to fit a complex lens light model to a high level of accuracy, using the
-lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE INVERSION PIPELINE.
+lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE PIXELIZED PIPELINE.
 In this example it:
 
  - Uses a parametric `EllSersic` bulge and `EllSersic` disk with centres aligned for the lens galaxy's 
  light [Do not use the results of the SOURCE PARAMETRIC PIPELINE to initialize priors].
 
- - Uses an `EllIsothermal` model for the lens's total mass distribution [fixed from SOURCE INVERSION PIPELINE].
+ - Uses an `EllIsothermal` model for the lens's total mass distribution [fixed from SOURCE PIXELIZED PIPELINE].
 
- - Uses an `Inversion` for the source's light [priors fixed from SOURCE INVERSION PIPELINE].
+ - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIXELIZED PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].

@@ -143,7 +143,7 @@ fast, for `number_of_cores=3` three times as fast, and so on. The downside is mo
 which may hurt the general performance of your computer.
 
 You should experiment to figure out the highest value which does not give a noticeable loss in performance of your 
-computer. If you know that your processor is a quad-core process you should be able to use `number_of_cores=4`. For 
+computer. If you know that your processor is a quad-core processor you should be able to use `number_of_cores=4`. For 
 users on a Windows Operating system, using `number_of_cores>1` may lead to an error, in which case it should be 
 reduced back to 1 to fix it.
 """

@@ -3,7 +3,7 @@ import autolens as al
 from . import slam_util
 from . import extensions
 
-from typing import Union
+from typing import Callable, Union, Optional
 
 
 def no_lens_light(
@@ -12,12 +12,15 @@ def no_lens_light(
     setup_hyper: al.SetupHyper,
     source_parametric_results: af.ResultsCollection,
     pixelization: af.Model(al.AbstractPixelization) = af.Model(
-        al.pix.VoronoiBrightnessImage
+        al.pix.DelaunayBrightnessImage
     ),
-    regularization: af.Model(al.AbstractRegularization) = af.Model(al.reg.Constant),
+    regularization: af.Model(al.AbstractRegularization) = af.Model(
+        al.reg.AdaptiveBrightnessSplit
+    ),
+    multi_func: Optional[Callable] = None,
 ) -> af.ResultsCollection:
     """
-    The S:aM SOURCE INVERSION PIPELINE for fitting imaging data without a lens light component.
+    The S:aM SOURCE PIXELIZED PIPELINE for fitting imaging data without a lens light component.
 
     Parameters
     ----------
@@ -36,7 +39,7 @@ def no_lens_light(
     """
     __Model + Search + Analysis + Model-Fit (Search 1)__
 
-    In search 1 of the SOURCE INVERSION PIPELINE we fit a lens model where:
+    In search 1 of the SOURCE PIXELIZED PIPELINE we fit a lens model where:
 
      - The lens galaxy mass is modeled using a total mass distribution [parameters fixed to result of SOURCE PARAMETRIC 
      PIPELINE].
@@ -72,8 +75,11 @@ def no_lens_light(
         ),
     )
 
+    if multi_func is not None:
+        analysis = multi_func(analysis, model, index=0)
+
     search = af.DynestyStatic(
-        name="source_inversion[1]_mass[fixed]_source[inversion_magnification_initialization]",
+        name="source_inversion[1]_mass[fixed]_source[pixelized_magnification_initialization]",
         **settings_autofit.search_dict,
         nlive=30,
     )
@@ -83,7 +89,7 @@ def no_lens_light(
     """
     __Model + Search + Analysis + Model-Fit (Search 2)__
 
-    In search 2 of the SOURCE INVERSION PIPELINE we fit a lens model where:
+    In search 2 of the SOURCE PIXELIZED PIPELINE we fit a lens model where:
 
      - The lens galaxy mass is modeled using a total mass distribution [parameters initialized from the results of the 
      SOURCE PARAMETRIC PIPELINE].
@@ -109,7 +115,9 @@ def no_lens_light(
                 hyper_galaxy=result_1.instance.galaxies.source.hyper_galaxy,
             ),
         ),
-        clumps=slam_util.clumps_from(result=source_parametric_results.last, mass_as_model=True),
+        clumps=slam_util.clumps_from(
+            result=source_parametric_results.last, mass_as_model=True
+        ),
         hyper_image_sky=result_1.instance.hyper_image_sky,
         hyper_background_noise=result_1.instance.hyper_background_noise,
     )
@@ -125,7 +133,7 @@ def no_lens_light(
     """
     __Model + Search + Analysis + Model-Fit (Search 3)__
 
-    In search 3 of the SOURCE INVERSION PIPELINE we fit a lens model where:
+    In search 3 of the SOURCE PIXELIZED PIPELINE we fit a lens model where:
 
      - The lens galaxy mass is modeled using a total mass distribution [parameters fixed to result of search 2].
      - The source galaxy's light is the input pixelization and regularization.
@@ -155,7 +163,7 @@ def no_lens_light(
     )
 
     search = af.DynestyStatic(
-        name="source_inversion[3]_mass[fixed]_source[inversion_initialization]",
+        name="source_inversion[3]_mass[fixed]_source[pixelized_initialization]",
         **settings_autofit.search_dict,
         nlive=30,
         dlogz=10.0,
@@ -164,12 +172,15 @@ def no_lens_light(
 
     analysis.set_hyper_dataset(result=result_2)
 
+    if multi_func is not None:
+        analysis = multi_func(analysis, model, index=1)
+
     result_3 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
     """
     __Model + Search + Analysis + Model-Fit (Search 4)__
 
-    In search 4 of the SOURCE INVERSION PIPELINE we fit a lens model where:
+    In search 4 of the SOURCE PIXELIZED PIPELINE we fit a lens model where:
 
      - The lens galaxy mass is modeled using a total mass distribution [parameters initialized from the results of the 
      search 2].
@@ -218,7 +229,7 @@ def no_lens_light(
 
     The above search is extended with a hyper-search if the SetupHyper has one or more of the following inputs:
 
-     - The source is using an `Inversion`.
+     - The source is modeled using a pixelization with a regularization scheme.
      - One or more `HyperGalaxy`'s are included.
      - The background sky is included via `hyper_image_sky` input.
      - The background noise is included via the `hyper_background_noise`.
@@ -239,12 +250,15 @@ def with_lens_light(
     setup_hyper: al.SetupHyper,
     source_parametric_results: af.ResultsCollection,
     pixelization: af.Model(al.AbstractPixelization) = af.Model(
-        al.pix.VoronoiBrightnessImage
+        al.pix.DelaunayBrightnessImage
     ),
-    regularization: af.Model(al.AbstractRegularization) = af.Model(al.reg.Constant),
+    regularization: af.Model(al.AbstractRegularization) = af.Model(
+        al.reg.AdaptiveBrightnessSplit
+    ),
+    multi_func: Optional[Callable] = None,
 ) -> af.ResultsCollection:
     """
-    The SLaM SOURCE INVERSION PIPELINE for fitting imaging data with a lens light component.
+    The SLaM SOURCE PIXELIZED PIPELINE for fitting imaging data with a lens light component.
 
     Parameters
     ----------
@@ -263,7 +277,7 @@ def with_lens_light(
     """
     __Model + Search + Analysis + Model-Fit (Search 1)__
 
-    In search 1 of the SOURCE INVERSION PIPELINE we fit a lens model where:
+    In search 1 of the SOURCE PIXELIZED PIPELINE we fit a lens model where:
 
     - The lens galaxy light is modeled using a parametric bulge + disk + envelope [parameters fixed to result of SOURCE
     PARAMETER PIPELINE].
@@ -274,14 +288,21 @@ def with_lens_light(
     This search aims to quickly estimate values for the pixelization resolution and regularization coefficient.
     """
 
+    instance = source_parametric_results.last.instance
+    fit = source_parametric_results.last.max_log_likelihood_fit
+
+    bulge = slam_util.lp_from(lp=instance.galaxies.lens.bulge, fit=fit)
+    disk = slam_util.lp_from(lp=instance.galaxies.lens.disk, fit=fit)
+    envelope = slam_util.lp_from(lp=instance.galaxies.lens.envelope, fit=fit)
+
     model = af.Collection(
         galaxies=af.Collection(
             lens=af.Model(
                 al.Galaxy,
                 redshift=source_parametric_results.last.instance.galaxies.lens.redshift,
-                bulge=source_parametric_results.last.instance.galaxies.lens.bulge,
-                disk=source_parametric_results.last.instance.galaxies.lens.disk,
-                envelope=source_parametric_results.last.instance.galaxies.lens.envelope,
+                bulge=bulge,
+                disk=disk,
+                envelope=envelope,
                 mass=source_parametric_results.last.instance.galaxies.lens.mass,
                 shear=source_parametric_results.last.instance.galaxies.lens.shear,
                 hyper_galaxy=setup_hyper.hyper_galaxy_lens_from(
@@ -307,8 +328,11 @@ def with_lens_light(
         ),
     )
 
+    if multi_func is not None:
+        analysis = multi_func(analysis, model, index=0)
+
     search = af.DynestyStatic(
-        name="source_inversion[1]_light[fixed]_mass[fixed]_source[inversion_magnification_initialization]",
+        name="source_inversion[1]_light[fixed]_mass[fixed]_source[pixelized_magnification_initialization]",
         **settings_autofit.search_dict,
         nlive=30,
     )
@@ -318,7 +342,7 @@ def with_lens_light(
     """
     __Model + Search + Analysis + Model-Fit (Search 2)__
 
-    In search 2 of the SOURCE INVERSION PIPELINE we fit a lens model where:
+    In search 2 of the SOURCE PIXELIZED PIPELINE we fit a lens model where:
 
     - The lens galaxy light is modeled using a parametric bulge + disk + envelope [parameters fixed to result of SOURCE
     PARAMETER PIPELINE].
@@ -349,13 +373,15 @@ def with_lens_light(
                 hyper_galaxy=result_1.instance.galaxies.source.hyper_galaxy,
             ),
         ),
-        clumps=slam_util.clumps_from(result=source_parametric_results.last, mass_as_model=True),
+        clumps=slam_util.clumps_from(
+            result=source_parametric_results.last, mass_as_model=True
+        ),
         hyper_image_sky=result_1.instance.hyper_image_sky,
         hyper_background_noise=result_1.instance.hyper_background_noise,
     )
 
     search = af.DynestyStatic(
-        name="source_inversion[2]_light[fixed]_mass[total]_source[inversion_magnification]",
+        name="source_inversion[2]_light[fixed]_mass[total]_source[pixelized_magnification]",
         **settings_autofit.search_dict,
         nlive=50,
     )
@@ -365,7 +391,7 @@ def with_lens_light(
     """
     __Model + Search + Analysis + Model-Fit (Search 3)__
 
-    In search 3 of the SOURCE INVERSION PIPELINE we fit a lens model where:
+    In search 3 of the SOURCE PIXELIZED PIPELINE we fit a lens model where:
 
     - The lens galaxy light is modeled using a parametric bulge + disk + envelope [parameters fixed to result of SOURCE
     PARAMETER PIPELINE].
@@ -400,8 +426,11 @@ def with_lens_light(
         hyper_background_noise=result_2.instance.hyper_background_noise,
     )
 
+    if multi_func is not None:
+        analysis = multi_func(analysis, model, index=1)
+
     search = af.DynestyStatic(
-        name="source_inversion[3]_light[fixed]_mass[fixed]_source[inversion_initialization]",
+        name="source_inversion[3]_light[fixed]_mass[fixed]_source[pixelized_initialization]",
         **settings_autofit.search_dict,
         nlive=30,
         dlogz=10.0,
@@ -415,7 +444,7 @@ def with_lens_light(
     """
     __Model + Search + Analysis + Model-Fit (Search 4)__
 
-    In search 4 of the SOURCE INVERSION PIPELINE we fit a lens model where:
+    In search 4 of the SOURCE PIXELIZED PIPELINE we fit a lens model where:
 
     - The lens galaxy light is modeled using a parametric bulge + disk + envelope [parameters fixed to result of SOURCE
     PARAMETER PIPELINE].
@@ -458,7 +487,7 @@ def with_lens_light(
     )
 
     search = af.DynestyStatic(
-        name="source_inversion[4]_light[fixed]_mass[total]_source[inversion]",
+        name="source_inversion[4]_light[fixed]_mass[total]_source[pixelized]",
         **settings_autofit.search_dict,
         nlive=50,
     )
@@ -470,7 +499,7 @@ def with_lens_light(
 
     The above search is extended with a hyper-search if the SetupHyper has one or more of the following inputs:
 
-     - The source is using an `Inversion`.
+     - The source is modeled using a pixelization with a regularization scheme.
      - One or more `HyperGalaxy`'s are included.
      - The background sky is included via `hyper_image_sky` input.
      - The background noise is included via the `hyper_background_noise`.

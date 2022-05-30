@@ -32,11 +32,34 @@ file_path = os.path.join(profiling_path, "times", al.__version__)
 """
 Whether w_tilde is used dictates the output folder.
 """
-use_w_tilde = True
+# use_w_tilde = True
+use_w_tilde = False
+
 if use_w_tilde:
     file_path = os.path.join(file_path, "w_tilde")
 else:
     file_path = os.path.join(file_path, "mapping")
+
+
+"""
+Whether the lens light is a linear object or not.
+"""
+use_lens_light_linear = True
+# use_lens_light_linear = False
+
+if use_lens_light_linear:
+
+    bulge_cls = al.lp_linear.EllSersic
+    disk_cls = al.lp_linear.EllExponential
+
+    file_path = os.path.join(file_path, "lens_light_linear")
+
+else:
+
+    bulge_cls = al.lp.EllSersic
+    disk_cls = al.lp.EllExponential
+
+    file_path = os.path.join(file_path, "lens_light_normal")
 
 """
 The number of repeats used to estimate the run time.
@@ -49,9 +72,9 @@ print()
 These settings control various aspects of how long a fit takes. The values below are default PyAutoLens values.
 """
 sub_size = 4
-mask_radius = 3.5
+mask_radius = 3.0
 psf_shape_2d = (21, 21)
-pixelization_shape_2d = (60, 60)
+pixelization_shape_2d = (40, 40)
 
 
 print(f"sub grid size = {sub_size}")
@@ -62,21 +85,37 @@ print(f"pixelization shape = {pixelization_shape_2d}")
 """
 The lens galaxy used to fit the data, which is identical to the lens galaxy used to simulate the data. 
 """
+gaussian_m = 0.05
+gaussian_c = 1.0
+
+gaussians = [al.lp_linear.EllGaussian() for i in range(50)]
+
+for i, gaussian in enumerate(gaussians):
+
+    gaussian.centre = gaussians[0].centre
+    gaussian.elliptical_comps = gaussians[0].elliptical_comps
+    gaussian.sigma = (gaussian_m * i) + gaussian_c
+
+gaussian_dict = {f"gaussian_{i}": gaussian for i, gaussian in enumerate(gaussians)}
+
+galaxy = al.Galaxy(redshift=0.5, **gaussian_dict)
+
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    bulge=al.lp.EllSersic(
-        centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
-        intensity=4.0,
-        effective_radius=0.6,
-        sersic_index=3.0,
-    ),
-    disk=al.lp.EllExponential(
-        centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
-        intensity=2.0,
-        effective_radius=1.6,
-    ),
+    #  bulge=bulge_cls(
+    #      centre=(0.0, 0.0),
+    #      elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
+    #   #   intensity=4.0,
+    #      effective_radius=0.6,
+    #      sersic_index=3.0,
+    #  ),
+    #  disk=disk_cls(
+    #      centre=(0.0, 0.0),
+    #      elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
+    # #     intensity=2.0,
+    #      effective_radius=1.6,
+    #  ),
+    **gaussian_dict,
     mass=al.mp.EllIsothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
@@ -291,9 +330,12 @@ info_dict["image_pixels"] = masked_imaging.grid.sub_shape_slim
 info_dict["sub_size"] = sub_size
 info_dict["mask_radius"] = mask_radius
 info_dict["psf_shape_2d"] = psf_shape_2d
-info_dict[
-    "w_tilde_curvature_preload_size"
-] = fit.inversion.leq.w_tilde.curvature_preload.shape[0]
+try:
+    info_dict[
+        "w_tilde_curvature_preload_size"
+    ] = fit.inversion.leq.w_tilde.curvature_preload.shape[0]
+except AttributeError:
+    pass
 info_dict["source_pixels"] = len(fit.inversion.reconstruction)
 info_dict["excess_time"] = excess_time
 

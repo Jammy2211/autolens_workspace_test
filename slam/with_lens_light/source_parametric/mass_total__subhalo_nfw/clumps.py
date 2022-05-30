@@ -130,7 +130,7 @@ clump_model = al.ClumpModel(
     centres=clump_centres,
     light_cls=al.lp.SphSersic,
     mass_cls=al.mp.SphIsothermal,
-    einstein_radius_upper_limit=1.0
+    einstein_radius_upper_limit=1.0,
 )
 
 """
@@ -166,7 +166,7 @@ source_parametric_results = slam.source_parametric.with_lens_light(
     mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
-    clump_model=clump_model
+    clump_model=clump_model,
 )
 
 """

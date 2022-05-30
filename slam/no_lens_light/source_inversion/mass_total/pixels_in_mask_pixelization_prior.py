@@ -103,7 +103,7 @@ extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter value
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_hyper = al.SetupHyper(
-    search_inversion_dict={"maxcall": 1},
+    search_pixelized_dict={"maxcall": 1},
     hyper_galaxies_lens=False,
     hyper_galaxies_source=False,
     hyper_image_sky=None,
@@ -132,9 +132,9 @@ source_parametric_results = slam.source_parametric.no_lens_light(
 )
 
 """
-__SOURCE INVERSION PIPELINE (no lens light)__
+__SOURCE PIXELIZED PIPELINE (no lens light)__
 
-The SOURCE INVERSION PIPELINE (no lens light) uses four searches to initialize a robust model for the `Inversion` that
+The SOURCE PIXELIZED PIPELINE (no lens light) uses four searches to initialize a robust model for the `Inversion` that
 fits the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` regularization,
 to set up the model and hyper images, and then:
 
@@ -169,9 +169,8 @@ mass_results = slam.mass_total.no_lens_light(
     analysis=analysis,
     source_results=source_inversion_results,
     mass=af.Model(al.mp.EllPowerLaw),
+    end_with_stochastic_extension=True
 )
-
-slam.extensions.stochastic_fit(result=mass_results.last, analysis=analysis)
 
 """
 Finish.

@@ -45,13 +45,10 @@ __Simulate__
 
 The pixel-scale of each color image is different meaning we make a list of grids for the simulation.
 """
-pixel_scales_list = [0.08, 0.012]
+pixel_scales_list = [0.08, 0.12]
 
 grid_list = [
-    al.Grid2D.uniform(
-        shape_native=(100, 100),
-        pixel_scales=0.1,
-    )
+    al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.1)
     for pixel_scales in pixel_scales_list
 ]
 

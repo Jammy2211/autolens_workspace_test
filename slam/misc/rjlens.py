@@ -118,9 +118,9 @@ source_parametric_results = slam.source_parametric.no_lens_light(
 )
 
 """
-__SOURCE INVERSION PIPELINE (with lens light)__
+__SOURCE PIXELIZED PIPELINE (with lens light)__
 
-The SOURCE INVERSION PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
+The SOURCE PIXELIZED PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
 that reconstructs the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` 
 regularization, to set up the model and hyper images, and then:
 
@@ -129,7 +129,7 @@ regularization, to set up the model and hyper images, and then:
  - Uses an `AdaptiveBrightness` regularization.
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the
- SOURCE INVERSION PIPELINE.
+ SOURCE PIXELIZED PIPELINE.
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
@@ -155,14 +155,14 @@ initialize the model priors . In this example it:
  - The lens galaxy's dark matter mass distribution is a `EllNFWMCRLudlow` whose centre is aligned with bulge of 
  the light and stellar mass mdoel above [5 parameters].
 
- - Uses an `Inversion` for the source's light [priors fixed from SOURCE INVERSION PIPELINE].
+ - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIXELIZED PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the MASS 
  LIGHT DARK PIPELINE.
 
 __Settings__:
 
- - Hyper: We may be using hyper features and therefore pass the result of the SOURCE INVERSION PIPELINE to use as the
+ - Hyper: We may be using hyper features and therefore pass the result of the SOURCE PIXELIZED PIPELINE to use as the
  hyper dataset if required.
 
  - Positions: We update the positions and positions threshold using the previous model-fitting result (as described 

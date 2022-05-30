@@ -8,6 +8,7 @@ def hyper_fit(
     setup_hyper: al.SetupHyper,
     result: af.Result,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
+    search_previous : af.NonLinearSearch,
     include_hyper_image_sky: bool = False,
 ):
     """
@@ -46,66 +47,8 @@ def hyper_fit(
         setup_hyper=setup_hyper,
         result=result,
         analysis=analysis,
+        search_previous=search_previous,
         include_hyper_image_sky=include_hyper_image_sky,
-    )
-
-
-def hyper_fit_bc(
-    setup_hyper: al.SetupHyper,
-    result: af.Result,
-    analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
-    include_hyper_image_sky: bool = False,
-):
-    """
-    Perform a hyper-fit, which extends a model-fit with an additional fit which fixes the non-hyper components of the
-    model (e.g., `LightProfile`'s, `MassProfile`) to the `Result`'s maximum likelihood fit. The hyper-fit then treats
-    only the hyper-model components as free parameters, which are any of the following model components:
-
-    1) The `Pixelization` of any `Galaxy` in the model.
-    2) The `Regularization` of any `Galaxy` in the model.
-    3) Hyper data components like a `HyperImageSky` or `HyperBackgroundNoise` if input into the function.
-    4) `HyperGalaxy` components of the `Galaxy`'s in the model, which are used to scale the noise in regions of the
-    data which are fit poorly.
-
-    The hyper model is typically used in pipelines to refine and improve an `Inversion` after model-fits that fit the
-    `Galaxy` light and mass components.
-
-    Parameters
-    ----------
-    setup_hyper
-        The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
-    result
-        The result of a previous `Analysis` search whose maximum log likelihood model forms the basis of the hyper model.
-    analysis
-        An analysis which is used to fit imaging or interferometer data with a model.
-    include_hyper_image_sky
-        Whether to include the hyper image sky component, irrespective of the `setup_hyper`.
-
-    Returns
-    -------
-    af.Result
-        The result of the hyper model-fit, which has a new attribute `result.hyper` that contains updated parameter
-        values for the hyper-model components for passing to later model-fits.
-    """
-
-    hyper_model = al.util.model.hyper_model_from(
-        setup_hyper=setup_hyper,
-        result=result,
-        include_hyper_image_sky=include_hyper_image_sky,
-    )
-
-    try:
-        set_upper_limit_of_pixelization_pixels_prior(
-            hyper_model=hyper_model, result=result
-        )
-    except AttributeError:
-        pass
-
-    return al.util.model.hyper_fit_bc(
-        hyper_model=hyper_model,
-        setup_hyper=setup_hyper,
-        result=result,
-        analysis=analysis,
     )
 
 
@@ -149,11 +92,12 @@ def set_upper_limit_of_pixelization_pixels_prior(
 def stochastic_fit(
     result: af.Result,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
+    search_previous : af.NonLinearSearch,
     include_lens_light: bool = False,
     include_pixelization: bool = False,
     include_regularization: bool = False,
     search_cls: af.NonLinearSearch = af.DynestyStatic,
-    search_inversion_dict: Optional[Dict] = None,
+    search_pixelized_dict: Optional[Dict] = None,
     info: Optional[Dict] = None,
     pickle_files: Optional[List] = None,
 ):
@@ -187,8 +131,8 @@ def stochastic_fit(
         fitted for (if `False` it is passed as an `instance`).
     """
 
-    if search_inversion_dict is None:
-        search_inversion_dict = {"nlive": 100}
+    if search_pixelized_dict is None:
+        search_pixelized_dict = {"nlive": 100}
 
     stochastic_model = al.util.model.stochastic_model_from(
         result=result,
@@ -201,9 +145,10 @@ def stochastic_fit(
     return al.util.model.stochastic_fit(
         stochastic_model=stochastic_model,
         search_cls=search_cls,
-        search_inversion_dict=search_inversion_dict,
+        search_pixelized_dict=search_pixelized_dict,
         result=result,
         analysis=analysis,
+        search_previous=search_previous,
         info=info,
         pickle_files=pickle_files,
     )

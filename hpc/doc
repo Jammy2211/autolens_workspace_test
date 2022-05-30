@@ -39,7 +39,6 @@ To setup your cosma PyAutoLens workspace, the following commands should work fro
    module purge
    module load cosma/2018
    module load python/3.6.5
-   module load multinest/oct2018
    source /cosma/home/dp004/dc-nigh1/PyAutoLens/bin/activate
    export PYTHONPATH=/cosma/home/dp004/dc-nigh1/
    export WORKSPACE=/cosma/home/dp004/dc-nigh1/autolens_workspace/

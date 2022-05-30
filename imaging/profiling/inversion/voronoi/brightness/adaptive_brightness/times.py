@@ -335,7 +335,7 @@ sparse_image_plane_grid = al.Grid2DSparse.from_total_pixels_grid_and_weight_map(
 start = time.time()
 for i in range(repeats):
     tracer.deflections_yx_2d_from(grid=sparse_image_plane_grid)
-    traced_grid = tracer.traced_grid_list_from(grid=masked_imaging.grid)[-1]
+    traced_grid = tracer.traced_grid_2d_list_from(grid=masked_imaging.grid)[-1]
 
 profiling_dict["Ray Tracing (SIE)"] = (time.time() - start) / repeats
 
@@ -347,7 +347,7 @@ Compute the deflection angles again, but now using the more expensive `EllPowerL
 start = time.time()
 for i in range(repeats):
     tracer.deflections_yx_2d_from(grid=sparse_image_plane_grid)
-    traced_grid_power_law = tracer_power_law.traced_grid_list_from(
+    traced_grid_power_law = tracer_power_law.traced_grid_2d_list_from(
         grid=masked_imaging.grid
     )[-1]
 
@@ -362,7 +362,7 @@ two `EllSersic`'s and an `EllNFW`.
 start = time.time()
 for i in range(repeats):
     tracer.deflections_yx_2d_from(grid=sparse_image_plane_grid)
-    traced_grid_decomposed = tracer_decomposed.traced_grid_list_from(
+    traced_grid_decomposed = tracer_decomposed.traced_grid_2d_list_from(
         grid=masked_imaging.grid
     )[-1]
 

@@ -3,7 +3,7 @@ import autolens as al
 from . import slam_util
 from . import extensions
 
-from typing import Union, Optional, Tuple
+from typing import Callable, Union, Optional, Tuple
 
 
 def no_lens_light(
@@ -19,6 +19,7 @@ def no_lens_light(
     redshift_source: float = 1.0,
     mass_centre: Optional[Tuple[float, float]] = None,
     clump_model: Union[al.ClumpModel, al.ClumpModelDisabled] = al.ClumpModelDisabled(),
+    multi_func: Optional[Callable] = None,
 ) -> af.ResultsCollection:
     """
     The SlaM SOURCE PARAMETRIC PIPELINE for fitting imaging data without a lens light component.
@@ -83,6 +84,9 @@ def no_lens_light(
         clumps=clump_model.clumps_mass_only,
     )
 
+    if multi_func is not None:
+        analysis = multi_func(analysis, model)
+
     search = af.DynestyStatic(
         name="source_parametric[1]_mass[total]_source[parametric]",
         **settings_autofit.search_dict,
@@ -105,6 +109,7 @@ def no_lens_light(
         setup_hyper=setup_hyper,
         result=result_1,
         analysis=analysis,
+        search_previous=search,
         include_hyper_image_sky=True,
     )
 
@@ -127,6 +132,7 @@ def with_lens_light(
     redshift_source: float = 1.0,
     mass_centre: Optional[Tuple[float, float]] = None,
     clump_model: Union[al.ClumpModel, al.ClumpModelDisabled] = al.ClumpModelDisabled(),
+    multi_func: Optional[Callable] = None,
 ) -> af.ResultsCollection:
     """
     The SlaM SOURCE PARAMETRIC PIPELINE for fitting imaging data with a lens light component.
@@ -193,8 +199,11 @@ def with_lens_light(
     )
 
     model = af.Collection(
-        galaxies=af.Collection(lens=lens), clumps=clump_model.clumps_light_only,
+        galaxies=af.Collection(lens=lens), clumps=clump_model.clumps_light_only
     )
+
+    if multi_func is not None:
+        analysis = multi_func(analysis=analysis, model=model, search_index=0)
 
     search = af.DynestyStatic(
         name="source_parametric[1]_light[parametric]",
@@ -241,6 +250,9 @@ def with_lens_light(
         clumps=clump_model.clumps_mass_only + slam_util.clumps_from(result=result_1),
     )
 
+    if multi_func is not None:
+        analysis = multi_func(analysis=analysis, model=model, search_index=1)
+
     search = af.DynestyStatic(
         name="source_parametric[2]_light[fixed]_mass[total]_source[parametric]",
         **settings_autofit.search_dict,
@@ -282,8 +294,12 @@ def with_lens_light(
                 envelope=result_2.model.galaxies.source.envelope,
             ),
         ),
-        clumps=clump_model.clumps_light_only + slam_util.clumps_from(result=result_2, mass_as_model=True),
+        clumps=clump_model.clumps_light_only
+        + slam_util.clumps_from(result=result_2, mass_as_model=True),
     )
+
+    if multi_func is not None:
+        analysis = multi_func(analysis=analysis, model=model, search_index=2)
 
     search = af.DynestyStatic(
         name="source_parametric[3]_light[parametric]_mass[total]_source[parametric]",
@@ -307,6 +323,7 @@ def with_lens_light(
         setup_hyper=setup_hyper,
         result=result_3,
         analysis=analysis,
+        search_previous=search,
         include_hyper_image_sky=True,
     )
 

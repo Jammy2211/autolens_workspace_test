@@ -6,8 +6,10 @@ import autogalaxy as ag
 json_file = "galaxy.json"
 
 galaxy = ag.Galaxy(
-        redshift=1.0, pixelization=ag.pix.VoronoiMagnification(), regularization=ag.reg.AdaptiveBrightness()
-    )
+    redshift=1.0,
+    pixelization=ag.pix.VoronoiMagnification(),
+    regularization=ag.reg.AdaptiveBrightness(),
+)
 
 with open(json_file, "w+") as f:
     json.dump(galaxy.dict(), f, indent=4)

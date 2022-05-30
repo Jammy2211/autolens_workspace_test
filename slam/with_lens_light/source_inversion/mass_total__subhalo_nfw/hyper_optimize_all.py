@@ -155,16 +155,16 @@ source_parametric_results = slam.source_parametric.no_lens_light(
 )
 
 """
-__SOURCE INVERSION PIPELINE (with lens light)__
+__SOURCE PIXELIZED PIPELINE (with lens light)__
 
-The SOURCE INVERSION PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
+The SOURCE PIXELIZED PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
 that reconstructs the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` 
 regularization, to set up the model and hyper images, and then:
 
  - Uses a `VoronoiBrightnessImage` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the
- SOURCE INVERSION PIPELINE.
+ SOURCE PIXELIZED PIPELINE.
 
 __Settings__:
 
@@ -197,7 +197,7 @@ source_inversion_results = slam.source_inversion.no_lens_light(
 __MASS TOTAL PIPELINE (with lens light)__
 
 The MASS TOTAL PIPELINE (with lens light) uses one search to fits a complex lens mass model to a high level of accuracy, 
-using the lens mass model and source model of the SOURCE INVERSION PIPELINE to initialize the model priors and the lens 
+using the lens mass model and source model of the SOURCE PIXELIZED PIPELINE to initialize the model priors and the lens 
 light model of the LIGHT PARAMETRIC PIPELINE. In this example it:
 
  - Uses a parametric `EllSersic` bulge and `EllSersic` disk with centres aligned for the lens galaxy's 
@@ -206,14 +206,14 @@ light model of the LIGHT PARAMETRIC PIPELINE. In this example it:
  - Uses an `EllPowerLaw` model for the lens's total mass distribution [priors initialized from SOURCE 
  PARAMETRIC PIPELINE + centre unfixed from (0.0, 0.0)].
 
- - Uses an `Inversion` for the source's light [priors fixed from SOURCE INVERSION PIPELINE].
+ - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIXELIZED PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS TOTAL 
  PIPELINE.
 
 __Settings__:
 
- - Hyper: We may be using hyper features and therefore pass the result of the SOURCE INVERSION PIPELINE to use as the
+ - Hyper: We may be using hyper features and therefore pass the result of the SOURCE PIXELIZED PIPELINE to use as the
  hyper dataset if required.
 
  - Positions: We update the positions and positions threshold using the previous model-fitting result (as described 

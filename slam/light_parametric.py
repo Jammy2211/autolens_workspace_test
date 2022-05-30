@@ -3,7 +3,7 @@ import autolens as al
 from . import slam_util
 from . import extensions
 
-from typing import Union, Optional
+from typing import Callable, Dict, Union, Optional
 
 
 def with_lens_light(
@@ -14,7 +14,9 @@ def with_lens_light(
     lens_bulge: Optional[af.Model] = af.Model(al.lp.EllSersic),
     lens_disk: Optional[af.Model] = None,
     lens_envelope: Optional[af.Model] = None,
+    lens_gaussian_dict: Optional[Dict] = None,
     end_with_hyper_extension: bool = False,
+    multi_func: Optional[Callable] = None,
 ) -> af.ResultsCollection:
     """
     The SlaM LIGHT PARAMETRIC PIPELINE for fitting imaging data with a lens light component.
@@ -29,7 +31,7 @@ def with_lens_light(
     setup_hyper
         The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
     source_results
-        The results of the SLaM SOURCE PARAMETRIC PIPELINE or SOURCE INVERSION PIPELINE which ran before this pipeline.
+        The results of the SLaM SOURCE PARAMETRIC PIPELINE or SOURCE PIXELIZED PIPELINE which ran before this pipeline.
     lens_bulge
         The `LightProfile` `Model` used to represent the light distribution of the lens galaxy's bulge (set to
         None to omit a bulge).
@@ -71,28 +73,62 @@ def with_lens_light(
         result=source_results.last, setup_hyper=setup_hyper, source_is_model=False
     )
 
-    model = af.Collection(
-        galaxies=af.Collection(
-            lens=af.Model(
-                al.Galaxy,
-                redshift=source_results.last.instance.galaxies.lens.redshift,
-                bulge=lens_bulge,
-                disk=lens_disk,
-                envelope=lens_envelope,
-                mass=source_results.last.instance.galaxies.lens.mass,
-                shear=source_results.last.instance.galaxies.lens.shear,
-                hyper_galaxy=hyper_galaxy,
+    if lens_gaussian_dict is None:
+        model = af.Collection(
+            galaxies=af.Collection(
+                lens=af.Model(
+                    al.Galaxy,
+                    redshift=source_results.last.instance.galaxies.lens.redshift,
+                    bulge=lens_bulge,
+                    disk=lens_disk,
+                    envelope=lens_envelope,
+                    mass=source_results.last.instance.galaxies.lens.mass,
+                    shear=source_results.last.instance.galaxies.lens.shear,
+                    hyper_galaxy=hyper_galaxy,
+                ),
+                source=source,
             ),
-            source=source,
-        ),
-        clumps=slam_util.clumps_from(result=source_results.last, light_as_model=True),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from(
-            result=source_results.last, as_model=True
-        ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from(
-            result=source_results.last
-        ),
-    )
+            clumps=slam_util.clumps_from(
+                result=source_results.last, light_as_model=True
+            ),
+            hyper_image_sky=setup_hyper.hyper_image_sky_from(
+                result=source_results.last, as_model=True
+            ),
+            hyper_background_noise=setup_hyper.hyper_background_noise_from(
+                result=source_results.last
+            ),
+        )
+
+    else:
+
+        model = af.Collection(
+            galaxies=af.Collection(
+                lens=af.Model(
+                    al.Galaxy,
+                    redshift=source_results.last.instance.galaxies.lens.redshift,
+                    bulge=lens_bulge,
+                    disk=lens_disk,
+                    envelope=lens_envelope,
+                    **lens_gaussian_dict,
+                    mass=source_results.last.instance.galaxies.lens.mass,
+                    shear=source_results.last.instance.galaxies.lens.shear,
+                    hyper_galaxy=hyper_galaxy,
+                ),
+                source=source,
+            ),
+            clumps=slam_util.clumps_from(
+                result=source_results.last, light_as_model=True
+            ),
+            hyper_image_sky=setup_hyper.hyper_image_sky_from(
+                result=source_results.last, as_model=True
+            ),
+            hyper_background_noise=setup_hyper.hyper_background_noise_from(
+                result=source_results.last
+            ),
+        )
+
+    if multi_func is not None:
+        analysis = multi_func(analysis, model)
 
     search = af.DynestyStatic(
         name="light[1]_light[parametric]", **settings_autofit.search_dict, nlive=150
@@ -105,7 +141,7 @@ def with_lens_light(
 
     The above search is extended with a hyper-search if the SetupHyper has one or more of the following inputs:
 
-     - The source is using an `Inversion`.
+     - The source is modeled using a pixelization with a regularization scheme.
      - One or more `HyperGalaxy`'s are included.
      - The background sky is included via `hyper_image_sky` input.
      - The background noise is included via the `hyper_background_noise`.
@@ -114,10 +150,11 @@ def with_lens_light(
     if end_with_hyper_extension:
 
         result_1 = extensions.hyper_fit(
-            setup_hyper=setup_hyper,
-            result=result_1,
-            analysis=analysis,
-            include_hyper_image_sky=True,
-        )
+        setup_hyper=setup_hyper,
+        result=result_1,
+        analysis=analysis,
+        search_previous=search,
+        include_hyper_image_sky=True,
+    )
 
     return af.ResultsCollection([result_1])

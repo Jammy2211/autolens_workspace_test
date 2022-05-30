@@ -148,20 +148,20 @@ source_parametric_results = slam.source_parametric.with_lens_light(
 )
 
 """
-__SOURCE INVERSION PIPELINE (with lens light)__
+__SOURCE PIXELIZED PIPELINE (with lens light)__
 
-The SOURCE INVERSION PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
+The SOURCE PIXELIZED PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
 that reconstructs the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` 
 regularization, to set up the model and hyper images, and then:
 
  - Uses a `VoronoiBrightnessImage` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the
- SOURCE INVERSION PIPELINE.
+ SOURCE PIXELIZED PIPELINE.
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
-source_inversion_results = slam.source_inversion.no_lens_light(
+source_inversion_results = slam.source_inversion.with_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -175,7 +175,7 @@ source_inversion_results = slam.source_inversion.no_lens_light(
 __LIGHT PARAMETRIC PIPELINE__
 
 The LIGHT PARAMETRIC PIPELINE uses one search to fit a complex lens light model to a high level of accuracy, using the
-lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE INVERSION PIPELINE.
+lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE PIXELIZED PIPELINE.
 In this example it:
 
  - Uses a parametric `EllSersic` bulge and `EllSersic` disk with centres aligned for the lens galaxy's 
@@ -183,7 +183,7 @@ In this example it:
 
  - Uses an `EllIsothermal` model for the lens's total mass distribution [fixed from SOURCE PARAMETRIC PIPELINE].
 
- - Uses an `Inversion` for the source's light [priors fixed from SOURCE INVERSION PIPELINE].
+ - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIXELIZED PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
@@ -214,12 +214,14 @@ initialize the model priors . In this example it:
  - The lens galaxy's dark matter mass distribution is a `EllNFWMCRLudlow` whose centre is aligned with bulge of 
  the light and stellar mass model above [5 parameters].
 
- - Uses an `Inversion` for the source's light [priors fixed from SOURCE INVERSION PIPELINE].
+ - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIXELIZED PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the MASS 
  LIGHT DARK PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=imaging, hyper_dataset_result=source_inversion_results.last)
+analysis = al.AnalysisImaging(
+    dataset=imaging, hyper_dataset_result=source_inversion_results.last
+)
 
 lens_bulge = af.Model(al.lmp.EllSersic)
 dark = af.Model(al.mp.EllNFWMCRLudlow)

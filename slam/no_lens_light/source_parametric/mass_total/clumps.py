@@ -101,7 +101,7 @@ extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter value
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_hyper = al.SetupHyper(
-    search_inversion_dict={"maxcall": 1},
+    search_pixelized_dict={"maxcall": 1},
     hyper_galaxies_lens=False,
     hyper_galaxies_source=False,
     hyper_image_sky=None,
@@ -124,7 +124,7 @@ clump_model = al.ClumpModel(
     redshift=0.5,
     centres=clump_centres,
     mass_cls=al.mp.SphIsothermal,
-    einstein_radius_upper_limit=1.0
+    einstein_radius_upper_limit=1.0,
 )
 
 """

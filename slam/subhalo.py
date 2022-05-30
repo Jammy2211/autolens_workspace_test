@@ -16,6 +16,7 @@ def detection(
     free_redshift: bool = False,
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
+    end_with_stochastic_extension: bool = False
 ) -> af.ResultsCollection:
     """
     The SLaM SUBHALO PIPELINE for fitting imaging data with or without a lens light component, where it is assumed
@@ -216,6 +217,12 @@ def detection(
 
     result_3 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
 
+    if end_with_stochastic_extension:
+
+        extensions.stochastic_fit(
+            result=result_3, analysis=analysis, search_previous=search, **settings_autofit.fit_dict
+        )
+
     return af.ResultsCollection([result_1, subhalo_result, result_3])
 
 
@@ -267,8 +274,8 @@ class SimulateImaging:
 
 def sensitivity_mapping_imaging(
     settings_autofit: af.SettingsSearch,
-    mask: al.Mask2D,
-    psf: al.Kernel2D,
+    mask_2d: al.Mask2D,
+    psf_2d: al.Kernel2D,
     mass_results: af.ResultsCollection,
     analysis_cls: ClassVar[al.AnalysisImaging],
     subhalo_mass: af.Model = af.Model(al.mp.SphNFWMCRLudlow),
@@ -434,7 +441,7 @@ def sensitivity_mapping_imaging(
 def sensitivity_mapping_interferometer(
     settings_autofit: af.SettingsSearch,
     uv_wavelengths: np.ndarray,
-    real_space_mask: al.Mask2D,
+    real_space_mask_2d: al.Mask2D,
     mass_results: af.ResultsCollection,
     analysis_cls: ClassVar[al.AnalysisInterferometer],
     subhalo_mass: af.Model = af.Model(al.mp.SphNFWMCRLudlow),

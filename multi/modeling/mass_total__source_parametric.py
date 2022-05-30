@@ -38,7 +38,7 @@ __Pixel Scales__
 
 Every multi-wavelength dataset can have its own unique pixel-scale.
 """
-pixel_scales_list = [0.08, 0.012]
+pixel_scales_list = [0.08, 0.12]
 
 """
 __Dataset__
@@ -143,7 +143,7 @@ model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 """
 We now make the intensity a free parameter across every analysis object.
 """
-analysis = analysis.with_free_parameters(model.galaxies.source.bulge.centre)
+analysis = analysis.with_free_parameters(model.galaxies.source.bulge.intensity)
 
 """
 __Search__

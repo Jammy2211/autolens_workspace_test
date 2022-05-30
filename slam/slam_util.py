@@ -1,8 +1,10 @@
-from typing import List, Tuple, Optional
-from sqlalchemy.orm import Session
+from typing import Dict, Tuple, Optional, Union
 
 import autofit as af
 import autolens as al
+
+from autogalaxy.profiles.light_profiles.light_profiles_linear import LightProfileLinear
+from autogalaxy.galaxy.galaxy import is_light_profile
 
 
 def set_lens_light_centres(lens, light_centre: Tuple[float, float]):
@@ -61,7 +63,7 @@ def set_lens_light_model_centre_priors(
 
 
 def pass_light_and_mass_profile_priors(
-    model: af.Model(al.lmp.LightMassProfile),
+    lmp_model: af.Model(al.lmp.LightMassProfile),
     result_light_component: af.Model,
     result: af.Result,
     einstein_mass_range: Optional[Tuple[float, float]] = None,
@@ -75,13 +77,13 @@ def pass_light_and_mass_profile_priors(
     same path.
 
     It also allows for an Einstein mass range to be input, such that the `LogUniformPrior` on the mass-to-light
-    ratio of the model-component is set with lower and upper limits that are a multiple of the Einstein mass
+    ratio of the lmp_model-component is set with lower and upper limits that are a multiple of the Einstein mass
     computed in the previous SOURCE PIPELINE. For example, if `einstein_mass_range=[0.01, 5.0]` the mass to light
     ratio will use priors corresponding to values which give Einstein masses 1% and 500% of the estimated Einstein mass.
 
     Parameters
     ----------
-    model : af.Model(al.lmp.LightMassProfile)
+    lmp_model : af.Model(al.lmp.LightMassProfile)
         The light and mass profile whoses priors are passed from the LIGHT PIPELINE.
     result_light_component : af.Result
         The `LightProfile` result of the LIGHT PIPELINE used to pass the priors.
@@ -91,7 +93,7 @@ def pass_light_and_mass_profile_priors(
         The values a the estimate of the Einstein Mass in the LIGHT PIPELINE is multiplied by to set the lower and
         upper limits of the profile's mass-to-light ratio.
     as_instance
-        If `True` the prior is set up as an instance, else it is set up as a model component.
+        If `True` the prior is set up as an instance, else it is set up as a lmp_model component.
 
     Returns
     -------
@@ -99,29 +101,27 @@ def pass_light_and_mass_profile_priors(
         The light and mass profile whose priors are initialized from a previous result.
     """
 
-    if model is None:
-        return model
+    if lmp_model is None:
+        return lmp_model
 
-    model.take_attributes(source=result_light_component)
+    lmp_model.take_attributes(source=result_light_component)
 
-    if einstein_mass_range is not None:
+    lmp_model = update_mass_to_light_ratio_prior(
+        lmp_model=lmp_model, result=result, einstein_mass_range=einstein_mass_range
+    )
 
-        model = update_mass_to_light_ratio_prior(
-            model=model, result=result, einstein_mass_range=einstein_mass_range
-        )
-
-    return model
+    return lmp_model
 
 
 def update_mass_to_light_ratio_prior(
-    model: af.Model(al.lmp.LightMassProfile),
+    lmp_model: af.Model(al.lmp.LightMassProfile),
     result: af.Result,
     einstein_mass_range: Tuple[float, float],
     bins: int = 100,
 ) -> Optional[af.Model]:
     """
-    Updates the mass to light ratio parameter of a `LightMassProfile` model (e.g. a bulge or disk) such that the
-    the `LogUniformPrior` on the mass-to-light ratio of the model-component is set with lower and upper limits that
+    Updates the mass to light ratio parameter of a `LightMassProfile` lmp_model (e.g. a bulge or disk) such that the
+    the `LogUniformPrior` on the mass-to-light ratio of the lmp_model-component is set with lower and upper limits that
     are a multiple of the Einstein mass computed in the previous SOURCE PIPELINE.
 
     For example, if `einstein_mass_range=[0.01, 5.0]` the mass to light ratio will use priors corresponding to
@@ -129,7 +129,7 @@ def update_mass_to_light_ratio_prior(
 
     Parameters
     ----------
-    model
+    lmp_model
         The light and mass profile whoses priors are passed from the LIGHT PIPELINE.
     result
         The result of the LIGHT PIPELINE used to pass the priors.
@@ -145,21 +145,32 @@ def update_mass_to_light_ratio_prior(
         The light and mass profile whose mass-to-light ratio prior is set using the input Einstein mass and range.
     """
 
-    if model is None:
+    if einstein_mass_range is None:
+        return lmp_model
+
+    if lmp_model is None:
         return None
 
-    grid = result.max_log_likelihood_fit.grid
+    grid_2d = result.max_log_likelihood_fit.grid
 
-    einstein_radius = result.max_log_likelihood_tracer.einstein_radius_from(grid=grid)
+    einstein_radius = result.max_log_likelihood_tracer.einstein_radius_from(
+        grid=grid_2d
+    )
 
     einstein_mass = result.max_log_likelihood_tracer.einstein_mass_angular_from(
-        grid=grid
+        grid=grid_2d
     )
 
     einstein_mass_lower = einstein_mass_range[0] * einstein_mass
     einstein_mass_upper = einstein_mass_range[1] * einstein_mass
 
-    instance = model.instance_from_prior_medians()
+    if isinstance(lmp_model, af.Model):
+        instance = lmp_model.instance_from_prior_medians()
+    else:
+        instance = lmp_model
+
+    if instance.intensity < 0.0:
+        raise al.exc.GalaxyException("The intensity of a linear light profile is negative, cannot create model.")
 
     mass_to_light_ratio_lower = instance.normalization_via_mass_angular_from(
         mass_angular=einstein_mass_lower, radius=einstein_radius, bins=bins
@@ -168,11 +179,11 @@ def update_mass_to_light_ratio_prior(
         mass_angular=einstein_mass_upper, radius=einstein_radius, bins=bins
     )
 
-    model.mass_to_light_ratio = af.LogUniformPrior(
+    lmp_model.mass_to_light_ratio = af.LogUniformPrior(
         lower_limit=mass_to_light_ratio_lower, upper_limit=mass_to_light_ratio_upper
     )
 
-    return model
+    return lmp_model
 
 
 def mass__from(mass, result: af.Result, unfix_mass_centre: bool = False) -> af.Model:
@@ -188,7 +199,7 @@ def mass__from(mass, result: af.Result, unfix_mass_centre: bool = False) -> af.M
     Parameters
     ----------
     results
-        The result of a previous SOURCE PARAMETRIC PIPELINE or SOURCE INVERSION PIPELINE.
+        The result of a previous SOURCE PARAMETRIC PIPELINE or SOURCE PIXELIZED PIPELINE.
     unfix_mass_centre
         If the `mass_centre` was fixed to an input value in a previous pipeline, then `True` will unfix it and make it
         free parameters that are fitted for.
@@ -336,6 +347,7 @@ def source__from_result_model_if_parametric(
         )
     return source__from(result=result, setup_hyper=setup_hyper, source_is_model=False)
 
+
 def clean_clumps_of_hyper_images(clumps):
 
     for clump in clumps:
@@ -347,8 +359,9 @@ def clean_clumps_of_hyper_images(clumps):
             del clump.hyper_galaxy_image
 
 
-
-def clumps_from(result: af.Result, light_as_model:bool = False, mass_as_model:bool = False):
+def clumps_from(
+    result: af.Result, light_as_model: bool = False, mass_as_model: bool = False
+):
 
     # ideal API:
 
@@ -361,8 +374,12 @@ def clumps_from(result: af.Result, light_as_model:bool = False, mass_as_model:bo
         for clump_index in range(len(result.instance.clumps)):
 
             if hasattr(result.instance.clumps[clump_index], "mass"):
-                clumps[clump_index].mass.centre = result.instance.clumps[clump_index].mass.centre
-                clumps[clump_index].mass.einstein_radius = result.model.clumps[clump_index].mass.einstein_radius
+                clumps[clump_index].mass.centre = result.instance.clumps[
+                    clump_index
+                ].mass.centre
+                clumps[clump_index].mass.einstein_radius = result.model.clumps[
+                    clump_index
+                ].mass.einstein_radius
 
     elif light_as_model:
 
@@ -370,10 +387,12 @@ def clumps_from(result: af.Result, light_as_model:bool = False, mass_as_model:bo
 
         for clump_index in range(len(result.instance.clumps)):
 
-            clumps[clump_index].light.centre = result.instance.clumps[clump_index].light.centre
-       #     clumps[clump_index].light.intensity = result.model.clumps[clump_index].light.intensity
-       #     clumps[clump_index].light.effective_radius = result.model.clumps[clump_index].light.effective_radius
-       #     clumps[clump_index].light.sersic_index = result.model.clumps[clump_index].light.sersic_index
+            clumps[clump_index].light.centre = result.instance.clumps[
+                clump_index
+            ].light.centre
+    #     clumps[clump_index].light.intensity = result.model.clumps[clump_index].light.intensity
+    #     clumps[clump_index].light.effective_radius = result.model.clumps[clump_index].light.effective_radius
+    #     clumps[clump_index].light.sersic_index = result.model.clumps[clump_index].light.sersic_index
 
     else:
 
@@ -382,3 +401,91 @@ def clumps_from(result: af.Result, light_as_model:bool = False, mass_as_model:bo
     clean_clumps_of_hyper_images(clumps=clumps)
 
     return clumps
+
+
+def lp_from(
+    lp: al.lp.LightProfile, fit: Union[al.FitImaging, al.FitInterferometer]
+) -> al.lp.LightProfile:
+
+    if isinstance(lp, LightProfileLinear):
+
+        intensity = fit.linear_light_profile_intensity_dict[lp]
+
+        return lp.lp_instance_from(intensity=intensity)
+
+    return lp
+
+
+def lmp_from(
+    lp: al.lp.LightProfile, fit: Union[al.FitImaging, al.FitInterferometer]
+) -> al.lmp.LightMassProfile:
+
+    if isinstance(lp, LightProfileLinear):
+
+        intensity = fit.linear_light_profile_intensity_dict[lp]
+
+        return lp.lmp_model_from(intensity=intensity)
+
+    return lp
+
+
+def gaussian_dict_lp_from(
+    galaxy: al.Galaxy, fit: Union[al.FitImaging, al.FitInterferometer]
+) -> Dict[str, al.lp.LightProfile]:
+
+    if (
+        galaxy.bulge is not None
+        or galaxy.disk is not None
+        or galaxy.envelope is not None
+    ):
+        raise al.exc.GalaxyException(
+            "Cannot convert Gaussian dict from linear to not linear if bulge, disk and / or envelope"
+            "light profiles are defined."
+        )
+
+    gaussian_dict = {}
+
+    for key, value in galaxy.__dict__.items():
+
+        if is_light_profile(value) and isinstance(value, LightProfileLinear):
+
+            gaussian_linear = value
+
+            intensity = fit.linear_light_profile_intensity_dict[gaussian_linear]
+
+            gaussian = gaussian_linear.lp_instance_from(intensity=intensity)
+
+            gaussian_dict[key] = gaussian
+
+    return gaussian_dict
+
+
+def gaussian_dict_lmp_from(
+    galaxy: al.Galaxy, fit: Union[al.FitImaging, al.FitInterferometer]
+) -> Dict[str, al.lp.LightProfile]:
+
+    if (
+        galaxy.bulge is not None
+        or galaxy.disk is not None
+        or galaxy.envelope is not None
+    ):
+        raise al.exc.GalaxyException(
+            "Cannot convert Gaussian dict from linear to not linear if bulge, disk and / or envelope"
+            "light profiles are defined."
+        )
+
+    gaussian_dict = {}
+
+    for key, value in galaxy.__dict__.items():
+
+        if is_light_profile(value) and isinstance(value, LightProfileLinear):
+
+            gaussian_linear = value
+
+            intensity = fit.linear_light_profile_intensity_dict[gaussian_linear]
+
+            gaussian = gaussian_linear.lmp_model_from(intensity=intensity)
+            gaussian_dict[key] = gaussian
+            gaussian.mass_to_light_ratio = gaussian_dict["gaussian_0"].mass_to_light_ratio
+
+    return gaussian_dict

@@ -77,11 +77,11 @@ image-pixel coordinates are then ray-traced to the source plane for the source r
 For simplicity, this example does not perform oversampling of the image-grid and therefore sets `sub_size=1`. We 
 provide links to resources describing how changing the `sub_size` changes the inversion at the end of this script.
 
-(The default `sub_size_inversion` used for an inversion is 4, and if you did manually set this in an analysis you
+(The default `sub_size_pixelized` used for an inversion is 4, and if you did manually set this in an analysis you
 performed then it is likely that you did use sub-gridding with this resolution sub-grid).
 """
 masked_imaging = masked_imaging.apply_settings(
-    settings=al.SettingsImaging(sub_size=1, sub_size_inversion=1)
+    settings=al.SettingsImaging(sub_size=1, sub_size_pixelized=1)
 )
 
 """
@@ -120,7 +120,9 @@ Using the masked 2D grid defined above, we can calculate and plot images of each
 import matplotlib.pyplot as plt
 
 image_2d = bulge.image_2d_from(grid=masked_imaging.grid)
-plt.imshow(image_2d.native) # The use of 'native' maps this to a 2D numpy array for plotting.
+plt.imshow(
+    image_2d.native
+)  # The use of 'native' maps this to a 2D numpy array for plotting.
 
 """
 Throughout the rest of this guide, I will use **PyAutoLens**'s in-built visualization tools for plotting, which
@@ -174,10 +176,7 @@ For example, for the `bulge` and `disk`, when it computes their 2D images it com
 them together.
 """
 
-lens_galaxy = al.Galaxy(
-    redshift=0.5,
-    bulge=bulge, disk=disk
-)
+lens_galaxy = al.Galaxy(redshift=0.5, bulge=bulge, disk=disk)
 
 """
 The source galaxy whose `VoronoiMagnification` `Pixelization` fits the data.
@@ -283,7 +282,7 @@ The image-plane pixelization computed below must be ray-traced just like the ima
 the profiling time below.
 """
 deflections_2d = tracer.deflections_yx_2d_from(grid=masked_imaging.grid)
-traced_grid = tracer.traced_grid_list_from(grid=masked_imaging.grid)[-1]
+traced_grid = tracer.traced_grid_2d_list_from(grid=masked_imaging.grid)[-1]
 
 """
 __Ray Tracing Inversion (SIE)__
@@ -291,13 +290,13 @@ __Ray Tracing Inversion (SIE)__
 The grid used to perform an inversion can have a different `sub_size` than the grid used to evaluate light profiles
 (e.g. if parametric sources are used in the source plane).
 
-Thus, ray-tracing is performed for a unique grid called `grid_inversion` when performing an `Inversion`.
+Thus, ray-tracing is performed for a unique grid called `grid_pixelized` when performing an `Inversion`.
 """
 deflections_2d_inversion = tracer.deflections_yx_2d_from(
-    grid=masked_imaging.grid_inversion
+    grid=masked_imaging.grid_pixelized
 )
-traced_grid_inversion = tracer.traced_grid_list_from(
-    grid=masked_imaging.grid_inversion
+traced_grid_pixelized = tracer.traced_grid_2d_list_from(
+    grid=masked_imaging.grid_pixelized
 )[-1]
 
 """
@@ -331,7 +330,7 @@ to enable the use of multiple mappers that analysis double source plane lens sys
 For now... this can be ignored.
 """
 traced_sparse_grid = tracer.traced_sparse_grid_pg_list_from(
-    grid=masked_imaging.grid_inversion
+    grid=masked_imaging.grid_pixelized
 )[0][-1][0]
 
 """
@@ -352,7 +351,7 @@ Checkout the function `relocated_grid_from` for a full description of the method
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/two_d/abstract_grid_2d.py
 """
-relocated_grid = traced_grid.relocated_grid_from(grid=traced_grid_inversion)
+relocated_grid = traced_grid.relocated_grid_from(grid=traced_grid_pixelized)
 
 """
 __Border Relocation Pixelization__
