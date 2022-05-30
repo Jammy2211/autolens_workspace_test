@@ -1,0 +1,19 @@
+{
+    "lens_name": "slacs0728+3835",
+    "z_lens": 0.206,
+    "z_source": 0.688,
+    "b_SIE": 1.25,
+    "log[Mein/Mo]": 11.3,
+    "gamma": 1.86,
+    "gamma_err": 0.1,
+    "M_Ein": 199526231496.8891,
+    "marker": "<",
+    "colour": "coral",
+    "shear": 0.01,
+    "q_SIE": 0.85,
+    "PA": 67.6,
+    "R_eff": 1.78,
+    "sigma": 214.0,
+    "sigma_err": 11.0,
+    "subhalo_grid_dimensions_arcsec":
+}
