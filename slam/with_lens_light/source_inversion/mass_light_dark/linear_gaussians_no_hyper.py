@@ -246,10 +246,6 @@ mass_results = slam.mass_light_dark.with_lens_light__from_light_linear(
     dark=dark,
 )
 
-slam.extensions.stochastic_fit(
-    result=mass_results.last, analysis=analysis, include_lens_light=True
-)
-
 """
 Finish.
 """

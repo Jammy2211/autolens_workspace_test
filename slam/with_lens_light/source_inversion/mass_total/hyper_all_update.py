@@ -225,10 +225,6 @@ mass_results = slam.mass_total.with_lens_light(
     end_with_hyper_extension=True,
 )
 
-slam.extensions.stochastic_fit(
-    result=mass_results.last, analysis=analysis, include_lens_light=True
-)
-
 """
 Finish.
 """

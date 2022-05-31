@@ -140,8 +140,9 @@ to set up the model and hyper images, and then:
  - Uses a `VoronoiBrightnessImage` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
 """
+
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_parametric_results.last
+    dataset=imaging, hyper_dataset_result=source_parametric_results.last, settings_inversion=al.SettingsInversion(use_w_tilde=False)
 )
 
 source_inversion_results = slam.source_inversion.no_lens_light(
@@ -178,7 +179,7 @@ mass_result_hyper = slam.extensions.hyper_fit(
     setup_hyper=setup_hyper, result=mass_results.last, analysis=analysis
 )
 
-slam.extensions.stochastic_fit(result=mass_results.last, analysis=analysis)
+
 
 """
 Finish.

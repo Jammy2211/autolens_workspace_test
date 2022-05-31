@@ -241,7 +241,7 @@ mass_results = slam.mass_total.no_lens_light(
     end_with_hyper_extension=True,
 )
 
-slam.extensions.stochastic_fit(result=mass_results.last, analysis=analysis)
+
 
 """
 __SUBHALO PIPELINE (single plane detection)__

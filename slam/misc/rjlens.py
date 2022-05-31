@@ -205,7 +205,7 @@ mass_results = slam.mass_light_dark.no_lens_light(
     dark=dark,
 )
 
-slam.extensions.stochastic_fit(result=mass_results.last, analysis=analysis)
+
 
 import sys
 

@@ -2,6 +2,7 @@ import autofit as af
 import autolens as al
 from autofit.non_linear.grid import sensitivity as s
 from . import slam_util
+from . import extensions
 
 from typing import Union, Tuple, ClassVar, Optional
 import numpy as np

@@ -71,7 +71,7 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = af.SettingsSearch(
     path_prefix=path.join(
-        "slam", "light_sersic__mass_total__source_inversion", "light_linear_no_hyper"
+        "slam", "light_sersic__mass_total__source_inversion", "light_linear"
     ),
     number_of_cores=1,
     session=None,
@@ -97,10 +97,10 @@ extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter value
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_hyper = al.SetupHyper(
-    hyper_galaxies_lens=False,
-    hyper_galaxies_source=False,
-    hyper_image_sky=None,
-    hyper_background_noise=None,
+    hyper_galaxies_lens=True,
+    hyper_galaxies_source=True,
+    hyper_image_sky=al.hyper_data.HyperImageSky,
+    hyper_background_noise=al.hyper_data.HyperBackgroundNoise,
 )
 
 """
@@ -220,10 +220,6 @@ mass_results = slam.mass_total.with_lens_light(
     source_results=source_inversion_results,
     light_results=light_results,
     mass=af.Model(al.mp.EllPowerLaw),
-)
-
-slam.extensions.stochastic_fit(
-    result=mass_results.last, analysis=analysis, include_lens_light=True
 )
 
 """

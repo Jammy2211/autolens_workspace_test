@@ -238,6 +238,7 @@ def no_lens_light(
         setup_hyper=setup_hyper,
         result=result_4,
         analysis=analysis,
+        search_previous=search,
         include_hyper_image_sky=True,
     )
 
@@ -508,6 +509,7 @@ def with_lens_light(
         setup_hyper=setup_hyper,
         result=result_4,
         analysis=analysis,
+        search_previous=search,
         include_hyper_image_sky=True,
     )
 
