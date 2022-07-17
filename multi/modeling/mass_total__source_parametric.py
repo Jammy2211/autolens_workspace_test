@@ -118,7 +118,7 @@ analysis = sum(analysis_list)
 We can parallelize the likelihood function of these analysis classes, whereby each evaluation is performed on a 
 different CPU.
 """
-analysis.n_cores = 2
+analysis.n_cores = 1
 
 """
 __Model__
@@ -197,5 +197,5 @@ for result in result_list:
     dynesty_plotter.cornerplot()
 
 """
-Checkout `autolens_workspace/notebooks/results` for a full description of analysing results in **PyAutoLens**.
+Checkout `autolens_workspace/*/results` for a full description of analysing results in **PyAutoLens**.
 """

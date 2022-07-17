@@ -79,10 +79,7 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = af.SettingsSearch(
     path_prefix=path.join(
-        "imaging",
-        "slam",
-        "light_sersic__mass_total__subhalo_nfw__source_parametric",
-        "clumps",
+        "slam", "light_sersic__mass_total__subhalo_nfw__source_parametric", "clumps"
     ),
     number_of_cores=1,
     session=None,
@@ -121,7 +118,7 @@ This model includes clumps, which are `Galaxy` objects with light and mass profi
 model galaxies nearby the strong lens system.
 
 A full description of the clump API is given in the 
-script `autolens_workspace/scripts/imaging/modeling/customize/clumps.py`
+script `autolens_workspace/*/imaging/modeling/customize/clumps.py`
 """
 clump_centres = al.Grid2DIrregular(grid=[(1.0, 1.0), [2.0, 2.0]])
 

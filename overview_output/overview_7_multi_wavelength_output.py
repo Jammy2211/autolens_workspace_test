@@ -161,7 +161,7 @@ analysis = sum(analysis_list)
 We can parallelize the likelihood function of these analysis classes, whereby each evaluation is performed on a 
 different CPU.
 """
-analysis.n_cores = 2
+analysis.n_cores = 1
 
 """
 __Model__

@@ -22,7 +22,7 @@ subhalos of a given mass could have been detected if present.
 This runner uses the SLaM pipelines:
 
  `source_parametric/no_lens_light`
- `source__inversion/source_inversion__no_lens_light`
+ `source__inversion/source_pixelized__no_lens_light`
  `mass_total/no_lens_light`
  `subhalo/sensitivity_mapping`
 
@@ -163,15 +163,16 @@ Settings:
  - Positions: We update the positions and positions threshold using the previous model-fitting result (as described 
  in `chaining/examples/parametric_to_inversion.py`) to remove unphysical solutions from the `Inversion` model-fitting.
 """
-settings_lens = al.SettingsLens(positions_threshold=0.2)
+settings_lens = al.SettingsLens(threshold=0.2)
 
 analysis = al.AnalysisInterferometer(
     dataset=interferometer,
-    positions=source_parametric_results.last.image_plane_multiple_image_positions,
-    settings_lens=settings_lens,
+    positions_likelihood=source_parametric_results.last.positions_likelihood_from(
+        factor=3.0, minimum_threshold=0.2
+    ),
 )
 
-source_inversion_results = slam.source_inversion.no_lens_light(
+source_pixelized_results = slam.source_pixelized.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -192,14 +193,16 @@ using the lens mass model and source model of the SOURCE PIPELINE to initialize 
 """
 analysis = al.AnalysisInterferometer(
     dataset=interferometer,
-    positions=source_inversion_results.last.image_plane_multiple_image_positions,
+    positions_likelihood=source_pixelized_results.last.positions_likelihood_from(
+        factor=3.0, minimum_threshold=0.2, use_resample=True
+    ),
 )
 
 mass_results = slam.mass_total.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_inversion_results,
+    source_results=source_pixelized_results,
     mass=af.Model(al.mp.EllPowerLaw),
 )
 

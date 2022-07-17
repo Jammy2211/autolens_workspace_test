@@ -19,7 +19,7 @@ strong lens system, where in the final model:
 This uses the SLaM pipelines:
 
  `source__parametric/source_parametric__no_lens_light`
- `source_inversion/source_inversion__no_lens_light`
+ `source_pixelized/source_pixelized__no_lens_light`
  `mass__total/mass__total__no_lens_light`
 
 Check them out for a detailed description of the analysis!
@@ -80,7 +80,7 @@ database_name = "preloads"
 try:
     os.remove(
         path.join(
-            "output", "slam", "mass_total__source_inversion", f"{database_name}.sqlite"
+            "output", "slam", "mass_total__source_pixelized", f"{database_name}.sqlite"
         )
     )
 except FileNotFoundError:
@@ -88,13 +88,13 @@ except FileNotFoundError:
 
 agg = af.Aggregator.from_database(
     filename=path.join(
-        "output", "slam", "mass_total__source_inversion", f"{database_name}.sqlite"
+        "output", "slam", "mass_total__source_pixelized", f"{database_name}.sqlite"
     ),
     completed_only=False,
 )
 
 agg.add_directory(
-    directory=path.join("output", "slam", "mass_total__source_inversion", database_name)
+    directory=path.join("output", "slam", "mass_total__source_pixelized", database_name)
 )
 
 """

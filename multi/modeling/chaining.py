@@ -110,9 +110,7 @@ result_1_list = search.fit(model=model, analysis=analysis)
 __Analysis + Positions (Search 2)__
 """
 settings_lens = al.SettingsLens(
-    positions_threshold=result_1_list.positions_threshold_from(
-        factor=3.0, minimum_threshold=0.2
-    )
+    threshold=result_1_list.positions_threshold_from(factor=3.0, minimum_threshold=0.2)
 )
 
 analysis_list = [
@@ -178,7 +176,7 @@ in a robust and efficient way.
 The following example pipelines fits an inversion, using the same approach demonstrated in this script of first fitting 
 a parametric source:
 
- `autolens_workspace/imaging/chaining/pipelines/no_lens_light/mass_total__source_inversion.py`
+ `autolens_workspace/imaging/chaining/pipelines/no_lens_light/mass_total__source_pixelized.py`
 
  __SLaM (Source, Light and Mass)__
 

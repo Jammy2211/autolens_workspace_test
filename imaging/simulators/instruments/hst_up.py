@@ -111,8 +111,7 @@ tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
 tracer_plotter.figures_2d(image=True)
 
 """
-We can now pass this simulator a tracer, which creates the ray-traced image plotted above and simulates it as an
-imaging dataset.
+Pass the simulator a tracer, which creates the image which is simulated as an imaging dataset.
 """
 imaging = simulator.via_tracer_from(tracer=tracer, grid=grid)
 
@@ -127,7 +126,7 @@ imaging.output_to_fits(
 )
 
 """
-Lets plot the simulated `Imaging` dataset before we output it to fits.
+Plot the simulated `Imaging` dataset before outputting it to fits.
 """
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
 imaging_plotter.subplot_imaging()

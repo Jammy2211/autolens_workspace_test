@@ -20,7 +20,7 @@ a strong lens system, where in the final model:
 This runner uses the SLaM pipelines:
 
  `source_parametric/with_lens_light`
- `source_inversion/with_lens_light`
+ `source_pixelized/with_lens_light`
  `light_parametric/with_lens_light`
  `mass_total/mass_light_dark`
 
@@ -79,10 +79,7 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = af.SettingsSearch(
     path_prefix=path.join(
-        "imaging",
-        "slam",
-        "light_sersic__mass_light_dark__source_inversion",
-        "hyper_sky",
+        "slam", "light_sersic__mass_light_dark__source_pixelized", "hyper_sky"
     ),
     number_of_cores=1,
     session=None,
@@ -167,7 +164,7 @@ analysis = al.AnalysisImaging(
     dataset=imaging, hyper_dataset_result=source_parametric_results.last
 )
 
-source_inversion_results = slam.source_inversion.no_lens_light(
+source_pixelized_results = slam.source_pixelized.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -202,7 +199,7 @@ light_results = slam.light_parametric.with_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_inversion_results,
+    source_results=source_pixelized_results,
     lens_bulge=bulge,
     lens_disk=disk,
 )
@@ -226,7 +223,7 @@ initialize the model priors . In this example it:
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_inversion_results.last
+    dataset=imaging, hyper_dataset_result=source_pixelized_results.last
 )
 
 lens_bulge = af.Model(al.lmp.EllSersic)
@@ -238,7 +235,7 @@ mass_results = slam.mass_light_dark.with_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_inversion_results,
+    source_results=source_pixelized_results,
     light_results=light_results,
     lens_bulge=lens_bulge,
     lens_disk=af.Model(al.lmp.EllSersic),

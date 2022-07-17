@@ -19,7 +19,7 @@ strong lens system, where in the final model:
 This uses the SLaM pipelines:
 
  `source__parametric/source_parametric__no_lens_light`
- `source_inversion/source_inversion__no_lens_light`
+ `source_pixelized/source_pixelized__no_lens_light`
  `mass__total/mass__total__no_lens_light`
 
 Check them out for a detailed description of the analysis!
@@ -76,7 +76,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_autofit = af.SettingsSearch(
-    path_prefix=path.join("slam", "mass_total__source_inversion", "hyper_all_3"),
+    path_prefix=path.join("slam", "mass_total__source_pixelized", "hyper_all_4"),
     number_of_cores=1,
     session=None,
 )
@@ -142,10 +142,12 @@ to set up the model and hyper images, and then:
 """
 
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_parametric_results.last, settings_inversion=al.SettingsInversion(use_w_tilde=False)
+    dataset=imaging,
+    hyper_dataset_result=source_parametric_results.last,
+    settings_inversion=al.SettingsInversion(use_w_tilde=False),
 )
 
-source_inversion_results = slam.source_inversion.no_lens_light(
+source_pixelized_results = slam.source_pixelized.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -164,21 +166,16 @@ using the lens mass model and source model of the SOURCE PIPELINE to initialize 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_inversion_results.last
+    dataset=imaging, hyper_dataset_result=source_pixelized_results.last
 )
 
 mass_results = slam.mass_total.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_inversion_results,
+    source_results=source_pixelized_results,
     mass=af.Model(al.mp.EllPowerLaw),
 )
-
-mass_result_hyper = slam.extensions.hyper_fit(
-    setup_hyper=setup_hyper, result=mass_results.last, analysis=analysis
-)
-
 
 
 """

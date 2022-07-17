@@ -201,7 +201,9 @@ for i, gaussian in enumerate(gaussians):
     gaussian.elliptical_comps = gaussians[0].elliptical_comps
     gaussian.sigma = (gaussian_m * i) + gaussian_c
 
-lens_gaussians_dict = {f"gaussian_{i}": gaussian for i, gaussian in enumerate(gaussians)}
+lens_gaussians_dict = {
+    f"gaussian_{i}": gaussian for i, gaussian in enumerate(gaussians)
+}
 
 
 light_results = slam.light_parametric.with_lens_light(

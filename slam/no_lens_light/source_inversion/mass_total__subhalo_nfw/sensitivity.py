@@ -22,7 +22,7 @@ subhalos of a given mass could have been detected if present.
 This runner uses the SLaM pipelines:
 
  `source_parametric/no_lens_light`
-  `source_inversion/source_inversion__no_lens_light`
+  `source_pixelized/source_pixelized__no_lens_light`
  `mass_total/no_lens_light`
  `subhalo/sensitivity_mapping`
 
@@ -81,7 +81,7 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = af.SettingsSearch(
     path_prefix=path.join(
-        "slam", "mass_total__subhalo_nfw__source_inversion", "sensitivity"
+        "slam", "mass_total__subhalo_nfw__source_pixelized", "sensitivity"
     ),
     number_of_cores=2,
     session=None,
@@ -157,7 +157,7 @@ analysis = al.AnalysisImaging(
     dataset=imaging, hyper_dataset_result=source_parametric_results.last
 )
 
-source_inversion_results = slam.source_inversion.no_lens_light(
+source_pixelized_results = slam.source_pixelized.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -184,7 +184,7 @@ mass_results = slam.mass_total.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_inversion_results,
+    source_results=source_pixelized_results,
     mass=af.Model(al.mp.EllPowerLaw),
 )
 

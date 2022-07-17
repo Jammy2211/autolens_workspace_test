@@ -135,8 +135,7 @@ for tracer, grid in zip(tracer_list, grid_list):
     tracer_plotter.figures_2d(image=True)
 
 """
-We can now pass this simulator a tracer, which creates the ray-traced image plotted above and simulates it as an
-imaging dataset.
+Pass the simulator a tracer, which creates the image which is simulated as an imaging dataset.
 """
 imaging_list = [
     simulator.via_tracer_from(tracer=tracer, grid=grid)
@@ -144,7 +143,7 @@ imaging_list = [
 ]
 
 """
-Lets plot the simulated `Imaging` dataset before we output it to fits.
+Plot the simulated `Imaging` dataset before outputting it to fits.
 """
 for imaging in imaging_list:
 

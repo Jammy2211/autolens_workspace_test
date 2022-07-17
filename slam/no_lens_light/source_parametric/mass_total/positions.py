@@ -118,9 +118,7 @@ this example:
  - Uses an `EllIsothermal` model for the lens's total mass distribution with an `ExternalShear`.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging,
-    positions=positions,
-    settings_lens=al.SettingsLens(positions_threshold=0.4),
+    dataset=imaging, positions=positions, settings_lens=al.SettingsLens(threshold=0.4)
 )
 
 source_results = slam.source_parametric.no_lens_light(

@@ -111,9 +111,7 @@ source galaxy's light, which in this example:
 
 mass = af.Model(al.mp.EllIsothermal)
 
-analysis = al.AnalysisImaging(
-    dataset=imaging,
-)
+analysis = al.AnalysisImaging(dataset=imaging)
 
 lens_bulge = af.Model(al.lp.EllSersicCore)
 lens_bulge.radius_break = 0.05
@@ -144,7 +142,7 @@ source_parametric_results = slam.source_parametric.with_lens_light(
     source_bulge=source_bulge,
     mass_centre=(0.0, 0.0),
     redshift_lens=0.5,
-    redshift_source=1.0
+    redshift_source=1.0,
 )
 
 

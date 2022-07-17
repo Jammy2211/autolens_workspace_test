@@ -190,7 +190,7 @@ setup_source = al.SetupSourceInversion(
     regularization_prior_model=al.reg.AdaptiveBrightness,
 )
 
-pipeline_source_inversion = al.SLaMPipelineSourceInversion(setup_source=setup_source)
+pipeline_source_pixelized = al.SLaMPipelineSourceInversion(setup_source=setup_source)
 
 """
 __SLaMPipelineLight__
@@ -261,7 +261,7 @@ slam = al.SLaM(
     path_prefix=path.join("slam", dataset_name),
     setup_hyper=hyper,
     pipeline_source_parametric=pipeline_source_parametric,
-    pipeline_source_inversion=pipeline_source_inversion,
+    pipeline_source_pixelized=pipeline_source_pixelized,
     pipeline_light_parametric=pipeline_light,
     pipeline_mass=pipeline_mass,
 )
@@ -275,15 +275,15 @@ We then run each pipeline, passing the results of previous pipelines to subseque
 """
 
 from slam.with_lens_light import source__parametric, mass__light_dark, light__parametric
-from slam.with_lens_light import source_inversion
+from slam.with_lens_light import source_pixelized
 
 source__parametric = source__parametric.make_pipeline(slam=slam, settings=settings)
 source_results = source__parametric.run(dataset=imaging, mask=mask)
 
-source_inversion = source_inversion.make_pipeline(
+source_pixelized = source_pixelized.make_pipeline(
     slam=slam, settings=settings, source_parametric_results=source_results
 )
-source_results = source_inversion.run(dataset=imaging, mask=mask)
+source_results = source_pixelized.run(dataset=imaging, mask=mask)
 
 light__parametric = light__parametric.make_pipeline(
     slam=slam, settings=settings, source_results=source_results

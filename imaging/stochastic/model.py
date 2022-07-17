@@ -73,8 +73,8 @@ NOTE:
 
 If for your dataset the  lens is not centred at (0.0", 0.0"), we recommend that you either: 
 
- - Reduce your data so that the centre is (`autolens_workspace/notebooks/preprocess`). 
- - Manually override the lens model priors (`autolens_workspace/notebooks/imaging/modeling/customize/priors.py`).
+ - Reduce your data so that the centre is (`autolens_workspace/*/preprocess`). 
+ - Manually override the lens model priors (`autolens_workspace/*/imaging/modeling/customize/priors.py`).
 """
 bulge = al.lp.EllSersic(
     centre=(0.0, 0.0),
@@ -114,7 +114,7 @@ __Search__
 The lens model is fitted to the data using a non-linear search. In this example, we use the nested sampling algorithm 
 Dynesty (https://dynesty.readthedocs.io/en/latest/).
 
-The folder `autolens_workspace/notebooks/imaging/modeling/customize/non_linear_searches` gives an overview of the 
+The folder `autolens_workspace/*/imaging/modeling/customize/non_linear_searches` gives an overview of the 
 non-linear searches **PyAutoLens** supports. If you are unclear of what a non-linear search is, checkout chapter 2 of 
 the **HowToLens** lectures.
 
@@ -196,5 +196,5 @@ dynesty_plotter = aplt.DynestyPlotter(samples=result.samples)
 dynesty_plotter.cornerplot()
 
 """
-Checkout `autolens_workspace/notebooks/imaging/modeling/results.py` for a full description of the result object.
+Checkout `autolens_workspace/*/imaging/modeling/results.py` for a full description of the result object.
 """

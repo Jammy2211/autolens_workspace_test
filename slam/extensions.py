@@ -8,7 +8,7 @@ def hyper_fit(
     setup_hyper: al.SetupHyper,
     result: af.Result,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
-    search_previous : af.NonLinearSearch,
+    search_previous: af.NonLinearSearch,
     include_hyper_image_sky: bool = False,
 ):
     """
@@ -92,7 +92,7 @@ def set_upper_limit_of_pixelization_pixels_prior(
 def stochastic_fit(
     result: af.Result,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
-    search_previous : af.NonLinearSearch,
+    search_previous: af.NonLinearSearch,
     include_lens_light: bool = False,
     include_pixelization: bool = False,
     include_regularization: bool = False,

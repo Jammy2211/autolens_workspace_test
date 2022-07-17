@@ -37,7 +37,7 @@ print()
 """
 These settings control various aspects of how long a fit takes. The values below are default PyAutoLens values.
 """
-grid_class = al.Grid2DIterate
+grid_class = al.Grid2D
 fractional_accuracy = None
 relative_accuracy = 5.0e-3
 sub_steps = [3, 7, 11, 21, 31, 51, 101, 151, 251, 351]
@@ -54,10 +54,10 @@ The lens galaxy used to fit the data, which is identical to the lens galaxy used
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    bulge=al.lp.EllSersic(
+    bulge=al.lp_linear.EllSersic(
         centre=(0.0, 0.0),
         elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
-        intensity=4.0,
+        #      intensity=4.0,
         effective_radius=0.6,
         sersic_index=3.0,
     ),
@@ -80,10 +80,10 @@ The source galaxy whose `VoronoiMagnification` `Pixelization` fits the data.
 """
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    bulge=al.lp.EllSersic(
+    bulge=al.lp_linear.EllSersic(
         centre=(0.1, 0.1),
         elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=60.0),
-        intensity=0.3,
+        #   intensity=0.3,
         effective_radius=0.01,
         sersic_index=4.0,
     ),
@@ -171,7 +171,6 @@ for i in range(repeats):
     fit.log_evidence
 fit_time = (time.time() - start) / repeats
 print(f"Fit Time = {fit_time} \n")
-stop
 
 """
 __Profiling Dict__
@@ -197,7 +196,7 @@ __Results__
 These two numbers are the primary driver of run time. More pixels = longer run time.
 """
 
-print(f"Inversion fit run times for image type {instrument} \n")
+print(f"Fit run times for image type {instrument} \n")
 print(f"Number of pixels = {masked_imaging.grid.shape_slim} \n")
 print(f"Number of sub-pixels = {masked_imaging.grid.sub_shape_slim} \n")
 

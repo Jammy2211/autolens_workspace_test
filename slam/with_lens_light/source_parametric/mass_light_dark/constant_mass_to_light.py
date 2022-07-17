@@ -77,7 +77,6 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = af.SettingsSearch(
     path_prefix=path.join(
-        "imaging",
         "slam",
         "light_sersic__mass_light_dark__source_parametric",
         "constant_mass_to_light",

@@ -116,7 +116,7 @@ This model includes clumps, which are `Galaxy` objects with light and mass profi
 model galaxies nearby the strong lens system.
 
 A full description of the clump API is given in the 
-script `autolens_workspace/scripts/imaging/modeling/customize/clumps.py`
+script `autolens_workspace/*/imaging/modeling/customize/clumps.py`
 """
 clump_centres = al.Grid2DIrregular(grid=[(1.0, 1.0), [2.0, 2.0]])
 

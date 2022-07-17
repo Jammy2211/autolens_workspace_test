@@ -19,7 +19,7 @@ strong lens system, where in the final model:
 This uses the SLaM pipelines:
 
  `source__parametric/source_parametric__no_lens_light`
- `source_inversion/source_inversion__no_lens_light`
+ `source_pixelized/source_pixelized__no_lens_light`
  `mass__total/mass__total__no_lens_light`
 
 Check them out for a detailed description of the analysis!
@@ -77,7 +77,7 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = af.SettingsSearch(
     path_prefix=path.join(
-        "slam", "mass_total__source_inversion", "pixels_in_mask_pixelization_prior"
+        "slam", "mass_total__source_pixelized", "pixels_in_mask_pixelization_prior"
     ),
     number_of_cores=1,
     session=None,
@@ -143,7 +143,7 @@ to set up the model and hyper images, and then:
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
-source_inversion_results = slam.source_inversion.no_lens_light(
+source_pixelized_results = slam.source_pixelized.no_lens_light(
     settings_autofit=settings_autofit,
     setup_hyper=setup_hyper,
     analysis=analysis,
@@ -167,9 +167,9 @@ mass_results = slam.mass_total.no_lens_light(
     settings_autofit=settings_autofit,
     setup_hyper=setup_hyper,
     analysis=analysis,
-    source_results=source_inversion_results,
+    source_results=source_pixelized_results,
     mass=af.Model(al.mp.EllPowerLaw),
-    end_with_stochastic_extension=True
+    end_with_stochastic_extension=True,
 )
 
 """

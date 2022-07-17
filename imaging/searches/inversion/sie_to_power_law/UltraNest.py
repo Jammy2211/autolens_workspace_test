@@ -140,16 +140,11 @@ model = af.Collection(
     galaxies=af.Collection(lens=lens, source=result_2.instance.galaxies.source)
 )
 
-settings_lens = al.SettingsLens(
-    positions_threshold=result_2.positions_threshold_from(
-        factor=3.0, minimum_threshold=0.2
-    )
-)
-
 analysis = al.AnalysisImaging(
     dataset=imaging,
-    positions=result_2.image_plane_multiple_image_positions,
-    settings_lens=settings_lens,
+    positions_likelihood=result_2.positions_likelihood_from(
+        factor=3.0, minimum_threshold=0.2
+    ),
 )
 
 result_3 = search_3.fit(model=model, analysis=analysis)

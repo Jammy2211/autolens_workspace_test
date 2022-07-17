@@ -19,7 +19,7 @@ def with_lens_light(
     smbh: Optional[af.Model] = None,
     einstein_mass_range: Optional[Tuple[float, float]] = (0.01, 5.0),
     end_with_hyper_extension: bool = False,
-    end_with_stochastic_extension: bool = False
+    end_with_stochastic_extension: bool = False,
 ) -> af.ResultsCollection:
     """
     The SLaM MASS LIGHT DARK PIPELINE for fitting imaging data with a lens light component.
@@ -157,17 +157,20 @@ def with_lens_light(
     if end_with_hyper_extension:
 
         result_1 = extensions.hyper_fit(
-        setup_hyper=setup_hyper,
-        result=result_1,
-        analysis=analysis,
-        search_previous=search,
-        include_hyper_image_sky=True,
-    )
+            setup_hyper=setup_hyper,
+            result=result_1,
+            analysis=analysis,
+            search_previous=search,
+            include_hyper_image_sky=True,
+        )
 
     if end_with_stochastic_extension:
 
         extensions.stochastic_fit(
-            result=result_1, analysis=analysis, search_previous=search, **settings_autofit.fit_dict
+            result=result_1,
+            analysis=analysis,
+            search_previous=search,
+            **settings_autofit.fit_dict,
         )
 
     return af.ResultsCollection([result_1])
@@ -326,17 +329,20 @@ def no_lens_light(
     if end_with_hyper_extension:
 
         result_1 = extensions.hyper_fit(
-        setup_hyper=setup_hyper,
-        result=result_1,
-        analysis=analysis,
-        search_previous=search,
-        include_hyper_image_sky=True,
-    )
+            setup_hyper=setup_hyper,
+            result=result_1,
+            analysis=analysis,
+            search_previous=search,
+            include_hyper_image_sky=True,
+        )
 
     if end_with_stochastic_extension:
 
         extensions.stochastic_fit(
-            result=result_1, analysis=analysis, search_previous=search, **settings_autofit.fit_dict
+            result=result_1,
+            analysis=analysis,
+            search_previous=search,
+            **settings_autofit.fit_dict,
         )
 
     return af.ResultsCollection([result_1])
@@ -352,7 +358,7 @@ def with_lens_light__from_light_linear(
     smbh: Optional[af.Model] = None,
     einstein_mass_range: Optional[Tuple[float, float]] = (0.01, 5.0),
     end_with_hyper_extension: bool = False,
-    end_with_stochastic_extension: bool = False
+    end_with_stochastic_extension: bool = False,
 ) -> af.ResultsCollection:
     """
     The SLaM MASS LIGHT DARK PIPELINE for fitting imaging data with a lens light component.
@@ -435,10 +441,6 @@ def with_lens_light__from_light_linear(
         einstein_mass_range=einstein_mass_range,
     )
 
-    lens_gaussian_dict = slam_util.gaussian_dict_lmp_from(
-        galaxy=instance.galaxies.lens, fit=fit
-    )
-
     dark.mass_at_200 = af.LogUniformPrior(lower_limit=1e10, upper_limit=1e15)
     dark.redshift_object = light_results.last.instance.galaxies.lens.redshift
     dark.redshift_source = light_results.last.instance.galaxies.source.redshift
@@ -450,62 +452,31 @@ def with_lens_light__from_light_linear(
         result=source_results.last, setup_hyper=setup_hyper
     )
 
-    if lens_gaussian_dict is None:
-
-        model = af.Collection(
-            galaxies=af.Collection(
-                lens=af.Model(
-                    al.Galaxy,
-                    redshift=light_results.last.instance.galaxies.lens.redshift,
-                    bulge=lens_bulge,
-                    disk=lens_disk,
-                    envelope=lens_envelope,
-                    dark=dark,
-                    shear=source_results.last.model.galaxies.lens.shear,
-                    smbh=smbh,
-                    hyper_galaxy=setup_hyper.hyper_galaxy_lens_from(
-                        result=light_results.last
-                    ),
+    model = af.Collection(
+        galaxies=af.Collection(
+            lens=af.Model(
+                al.Galaxy,
+                redshift=light_results.last.instance.galaxies.lens.redshift,
+                bulge=lens_bulge,
+                disk=lens_disk,
+                envelope=lens_envelope,
+                dark=dark,
+                shear=source_results.last.model.galaxies.lens.shear,
+                smbh=smbh,
+                hyper_galaxy=setup_hyper.hyper_galaxy_lens_from(
+                    result=light_results.last
                 ),
-                source=source,
             ),
-            clumps=slam_util.clumps_from(result=source_results.last, mass_as_model=True),
-            hyper_image_sky=setup_hyper.hyper_image_sky_from(
-                result=light_results.last, as_model=True
-            ),
-            hyper_background_noise=setup_hyper.hyper_background_noise_from(
-                result=light_results.last
-            ),
-        )
-
-    else:
-
-        model = af.Collection(
-            galaxies=af.Collection(
-                lens=af.Model(
-                    al.Galaxy,
-                    redshift=light_results.last.instance.galaxies.lens.redshift,
-                    bulge=lens_bulge,
-                    disk=lens_disk,
-                    envelope=lens_envelope,
-                    **lens_gaussian_dict,
-                    dark=dark,
-                    shear=source_results.last.model.galaxies.lens.shear,
-                    smbh=smbh,
-                    hyper_galaxy=setup_hyper.hyper_galaxy_lens_from(
-                        result=light_results.last
-                    ),
-                ),
-                source=source,
-            ),
-            clumps=slam_util.clumps_from(result=source_results.last, mass_as_model=True),
-            hyper_image_sky=setup_hyper.hyper_image_sky_from(
-                result=light_results.last, as_model=True
-            ),
-            hyper_background_noise=setup_hyper.hyper_background_noise_from(
-                result=light_results.last
-            ),
-        )
+            source=source,
+        ),
+        clumps=slam_util.clumps_from(result=source_results.last, mass_as_model=True),
+        hyper_image_sky=setup_hyper.hyper_image_sky_from(
+            result=light_results.last, as_model=True
+        ),
+        hyper_background_noise=setup_hyper.hyper_background_noise_from(
+            result=light_results.last
+        ),
+    )
 
     search = af.DynestyStatic(
         name="mass_light_dark[1]_light[parametric]_mass[light_dark]_source",
@@ -529,17 +500,20 @@ def with_lens_light__from_light_linear(
     if end_with_hyper_extension:
 
         result_1 = extensions.hyper_fit(
-        setup_hyper=setup_hyper,
-        result=result_1,
-        analysis=analysis,
-        search_previous=search,
-        include_hyper_image_sky=True,
-    )
+            setup_hyper=setup_hyper,
+            result=result_1,
+            analysis=analysis,
+            search_previous=search,
+            include_hyper_image_sky=True,
+        )
 
     if end_with_stochastic_extension:
 
         extensions.stochastic_fit(
-            result=result_1, analysis=analysis, search_previous=search, **settings_autofit.fit_dict
+            result=result_1,
+            analysis=analysis,
+            search_previous=search,
+            **settings_autofit.fit_dict,
         )
 
     return af.ResultsCollection([result_1])
