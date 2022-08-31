@@ -152,7 +152,7 @@ lens_galaxy.hyper_model_image = hyper_model_image
 """
 The source galaxy whose `VoronoiNNBrightness` `Pixelization` fits the data.
 """
-pixelization = al.mesh.VoronoiNNBrightnessImage(
+mesh = al.mesh.VoronoiNNBrightnessImage(
     pixels=pixels, weight_floor=0.3, weight_power=15.0
 )
 

@@ -127,12 +127,11 @@ lens_galaxy = al.Galaxy(
 """
 The source galaxy whose `DelaunayMagnification` `Pixelization` fits the data.
 """
-pixelization = al.mesh.DelaunayMagnification(shape=mesh_shape_2d)
+mesh = al.mesh.DelaunayMagnification(shape=mesh_shape_2d)
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    pixelization=pixelization,
-    regularization=al.reg.ConstantSplit(coefficient=1.0),
+    pixelization=al.Pixelization(mesh=mesh, regularization=al.reg.ConstantSplit(coefficient=1.0)),
 )
 
 """
