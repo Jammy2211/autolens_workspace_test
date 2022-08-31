@@ -20,7 +20,7 @@ a strong lens system, where in the final model:
 This runner uses the SLaM pipelines:
 
  `source_parametric/with_lens_light`
- `source_pixelized/with_lens_light`
+ `source_pixelization/with_lens_light`
  `light_parametric/with_lens_light`
  `mass_total/mass_light_dark`
 
@@ -133,12 +133,12 @@ regularization, to set up the model and hyper images, and then:
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
-source_pixelized_results = slam.source_pixelized.no_lens_light(
+source_pixelization_results = slam.source_pixelization.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_parametric_results=source_parametric_results,
-    pixelization=al.pix.VoronoiBrightnessImage,
+    mesh=al.mesh.VoronoiBrightnessImage,
     regularization=al.reg.AdaptiveBrightness,
 )
 
@@ -170,7 +170,7 @@ __Settings__:
 
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_pixelized_results.last
+    dataset=imaging, hyper_dataset_result=source_pixelization_results.last
 )
 
 lens_bulge = af.Model(al.mp.EllSersic)
@@ -198,7 +198,7 @@ mass_results = slam.mass_light_dark.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_pixelized_results,
+    source_results=source_pixelization_results,
     lens_bulge=lens_bulge,
     lens_disk=lens_disk,
     lens_envelope=None,

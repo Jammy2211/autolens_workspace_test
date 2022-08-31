@@ -1,6 +1,6 @@
 """
-Chaining: Parametric To Inversion
-=================================
+Chaining: Parametric To Pixelization
+====================================
 """
 # %matplotlib inline
 # from pyprojroot import here
@@ -135,7 +135,7 @@ lens = result_1_list[0].model.galaxies.lens
 source = af.Model(
     al.Galaxy,
     redshift=1.0,
-    pixelization=al.pix.DelaunayMagnification,
+    pixelization=al.mesh.DelaunayMagnification,
     regularization=al.reg.Constant,
 )
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
@@ -176,7 +176,7 @@ in a robust and efficient way.
 The following example pipelines fits an inversion, using the same approach demonstrated in this script of first fitting 
 a parametric source:
 
- `autolens_workspace/imaging/chaining/pipelines/no_lens_light/mass_total__source_pixelized.py`
+ `autolens_workspace/imaging/chaining/pipelines/no_lens_light/mass_total__source_pixelization.py`
 
  __SLaM (Source, Light and Mass)__
 

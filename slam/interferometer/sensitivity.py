@@ -22,7 +22,7 @@ subhalos of a given mass could have been detected if present.
 This runner uses the SLaM pipelines:
 
  `source_parametric/no_lens_light`
- `source__inversion/source_pixelized__no_lens_light`
+ `source__inversion/source_pixelization__no_lens_light`
  `mass_total/no_lens_light`
  `subhalo/sensitivity_mapping`
 
@@ -172,12 +172,12 @@ analysis = al.AnalysisInterferometer(
     ),
 )
 
-source_pixelized_results = slam.source_pixelized.no_lens_light(
+source_pixelization_results = slam.source_pixelization.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_parametric_results=source_parametric_results,
-    pixelization=al.pix.VoronoiBrightnessImage,
+    mesh=al.mesh.VoronoiBrightnessImage,
     regularization=al.reg.AdaptiveBrightness,
 )
 
@@ -193,7 +193,7 @@ using the lens mass model and source model of the SOURCE PIPELINE to initialize 
 """
 analysis = al.AnalysisInterferometer(
     dataset=interferometer,
-    positions_likelihood=source_pixelized_results.last.positions_likelihood_from(
+    positions_likelihood=source_pixelization_results.last.positions_likelihood_from(
         factor=3.0, minimum_threshold=0.2, use_resample=True
     ),
 )
@@ -202,7 +202,7 @@ mass_results = slam.mass_total.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_pixelized_results,
+    source_results=source_pixelization_results,
     mass=af.Model(al.mp.EllPowerLaw),
 )
 

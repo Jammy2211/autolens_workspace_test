@@ -19,7 +19,7 @@ strong lens system, where in the final model:
 This uses the SLaM pipelines:
 
  `source__parametric/source_parametric__no_lens_light`
- `source_pixelized/source_pixelized__no_lens_light`
+ `source_pixelization/source_pixelization__no_lens_light`
  `mass__total/mass__total__no_lens_light`
 
 Check them out for a detailed description of the analysis!
@@ -76,7 +76,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_autofit = af.SettingsSearch(
-    path_prefix=path.join("slam", "mass_total__source_pixelized", "hyper_all_4"),
+    path_prefix=path.join("slam", "mass_total__source_pixelization", "hyper_all_4"),
     number_of_cores=1,
     session=None,
 )
@@ -101,7 +101,7 @@ extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter value
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_hyper = al.SetupHyper(
-    search_pixelized_dict={"maxcall": 1},
+    search_pixelization_dict={"maxcall": 1},
     hyper_galaxies_lens=False,
     hyper_galaxies_source=True,
     hyper_image_sky=al.hyper_data.HyperImageSky,
@@ -147,12 +147,12 @@ analysis = al.AnalysisImaging(
     settings_inversion=al.SettingsInversion(use_w_tilde=False),
 )
 
-source_pixelized_results = slam.source_pixelized.no_lens_light(
+source_pixelization_results = slam.source_pixelization.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_parametric_results=source_parametric_results,
-    pixelization=al.pix.VoronoiBrightnessImage,
+    mesh=al.mesh.VoronoiBrightnessImage,
     regularization=al.reg.AdaptiveBrightness,
 )
 
@@ -166,14 +166,14 @@ using the lens mass model and source model of the SOURCE PIPELINE to initialize 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_pixelized_results.last
+    dataset=imaging, hyper_dataset_result=source_pixelization_results.last
 )
 
 mass_results = slam.mass_total.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_pixelized_results,
+    source_results=source_pixelization_results,
     mass=af.Model(al.mp.EllPowerLaw),
 )
 

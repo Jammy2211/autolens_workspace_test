@@ -1,5 +1,5 @@
 from . import source_parametric
-from . import source_pixelized
+from . import source_pixelization
 from . import light_parametric
 from . import mass_total
 from . import mass_light_dark

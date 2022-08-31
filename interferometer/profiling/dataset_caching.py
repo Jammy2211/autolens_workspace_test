@@ -46,11 +46,11 @@ These settings control various aspects of how long a fit takes. The values below
 sub_size = 1
 pixel_scales = (0.05, 0.05)
 mask_radius = 3.5
-pixelization_shape_2d = (57, 57)
+mesh_shape_2d = (57, 57)
 
 print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
-print(f"pixelization shape = {pixelization_shape_2d}")
+print(f"pixelization shape = {mesh_shape_2d}")
 
 """
 These settings control the run-time of the `Inversion` performed on the `Interferometer` data.

@@ -90,7 +90,7 @@ setup_hyper = al.SetupHyper(
     hyper_galaxies_source=False,
     hyper_image_sky=None,
     hyper_background_noise=None,
-    search_pixelized_dict={"nlive": 30, "sample": "rwalk"},
+    search_pixelization_dict={"nlive": 30, "sample": "rwalk"},
 )
 
 """

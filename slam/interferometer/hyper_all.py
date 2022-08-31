@@ -96,7 +96,7 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = af.SettingsSearch(
     path_prefix=path.join(
-        "slam", "light_sersic__mass_total__source_pixelized", "hyper_all"
+        "slam", "light_sersic__mass_total__source_pixelization", "hyper_all"
     ),
     number_of_cores=1,
     session=None,
@@ -192,12 +192,12 @@ analysis = al.AnalysisInterferometer(
     settings_inversion=al.SettingsInversion(use_linear_operators=True),
 )
 
-source_pixelized_results = slam.source_pixelized.with_lens_light(
+source_pixelization_results = slam.source_pixelization.with_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_parametric_results=source_parametric_results,
-    pixelization=al.pix.VoronoiBrightnessImage,
+    mesh=al.mesh.VoronoiBrightnessImage,
     regularization=al.reg.AdaptiveBrightness,
 )
 
@@ -220,8 +220,8 @@ In this example it:
 """
 analysis = al.AnalysisInterferometer(
     dataset=interferometer,
-    hyper_dataset_result=source_pixelized_results.last,
-    positions_likelihood=source_pixelized_results.last.positions_likelihood_from(
+    hyper_dataset_result=source_pixelization_results.last,
+    positions_likelihood=source_pixelization_results.last.positions_likelihood_from(
         factor=3.0, minimum_threshold=0.2, use_resample=True
     ),
     settings_lens=settings_lens,
@@ -236,7 +236,7 @@ light_results = slam.light_parametric.with_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_pixelized_results,
+    source_results=source_pixelization_results,
     lens_bulge=bulge,
     lens_disk=disk,
 )
@@ -261,8 +261,8 @@ model of the LIGHT PARAMETRIC PIPELINE. In this example it:
 """
 analysis = al.AnalysisInterferometer(
     dataset=interferometer,
-    hyper_dataset_result=source_pixelized_results.last,
-    positions_likelihood=source_pixelized_results.last.positions_likelihood_from(
+    hyper_dataset_result=source_pixelization_results.last,
+    positions_likelihood=source_pixelization_results.last.positions_likelihood_from(
         factor=3.0, minimum_threshold=0.2, use_resample=True
     ),
     settings_lens=settings_lens,
@@ -272,7 +272,7 @@ mass_results = slam.mass_total.with_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_pixelized_results,
+    source_results=source_pixelization_results,
     light_results=light_results,
     mass=af.Model(al.mp.EllPowerLaw),
 )
@@ -297,7 +297,7 @@ For this runner the SUBHALO PIPELINE customizes:
 analysis = al.AnalysisInterferometer(
     dataset=interferometer,
     positions_likelihood=mass_results.last.image_plane_multiple_image_positions,
-    hyper_dataset_result=source_pixelized_results.last,
+    hyper_dataset_result=source_pixelization_results.last,
     settings_lens=settings_lens,
     settings_inversion=al.SettingsInversion(use_linear_operators=True),
 )

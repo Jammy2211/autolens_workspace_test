@@ -62,12 +62,12 @@ These settings control various aspects of how the fit is performed and therefore
 stochastic_seed = 1
 sub_size = 4
 mask_radius = 3.0
-pixelization_shape_2d = (50, 50)
+mesh_shape_2d = (50, 50)
 
 print(f"stochastic_seed = {stochastic_seed}")
 print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
-print(f"pixelization shape = {pixelization_shape_2d}")
+print(f"pixelization shape = {mesh_shape_2d}")
 
 """
 The lens galaxy used to fit the data, which is identical to the lens galaxy used to simulate the data. 
@@ -110,7 +110,7 @@ source_galaxy_true = al.Galaxy(
 """
 The source galaxy whose `VoronoiNNMagnification` `Pixelization` fits the data.
 """
-pixelization = al.pix.VoronoiNNMagnification(shape=pixelization_shape_2d)
+pixelization = al.mesh.VoronoiNNMagnification(shape=mesh_shape_2d)
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
@@ -187,7 +187,7 @@ Determine the regularization coefficient using the correct lens model.
 
 def func(coefficient):
 
-    source_galaxy.regularization.coefficient = coefficient
+    source_galaxy.pixelization.regularization.coefficient = coefficient
     tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
     fit = al.FitImaging(
         dataset=masked_imaging,
@@ -208,7 +208,7 @@ coefficient = minimize_scalar(func, method="bounded", bounds=[1e-3, 1e3]).x
 
 print(f"coefficient = {coefficient}")
 
-source_galaxy.regularization.coefficient = coefficient
+source_galaxy.pixelization.regularization.coefficient = coefficient
 
 """
 Output an image of the fit, so that we can inspect that it fits the data as expected.
@@ -253,7 +253,7 @@ info_dict["image_pixels"] = masked_imaging.grid.sub_shape_slim
 info_dict["stochastic_seed"] = stochastic_seed
 info_dict["sub_size"] = sub_size
 info_dict["mask_radius"] = mask_radius
-info_dict["pixelization_shape_2d"] = pixelization_shape_2d
+info_dict["mesh_shape_2d"] = mesh_shape_2d
 info_dict["source_pixels"] = len(fit.inversion.reconstruction)
 info_dict["coefficient"] = coefficient
 

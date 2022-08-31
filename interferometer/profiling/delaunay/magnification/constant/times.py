@@ -52,15 +52,15 @@ These settings control various aspects of how long a fit takes. The values below
 """
 sub_size = 1
 mask_radius = 3.0
-pixelization_shape_2d = (45, 45)
+mesh_shape_2d = (45, 45)
 
 print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
-print(f"pixelization shape = {pixelization_shape_2d}")
+print(f"pixelization shape = {mesh_shape_2d}")
 
 """
 Set up the lens and source galaxies used to profile the fit. The lens galaxy uses the true model, whereas the source
-galaxy includes the `Pixelization` and `Regularization` we profile.
+galaxy includes the `Pixelization`  we profile.
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
@@ -74,12 +74,16 @@ lens_galaxy = al.Galaxy(
 """
 The source galaxy whose `DelaunayMagnification` `Pixelization` fits the data.
 """
-pixelization = al.pix.DelaunayMagnification(shape=pixelization_shape_2d)
+mesh = al.mesh.VoronoiMagnification(shape=mesh_shape_2d)
+
+pixelization = al.Pixelization(
+    mesh=mesh,
+    regularization=al.reg.Constant(coefficient=1.0),
+)
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    pixelization=pixelization,
-    regularization=al.reg.Constant(coefficient=1.0),
+    pixelization=pixelization
 )
 
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
@@ -88,9 +92,9 @@ tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 Set up the `Interferometer` dataset we fit. This includes the `real_space_mask` that the source galaxy's 
 `Inversion` is evaluated using via mapping to Fourier space using the `Transformer`.
 """
-instrument = "sma"
-# instrument = "alma_low_res"
-instrument = "alma_high_res"
+# instrument = "sma"
+instrument = "alma_low_res"
+# instrument = "alma_high_res"
 
 if instrument == "sma":
 

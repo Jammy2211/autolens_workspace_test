@@ -187,7 +187,7 @@ The source reconstruction can be visualized in real space:
 """
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    pixelization=al.pix.DelaunayMagnification(shape=(30, 30)),
+    pixelization=al.mesh.DelaunayMagnification(shape=(30, 30)),
     regularization=al.reg.Constant(coefficient=1.0),
 )
 
@@ -229,7 +229,7 @@ interferomter dataset of ~10 million visibilities this would require **hundreds 
 a sequence of memory-light linear operators.
 """
 inversion_plotter = aplt.InversionPlotter(inversion=fit.inversion)
-inversion_plotter.figures_2d_of_mapper(mapper_index=0, reconstruction=True)
+inversion_plotter.figures_2d_of_pixelization(pixelization_index=0, reconstruction=True)
 
 """
 __Lens Modeling__

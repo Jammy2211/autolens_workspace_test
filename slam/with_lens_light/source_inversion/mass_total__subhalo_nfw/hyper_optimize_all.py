@@ -80,7 +80,7 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = af.SettingsSearch(
     path_prefix=path.join(
-        "slam", "light_sersic__mass_total__source_pixelized", "hyper_optimize_all"
+        "slam", "light_sersic__mass_total__source_pixelization", "hyper_optimize_all"
     ),
     number_of_cores=1,
     session=None,
@@ -179,12 +179,12 @@ analysis = al.AnalysisImaging(
     ),
 )
 
-source_pixelized_results = slam.source_pixelized.no_lens_light(
+source_pixelization_results = slam.source_pixelization.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_parametric_results=source_parametric_results,
-    pixelization=al.pix.VoronoiBrightnessImage,
+    mesh=al.mesh.VoronoiBrightnessImage,
     regularization=al.reg.AdaptiveBrightness,
 )
 
@@ -216,8 +216,8 @@ __Settings__:
 """
 analysis = al.AnalysisImaging(
     dataset=imaging,
-    hyper_dataset_result=source_pixelized_results.last,
-    positions_likelihood=source_pixelized_results.last.positions_likelihood_from(
+    hyper_dataset_result=source_pixelization_results.last,
+    positions_likelihood=source_pixelization_results.last.positions_likelihood_from(
         factor=3.0, minimum_threshold=0.2
     ),
 )
@@ -226,7 +226,7 @@ mass_results = slam.mass_total.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_pixelized_results,
+    source_results=source_pixelization_results,
     mass=af.Model(al.mp.EllPowerLaw),
     end_with_hyper_extension=True,
 )

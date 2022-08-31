@@ -56,16 +56,16 @@ sub_size = 1
 real_shape_native = (800, 800)
 pixel_scales = (0.05, 0.05)
 mask_radius = 3.5
-pixelization_shape_2d = (57, 57)
+mesh_shape_2d = (57, 57)
 
 print(f"sub grid size = {sub_size}")
 print(f"real space mask shape native = {real_shape_native}")
 print(f"circular mask mask_radius = {mask_radius}")
-print(f"pixelization shape = {pixelization_shape_2d}")
+print(f"pixelization shape = {mesh_shape_2d}")
 
 """
 Set up the lens and source galaxies used to profile the fit. The lens galaxy uses the true model, whereas the source
-galaxy includes the `Pixelization` and `Regularization` we profile.
+galaxy includes the `Pixelization`  we profile.
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
@@ -79,7 +79,7 @@ lens_galaxy = al.Galaxy(
 """
 The source galaxy whose `VoronoiMagnification` `Pixelization` fits the data.
 """
-pixelization = al.pix.VoronoiMagnification(shape=pixelization_shape_2d)
+pixelization = al.mesh.VoronoiMagnification(shape=mesh_shape_2d)
 
 source_galaxy = al.Galaxy(
     redshift=1.0,

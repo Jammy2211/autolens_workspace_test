@@ -4,7 +4,6 @@ import autofit as af
 import autolens as al
 
 from autogalaxy.profiles.light_profiles.light_profiles_linear import LightProfileLinear
-from autogalaxy.galaxy.galaxy import is_light_profile
 
 
 def set_lens_light_centres(lens, light_centre: Tuple[float, float]):
@@ -255,7 +254,7 @@ def source__from(
 
     hyper_galaxy = setup_hyper.hyper_galaxy_source_from(result=result)
 
-    if result.instance.galaxies.source.pixelization is None:
+    if not hasattr(result.instance.galaxies.source, "pixelization"):
 
         if source_is_model:
 
@@ -283,21 +282,31 @@ def source__from(
 
         if source_is_model:
 
+            pixelization = af.Model(
+                al.Pixelization,
+                mesh=result.hyper.instance.galaxies.source.pixelization.mesh,
+                regularization=result.hyper.model.galaxies.source.pixelization.regularization,
+            )
+
             return af.Model(
                 al.Galaxy,
                 redshift=result.instance.galaxies.source.redshift,
-                pixelization=result.hyper.instance.galaxies.source.pixelization,
-                regularization=result.hyper.model.galaxies.source.regularization,
+                pixelization=pixelization,
                 hyper_galaxy=hyper_galaxy,
             )
 
         else:
 
+            pixelization = af.Model(
+                al.Pixelization,
+                mesh=result.hyper.instance.galaxies.source.pixelization.mesh,
+                regularization=result.hyper.instance.galaxies.source.pixelization.regularization,
+            )
+
             return af.Model(
                 al.Galaxy,
                 redshift=result.instance.galaxies.source.redshift,
-                pixelization=result.hyper.instance.galaxies.source.pixelization,
-                regularization=result.hyper.instance.galaxies.source.regularization,
+                pixelization=pixelization,
                 hyper_galaxy=hyper_galaxy,
             )
 
@@ -305,21 +314,31 @@ def source__from(
 
         if source_is_model:
 
+            pixelization = af.Model(
+                al.Pixelization,
+                mesh=result.instance.galaxies.source.pixelization.mesh,
+                regularization=result.model.galaxies.source.pixelization.regularization,
+            )
+
             return af.Model(
                 al.Galaxy,
                 redshift=result.instance.galaxies.source.redshift,
-                pixelization=result.instance.galaxies.source.pixelization,
-                regularization=result.model.galaxies.source.regularization,
+                pixelization=pixelization,
                 hyper_galaxy=hyper_galaxy,
             )
 
         else:
 
+            pixelization = af.Model(
+                al.Pixelization,
+                mesh=result.instance.galaxies.source.pixelization.mesh,
+                regularization=result.instance.galaxies.source.pixelization.regularization,
+            )
+
             return af.Model(
                 al.Galaxy,
                 redshift=result.instance.galaxies.source.redshift,
-                pixelization=result.instance.galaxies.source.pixelization,
-                regularization=result.instance.galaxies.source.regularization,
+                pixelization=pixelization,
                 hyper_galaxy=hyper_galaxy,
             )
 
@@ -345,10 +364,14 @@ def source__from_result_model_if_parametric(
     setup_hyper
         The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
     """
-    if result.instance.galaxies.source.pixelization is None:
-        return source__from(
-            result=result, setup_hyper=setup_hyper, source_is_model=True
-        )
+
+    # TODO : Should not depend on name of pixelization being "pixelization"
+
+    if hasattr(result.instance.galaxies.source, "pixelization"):
+        if result.instance.galaxies.source.pixelization is None:
+            return source__from(
+                result=result, setup_hyper=setup_hyper, source_is_model=True
+            )
     return source__from(result=result, setup_hyper=setup_hyper, source_is_model=False)
 
 
@@ -451,7 +474,7 @@ def gaussian_dict_lp_from(
 
     for key, value in galaxy.__dict__.items():
 
-        if is_light_profile(value) and isinstance(value, LightProfileLinear):
+        if isinstance(value, al.lp.LightProfile) and isinstance(value, LightProfileLinear):
 
             gaussian_linear = value
 
@@ -482,7 +505,7 @@ def gaussian_dict_lmp_from(
 
     for key, value in galaxy.__dict__.items():
 
-        if is_light_profile(value) and isinstance(value, LightProfileLinear):
+        if isinstance(value, al.lp.LightProfile) and isinstance(value, LightProfileLinear):
 
             gaussian_linear = value
 

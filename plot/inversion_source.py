@@ -56,7 +56,7 @@ lens_galaxy = al.Galaxy(
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    pixelization=al.pix.VoronoiMagnification(shape=(25, 25)),
+    pixelization=al.mesh.VoronoiMagnification(shape=(25, 25)),
     regularization=al.reg.Constant(coefficient=1.0),
 )
 
@@ -92,7 +92,7 @@ mat_plot_2d = aplt.MatPlot2D(
 
 inversion_plotter = aplt.InversionPlotter(inversion=inversion, mat_plot_2d=mat_plot_2d)
 
-inversion_plotter.figures_2d_of_mapper(mapper_index=0, reconstruction=True)
+inversion_plotter.figures_2d_of_pixelization(pixelization_index=0, reconstruction=True)
 
 """
 Finish.

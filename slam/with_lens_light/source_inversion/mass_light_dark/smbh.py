@@ -103,7 +103,7 @@ which is equivalent to the `SetupPipeline` object, customizing the analysis in t
 has its own `SetupMass`, `SetupLightParametric` and `SetupSourceParametric` object.
 
 The `Setup` used in earlier pipelines determine the model used in later pipelines. For example, if the `Source` 
-pipeline is given a `Pixelization` and `Regularization`, than this `Inversion` will be used in the subsequent 
+pipeline is given a `Pixelization`, than this `Inversion` will be used in the subsequent 
 _SLaMPipelineLight_ and Mass pipelines. The assumptions regarding the lens light chosen by the `Light` object are 
 carried forward to the `Mass`  pipeline.
 
@@ -186,11 +186,11 @@ example therefore both use an `Inversion`.
 """
 
 setup_source = al.SetupSourceInversion(
-    pixelization_prior_model=al.pix.VoronoiBrightnessImage,
+    pixelization_prior_model=al.mesh.VoronoiBrightnessImage,
     regularization_prior_model=al.reg.AdaptiveBrightness,
 )
 
-pipeline_source_pixelized = al.SLaMPipelineSourceInversion(setup_source=setup_source)
+pipeline_source_pixelization = al.SLaMPipelineSourceInversion(setup_source=setup_source)
 
 """
 __SLaMPipelineLight__
@@ -261,7 +261,7 @@ slam = al.SLaM(
     path_prefix=path.join("slam", dataset_name),
     setup_hyper=hyper,
     pipeline_source_parametric=pipeline_source_parametric,
-    pipeline_source_pixelized=pipeline_source_pixelized,
+    pipeline_source_pixelization=pipeline_source_pixelization,
     pipeline_light_parametric=pipeline_light,
     pipeline_mass=pipeline_mass,
 )
@@ -275,15 +275,15 @@ We then run each pipeline, passing the results of previous pipelines to subseque
 """
 
 from slam.with_lens_light import source__parametric, mass__light_dark, light__parametric
-from slam.with_lens_light import source_pixelized
+from slam.with_lens_light import source_pixelization
 
 source__parametric = source__parametric.make_pipeline(slam=slam, settings=settings)
 source_results = source__parametric.run(dataset=imaging, mask=mask)
 
-source_pixelized = source_pixelized.make_pipeline(
+source_pixelization = source_pixelization.make_pipeline(
     slam=slam, settings=settings, source_parametric_results=source_results
 )
-source_results = source_pixelized.run(dataset=imaging, mask=mask)
+source_results = source_pixelization.run(dataset=imaging, mask=mask)
 
 light__parametric = light__parametric.make_pipeline(
     slam=slam, settings=settings, source_results=source_results

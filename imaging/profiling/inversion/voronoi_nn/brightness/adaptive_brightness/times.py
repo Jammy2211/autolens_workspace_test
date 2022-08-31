@@ -152,7 +152,7 @@ lens_galaxy.hyper_model_image = hyper_model_image
 """
 The source galaxy whose `VoronoiNNBrightness` `Pixelization` fits the data.
 """
-pixelization = al.pix.VoronoiNNBrightnessImage(
+pixelization = al.mesh.VoronoiNNBrightnessImage(
     pixels=pixels, weight_floor=0.3, weight_power=15.0
 )
 
@@ -408,9 +408,7 @@ for i in range(repeats):
 
 profiling_dict["Image-plane Pixelization (KMeans)"] = (time.time() - start) / repeats
 
-traced_sparse_grid = tracer.traced_sparse_grid_pg_list_from(grid=masked_imaging.grid)[
-    -1
-]
+traced_sparse_grid = tracer.traced_sparse_grid_pg_list(grid=masked_imaging.grid)[-1]
 
 """
 __Border Relocation__
@@ -439,7 +437,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/
 """
 start = time.time()
 for i in range(repeats):
-    relocated_pixelization_grid = traced_grid.relocated_pixelization_grid_from(
+    relocated_pixelization_grid = traced_grid.relocated_mesh_grid_from(
         pixelization_grid=traced_sparse_grid
     )
 profiling_dict["Border Relocation Pixelization"] = (time.time() - start) / repeats
@@ -453,13 +451,13 @@ The array `sparse_index_for_slim_index` encodes the closest source pixel of ever
 sub image-plane grid. This is used for efficiently pairing every image-plane pixel to its corresponding source-plane
 pixel.
 
-Checkout `Grid2DVoronoiNN.__init__` for a full description:
+Checkout `Mesh2DVoronoiNN.__init__` for a full description:
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/two_d/grid_2d_pixelization.py
 """
 start = time.time()
 for i in range(repeats):
-    grid_VoronoiNN = al.Grid2DVoronoiNN(
+    grid_VoronoiNN = al.Mesh2DVoronoiNN(
         grid=relocated_pixelization_grid,
         nearest_pixelization_index_for_slim_index=sparse_image_plane_grid.sparse_index_for_slim_index,
     )
@@ -479,7 +477,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/util/mapper_util.
 """
 mapper = mappers.MapperVoronoi(
     source_grid_slim=relocated_grid,
-    source_pixelization_grid=grid_VoronoiNN,
+    source_mesh_grid=grid_VoronoiNN,
     data_pixelization_grid=sparse_image_plane_grid,
     hyper_image=source_galaxy.hyper_galaxy_image,
 )
@@ -609,7 +607,7 @@ which adapt to the surface brightness of the source galaxy.
 start = time.time()
 for i in range(repeats):
     pixel_signals = mapper.pixel_signals_from(
-        signal_scale=source_galaxy.regularization.signal_scale
+        signal_scale=source_galaxy.pixelization.regularization.signal_scale
     )
 profiling_dict["Source Pixel Signal Scales"] = (time.time() - start) / repeats
 
@@ -625,8 +623,8 @@ https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/regular
 start = time.time()
 for i in range(repeats):
     regularization_weights = al.util.regularization.adaptive_regularization_weights_from(
-        inner_coefficient=source_galaxy.regularization.inner_coefficient,
-        outer_coefficient=source_galaxy.regularization.outer_coefficient,
+        inner_coefficient=source_galaxy.pixelization.regularization.inner_coefficient,
+        outer_coefficient=source_galaxy.pixelization.regularization.outer_coefficient,
         pixel_signals=pixel_signals,
     )
 profiling_dict["Source Pixel Signal Scales"] = (time.time() - start) / repeats
@@ -647,8 +645,8 @@ start = time.time()
 for i in range(repeats):
     regularization_matrix = al.util.regularization.weighted_regularization_matrix_from(
         regularization_weights=regularization_weights,
-        pixel_neighbors=mapper.source_pixelization_grid.pixel_neighbors,
-        pixel_neighbors_size=mapper.source_pixelization_grid.pixel_neighbors_size,
+        neighbors=mapper.source_mesh_grid.neighbors,
+        neighbors_size=mapper.source_mesh_grid.neighbors_size,
     )
 profiling_dict["Regularization Matrix (H)"] = (time.time() - start) / repeats
 

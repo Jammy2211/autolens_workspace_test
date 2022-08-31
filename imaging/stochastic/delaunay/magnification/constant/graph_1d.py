@@ -111,7 +111,7 @@ with open(file_path, "r") as f:
     stochastic_dict = json.load(f)
 
 """
-Load the `info_dict` of the `DelaunayMagnification` pixelization run.
+Load the `info_dict` of the `DelaunayMagnification` mesh run.
 """
 file_path = path.join(samples_path, "hst_info.json")
 with open(file_path, "r") as f:

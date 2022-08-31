@@ -55,7 +55,7 @@
             }
         }
     },
-    "constant.ConstantSplit": {
+    "constant_split.ConstantSplit": {
         "coefficient": {
             "type": "LogUniform",
             "lower_limit": 0.999,
@@ -70,7 +70,7 @@
             }
         }
     },
-    "adaptive_brightness.AdaptiveBrightnessSplit": {
+    "adaptive_brightness_split.AdaptiveBrightnessSplit": {
         "inner_coefficient": {
             "type": "LogUniform",
             "lower_limit": 0.999,

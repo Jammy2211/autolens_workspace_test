@@ -11,9 +11,7 @@ def no_lens_light(
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     source_parametric_results: af.ResultsCollection,
-    pixelization: af.Model(al.AbstractPixelization) = af.Model(
-        al.pix.DelaunayBrightnessImage
-    ),
+    mesh: af.Model(al.AbstractMesh) = af.Model(al.mesh.DelaunayBrightnessImage),
     regularization: af.Model(al.AbstractRegularization) = af.Model(
         al.reg.AdaptiveBrightnessSplit
     ),
@@ -59,8 +57,11 @@ def no_lens_light(
             source=af.Model(
                 al.Galaxy,
                 redshift=source_parametric_results.last.instance.galaxies.source.redshift,
-                pixelization=al.pix.VoronoiMagnification,
-                regularization=al.reg.Constant,
+                pixelization=af.Model(
+                    al.Pixelization,
+                    mesh=al.mesh.VoronoiMagnification,
+                    regularization=al.reg.Constant,
+                ),
                 hyper_galaxy=setup_hyper.hyper_galaxy_source_from(
                     result=source_parametric_results.last
                 ),
@@ -79,7 +80,7 @@ def no_lens_light(
         analysis = multi_func(analysis, model, index=0)
 
     search = af.DynestyStatic(
-        name="source_pixelized[1]_mass[fixed]_source[pixelized_magnification_initialization]",
+        name="source_pixelization[1]_mass[fixed]_source[pixelization_magnification_initialization]",
         **settings_autofit.search_dict,
         nlive=30,
     )
@@ -111,7 +112,6 @@ def no_lens_light(
                 al.Galaxy,
                 redshift=result_1.instance.galaxies.source.redshift,
                 pixelization=result_1.instance.galaxies.source.pixelization,
-                regularization=result_1.instance.galaxies.source.regularization,
                 hyper_galaxy=result_1.instance.galaxies.source.hyper_galaxy,
             ),
         ),
@@ -123,7 +123,7 @@ def no_lens_light(
     )
 
     search = af.DynestyStatic(
-        name="source_pixelized[2]_mass[total]_source[fixed]",
+        name="source_pixelization[2]_mass[total]_source[fixed]",
         **settings_autofit.search_dict,
         nlive=50,
     )
@@ -152,8 +152,9 @@ def no_lens_light(
             source=af.Model(
                 al.Galaxy,
                 redshift=result_2.instance.galaxies.source.redshift,
-                pixelization=pixelization,
-                regularization=regularization,
+                pixelization=af.Model(
+                    al.Pixelization, mesh=mesh, regularization=regularization
+                ),
                 hyper_galaxy=result_2.instance.galaxies.source.hyper_galaxy,
             ),
         ),
@@ -163,7 +164,7 @@ def no_lens_light(
     )
 
     search = af.DynestyStatic(
-        name="source_pixelized[3]_mass[fixed]_source[pixelized_initialization]",
+        name="source_pixelization[3]_mass[fixed]_source[pixelization_initialization]",
         **settings_autofit.search_dict,
         nlive=30,
         dlogz=10.0,
@@ -207,7 +208,6 @@ def no_lens_light(
                 al.Galaxy,
                 redshift=result_3.instance.galaxies.source.redshift,
                 pixelization=result_3.instance.galaxies.source.pixelization,
-                regularization=result_3.instance.galaxies.source.regularization,
                 hyper_galaxy=result_3.instance.galaxies.source.hyper_galaxy,
             ),
         ),
@@ -217,7 +217,7 @@ def no_lens_light(
     )
 
     search = af.DynestyStatic(
-        name="source_pixelized[4]_mass[total]_source[fixed]",
+        name="source_pixelization[4]_mass[total]_source[fixed]",
         **settings_autofit.search_dict,
         nlive=50,
     )
@@ -250,9 +250,7 @@ def with_lens_light(
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     source_parametric_results: af.ResultsCollection,
-    pixelization: af.Model(al.AbstractPixelization) = af.Model(
-        al.pix.DelaunayBrightnessImage
-    ),
+    mesh: af.Model(al.AbstractMesh) = af.Model(al.mesh.DelaunayBrightnessImage),
     regularization: af.Model(al.AbstractRegularization) = af.Model(
         al.reg.AdaptiveBrightnessSplit
     ),
@@ -313,8 +311,11 @@ def with_lens_light(
             source=af.Model(
                 al.Galaxy,
                 redshift=source_parametric_results.last.instance.galaxies.source.redshift,
-                pixelization=al.pix.VoronoiMagnification,
-                regularization=al.reg.Constant,
+                pixelization=af.Model(
+                    al.Pixelization,
+                    mesh=al.mesh.VoronoiMagnification,
+                    regularization=al.reg.Constant,
+                ),
                 hyper_galaxy=setup_hyper.hyper_galaxy_source_from(
                     result=source_parametric_results.last
                 ),
@@ -333,7 +334,7 @@ def with_lens_light(
         analysis = multi_func(analysis, model, index=0)
 
     search = af.DynestyStatic(
-        name="source_pixelized[1]_light[fixed]_mass[fixed]_source[pixelized_magnification_initialization]",
+        name="source_pixelization[1]_light[fixed]_mass[fixed]_source[pixelization_magnification_initialization]",
         **settings_autofit.search_dict,
         nlive=30,
     )
@@ -370,7 +371,6 @@ def with_lens_light(
                 al.Galaxy,
                 redshift=result_1.instance.galaxies.source.redshift,
                 pixelization=result_1.instance.galaxies.source.pixelization,
-                regularization=result_1.instance.galaxies.source.regularization,
                 hyper_galaxy=result_1.instance.galaxies.source.hyper_galaxy,
             ),
         ),
@@ -382,7 +382,7 @@ def with_lens_light(
     )
 
     search = af.DynestyStatic(
-        name="source_pixelized[2]_light[fixed]_mass[total]_source[pixelized_magnification]",
+        name="source_pixelization[2]_light[fixed]_mass[total]_source[pixelization_magnification]",
         **settings_autofit.search_dict,
         nlive=50,
     )
@@ -417,8 +417,9 @@ def with_lens_light(
             source=af.Model(
                 al.Galaxy,
                 redshift=result_2.instance.galaxies.source.redshift,
-                pixelization=pixelization,
-                regularization=regularization,
+                pixelization=af.Model(
+                    al.Pixelization, mesh=mesh, regularization=regularization
+                ),
                 hyper_galaxy=result_2.instance.galaxies.source.hyper_galaxy,
             ),
         ),
@@ -431,7 +432,7 @@ def with_lens_light(
         analysis = multi_func(analysis, model, index=1)
 
     search = af.DynestyStatic(
-        name="source_pixelized[3]_light[fixed]_mass[fixed]_source[pixelized_initialization]",
+        name="source_pixelization[3]_light[fixed]_mass[fixed]_source[pixelization_initialization]",
         **settings_autofit.search_dict,
         nlive=30,
         dlogz=10.0,
@@ -478,7 +479,6 @@ def with_lens_light(
                 al.Galaxy,
                 redshift=result_3.instance.galaxies.source.redshift,
                 pixelization=result_3.instance.galaxies.source.pixelization,
-                regularization=result_3.instance.galaxies.source.regularization,
                 hyper_galaxy=result_3.instance.galaxies.source.hyper_galaxy,
             ),
         ),
@@ -488,7 +488,7 @@ def with_lens_light(
     )
 
     search = af.DynestyStatic(
-        name="source_pixelized[4]_light[fixed]_mass[total]_source[pixelized]",
+        name="source_pixelization[4]_light[fixed]_mass[total]_source[pixelization]",
         **settings_autofit.search_dict,
         nlive=50,
     )

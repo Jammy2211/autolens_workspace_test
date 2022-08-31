@@ -46,13 +46,13 @@ These settings control various aspects of how long a fit takes. The values below
 sub_size = 4
 mask_radius = 3.5
 psf_shape_2d = (21, 21)
-pixelization_shape_2d = (60, 60)
+mesh_shape_2d = (60, 60)
 
 
 print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
 print(f"psf shape = {psf_shape_2d}")
-print(f"pixelization shape = {pixelization_shape_2d}")
+print(f"pixelization shape = {mesh_shape_2d}")
 
 """
 The lens galaxy used to fit the data, which is identical to the lens galaxy used to simulate the data. 
@@ -70,7 +70,7 @@ lens_galaxy = al.Galaxy(
 """
 The source galaxy whose `VoronoiNNMagnification` `Pixelization` fits the data.
 """
-pixelization = al.pix.VoronoiNNMagnification(shape=pixelization_shape_2d)
+pixelization = al.mesh.VoronoiNNMagnification(shape=mesh_shape_2d)
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
@@ -126,7 +126,7 @@ masked_imaging = masked_imaging.apply_settings(
 
 def func(coefficient):
 
-    source_galaxy.regularization.coefficient = coefficient
+    source_galaxy.pixelization.regularization.coefficient = coefficient
     tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
     fit = al.FitImaging(
         dataset=masked_imaging,
@@ -147,7 +147,7 @@ coefficient = minimize_scalar(func, method="bounded", bounds=[1e-3, 1e3]).x
 
 print(f"coefficient = {coefficient}")
 
-source_galaxy.regularization.coefficient = coefficient
+source_galaxy.pixelization.regularization.coefficient = coefficient
 
 """
 __Fit Time__

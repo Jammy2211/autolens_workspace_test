@@ -77,11 +77,11 @@ image-pixel coordinates are then ray-traced to the source plane for the source r
 For simplicity, this example does not perform oversampling of the image-grid and therefore sets `sub_size=1`. We 
 provide links to resources describing how changing the `sub_size` changes the inversion at the end of this script.
 
-(The default `sub_size_pixelized` used for an inversion is 4, and if you did manually set this in an analysis you
+(The default `sub_size_pixelization` used for an inversion is 4, and if you did manually set this in an analysis you
 performed then it is likely that you did use sub-gridding with this resolution sub-grid).
 """
 masked_imaging = masked_imaging.apply_settings(
-    settings=al.SettingsImaging(sub_size=1, sub_size_pixelized=1)
+    settings=al.SettingsImaging(sub_size=1, sub_size_pixelization=1)
 )
 
 """
@@ -181,7 +181,7 @@ lens_galaxy = al.Galaxy(redshift=0.5, bulge=bulge, disk=disk)
 """
 The source galaxy whose `VoronoiMagnification` `Pixelization` fits the data.
 """
-pixelization = al.pix.VoronoiMagnification(shape=pixelization_shape_2d)
+pixelization = al.mesh.VoronoiMagnification(shape=mesh_shape_2d)
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
@@ -290,13 +290,13 @@ __Ray Tracing Inversion (SIE)__
 The grid used to perform an inversion can have a different `sub_size` than the grid used to evaluate light profiles
 (e.g. if parametric sources are used in the source plane).
 
-Thus, ray-tracing is performed for a unique grid called `grid_pixelized` when performing an `Inversion`.
+Thus, ray-tracing is performed for a unique grid called `grid_pixelization` when performing an `Inversion`.
 """
 deflections_2d_inversion = tracer.deflections_yx_2d_from(
-    grid=masked_imaging.grid_pixelized
+    grid=masked_imaging.grid_pixelization
 )
-traced_grid_pixelized = tracer.traced_grid_2d_list_from(
-    grid=masked_imaging.grid_pixelized
+traced_grid_pixelization = tracer.traced_grid_2d_list_from(
+    grid=masked_imaging.grid_pixelization
 )[-1]
 
 """
@@ -305,7 +305,7 @@ __Image-plane Pixelization (Gridding)__
 The `VoronoiMagnification` begins by determining what will become its the source-pixel centres by calculating them 
 in the image-plane. 
 
-This calculation is performed by overlaying a uniform regular grid with `pixelization_shape_2d` over the image-plane 
+This calculation is performed by overlaying a uniform regular grid with `mesh_shape_2d` over the image-plane 
 mask and retaining all pixels that fall within the mask. This grid is called a `Grid2DSparse` as it retains information
 on the mapping between the sparse image-plane pixelization grid and full resolution image grid.
 
@@ -314,7 +314,7 @@ Checkout the functions `Grid2DSparse.__init__` and `Grid2DSparse.from_grid_and_u
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/two_d/grid_2d.py
 """
 sparse_image_plane_grid = al.Grid2DSparse.from_grid_and_unmasked_2d_grid_shape(
-    grid=masked_imaging.grid, unmasked_sparse_shape=pixelization.shape
+    grid=masked_imaging.grid, unmasked_sparse_shape=pixelization.mesh.shape
 )
 
 """
@@ -329,8 +329,8 @@ to enable the use of multiple mappers that analysis double source plane lens sys
 
 For now... this can be ignored.
 """
-traced_sparse_grid = tracer.traced_sparse_grid_pg_list_from(
-    grid=masked_imaging.grid_pixelized
+traced_sparse_grid = tracer.traced_sparse_grid_pg_list(
+    grid=masked_imaging.grid_pixelization
 )[0][-1][0]
 
 """
@@ -351,7 +351,7 @@ Checkout the function `relocated_grid_from` for a full description of the method
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/two_d/abstract_grid_2d.py
 """
-relocated_grid = traced_grid.relocated_grid_from(grid=traced_grid_pixelized)
+relocated_grid = traced_grid.relocated_grid_from(grid=traced_grid_pixelization)
 
 """
 __Border Relocation Pixelization__
@@ -362,7 +362,7 @@ Checkout the function `relocated_pxielization_grid_from` for a full description 
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/two_d/abstract_grid_2d.py
 """
-relocated_pixelization_grid = traced_grid.relocated_pixelization_grid_from(
+relocated_pixelization_grid = traced_grid.relocated_mesh_grid_from(
     pixelization_grid=traced_sparse_grid
 )
 
@@ -375,11 +375,11 @@ The array `sparse_index_for_slim_index` encodes the closest source pixel of ever
 sub image-plane grid. This is used for efficiently pairing every image-plane pixel to its corresponding source-plane
 pixel.
 
-Checkout `Grid2DVoronoi.__init__` and `Grid2DVoronoi.voronoi` property for a full description:
+Checkout `Mesh2DVoronoi.__init__` and `Mesh2DVoronoi.voronoi` property for a full description:
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/two_d/grid_2d_pixelization.py
 """
-grid_voronoi = al.Grid2DVoronoi(
+grid_voronoi = al.Mesh2DVoronoi(
     grid=relocated_pixelization_grid,
     nearest_pixelization_index_for_slim_index=sparse_image_plane_grid.sparse_index_for_slim_index,
 )
@@ -401,7 +401,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers
 """
 mapper = MapperVoronoiNoInterp(
     source_grid_slim=relocated_grid,
-    source_pixelization_grid=grid_voronoi,
+    source_mesh_grid=grid_voronoi,
     data_pixelization_grid=sparse_image_plane_grid,  # Only stored in a mapper for visualization of the image-plane grid.
 )
 
@@ -411,7 +411,7 @@ __Image-Source Pairing__
 The `Mapper` contains:
 
  1) The traced grid of (y,x) source pixel coordinate centres (`source_grid_slim`).
- 2) The traced grid of (y,x) image pixel coordinates (`source_pixelization_grid`).
+ 2) The traced grid of (y,x) image pixel coordinates (`source_mesh_grid`).
  
 The function below pairs every image-pixel coordinate to every source-pixel centre.
 
@@ -517,7 +517,7 @@ This function is called by `LEqMapping.data_vector_from()` to make the `data_vec
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/leq/imaging.py
 """
 subtracted_image = masked_imaging.image - convolved_image
-data_vector = al.util.leq.data_vector_via_blurred_mapping_matrix_from(
+data_vector = al.util.inversion_imaging.data_vector_via_blurred_mapping_matrix_from(
     blurred_mapping_matrix=blurred_mapping_matrix,
     image=subtracted_image,
     noise_map=masked_imaging.noise_map,
@@ -538,7 +538,7 @@ This function is called by `LEqMapping.curvature_matrix` to make the `curvature_
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/leq/imaging.py
 """
-curvature_matrix = al.util.leq.curvature_matrix_via_mapping_matrix_from(
+curvature_matrix = al.util.inversion.curvature_matrix_via_mapping_matrix_from(
     mapping_matrix=blurred_mapping_matrix, noise_map=masked_imaging.noise_map
 )
 
@@ -562,9 +562,9 @@ An `Inversion` object has a property `regularization_matrix` to perform this cal
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/inversion/abstract.py
 """
 regularization_matrix = al.util.regularization.constant_regularization_matrix_from(
-    coefficient=source_galaxy.regularization.coefficient,
-    pixel_neighbors=mapper.source_pixelization_grid.pixel_neighbors,
-    pixel_neighbors_sizes=mapper.source_pixelization_grid.pixel_neighbors.sizes,
+    coefficient=source_galaxy.pixelization.regularization.coefficient,
+    neighbors=mapper.source_mesh_grid.neighbors,
+    neighbors_sizes=mapper.source_mesh_grid.neighbors.sizes,
 )
 
 """
@@ -646,7 +646,7 @@ This function is called by `AbstractInversion.mapped_reconstructed_data`:
 
 https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/inversion/abstract.py
 """
-mapped_reconstructed_image = al.util.leq.mapped_reconstructed_data_via_mapping_matrix_from(
+mapped_reconstructed_image = al.util.inversion.mapped_reconstructed_data_via_mapping_matrix_from(
     mapping_matrix=blurred_mapping_matrix, reconstruction=reconstruction
 )
 

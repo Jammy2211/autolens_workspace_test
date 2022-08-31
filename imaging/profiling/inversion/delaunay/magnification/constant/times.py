@@ -1,7 +1,7 @@
 """
 __PROFILING: Inversion DelaunayMagnification__
 
-This profiling script times how long it takes to fit `Imaging` data with a `DelaunayMagnification` pixelization for
+This profiling script times how long it takes to fit `Imaging` data with a `DelaunayMagnification` mesh for
 datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.
@@ -74,13 +74,13 @@ These settings control various aspects of how long a fit takes. The values below
 sub_size = 4
 mask_radius = 3.0
 psf_shape_2d = (21, 21)
-pixelization_shape_2d = (40, 40)
+mesh_shape_2d = (40, 40)
 
 
 print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
 print(f"psf shape = {psf_shape_2d}")
-print(f"pixelization shape = {pixelization_shape_2d}")
+print(f"pixelization shape = {mesh_shape_2d}")
 
 """
 The lens galaxy used to fit the data, which is identical to the lens galaxy used to simulate the data. 
@@ -127,7 +127,7 @@ lens_galaxy = al.Galaxy(
 """
 The source galaxy whose `DelaunayMagnification` `Pixelization` fits the data.
 """
-pixelization = al.pix.DelaunayMagnification(shape=pixelization_shape_2d)
+pixelization = al.mesh.DelaunayMagnification(shape=mesh_shape_2d)
 
 source_galaxy = al.Galaxy(
     redshift=1.0,

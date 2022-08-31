@@ -125,7 +125,7 @@ lens = af.Model(
 source = af.Model(
     al.Galaxy,
     redshift=1.0,
-    pixelization=al.pix.VoronoiMagnification(shape=(30, 30)),
+    pixelization=al.mesh.VoronoiMagnification(shape=(30, 30)),
     regularization=al.reg.Constant,
 )
 

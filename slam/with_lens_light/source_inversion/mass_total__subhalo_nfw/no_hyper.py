@@ -80,7 +80,7 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = af.SettingsSearch(
     path_prefix=path.join(
-        "slam", "light_sersic__mass_total__subhalo_nfw__source_pixelized", "no_hyper"
+        "slam", "light_sersic__mass_total__subhalo_nfw__source_pixelization", "no_hyper"
     ),
     number_of_cores=1,
     session=None,
@@ -162,12 +162,12 @@ regularization, to set up the model and hyper images, and then:
 
 analysis = al.AnalysisImaging(dataset=imaging)
 
-source_pixelized_results = slam.source_pixelized.with_lens_light(
+source_pixelization_results = slam.source_pixelization.with_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_parametric_results=source_parametric_results,
-    pixelization=al.pix.VoronoiBrightnessImage,
+    mesh=al.mesh.VoronoiBrightnessImage,
     regularization=al.reg.AdaptiveBrightness,
 )
 
@@ -193,14 +193,14 @@ disk = af.Model(al.lp.EllExponential)
 bulge.centre = disk.centre
 
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_pixelized_results.last
+    dataset=imaging, hyper_dataset_result=source_pixelization_results.last
 )
 
 light_results = slam.light_parametric.with_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_pixelized_results,
+    source_results=source_pixelization_results,
     lens_bulge=bulge,
     lens_disk=disk,
 )
@@ -224,14 +224,14 @@ model of the LIGHT PARAMETRIC PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_pixelized_results.last
+    dataset=imaging, hyper_dataset_result=source_pixelization_results.last
 )
 
 mass_results = slam.mass_total.with_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_pixelized_results,
+    source_results=source_pixelization_results,
     light_results=light_results,
     mass=af.Model(al.mp.EllPowerLaw),
 )
@@ -253,7 +253,7 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_pixelized_results.last
+    dataset=imaging, hyper_dataset_result=source_pixelization_results.last
 )
 
 subhalo_results = slam.subhalo.detection(

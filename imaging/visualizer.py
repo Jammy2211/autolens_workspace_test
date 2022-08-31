@@ -88,12 +88,13 @@ shear = af.Model(al.mp.ExternalShear)
 shear.elliptical_comps = (0.05, 0.05)
 
 lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, disk=disk, mass=mass, shear=shear)
-source = af.Model(
-    al.Galaxy,
-    redshift=1.0,
-    pixelization=al.pix.VoronoiNNMagnification(shape=(30, 30)),
+pixelization = af.Model(
+    al.Pixelization,
+    mesh=al.mesh.VoronoiNNMagnification(shape=(30, 30)),
     regularization=al.reg.ConstantSplit,
 )
+
+source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 

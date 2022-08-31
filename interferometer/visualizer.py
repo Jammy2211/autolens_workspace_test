@@ -45,7 +45,7 @@ interferometer = al.Interferometer.from_fits(
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
     real_space_mask=real_space_mask_2d,
-    settings=al.SettingsInterferometer(transformer_class=al.TransformerDFT)
+    settings=al.SettingsInterferometer(transformer_class=al.TransformerDFT),
 )
 
 """
@@ -81,12 +81,13 @@ shear = af.Model(al.mp.ExternalShear)
 shear.elliptical_comps = (0.05, 0.05)
 
 lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, disk=disk, mass=mass, shear=shear)
-source = af.Model(
-    al.Galaxy,
-    redshift=1.0,
-    pixelization=al.pix.VoronoiNNMagnification(shape=(30, 30)),
+pixelization = af.Model(
+    al.Pixelization,
+    mesh=al.mesh.VoronoiNNMagnification(shape=(30, 30)),
     regularization=al.reg.ConstantSplit,
 )
+
+source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
