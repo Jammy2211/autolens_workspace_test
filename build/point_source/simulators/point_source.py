@@ -27,14 +27,9 @@ gives it a descriptive name. They define the folder the dataset is output to on 
  - The image will be output to `/autolens_workspace/dataset/dataset_type/dataset_label/dataset_name/positions.json`.
  - The noise-map will be output to `/autolens_workspace/dataset/dataset_type/dataset_label/dataset_name/noise_map.json`.
 """
+dataset_label = "build"
 dataset_type = "point_source"
-dataset_name = "mass_sie__source_point__0"
-
-"""
-The path where the dataset will be output, which in this case is:
-`/autolens_workspace/dataset/positions/mass_sie__source_point__0`
-"""
-dataset_path = path.join("dataset", dataset_type, dataset_name)
+dataset_path = path.join("dataset", dataset_label, dataset_type)
 
 """
 __Ray Tracing__
@@ -52,17 +47,20 @@ We can use the **PyAutoLens** `convert` module to determine the elliptical compo
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    mass=al.mp.EllIsothermal(
+    mass=al.mp.SphIsothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
     ),
 )
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    light=al.lp.EllExponential(centre=(0.0, 0.0), intensity=0.1, effective_radius=0.02),
-    point_0=al.ps.Point(centre=(0.0, 0.0)),
+    bulge=al.lp.SphExponential(
+        centre=(0.0, 0.1),
+        intensity=0.3,
+        effective_radius=0.1,
+    ),
+    point_0=al.ps.Point(centre=(0.0, 0.1)),
 )
 
 """
@@ -77,7 +75,7 @@ We will use computationally slow but robust settings to ensure we accurately loc
 """
 grid_2d = al.Grid2D.uniform(
     shape_native=(100, 100),
-    pixel_scales=0.05,  # <- The pixel-scale describes the conversion from pixel units to arc-seconds.
+    pixel_scales=0.2,  # <- The pixel-scale describes the conversion from pixel units to arc-seconds.
 )
 
 solver = al.PointSolver(
@@ -140,7 +138,7 @@ analyse the dataset.
 point_dataset = al.PointDataset(
     name="point_0",
     positions=positions,
-    positions_noise_map=positions.values_via_value_from(value=grid.pixel_scale),
+    positions_noise_map=positions.values_via_value_from(value=grid_2d.pixel_scale),
     fluxes=fluxes,
     fluxes_noise_map=al.ValuesIrregular(values=[1.0, 1.0, 1.0, 1.0]),
 )

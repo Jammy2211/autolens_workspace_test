@@ -31,14 +31,17 @@ __Dataset__
 
 Load and plot the strong lens dataset `mass_sie__source_sersic` via .fits files, which we will fit with the lens model.
 """
-dataset_name = "light_sersic_exp__mass_sie__source_sersic"
-dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
+dataset_label = "build"
+dataset_type = "imaging"
+dataset_name = "no_lens_light"
+
+dataset_path = path.join("dataset", dataset_label, dataset_type, dataset_name)
 
 imaging = al.Imaging.from_fits(
     image_path=path.join(dataset_path, "image.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    pixel_scales=0.1,
+    pixel_scales=0.2,
 )
 
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
@@ -47,8 +50,8 @@ imaging_plotter.subplot_imaging()
 """
 __Masking__
 """
-mask_2d = al.Mask2D.circular(
-    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
+mask_2d = al.Mask2D.circular_annular(
+    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, inner_radius=0.8, outer_radius=2.6
 )
 
 imaging = imaging.apply_mask(mask=mask_2d)
@@ -66,28 +69,18 @@ positions = al.Grid2DIrregular.from_json(
 """
 __Model__
 """
-bulge = af.Model(al.lp.EllSersic)
+bulge = af.Model(al.lp.SphDevVaucouleurs)
 
 bulge.centre = (0.0, 0.0)
-bulge.elliptical_comps = al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0)
-bulge.intensity = 4.0
-bulge.effective_radius = 0.6
-bulge.sersic_index = 3.0
+bulge.intensity = 0.1
+bulge.effective_radius = 0.8
 
-disk = af.Model(al.lp_linear.EllExponential)
-disk.centre = (0.05, 0.05)
-disk.elliptical_comps = al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0)
-disk.effective_radius = 1.6
-
-mass = af.Model(al.mp.EllIsothermal)
+mass = af.Model(al.mp.SphIsothermal)
 mass.centre = (0.0, 0.0)
 mass.einstein_radius = 1.6
-mass.elliptical_comps = al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0)
 
-shear = af.Model(al.mp.ExternalShear)
-shear.elliptical_comps = (0.05, 0.05)
+lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass)
 
-lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, disk=disk, mass=mass, shear=shear)
 pixelization = af.Model(
     al.Pixelization,
     mesh=al.mesh.VoronoiNNMagnification(shape=(30, 30)),
@@ -98,15 +91,14 @@ source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
+instance = model.instance_from_prior_medians()
+
 """
-__Search__
+__Paths__
 """
-search = af.DynestyStatic(
-    path_prefix=path.join("visualizer"),
-    name="imaging",
-    unique_tag=dataset_name,
-    nlive=50,
-    number_of_cores=1,
+paths = af.DirectoryPaths(
+    path_prefix=path.join("build", "visualizer"),
+    name="imaging"
 )
 
 """
@@ -121,10 +113,13 @@ analysis = al.AnalysisImaging(
     dataset=imaging, positions_likelihood=positions_likelihood
 )
 
-"""
-__Model-Fit__
-"""
-result = search.fit(model=model, analysis=analysis)
+analysis.modify_before_fit(paths=paths, model=model)
+
+analysis.visualize(
+    paths=paths,
+    instance=instance,
+    during_analysis=False
+)
 
 """
 Finish.

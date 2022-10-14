@@ -24,7 +24,6 @@ conf.instance.push(new_path=path.join(cwd, "config", "visualizer"))
 
 import autofit as af
 import autolens as al
-import autolens.plot as aplt
 
 """
 __Dataset__
