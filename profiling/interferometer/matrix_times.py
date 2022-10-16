@@ -7,7 +7,9 @@ arr_1d = np.arange(13000)
 
 
 @jit(nopython=True, cache=True, parallel=False)
-def simple_jit(arr_1d,):
+def simple_jit(
+    arr_1d,
+):
     """
     Use the preloaded w_tilde matrix (see `w_tilde_preload_from_jit`) to compute w_tilde efficiently.
 

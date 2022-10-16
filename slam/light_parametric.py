@@ -15,7 +15,6 @@ def with_lens_light(
     lens_disk: Optional[af.Model] = None,
     lens_envelope: Optional[af.Model] = None,
     end_with_hyper_extension: bool = False,
-    multi_func: Optional[Callable] = None,
 ) -> af.ResultsCollection:
     """
     The SlaM LIGHT PARAMETRIC PIPELINE for fitting imaging data with a lens light component.
@@ -94,9 +93,6 @@ def with_lens_light(
             result=source_results.last
         ),
     )
-
-    if multi_func is not None:
-        analysis = multi_func(analysis, model)
 
     search = af.DynestyStatic(
         name="light[1]_light[parametric]", **settings_autofit.search_dict, nlive=150

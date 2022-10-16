@@ -51,7 +51,10 @@ imaging_plotter.subplot_imaging()
 __Masking__
 """
 mask_2d = al.Mask2D.circular_annular(
-    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, inner_radius=0.8, outer_radius=2.6
+    shape_native=imaging.shape_native,
+    pixel_scales=imaging.pixel_scales,
+    inner_radius=0.8,
+    outer_radius=2.6,
 )
 
 imaging = imaging.apply_mask(mask=mask_2d)
@@ -96,10 +99,7 @@ instance = model.instance_from_prior_medians()
 """
 __Paths__
 """
-paths = af.DirectoryPaths(
-    path_prefix=path.join("build", "visualizer"),
-    name="imaging"
-)
+paths = af.DirectoryPaths(path_prefix=path.join("build", "visualizer"), name="imaging")
 
 """
 __Position Likelihood__
@@ -115,11 +115,7 @@ analysis = al.AnalysisImaging(
 
 analysis.modify_before_fit(paths=paths, model=model)
 
-analysis.visualize(
-    paths=paths,
-    instance=instance,
-    during_analysis=False
-)
+analysis.visualize(paths=paths, instance=instance, during_analysis=False)
 
 """
 Finish.

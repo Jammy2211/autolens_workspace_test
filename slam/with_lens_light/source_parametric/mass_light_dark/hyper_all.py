@@ -77,7 +77,9 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = af.SettingsSearch(
     path_prefix=path.join(
-        "slam", "light_sersic__mass_light_dark__source_parametric", "hyper_all"
+        "slam",
+        "light_sersic__mass_light_dark__source_parametric",
+        "hyper_all",
     ),
     number_of_cores=1,
     session=None,
@@ -207,6 +209,36 @@ mass_results = slam.mass_light_dark.with_lens_light(
     lens_disk=af.Model(al.lmp.EllSersic),
     lens_envelope=None,
     dark=af.Model(al.mp.EllNFWMCRLudlow),
+)
+
+"""
+__SUBHALO PIPELINE (single plane detection)__
+
+The SUBHALO PIPELINE (single plane detection) consists of the following searches:
+
+ 1) Refit the lens and source model, to refine the model evidence for comparing to the models fitted which include a 
+ subhalo. This uses the same model as fitted in the MASS PIPELINE. 
+ 2) Performs a grid-search of non-linear searches to attempt to detect a dark matter subhalo. 
+ 3) If there is a successful detection a final search is performed to refine its parameters.
+
+For this runner the SUBHALO PIPELINE customizes:
+
+ - The [number_of_steps x number_of_steps] size of the grid-search, as well as the dimensions it spans in arc-seconds.
+ - The `number_of_cores` used for the gridsearch, where `number_of_cores > 1` performs the model-fits in paralle using
+ the Python multiprocessing module.
+"""
+analysis = al.AnalysisImaging(
+    dataset=imaging, hyper_dataset_result=source_parametric_results.last
+)
+
+subhalo_results = slam.subhalo.detection(
+    settings_autofit=settings_autofit,
+    analysis=analysis,
+    setup_hyper=setup_hyper,
+    mass_results=mass_results,
+    subhalo_mass=af.Model(al.mp.SphNFWMCRLudlow),
+    grid_dimension_arcsec=3.0,
+    number_of_steps=2,
 )
 
 """

@@ -95,7 +95,9 @@ mesh = al.mesh.VoronoiMagnification(shape=mesh_shape_2d)
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    pixelization=al.Pixelization(mesh=mesh, regularization=al.reg.Constant(coefficient=1.0)),
+    pixelization=al.Pixelization(
+        mesh=mesh, regularization=al.reg.Constant(coefficient=1.0)
+    ),
 )
 
 """

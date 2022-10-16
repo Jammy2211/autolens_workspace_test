@@ -50,7 +50,9 @@ By default we use baselines from the Square Mile Array (SMA), which produces low
 can be fitted extremely efficiently. The `autolens_workspace` includes ALMA uv_wavelengths files for simulating
 much high resolution datasets (which can be performed by replacing "sma.fits" below with "alma.fits").
 """
-uv_wavelengths_path = path.join("dataset", "interferometer", "instruments", "alma_low_res_backup")
+uv_wavelengths_path = path.join(
+    "dataset", "interferometer", "instruments", "alma_low_res_backup"
+)
 uv_wavelengths = al.util.array_1d.numpy_array_1d_via_fits_from(
     file_path=path.join(uv_wavelengths_path, "uv_wavelengths.fits"), hdu=0
 )

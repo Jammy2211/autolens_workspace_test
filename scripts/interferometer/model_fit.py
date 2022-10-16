@@ -87,7 +87,9 @@ __Model__
 
 """
 lens = af.Model(
-    al.Galaxy, redshift=0.5, mass=al.mp.SphIsothermal,
+    al.Galaxy,
+    redshift=0.5,
+    mass=al.mp.SphIsothermal,
 )
 
 pixelization = af.Model(

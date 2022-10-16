@@ -86,12 +86,16 @@ mesh = al.mesh.VoronoiMagnification(shape=mesh_shape_2d)
 source_galaxy_0 = al.Galaxy(
     redshift=1.0,
     mass=al.mp.SphIsothermal(centre=(-0.15, -0.15), einstein_radius=0.6),
-    pixelization=al.Pixelization(mesh=mesh, regularization=al.reg.Constant(coefficient=1.0)),
+    pixelization=al.Pixelization(
+        mesh=mesh, regularization=al.reg.Constant(coefficient=1.0)
+    ),
 )
 
 source_galaxy_1 = al.Galaxy(
     redshift=2.0,
-    pixelization=al.Pixelization(mesh=mesh, regularization=al.reg.Constant(coefficient=1.0)),
+    pixelization=al.Pixelization(
+        mesh=mesh, regularization=al.reg.Constant(coefficient=1.0)
+    ),
 )
 
 """

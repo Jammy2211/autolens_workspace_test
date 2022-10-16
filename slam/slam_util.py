@@ -368,11 +368,11 @@ def source__from_result_model_if_parametric(
     # TODO : Should not depend on name of pixelization being "pixelization"
 
     if hasattr(result.instance.galaxies.source, "pixelization"):
-        if result.instance.galaxies.source.pixelization is None:
+        if result.instance.galaxies.source.pixelization is not None:
             return source__from(
-                result=result, setup_hyper=setup_hyper, source_is_model=True
+                result=result, setup_hyper=setup_hyper, source_is_model=False
             )
-    return source__from(result=result, setup_hyper=setup_hyper, source_is_model=False)
+    return source__from(result=result, setup_hyper=setup_hyper, source_is_model=True)
 
 
 def clean_clumps_of_hyper_images(clumps):
@@ -428,93 +428,3 @@ def clumps_from(
     clean_clumps_of_hyper_images(clumps=clumps)
 
     return clumps
-
-
-def lp_from(
-    lp: al.lp.LightProfile, fit: Union[al.FitImaging, al.FitInterferometer]
-) -> al.lp.LightProfile:
-
-    if isinstance(lp, LightProfileLinear):
-
-        intensity = fit.linear_light_profile_intensity_dict[lp]
-
-        return lp.lp_instance_from(intensity=intensity)
-
-    return lp
-
-
-def lmp_from(
-    lp: al.lp.LightProfile, fit: Union[al.FitImaging, al.FitInterferometer]
-) -> al.lmp.LightMassProfile:
-
-    if isinstance(lp, LightProfileLinear):
-
-        intensity = fit.linear_light_profile_intensity_dict[lp]
-
-        return lp.lmp_model_from(intensity=intensity)
-
-    return lp
-
-
-def gaussian_dict_lp_from(
-    galaxy: al.Galaxy, fit: Union[al.FitImaging, al.FitInterferometer]
-) -> Dict[str, al.lp.LightProfile]:
-
-    if (
-        galaxy.bulge is not None
-        or galaxy.disk is not None
-        or galaxy.envelope is not None
-    ):
-        raise al.exc.GalaxyException(
-            "Cannot convert Gaussian dict from linear to not linear if bulge, disk and / or envelope"
-            "light profiles are defined."
-        )
-
-    gaussian_dict = {}
-
-    for key, value in galaxy.__dict__.items():
-
-        if isinstance(value, al.lp.LightProfile) and isinstance(value, LightProfileLinear):
-
-            gaussian_linear = value
-
-            intensity = fit.linear_light_profile_intensity_dict[gaussian_linear]
-
-            gaussian = gaussian_linear.lp_instance_from(intensity=intensity)
-
-            gaussian_dict[key] = gaussian
-
-    return gaussian_dict
-
-
-def gaussian_dict_lmp_from(
-    galaxy: al.Galaxy, fit: Union[al.FitImaging, al.FitInterferometer]
-) -> Dict[str, al.lp.LightProfile]:
-
-    if (
-        galaxy.bulge is not None
-        or galaxy.disk is not None
-        or galaxy.envelope is not None
-    ):
-        raise al.exc.GalaxyException(
-            "Cannot convert Gaussian dict from linear to not linear if bulge, disk and / or envelope"
-            "light profiles are defined."
-        )
-
-    gaussian_dict = {}
-
-    for key, value in galaxy.__dict__.items():
-
-        if isinstance(value, al.lp.LightProfile) and isinstance(value, LightProfileLinear):
-
-            gaussian_linear = value
-
-            intensity = fit.linear_light_profile_intensity_dict[gaussian_linear]
-
-            gaussian = gaussian_linear.lmp_model_from(intensity=intensity)
-            gaussian_dict[key] = gaussian
-            gaussian.mass_to_light_ratio = gaussian_dict[
-                "gaussian_0"
-            ].mass_to_light_ratio
-
-    return gaussian_dict

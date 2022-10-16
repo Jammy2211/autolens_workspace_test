@@ -61,7 +61,10 @@ The model-fit requires a `Mask2D` defining the regions of the image we fit the l
 and use to set up the `Imaging` object that the lens model fits.
 """
 mask_2d = al.Mask2D.circular_annular(
-    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, inner_radius=0.8, outer_radius=2.6
+    shape_native=imaging.shape_native,
+    pixel_scales=imaging.pixel_scales,
+    inner_radius=0.8,
+    outer_radius=2.6,
 )
 
 imaging = imaging.apply_mask(mask=mask_2d)
@@ -84,7 +87,9 @@ __Model__
 
 """
 lens = af.Model(
-    al.Galaxy, redshift=0.5, mass=al.mp.SphIsothermal,
+    al.Galaxy,
+    redshift=0.5,
+    mass=al.mp.SphIsothermal,
 )
 
 pixelization = af.Model(

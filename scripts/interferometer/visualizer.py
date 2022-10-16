@@ -88,8 +88,7 @@ instance = model.instance_from_prior_medians()
 __Paths__
 """
 paths = af.DirectoryPaths(
-    path_prefix=path.join("build", "visualizer"),
-    name="interferometer"
+    path_prefix=path.join("build", "visualizer"), name="interferometer"
 )
 
 """
@@ -110,11 +109,7 @@ analysis = al.AnalysisInterferometer(
 
 analysis.modify_before_fit(paths=paths, model=model)
 
-analysis.visualize(
-    paths=paths,
-    instance=instance,
-    during_analysis=False
-)
+analysis.visualize(paths=paths, instance=instance, during_analysis=False)
 """
 Finish.
 """

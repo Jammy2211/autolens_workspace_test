@@ -81,10 +81,7 @@ pixelization = al.Pixelization(
     regularization=al.reg.Constant(coefficient=1.0),
 )
 
-source_galaxy = al.Galaxy(
-    redshift=1.0,
-    pixelization=pixelization
-)
+source_galaxy = al.Galaxy(redshift=1.0, pixelization=pixelization)
 
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
@@ -105,7 +102,7 @@ if instrument == "sma":
         shape_native=real_shape_native,
         pixel_scales=pixel_scales,
         sub_size=sub_size,
-  #      inner_radius=0.7,
+        #      inner_radius=0.7,
         radius=3.0,
     )
 

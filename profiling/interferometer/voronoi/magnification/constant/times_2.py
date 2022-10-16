@@ -34,13 +34,13 @@ use_w_tilde_numpy = False
 
 if use_w_tilde and not use_w_tilde_numpy:
     file_path = os.path.join(file_path, "w_tilde")
-    print('Using W tilde - no numpy')
+    print("Using W tilde - no numpy")
 elif use_w_tilde and use_w_tilde_numpy:
     file_path = os.path.join(file_path, "w_tilde_numpy")
-    print('Using W tilde - with numpy')
+    print("Using W tilde - with numpy")
 else:
     file_path = os.path.join(file_path, "mapping")
-    print('NOT using W tilde')
+    print("NOT using W tilde")
 """
 The number of repeats used to estimate the `Inversion` run time.
 """
@@ -83,10 +83,7 @@ pixelization = al.Pixelization(
     regularization=al.reg.Constant(coefficient=1.0),
 )
 
-source_galaxy = al.Galaxy(
-    redshift=1.0,
-    pixelization=pixelization
-)
+source_galaxy = al.Galaxy(redshift=1.0, pixelization=pixelization)
 
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
@@ -107,7 +104,7 @@ if instrument == "sma":
         shape_native=real_shape_native,
         pixel_scales=pixel_scales,
         sub_size=sub_size,
-  #      inner_radius=0.7,
+        #      inner_radius=0.7,
         radius=3.0,
     )
 
@@ -154,7 +151,7 @@ else:
 Load the strong lens dataset `mass_sie__source_sersic` `from .fits files.
 """
 
-#instrument = "sma"
+# instrument = "sma"
 
 
 try:
