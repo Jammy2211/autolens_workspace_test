@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, Optional, Union
+from typing import Tuple, Optional, Union
 
 import autofit as af
 import autolens as al
