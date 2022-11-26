@@ -81,7 +81,7 @@ lens_galaxy = al.Galaxy(
         einstein_radius=1.6,
         ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=45.0),
     ),
-    shear=al.mp.ExternalShear(ell_comps=(0.001, 0.001)),
+    shear=al.mp.ExternalShear(gamma=(0.001, 0.001)),
 )
 
 
@@ -176,7 +176,7 @@ lens_galaxy_power_law = al.Galaxy(
         einstein_radius=1.6,
         ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=45.0),
     ),
-    shear=al.mp.ExternalShear(ell_comps=(0.001, 0.001)),
+    shear=al.mp.ExternalShear(gamma=(0.001, 0.001)),
 )
 tracer_power_law = al.Tracer.from_galaxies(
     galaxies=[lens_galaxy_power_law, source_galaxy]
@@ -205,7 +205,7 @@ lens_galaxy_decomposed = al.Galaxy(
         kappa_s=0.12,
         scale_radius=20.0,
     ),
-    shear=al.mp.ExternalShear(ell_comps=(0.001, 0.001)),
+    shear=al.mp.ExternalShear(gamma=(0.001, 0.001)),
 )
 tracer_decomposed = al.Tracer.from_galaxies(
     galaxies=[lens_galaxy_decomposed, source_galaxy]
