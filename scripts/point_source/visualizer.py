@@ -34,7 +34,7 @@ dataset_type = "point_source"
 dataset_path = path.join("dataset", dataset_label, dataset_type)
 
 image_2d = al.Array2D.from_fits(
-    file_path=path.join(dataset_path, "image.fits"), pixel_scales=0.05
+    file_path=path.join(dataset_path, "image_2d.fits"), pixel_scales=0.05
 )
 
 point_dict = al.PointDict.from_json(
