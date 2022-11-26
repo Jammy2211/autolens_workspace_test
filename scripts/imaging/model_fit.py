@@ -112,7 +112,6 @@ A full description of the settings below is given in the beginner modeling scrip
 """
 search = af.DynestyStatic(
     path_prefix=path.join("build", "model_fit", "imaging"),
-    name=dataset_name,
     nlive=50,
     number_of_cores=2,
 )
