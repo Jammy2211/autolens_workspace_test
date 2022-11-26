@@ -48,7 +48,7 @@ search = af.DynestyStatic(
     walks=10,
     iterations_per_update=1000,
     number_of_cores=number_of_cores,
-  #  checkpoint_every=5
+    #  checkpoint_every=5
 )
 
 """

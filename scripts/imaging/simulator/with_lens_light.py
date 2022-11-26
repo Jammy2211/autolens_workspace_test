@@ -126,7 +126,9 @@ imaging.output_to_fits(
 )
 
 positions = al.Grid2DIrregular(grid=[(1.6, 0.0), (0.0, 1.6)])
-positions.output_to_json(file_path=path.join(dataset_path, "positions.json"))
+positions.output_to_json(
+    file_path=path.join(dataset_path, "positions.json"), overwrite=True
+)
 
 """
 Output a subplot of the simulated dataset, the image and a subplot of the `Tracer`'s quantities to the dataset path 

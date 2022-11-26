@@ -427,11 +427,12 @@ def clumps_from(
 
     return clumps
 
+
 # TODO : Think about how Rich can full generize these.
 
+
 def lp_from(
-    component: Union[al.LightProfile],
-    fit: Union[al.FitImaging, al.FitInterferometer]
+    component: Union[al.LightProfile], fit: Union[al.FitImaging, al.FitInterferometer]
 ) -> al.LightProfile:
 
     if isinstance(component, al.lp_linear.LightProfileLinear):
@@ -450,13 +451,15 @@ def lp_from(
 
             if isinstance(light_profile, al.lp_linear.LightProfileLinear):
 
-                light_profile_list.append(light_profile.lp_instance_from(intensity=intensity))
+                light_profile_list.append(
+                    light_profile.lp_instance_from(intensity=intensity)
+                )
 
             else:
 
                 light_profile_list.append(light_profile)
 
-     #   basis = af.Model(al.lp_basis.Basis, light_profile_list=light_profile_list)
+        #   basis = af.Model(al.lp_basis.Basis, light_profile_list=light_profile_list)
 
         basis = al.lp_basis.Basis(light_profile_list=light_profile_list)
 
@@ -467,7 +470,7 @@ def lp_from(
 
 def lmp_from(
     lp: Union[al.LightProfile, al.lp_linear.LightProfileLinear],
-    fit: Union[al.FitImaging, al.FitInterferometer]
+    fit: Union[al.FitImaging, al.FitInterferometer],
 ) -> al.lmp.LightMassProfile:
 
     if isinstance(lp, al.lp_linear.LightProfileLinear):

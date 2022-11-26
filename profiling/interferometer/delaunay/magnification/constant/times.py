@@ -196,7 +196,9 @@ fit = al.FitInterferometer(
     dataset=interferometer,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(
-        use_w_tilde=use_w_tilde, use_w_tilde_numpy=use_w_tilde_numpy, use_source_loop=True
+        use_w_tilde=use_w_tilde,
+        use_w_tilde_numpy=use_w_tilde_numpy,
+        use_source_loop=True,
     ),
 )
 print(fit.figure_of_merit)

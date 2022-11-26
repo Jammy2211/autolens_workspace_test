@@ -83,7 +83,9 @@ Check Aggregator works (This should load one mp_instance).
 for samples in agg.values("samples"):
     print(samples.log_likelihood_list[9])
 
-ml_vector = [samps.max_log_likelihood(as_instance=False) for samps in agg.values("samples")]
+ml_vector = [
+    samps.max_log_likelihood(as_instance=False) for samps in agg.values("samples")
+]
 print(ml_vector, "\n\n")
 
 unique_tag = agg.search.unique_tag
