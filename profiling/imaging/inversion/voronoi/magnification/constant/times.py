@@ -64,25 +64,25 @@ The lens galaxy used to fit the data, which is identical to the lens galaxy used
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    bulge=al.lp.EllSersic(
+    bulge=al.lp.Sersic(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
         intensity=4.0,
         effective_radius=0.6,
         sersic_index=3.0,
     ),
-    disk=al.lp.EllExponential(
+    disk=al.lp.Exponential(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
         intensity=2.0,
         effective_radius=1.6,
     ),
-    mass=al.mp.EllIsothermal(
+    mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=45.0),
     ),
-    shear=al.mp.ExternalShear(elliptical_comps=(0.001, 0.001)),
+    shear=al.mp.ExternalShear(ell_comps=(0.001, 0.001)),
 )
 
 """

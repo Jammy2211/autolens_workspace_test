@@ -171,11 +171,11 @@ We compose the lens model as per usual.
 lens = af.Model(
     al.Galaxy,
     redshift=0.5,
-    bulge=al.lp.EllSersic,
-    mass=al.mp.EllIsothermal,
+    bulge=al.lp.Sersic,
+    mass=al.mp.Isothermal,
     shear=al.mp.ExternalShear,
 )
-source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.Sersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 

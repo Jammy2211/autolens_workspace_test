@@ -8,11 +8,11 @@ __THIS RUNNER__
 Using two source pipelines, a light pipeline and a mass pipeline this runner fits `Imaging` of a strong lens system
 where in the final phase of the pipeline:
 
- - The lens `Galaxy`'s `LightProfile`'s are an `EllSersic` + `EllExponential`, representing
+ - The lens `Galaxy`'s `LightProfile`'s are an `Sersic` + `Exponential`, representing
    a bulge + disk model.
- - The lens `Galaxy`'s light matter mass distribution is fitted using the `EllSersic` + `EllExponential` of the
+ - The lens `Galaxy`'s light matter mass distribution is fitted using the `Sersic` + `Exponential` of the
     `LightProfile`, where it is converted to a stellar mass distribution via constant mass-to-light ratios.
- - The lens `Galaxy`'s dark matter mass distribution is a `SphNFW`.
+ - The lens `Galaxy`'s dark matter mass distribution is a `NFWSph`.
  - The source `Galaxy`'s light is a parametric `Inversion`.
 
 This runner uses the SLaM pipelines:
@@ -142,8 +142,8 @@ The parametric source pipeline aims to initialize a robust model for the source 
 _SLaMPipelineSourceParametric_ determines the source model used by the parametric source pipeline. A full description of all 
 options can be found ? and ?.
 
-By default, this assumes an `EllIsothermal` profile for the lens `Galaxy`'s mass and an `EllSersic` + 
-`EllExponential` model for the lens `Galaxy`'s light. Our experience with lens modeling has shown they are the 
+By default, this assumes an `Isothermal` profile for the lens `Galaxy`'s mass and an `Sersic` + 
+`Exponential` model for the lens `Galaxy`'s light. Our experience with lens modeling has shown they are the 
 simplest models that provide a good fit to the majority of strong lenses.
 
 For this runner the `SLaMPipelineSourceParametric` customizes:
@@ -153,9 +153,9 @@ For this runner the `SLaMPipelineSourceParametric` customizes:
 """
 
 setup_light = al.SetupLightParametric()
-setup_mass = al.SetupMassTotal(mass_prior_model=al.mp.EllIsothermal, with_shear=True)
+setup_mass = al.SetupMassTotal(mass_prior_model=al.mp.Isothermal, with_shear=True)
 setup_source = al.SetupSourceParametric(
-    bulge_prior_model=al.lp.EllSersic, disk_prior_model=None, envelope_prior_model=None
+    bulge_prior_model=al.lp.Sersic, disk_prior_model=None, envelope_prior_model=None
 )
 
 pipeline_source_parametric = al.SLaMPipelineSourceParametric(
@@ -170,8 +170,8 @@ The Source inversion pipeline aims to initialize a robust model for the source g
 _SLaMPipelineSourceInversion_ determines the `Inversion` used by the inversion source pipeline. A full description of all 
 options can be found ? and ?.
 
-By default, this again assumes `EllIsothermal` profile for the lens `Galaxy`'s mass and an `EllSersic` + 
-`EllExponential` model for the lens `Galaxy`'s light.
+By default, this again assumes `Isothermal` profile for the lens `Galaxy`'s mass and an `Sersic` + 
+`Exponential` model for the lens `Galaxy`'s light.
 
 For this runner the `SLaMPipelineSourceInversion` customizes:
 
@@ -200,12 +200,12 @@ The `SLaMPipelineLightParametric` pipeline fits the model for the lens `Galaxy`'
 A full description of all options can be found ? and ?.
 
  The model used to represent the lens `Galaxy`'s light is input into `SLaMPipelineLightParametric` below and this runner uses an 
- `EllSersic` + `EllExponential` bulge-disk model in this example.
+ `Sersic` + `Exponential` bulge-disk model in this example.
  
 For this runner the `SLaMPipelineLightParametric` customizes:
 
  - The alignment of the centre and elliptical components of the bulge and disk.
- - If the disk is an `EllExponential` or `EllSersic`.
+ - If the disk is an `Exponential` or `Sersic`.
 
 The `SLaMPipelineLightParametric` uses the mass model fitted in the previous `SLaMPipelineSource`'s.
 
@@ -213,11 +213,11 @@ The `SLaMPipelineLightParametric` and imported light pipelines determine the len
 """
 
 setup_light = al.SetupLightParametric(
-    bulge_prior_model=al.lp.EllSersic,
-    disk_prior_model=al.lp.EllExponential,
+    bulge_prior_model=al.lp.Sersic,
+    disk_prior_model=al.lp.Exponential,
     envelope_prior_model=None,
     align_bulge_disk_centre=False,
-    align_bulge_disk_elliptical_comps=False,
+    align_bulge_disk_ell_comps=False,
 )
 
 pipeline_light = al.SLaMPipelineLightParametric(setup_light=setup_light)
@@ -229,8 +229,8 @@ The `SLaMPipelineMass` pipeline fits the model for the lens `Galaxy`'s decompose
 
 A full description of all options can be found ? and ?.
 
-The model used to represent the lens `Galaxy`'s mass is an `EllSersic` and `EllExponential` 
-_LightMassProfile_ representing the bulge and disk fitted in the previous pipeline, alongside a `SphNFW` for the
+The model used to represent the lens `Galaxy`'s mass is an `Sersic` and `Exponential` 
+_LightMassProfile_ representing the bulge and disk fitted in the previous pipeline, alongside a `NFWSph` for the
 dark matter halo.
 
 For this runner the `SLaMPipelineMass` customizes:
@@ -239,8 +239,8 @@ For this runner the `SLaMPipelineMass` customizes:
 """
 
 setup_mass = al.SetupMassLightDark(
-    bulge_prior_model=al.lmp.EllSersic,
-    disk_prior_model=al.lmp.EllExponential,
+    bulge_prior_model=al.lmp.Sersic,
+    disk_prior_model=al.lmp.Exponential,
     envelope_prior_model=None,
     with_shear=True,
 )

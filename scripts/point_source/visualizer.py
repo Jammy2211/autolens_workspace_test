@@ -43,9 +43,9 @@ point_dict = al.PointDict.from_json(
 __Model__
 """
 
-mass = af.Model(al.mp.EllIsothermal)
+mass = af.Model(al.mp.Isothermal)
 mass.centre = (0.0, 0.0)
-mass.elliptical_comps = al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0)
+mass.ell_comps = al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0)
 mass.einstein_radius = 1.6
 
 lens = af.Model(al.Galaxy, redshift=0.5, mass=mass)

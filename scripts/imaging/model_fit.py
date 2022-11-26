@@ -5,7 +5,7 @@ Modeling: Mass Total + Source Inversion
 This script fits an `Imaging` dataset of a 'galaxy-scale' strong lens with a model where:
 
  - The lens galaxy's light is omitted (and is not present in the simulated data).
- - The lens galaxy's total mass distribution is an `EllIsothermal` and `ExternalShear`.
+ - The lens galaxy's total mass distribution is an `Isothermal` and `ExternalShear`.
  - The source galaxy's surface-brightness is an `Inversion`.
 
 An `Inversion` reconstructs the source's light using a pixel-grid, which is regularized using a prior that forces
@@ -89,7 +89,7 @@ __Model__
 lens = af.Model(
     al.Galaxy,
     redshift=0.5,
-    mass=al.mp.SphIsothermal,
+    mass=al.mp.IsothermalSph,
 )
 
 pixelization = af.Model(

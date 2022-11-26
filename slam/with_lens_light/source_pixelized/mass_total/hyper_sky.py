@@ -5,8 +5,8 @@ SLaM (Source, Light and Mass): Light Parametric + Mass Total + Source Inversion
 Using two source pipelines, a light pipeline and a mass pipeline this SLaM runner fits `Imaging` of a strong lens
 system where in the final model:
 
- - The lens galaxy's light is a bulge+disk `EllSersic` and `EllExponential`.
- - The lens galaxy's total mass distribution is an `EllPowerLaw`.
+ - The lens galaxy's light is a bulge+disk `Sersic` and `Exponential`.
+ - The lens galaxy's total mass distribution is an `PowerLaw`.
  - The source galaxy's light is a parametric `Inversion`.
 
 This runner uses the SLaM pipelines:
@@ -109,10 +109,10 @@ __SOURCE PARAMETRIC PIPELINE (with lens light)__
 The SOURCE PARAMETRIC PIPELINE (with lens light) uses three searches to initialize a robust model for the 
 source galaxy's light, which in this example:
  
- - Uses a parametric `EllSersic` bulge and `EllExponential` disk with centres aligned for the lens
+ - Uses a parametric `Sersic` bulge and `Exponential` disk with centres aligned for the lens
  galaxy's light.
  
- - Uses an `EllIsothermal` model for the lens's total mass distribution with an `ExternalShear`.
+ - Uses an `Isothermal` model for the lens's total mass distribution with an `ExternalShear`.
 
  Settings:
 
@@ -120,8 +120,8 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
-bulge = af.Model(al.lp.EllSersic)
-disk = af.Model(al.lp.EllExponential)
+bulge = af.Model(al.lp.Sersic)
+disk = af.Model(al.lp.Exponential)
 bulge.centre = disk.centre
 
 source_parametric_results = slam.source_parametric.with_lens_light(
@@ -130,9 +130,9 @@ source_parametric_results = slam.source_parametric.with_lens_light(
     setup_hyper=setup_hyper,
     lens_bulge=bulge,
     lens_disk=disk,
-    mass=af.Model(al.mp.EllIsothermal),
+    mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
-    source_bulge=af.Model(al.lp.EllSersic),
+    source_bulge=af.Model(al.lp.Sersic),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
 )
@@ -170,18 +170,18 @@ The LIGHT PARAMETRIC PIPELINE uses one search to fit a complex lens light model 
 lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE PARAMETRIC PIPELINE.
 In this example it:
 
- - Uses a parametric `EllSersic` bulge and `EllSersic` disk with centres aligned for the lens galaxy's 
+ - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
  light [Do not use the results of the SOURCE PARAMETRIC PIPELINE to initialize priors].
  
- - Uses an `EllIsothermal` model for the lens's total mass distribution [fixed from SOURCE PARAMETRIC PIPELINE].
+ - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE PARAMETRIC PIPELINE].
  
  - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIXELIZED PIPELINE].
  
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-bulge = af.Model(al.lp.EllSersic)
-disk = af.Model(al.lp.EllExponential)
+bulge = af.Model(al.lp.Sersic)
+disk = af.Model(al.lp.Exponential)
 bulge.centre = disk.centre
 
 light_results = slam.light_parametric.with_lens_light(
@@ -200,10 +200,10 @@ The MASS TOTAL PIPELINE (with lens light) uses one search to fits a complex lens
 using the lens mass model and source model of the SOURCE PIPELINE to initialize the model priors and the lens light
 model of the LIGHT PARAMETRIC PIPELINE. In this example it:
 
- - Uses a parametric `EllSersic` bulge and `EllSersic` disk with centres aligned for the lens galaxy's 
+ - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
  light [fixed from LIGHT PARAMETRIC PIPELINE].
 
- - Uses an `EllPowerLaw` model for the lens's total mass distribution [priors initialized from SOURCE 
+ - Uses an `PowerLaw` model for the lens's total mass distribution [priors initialized from SOURCE 
  PARAMETRIC PIPELINE + centre unfixed from (0.0, 0.0)].
  
  - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIXELIZED PIPELINE].
@@ -220,7 +220,7 @@ mass_results = slam.mass_total.with_lens_light(
     setup_hyper=setup_hyper,
     source_results=source_pixelized_results,
     light_results=light_results,
-    mass=af.Model(al.mp.EllPowerLaw),
+    mass=af.Model(al.mp.PowerLaw),
 )
 
 """

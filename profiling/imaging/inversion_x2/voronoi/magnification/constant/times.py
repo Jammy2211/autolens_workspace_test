@@ -64,17 +64,17 @@ The lens galaxy used to fit the data, which is identical to the lens galaxy used
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    bulge=al.lp.EllSersic(
+    bulge=al.lp.Sersic(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
         intensity=1.0,
         effective_radius=0.8,
         sersic_index=4.0,
     ),
-    mass=al.mp.EllIsothermal(
+    mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.5,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
     ),
 )
 
@@ -85,7 +85,7 @@ mesh = al.mesh.VoronoiMagnification(shape=mesh_shape_2d)
 
 source_galaxy_0 = al.Galaxy(
     redshift=1.0,
-    mass=al.mp.SphIsothermal(centre=(-0.15, -0.15), einstein_radius=0.6),
+    mass=al.mp.IsothermalSph(centre=(-0.15, -0.15), einstein_radius=0.6),
     pixelization=al.Pixelization(
         mesh=mesh, regularization=al.reg.Constant(coefficient=1.0)
     ),

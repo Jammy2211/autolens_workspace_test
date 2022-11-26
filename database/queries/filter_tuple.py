@@ -65,9 +65,9 @@ __Model + Search + Analysis + Model-Fit__
 """
 
 lens = af.Model(
-    al.Galaxy, redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear
+    al.Galaxy, redshift=0.5, mass=al.mp.Isothermal, shear=al.mp.ExternalShear
 )
-source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.Sersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 

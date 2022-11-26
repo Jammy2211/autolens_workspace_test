@@ -6,12 +6,12 @@
             "galaxies": [
                 {
                     "bulge": {
-                        "type": "autogalaxy.profiles.light_profiles.light_profiles.EllSersic",
+                        "type": "autogalaxy.profiles.light.light_profiles.Sersic",
                         "centre": [
                             0.0,
                             0.0
                         ],
-                        "elliptical_comps": [
+                        "ell_comps": [
                             0.05263157894736841,
                             3.2227547345982974e-18
                         ],
@@ -20,20 +20,20 @@
                         "sersic_index": 4.0
                     },
                     "mass": {
-                        "type": "autogalaxy.profiles.mass_profiles.total_mass_profiles.EllIsothermal",
+                        "type": "autogalaxy.profiles.mass.total_mass_profiles.Isothermal",
                         "centre": [
                             0.0,
                             0.0
                         ],
-                        "elliptical_comps": [
+                        "ell_comps": [
                             0.05263157894736841,
                             3.2227547345982974e-18
                         ],
                         "einstein_radius": 1.6
                     },
                     "shear": {
-                        "type": "autogalaxy.profiles.mass_profiles.mass_sheets.ExternalShear",
-                        "elliptical_comps": [
+                        "type": "autogalaxy.profiles.mass.mass_sheets.ExternalShear",
+                        "ell_comps": [
                             0.05,
                             0.05
                         ]
@@ -51,12 +51,12 @@
             "galaxies": [
                 {
                     "bulge": {
-                        "type": "autogalaxy.profiles.light_profiles.light_profiles.EllSersic",
+                        "type": "autogalaxy.profiles.light.light_profiles.Sersic",
                         "centre": [
                             0.0,
                             0.0
                         ],
-                        "elliptical_comps": [
+                        "ell_comps": [
                             0.0962250448649376,
                             -0.05555555555555551
                         ],

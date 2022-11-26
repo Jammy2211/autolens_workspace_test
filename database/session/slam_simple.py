@@ -7,14 +7,14 @@ lens, first the Source, then the (lens) Light and finally the Mass. Each of thes
 which customize the model and analysis in that pipeline.
 
 The models fitted in earlier pipelines determine the model used in later pipelines. For example, if the SOURCE PIPELINE
-uses a parametric `EllSersic` profile for the bulge, this will be used in the subsequent MASS PIPELINE.
+uses a parametric `Sersic` profile for the bulge, this will be used in the subsequent MASS PIPELINE.
 
 Using a SOURCE PARAMETRIC PIPELINE, LIGHT PIPELINE and a MASS PIPELINE this SLaM script fits `Imaging` of a strong
 lens system, where in the final model:
 
- - The lens galaxy's light is a bulge+disk `EllSersic` and `EllExponential`.
- - The lens galaxy's total mass distribution is an `EllPowerLaw`.
- - The source galaxy's light is a parametric `EllSersic`.
+ - The lens galaxy's light is a bulge+disk `Sersic` and `Exponential`.
+ - The lens galaxy's total mass distribution is an `PowerLaw`.
+ - The source galaxy's light is a parametric `Sersic`.
 
 This runner uses the SLaM pipelines:
 
@@ -130,10 +130,10 @@ __SOURCE PARAMETRIC PIPELINE (with lens light)__
 The SOURCE PARAMETRIC PIPELINE (with lens light) uses three searches to initialize a robust model for the 
 source galaxy's light, which in this example:
 
- - Uses a parametric `EllSersic` bulge and `EllExponential` disk with centres aligned for the lens
+ - Uses a parametric `Sersic` bulge and `Exponential` disk with centres aligned for the lens
  galaxy's light.
 
- - Uses an `EllIsothermal` model for the lens's total mass distribution with an `ExternalShear`.
+ - Uses an `Isothermal` model for the lens's total mass distribution with an `ExternalShear`.
 
  Settings:
 
@@ -141,8 +141,8 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=masked_imaging)
 
-bulge = af.Model(al.lp.EllSersic)
-disk = af.Model(al.lp.EllExponential)
+bulge = af.Model(al.lp.Sersic)
+disk = af.Model(al.lp.Exponential)
 bulge.centre = disk.centre
 
 source_parametric_results = slam.source_parametric.with_lens_light(
@@ -151,9 +151,9 @@ source_parametric_results = slam.source_parametric.with_lens_light(
     setup_hyper=setup_hyper,
     lens_bulge=bulge,
     lens_disk=disk,
-    mass=af.Model(al.mp.EllIsothermal),
+    mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
-    source_bulge=af.Model(al.lp.EllSersic),
+    source_bulge=af.Model(al.lp.Sersic),
     mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
@@ -166,12 +166,12 @@ The LIGHT PARAMETRIC PIPELINE uses one search to fit a complex lens light model 
 lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE PARAMETRIC PIPELINE.
 In this example it:
 
- - Uses a parametric `EllSersic` bulge and `EllSersic` disk with centres aligned for the lens galaxy's 
+ - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
  light [Do not use the results of the SOURCE PARAMETRIC PIPELINE to initialize priors].
 
- - Uses an `EllIsothermal` model for the lens's total mass distribution [fixed from SOURCE PARAMETRIC PIPELINE].
+ - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE PARAMETRIC PIPELINE].
 
- - Uses the `EllSersic` model representing a bulge for the source's light [fixed from SOURCE PARAMETRIC PIPELINE].
+ - Uses the `Sersic` model representing a bulge for the source's light [fixed from SOURCE PARAMETRIC PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
@@ -180,8 +180,8 @@ analysis = al.AnalysisImaging(
     dataset=masked_imaging, hyper_dataset_result=source_parametric_results.last
 )
 
-bulge = af.Model(al.lp.EllSersic)
-disk = af.Model(al.lp.EllExponential)
+bulge = af.Model(al.lp.Sersic)
+disk = af.Model(al.lp.Exponential)
 bulge.centre = disk.centre
 
 light_results = slam.light_parametric.with_lens_light(
@@ -200,13 +200,13 @@ The MASS TOTAL PIPELINE (with lens light) uses one search to fits a complex lens
 using the lens mass model and source model of the SOURCE PIPELINE to initialize the model priors and the lens light
 model of the LIGHT PARAMETRIC PIPELINE. In this example it:
 
- - Uses a parametric `EllSersic` bulge and `EllSersic` disk with centres aligned for the lens galaxy's 
+ - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
  light [fixed from LIGHT PARAMETRIC PIPELINE].
 
- - Uses an `EllPowerLaw` model for the lens's total mass distribution [priors initialized from SOURCE 
+ - Uses an `PowerLaw` model for the lens's total mass distribution [priors initialized from SOURCE 
  PARAMETRIC PIPELINE + centre unfixed from (0.0, 0.0)].
 
- - Uses the `EllSersic` model representing a bulge for the source's light [priors initialized from SOURCE 
+ - Uses the `Sersic` model representing a bulge for the source's light [priors initialized from SOURCE 
  PARAMETRIC PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
@@ -221,7 +221,7 @@ mass_results = slam.mass_total.with_lens_light(
     setup_hyper=setup_hyper,
     source_results=source_parametric_results,
     light_results=light_results,
-    mass=af.Model(al.mp.EllPowerLaw),
+    mass=af.Model(al.mp.PowerLaw),
 )
 
 """
@@ -233,17 +233,17 @@ name = agg.search.name
 agg_query = agg.query(name == "mass_total[1]_mass[total]_source")
 samples_gen = agg_query.values("samples")
 print(
-    "Total Samples Objects via `EllIsothermal` model query = ",
+    "Total Samples Objects via `Isothermal` model query = ",
     len(list(samples_gen)),
     "\n",
 )
 
 
 lens = agg.model.galaxies.lens
-agg_query = agg.query(lens.mass == al.mp.EllIsothermal)
+agg_query = agg.query(lens.mass == al.mp.Isothermal)
 samples_gen = agg_query.values("samples")
 print(
-    "Total Samples Objects via `EllIsothermal` model query = ",
+    "Total Samples Objects via `Isothermal` model query = ",
     len(list(samples_gen)),
     "\n",
 )

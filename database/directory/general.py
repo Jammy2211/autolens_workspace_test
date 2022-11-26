@@ -40,9 +40,9 @@ masked_imaging = imaging.apply_mask(mask=mask)
 __Model__
 """
 lens = af.Model(
-    al.Galaxy, redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear
+    al.Galaxy, redshift=0.5, mass=al.mp.Isothermal, shear=al.mp.ExternalShear
 )
-source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.Sersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
@@ -83,7 +83,7 @@ Check Aggregator works (This should load one mp_instance).
 for samples in agg.values("samples"):
     print(samples.log_likelihood_list[9])
 
-ml_vector = [samps.max_log_likelihood_vector for samps in agg.values("samples")]
+ml_vector = [samps.max_log_likelihood(as_instance=False) for samps in agg.values("samples")]
 print(ml_vector, "\n\n")
 
 unique_tag = agg.search.unique_tag
@@ -99,66 +99,66 @@ agg_query = agg.query(name == "database_example")
 print("Total Queried Results via search name = ", len(agg_query), "\n\n")
 
 lens = agg.model.galaxies.lens
-agg_query = agg.query(lens.mass == al.mp.EllIsothermal)
-print("Total Samples Objects via `EllIsothermal` model query = ", len(agg_query), "\n")
+agg_query = agg.query(lens.mass == al.mp.Isothermal)
+print("Total Samples Objects via `Isothermal` model query = ", len(agg_query), "\n")
 
 source = agg.model.galaxies.source
 agg_query = agg.query(source.disk == None)
-print("Total Samples Objects via `EllIsothermal` model query = ", len(agg_query), "\n")
+print("Total Samples Objects via `Isothermal` model query = ", len(agg_query), "\n")
 
 mass = agg.model.galaxies.lens.mass
-agg_query = agg.query((mass == al.mp.EllIsothermal) & (mass.einstein_radius > 1.0))
+agg_query = agg.query((mass == al.mp.Isothermal) & (mass.einstein_radius > 1.0))
 print(
-    "Total Samples Objects In Query `EllIsothermal and einstein_radius > 3.0` = ",
+    "Total Samples Objects In Query `Isothermal and einstein_radius > 3.0` = ",
     len(agg_query),
     "\n",
 )
-#
-# tracer_agg = al.agg.TracerAgg(aggregator=agg)
-# tracer_gen = tracer_agg.max_log_likelihood_gen_from()
-#
-# grid = al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.1)
-#
-# for tracer in tracer_gen:
-#
-#     tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
-#     tracer_plotter.figures_2d(convergence=True, potential=True)
-#
-#
-# imaging_agg = al.agg.ImagingAgg(aggregator=agg)
-# imaging_gen = imaging_agg.imaging_gen_from()
-#
-# for imaging in imaging_gen:
-#
-#     print(imaging)
-#
-#     imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-#     imaging_plotter.subplot_imaging()
-#
-# fit_agg = al.agg.FitImagingAgg(
-#     aggregator=agg,
-#     settings_imaging=al.SettingsImaging(sub_size=4),
-#     settings_pixelization=al.SettingsPixelization(use_border=False),
-# )
-# fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
-#
-# for fit in fit_imaging_gen:
-#     fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit)
-#     fit_imaging_plotter.subplot_fit_imaging()
-#
-# fit_agg = al.agg.FitImagingAgg(aggregator=agg)
-# fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
-#
-# for fit in fit_imaging_gen:
-#     mat_plot_2d = aplt.MatPlot2D(
-#         figure=aplt.Figure(figsize=(12, 12)),
-#         title=aplt.Title(label="Custom Image", fontsize=24),
-#         yticks=aplt.YTicks(fontsize=24),
-#         xticks=aplt.XTicks(fontsize=24),
-#         cmap=aplt.Cmap(norm="log", vmax=1.0, vmin=1.0),
-#         colorbar_tickparams=aplt.ColorbarTickParams(labelsize=20),
-#         units=aplt.Units(in_kpc=True),
-#     )
-#
-#     fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-#     fit_imaging_plotter.figures_2d(normalized_residual_map=True)
+
+tracer_agg = al.agg.TracerAgg(aggregator=agg)
+tracer_gen = tracer_agg.max_log_likelihood_gen_from()
+
+grid = al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.1)
+
+for tracer in tracer_gen:
+
+    tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
+    tracer_plotter.figures_2d(convergence=True, potential=True)
+
+
+imaging_agg = al.agg.ImagingAgg(aggregator=agg)
+imaging_gen = imaging_agg.imaging_gen_from()
+
+for imaging in imaging_gen:
+
+    print(imaging)
+
+    imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
+    imaging_plotter.subplot_imaging()
+
+fit_agg = al.agg.FitImagingAgg(
+    aggregator=agg,
+    settings_imaging=al.SettingsImaging(sub_size=4),
+    settings_pixelization=al.SettingsPixelization(use_border=False),
+)
+fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
+
+for fit in fit_imaging_gen:
+    fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit)
+    fit_imaging_plotter.subplot_fit_imaging()
+
+fit_agg = al.agg.FitImagingAgg(aggregator=agg)
+fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
+
+for fit in fit_imaging_gen:
+    mat_plot_2d = aplt.MatPlot2D(
+        figure=aplt.Figure(figsize=(12, 12)),
+        title=aplt.Title(label="Custom Image", fontsize=24),
+        yticks=aplt.YTicks(fontsize=24),
+        xticks=aplt.XTicks(fontsize=24),
+        cmap=aplt.Cmap(norm="log", vmax=1.0, vmin=1.0),
+        colorbar_tickparams=aplt.ColorbarTickParams(labelsize=20),
+        units=aplt.Units(in_kpc=True),
+    )
+
+    fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+    fit_imaging_plotter.figures_2d(normalized_residual_map=True)

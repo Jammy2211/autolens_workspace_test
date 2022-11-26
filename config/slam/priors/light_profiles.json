@@ -1,5 +1,5 @@
 {
-    "SphSersic": {
+    "SersicSph": {
          "centre_0": {
             "type": "Gaussian",
             "lower_limit": "-inf",
@@ -57,7 +57,7 @@
             }
         }
     },
-    "EllSersic": {
+    "Sersic": {
         "centre_0": {
             "type": "Gaussian",
             "lower_limit": "-inf",
@@ -80,7 +80,7 @@
             "mean": 0.0,
             "sigma": 0.0001
         },
-        "elliptical_comps_0": {
+        "ell_comps_0": {
             "type": "Uniform",
             "lower_limit": -0.001,
             "upper_limit": 0.001,
@@ -93,7 +93,7 @@
                 "upper": 1.0
             }
         },
-        "elliptical_comps_1": {
+        "ell_comps_1": {
             "type": "Uniform",
             "lower_limit": -0.001,
             "upper_limit": 0.001,
@@ -146,7 +146,7 @@
             }
         }
     },
-    "SphExponential": {
+    "ExponentialSph": {
          "centre_0": {
             "type": "Gaussian",
             "lower_limit": "-inf",
@@ -191,7 +191,7 @@
             }
         }
     },
-    "EllExponential": {
+    "Exponential": {
         "centre_0": {
             "type": "Gaussian",
             "lower_limit": "-inf",
@@ -214,7 +214,7 @@
             "mean": 0.0,
             "sigma": 0.0001
         },
-        "elliptical_comps_0": {
+        "ell_comps_0": {
             "type": "Uniform",
             "lower_limit": -0.001,
             "upper_limit": 0.001,
@@ -227,7 +227,7 @@
                 "upper": 1.0
             }
         },
-        "elliptical_comps_1": {
+        "ell_comps_1": {
             "type": "Uniform",
             "lower_limit": -0.001,
             "upper_limit": 0.001,
@@ -267,7 +267,7 @@
             }
         }
     },
-    "SphDevVaucouleurs": {
+    "DevVaucouleursSph": {
          "centre_0": {
             "type": "Gaussian",
             "lower_limit": "-inf",
@@ -312,7 +312,7 @@
             }
         }
     },
-    "EllDevVaucouleurs": {
+    "DevVaucouleurs": {
         "centre_0": {
             "type": "Gaussian",
             "lower_limit": "-inf",
@@ -335,7 +335,7 @@
             "mean": 0.0,
             "sigma": 0.0001
         },
-        "elliptical_comps_0": {
+        "ell_comps_0": {
             "type": "Uniform",
             "lower_limit": -0.001,
             "upper_limit": 0.001,
@@ -348,7 +348,7 @@
                 "upper": 1.0
             }
         },
-        "elliptical_comps_1": {
+        "ell_comps_1": {
             "type": "Uniform",
             "lower_limit": -0.001,
             "upper_limit": 0.001,
@@ -388,7 +388,7 @@
             }
         }
     },
-    "SphSersicCore": {
+    "SersicCoreSph": {
          "centre_0": {
             "type": "Gaussian",
             "lower_limit": "-inf",
@@ -458,7 +458,7 @@
                 "upper": "inf"
             }
         },
-        "intensity_break": {
+        "intensity": {
             "type": "LogUniform",
             "lower_limit": 1e-05,
             "upper_limit": 1000.0,
@@ -498,7 +498,7 @@
             }
         }
     },
-    "EllSersicCore": {
+    "SersicCore": {
         "centre_0": {
             "type": "Gaussian",
             "lower_limit": "-inf",
@@ -521,7 +521,7 @@
             "mean": 0.0,
             "sigma": 0.0001
         },
-        "elliptical_comps_0": {
+        "ell_comps_0": {
             "type": "Uniform",
             "lower_limit": -0.001,
             "upper_limit": 0.001,
@@ -534,7 +534,7 @@
                 "upper": 1.0
             }
         },
-        "elliptical_comps_1": {
+        "ell_comps_1": {
             "type": "Uniform",
             "lower_limit": -0.001,
             "upper_limit": 0.001,
@@ -599,7 +599,7 @@
                 "upper": "inf"
             }
         },
-        "intensity_break": {
+        "intensity": {
             "type": "LogUniform",
             "lower_limit": 1e-05,
             "upper_limit": 1000.0,
@@ -639,7 +639,7 @@
             }
         }
     },
-    "SphGaussian": {
+    "GaussianSph": {
          "centre_0": {
             "type": "Gaussian",
             "lower_limit": "-inf",
@@ -684,7 +684,7 @@
             }
         }
     },
-    "EllGaussian": {
+    "Gaussian": {
         "centre_0": {
             "type": "Gaussian",
             "lower_limit": "-inf",
@@ -707,7 +707,7 @@
             "mean": 0.0,
             "sigma": 0.0001
         },
-        "elliptical_comps_0": {
+        "ell_comps_0": {
             "type": "Uniform",
             "lower_limit": -0.001,
             "upper_limit": 0.001,
@@ -720,7 +720,7 @@
                 "upper": 1.0
             }
         },
-        "elliptical_comps_1": {
+        "ell_comps_1": {
             "type": "Uniform",
             "lower_limit": -0.001,
             "upper_limit": 0.001,
@@ -760,7 +760,7 @@
             }
         }
     },
-    "SphChameleon": {
+    "ChameleonSph": {
          "centre_0": {
             "type": "Gaussian",
             "lower_limit": "-inf",
@@ -818,7 +818,7 @@
             }
         }
     },
-    "EllChameleon": {
+    "Chameleon": {
         "centre_0": {
             "type": "Gaussian",
             "lower_limit": "-inf",
@@ -841,7 +841,7 @@
             "mean": 0.0,
             "sigma": 0.0001
         },
-        "elliptical_comps_0": {
+        "ell_comps_0": {
             "type": "Uniform",
             "lower_limit": -0.001,
             "upper_limit": 0.001,
@@ -854,7 +854,7 @@
                 "upper": 1.0
             }
         },
-        "elliptical_comps_1": {
+        "ell_comps_1": {
             "type": "Uniform",
             "lower_limit": -0.001,
             "upper_limit": 0.001,

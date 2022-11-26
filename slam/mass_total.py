@@ -11,7 +11,7 @@ def no_lens_light(
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     source_results: af.ResultsCollection,
-    mass: af.Model = af.Model(al.mp.EllIsothermal),
+    mass: af.Model = af.Model(al.mp.Isothermal),
     smbh: Optional[af.Model] = None,
     mass_centre: Optional[Tuple[float, float]] = None,
     end_with_hyper_extension: bool = False,
@@ -133,7 +133,7 @@ def with_lens_light(
     setup_hyper: al.SetupHyper,
     source_results: af.ResultsCollection,
     light_results: af.ResultsCollection,
-    mass: af.Model = af.Model(al.mp.EllIsothermal),
+    mass: af.Model = af.Model(al.mp.Isothermal),
     smbh: Optional[af.Model] = None,
     mass_centre: Optional[Tuple[float, float]] = None,
     end_with_hyper_extension: bool = False,
@@ -189,9 +189,9 @@ def with_lens_light(
     instance = light_results.last.instance
     fit = light_results.last.max_log_likelihood_fit
 
-    bulge = slam_util.lp_from(lp=instance.galaxies.lens.bulge, fit=fit)
-    disk = slam_util.lp_from(lp=instance.galaxies.lens.disk, fit=fit)
-    envelope = slam_util.lp_from(lp=instance.galaxies.lens.envelope, fit=fit)
+    bulge = slam_util.lp_from(component=instance.galaxies.lens.bulge, fit=fit)
+    disk = slam_util.lp_from(component=instance.galaxies.lens.disk, fit=fit)
+    envelope = slam_util.lp_from(component=instance.galaxies.lens.envelope, fit=fit)
 
     source = slam_util.source__from_result_model_if_parametric(
         result=light_results.last, setup_hyper=setup_hyper

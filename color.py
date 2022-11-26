@@ -1,15 +1,7 @@
-import pickle
-import os
+import time
 
-with open("cmap.pkl", "r+b") as f:
-    cmap = pickle.loads(f.read())
+start_time = time.time()
 
+start_time = start_time + 10000
 
-print(cmap)
-
-
-from matplotlib.colors import LinearSegmentedColormap
-
-cmap = LinearSegmentedColormap(name="autolens", segmentdata=cmap._segmentdata)
-
-print(cmap._segmentdata)
+print(start_time - time.time())

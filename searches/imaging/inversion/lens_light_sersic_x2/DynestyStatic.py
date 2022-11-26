@@ -6,8 +6,8 @@ This script gives a profile of a `DynestyStatic` model-fit to an `Imaging` datas
 that is initialized from an SIE, where:
 
  - The lens galaxy's light is omitted.
- - The lens galaxy's total mass distribution is an `EllPowerLaw`.
- - The source galaxy's light is a parametric `EllSersic`.
+ - The lens galaxy's total mass distribution is an `PowerLaw`.
+ - The source galaxy's light is a parametric `Sersic`.
 """
 # %matplotlib inline
 # from pyprojroot import here
@@ -82,8 +82,8 @@ setup_hyper = al.SetupHyper(
 """
 __Model + Search + Analysis + Model-Fit (Search 1)__
 """
-bulge = af.Model(al.lp.EllSersic)
-disk = af.Model(al.lp.EllExponential)
+bulge = af.Model(al.lp.Sersic)
+disk = af.Model(al.lp.Exponential)
 bulge.centre = disk.centre
 
 lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, disk=disk)
@@ -108,10 +108,10 @@ lens = af.Model(
     redshift=0.5,
     bulge=result_1.instance.galaxies.lens.bulge,
     disk=result_1.instance.galaxies.lens.disk,
-    mass=al.mp.EllIsothermal,
+    mass=al.mp.Isothermal,
     shear=al.mp.ExternalShear,
 )
-source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.Sersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
@@ -204,11 +204,11 @@ hyper_galaxy = setup_hyper.hyper_galaxy_lens_from(
     result=result_4, noise_factor_is_model=True
 )
 
-bulge = af.Model(al.lp.EllSersic)
+bulge = af.Model(al.lp.Sersic)
 bulge.centre.centre_0 = af.GaussianPrior(mean=0.0, sigma=0.1)
 bulge.centre.centre_1 = af.GaussianPrior(mean=0.0, sigma=0.1)
 
-disk = af.Model(al.lp.EllSersic)
+disk = af.Model(al.lp.Sersic)
 disk.centre.centre_0 = af.GaussianPrior(mean=0.0, sigma=0.1)
 disk.centre.centre_1 = af.GaussianPrior(mean=0.0, sigma=0.1)
 

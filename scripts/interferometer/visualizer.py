@@ -60,13 +60,13 @@ positions = al.Grid2DIrregular.from_json(
 """
 __Model__
 """
-bulge = af.Model(al.lp.SphDevVaucouleurs)
+bulge = af.Model(al.lp.DevVaucouleursSph)
 
 bulge.centre = (0.0, 0.0)
 bulge.intensity = 0.1
 bulge.effective_radius = 0.8
 
-mass = af.Model(al.mp.SphIsothermal)
+mass = af.Model(al.mp.IsothermalSph)
 mass.centre = (0.0, 0.0)
 mass.einstein_radius = 1.6
 

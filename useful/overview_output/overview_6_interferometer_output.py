@@ -106,19 +106,19 @@ Lets quickly set up the `Tracer` we'll use in this example.
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    mass=al.mp.EllIsothermal(
+    mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
     ),
-    shear=al.mp.ExternalShear(elliptical_comps=(0.05, 0.05)),
+    shear=al.mp.ExternalShear(ell_comps=(0.05, 0.05)),
 )
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    bulge=al.lp.EllSersic(
+    bulge=al.lp.Sersic(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=60.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=60.0),
         intensity=0.3,
         effective_radius=1.0,
         sersic_index=2.5,
@@ -241,9 +241,9 @@ __Model__
 
 We first compose the model, in the same way described in the `modeling.py` overview script:
 """
-lens_galaxy_model = af.Model(al.Galaxy, redshift=0.5, mass=al.mp.EllIsothermal)
+lens_galaxy_model = af.Model(al.Galaxy, redshift=0.5, mass=al.mp.Isothermal)
 
-source_galaxy_model = af.Model(al.Galaxy, redshift=1.0, disk=al.lp.EllExponential)
+source_galaxy_model = af.Model(al.Galaxy, redshift=1.0, disk=al.lp.Exponential)
 
 galaxies = af.Collection(lens=lens_galaxy_model, source=source_galaxy_model)
 model = af.Collection(galaxies=galaxies)

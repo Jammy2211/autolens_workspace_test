@@ -281,9 +281,9 @@ def with_lens_light(
     instance = source_parametric_results.last.instance
     fit = source_parametric_results.last.max_log_likelihood_fit
 
-    bulge = slam_util.lp_from(lp=instance.galaxies.lens.bulge, fit=fit)
-    disk = slam_util.lp_from(lp=instance.galaxies.lens.disk, fit=fit)
-    envelope = slam_util.lp_from(lp=instance.galaxies.lens.envelope, fit=fit)
+    bulge = slam_util.lp_from(component=instance.galaxies.lens.bulge, fit=fit)
+    disk = slam_util.lp_from(component=instance.galaxies.lens.disk, fit=fit)
+    envelope = slam_util.lp_from(component=instance.galaxies.lens.envelope, fit=fit)
 
     model = af.Collection(
         galaxies=af.Collection(

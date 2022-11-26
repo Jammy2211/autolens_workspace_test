@@ -3,8 +3,6 @@ from typing import Dict, Tuple, Optional, Union
 import autofit as af
 import autolens as al
 
-from autogalaxy.profiles.light_profiles.light_profiles_linear import LightProfileLinear
-
 
 def set_lens_light_centres(lens, light_centre: Tuple[float, float]):
     """
@@ -392,7 +390,7 @@ def clumps_from(
 
     # ideal API:
 
-    # clumps = result.instance.clumps.as_model((al.lp.LightProfile, al.mp.MassProfile,), fixed="centre", prior_pass=True)
+    # clumps = result.instance.clumps.as_model((al.LightProfile, al.mp.MassProfile,), fixed="centre", prior_pass=True)
 
     if mass_as_model:
 
@@ -410,7 +408,7 @@ def clumps_from(
 
     elif light_as_model:
 
-        clumps = result.instance.clumps.as_model((al.lp.LightProfile,))
+        clumps = result.instance.clumps.as_model((al.LightProfile,))
 
         for clump_index in range(len(result.instance.clumps)):
 
@@ -428,3 +426,116 @@ def clumps_from(
     clean_clumps_of_hyper_images(clumps=clumps)
 
     return clumps
+
+# TODO : Think about how Rich can full generize these.
+
+def lp_from(
+    component: Union[al.LightProfile],
+    fit: Union[al.FitImaging, al.FitInterferometer]
+) -> al.LightProfile:
+
+    if isinstance(component, al.lp_linear.LightProfileLinear):
+
+        intensity = fit.linear_light_profile_intensity_dict[component]
+
+        return component.lp_instance_from(intensity=intensity)
+
+    elif isinstance(component, al.lp_basis.Basis):
+
+        light_profile_list = []
+
+        for light_profile in component.light_profile_list:
+
+            intensity = fit.linear_light_profile_intensity_dict[light_profile]
+
+            if isinstance(light_profile, al.lp_linear.LightProfileLinear):
+
+                light_profile_list.append(light_profile.lp_instance_from(intensity=intensity))
+
+            else:
+
+                light_profile_list.append(light_profile)
+
+     #   basis = af.Model(al.lp_basis.Basis, light_profile_list=light_profile_list)
+
+        basis = al.lp_basis.Basis(light_profile_list=light_profile_list)
+
+        return basis
+
+    return component
+
+
+def lmp_from(
+    lp: Union[al.LightProfile, al.lp_linear.LightProfileLinear],
+    fit: Union[al.FitImaging, al.FitInterferometer]
+) -> al.lmp.LightMassProfile:
+
+    if isinstance(lp, al.lp_linear.LightProfileLinear):
+
+        intensity = fit.linear_light_profile_intensity_dict[lp]
+
+        return lp.lmp_model_from(intensity=intensity)
+
+    return lp
+
+
+# def gaussian_dict_lp_from(
+#     galaxy: al.Galaxy, fit: Union[al.FitImaging, al.FitInterferometer]
+# ) -> Dict[str, al.LightProfile]:
+#
+#     if (
+#         galaxy.bulge is not None
+#         or galaxy.disk is not None
+#         or galaxy.envelope is not None
+#     ):
+#         raise al.exc.GalaxyException(
+#             "Cannot convert Gaussian dict from linear to not linear if bulge, disk and / or envelope"
+#             "light profiles are defined."
+#         )
+#
+#     gaussian_dict = {}
+#
+#     for key, value in galaxy.__dict__.items():
+#
+#         if isinstance(value, al.lp_linear.LightProfileLinear):
+#
+#             gaussian_linear = value
+#
+#             intensity = fit.linear_light_profile_intensity_dict[gaussian_linear]
+#
+#             gaussian = gaussian_linear.lp_instance_from(intensity=intensity)
+#
+#             gaussian_dict[key] = gaussian
+#
+#     return gaussian_dict
+#
+#
+# def gaussian_dict_lmp_from(
+#     galaxy: al.Galaxy, fit: Union[al.FitImaging, al.FitInterferometer]
+# ) -> Dict[str, al.LightProfile]:
+#
+#     if (
+#         galaxy.bulge is not None
+#         or galaxy.disk is not None
+#         or galaxy.envelope is not None
+#     ):
+#         raise al.exc.GalaxyException(
+#             "Cannot convert Gaussian dict from linear to not linear if bulge, disk and / or envelope"
+#             "light profiles are defined."
+#         )
+#
+#     gaussian_dict = {}
+#
+#     for key, value in galaxy.__dict__.items():
+#
+#         if isinstance(value, LightProfileLinear):
+#
+#             gaussian_linear = value
+#
+#             intensity = fit.linear_light_profile_intensity_dict[gaussian_linear]
+#
+#             gaussian = gaussian_linear.lmp_model_from(intensity=intensity)
+#             gaussian_dict[key] = gaussian
+#             gaussian.mass_to_light_ratio = gaussian_dict["gaussian_0"].mass_to_light_ratio
+#
+#     return gaussian_dict

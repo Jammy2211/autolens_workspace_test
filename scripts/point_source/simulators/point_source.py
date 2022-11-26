@@ -4,7 +4,7 @@ Simulator: Point Source
 
 This script simulates `Positions` data of a strong lens where:
 
- - The lens galaxy's total mass distribution is an `EllIsothermal`.
+ - The lens galaxy's total mass distribution is an `Isothermal`.
  - The source `Galaxy` is a `Point`.
 """
 # %matplotlib inline
@@ -37,7 +37,7 @@ __Ray Tracing__
 Setup the lens galaxy's mass (SIE) and source galaxy `Point` for this simulated lens. We include a 
 faint dist in the source for purely visualization purposes to show where the multiple images appear.
 
-For lens modeling, defining ellipticity in terms of the `elliptical_comps` improves the model-fitting procedure.
+For lens modeling, defining ellipticity in terms of the `ell_comps` improves the model-fitting procedure.
 
 However, for simulating a strong lens you may find it more intuitive to define the elliptical geometry using the 
 axis-ratio of the profile (axis_ratio = semi-major axis / semi-minor axis = b/a) and position angle, where angle is
@@ -47,7 +47,7 @@ We can use the **PyAutoLens** `convert` module to determine the elliptical compo
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    mass=al.mp.SphIsothermal(
+    mass=al.mp.IsothermalSph(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
     ),
@@ -55,7 +55,7 @@ lens_galaxy = al.Galaxy(
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    bulge=al.lp.SphExponential(
+    bulge=al.lp.ExponentialSph(
         centre=(0.0, 0.1),
         intensity=0.3,
         effective_radius=0.1,
@@ -140,7 +140,7 @@ point_dataset = al.PointDataset(
     positions=positions,
     positions_noise_map=positions.values_via_value_from(value=grid_2d.pixel_scale),
     fluxes=fluxes,
-    fluxes_noise_map=al.ValuesIrregular(values=[1.0, 1.0, 1.0, 1.0]),
+    fluxes_noise_map=al.ValuesIrregular(values=[1.0, 1.0]),
 )
 
 point_dict = al.PointDict(point_dataset_list=[point_dataset])

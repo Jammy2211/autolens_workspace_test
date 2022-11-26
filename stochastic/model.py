@@ -5,8 +5,8 @@ Modeling: Mass Total + Source Parametric
 This script fits an `Imaging` dataset of a 'galaxy-scale' strong lens with a model where:
 
  - The lens galaxy's light is omitted (and is not present in the simulated data).
- - The lens galaxy's total mass distribution is an `EllIsothermal` and `ExternalShear`.
- - The source galaxy's light is a parametric `EllSersic`.
+ - The lens galaxy's total mass distribution is an `Isothermal` and `ExternalShear`.
+ - The source galaxy's light is a parametric `Sersic`.
 """
 # %matplotlib inline
 # from pyprojroot import here
@@ -61,9 +61,9 @@ __Model__
 We compose our lens model using `Model` objects, which represent the galaxies we fit to our data. In this 
 example we fit a lens model where:
 
- - The lens galaxy's total mass distribution is an `EllIsothermal` and `ExternalShear` [7 parameters].
+ - The lens galaxy's total mass distribution is an `Isothermal` and `ExternalShear` [7 parameters].
 
- - The source galaxy's light is a parametric `EllSersic` [7 parameters].
+ - The source galaxy's light is a parametric `Sersic` [7 parameters].
 
 The number of free parameters and therefore the dimensionality of non-linear parameter space is N=14.
 
@@ -76,16 +76,16 @@ If for your dataset the  lens is not centred at (0.0", 0.0"), we recommend that 
  - Reduce your data so that the centre is (`autolens_workspace/*/preprocess`). 
  - Manually override the lens model priors (`autolens_workspace/*/imaging/modeling/customize/priors.py`).
 """
-bulge = al.lp.EllSersic(
+bulge = al.lp.Sersic(
     centre=(0.0, 0.0),
-    elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
+    ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
     intensity=4.0,
     effective_radius=0.6,
     sersic_index=3.0,
 )
-disk = al.lp.EllExponential(
+disk = al.lp.Exponential(
     centre=(0.0, 0.0),
-    elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
+    ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
     intensity=2.0,
     effective_radius=1.6,
 )
@@ -95,16 +95,16 @@ lens = af.Model(
     redshift=0.5,
     bulge=bulge,
     disk=disk,
-    mass=al.mp.EllPowerLaw,
+    mass=al.mp.PowerLaw,
     shear=al.mp.ExternalShear,
 )
 
-lens.shear.elliptical_comps.elliptical_comps_0 = 0.001
-lens.shear.elliptical_comps.elliptical_comps_1 = 0.001
+lens.shear.gamma.gamma_0 = 0.001
+lens.shear.gamma.gamma_1 = 0.001
 
 lens.mass.slope = 1.9
 
-source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.Sersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 

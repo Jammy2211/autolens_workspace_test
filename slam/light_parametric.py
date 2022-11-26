@@ -11,7 +11,7 @@ def with_lens_light(
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     source_results: af.ResultsCollection,
-    lens_bulge: Optional[af.Model] = af.Model(al.lp.EllSersic),
+    lens_bulge: Optional[af.Model] = af.Model(al.lp.Sersic),
     lens_disk: Optional[af.Model] = None,
     lens_envelope: Optional[af.Model] = None,
     end_with_hyper_extension: bool = False,

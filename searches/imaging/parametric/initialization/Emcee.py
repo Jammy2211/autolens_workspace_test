@@ -6,8 +6,8 @@ This script gives a profile of a `Emcee` model-fit to an `Imaging` dataset where
 where:
 
  - The lens galaxy's light is omitted (and is not present in the simulated data).
- - The lens galaxy's total mass distribution is an `EllIsothermal` and `ExternalShear`.
- - The source galaxy's light is a parametric `EllSersic`.
+ - The lens galaxy's total mass distribution is an `Isothermal` and `ExternalShear`.
+ - The source galaxy's light is a parametric `Sersic`.
 """
 # %matplotlib inline
 # from pyprojroot import here
@@ -75,9 +75,9 @@ __Model + Search + Analysis + Model-Fit__
 """
 
 lens = af.Model(
-    al.Galaxy, redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear
+    al.Galaxy, redshift=0.5, mass=al.mp.Isothermal, shear=al.mp.ExternalShear
 )
-source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.Sersic)
 
 source.bulge.intensity = af.UniformPrior(lower_limit=0.1, upper_limit=1.0)
 

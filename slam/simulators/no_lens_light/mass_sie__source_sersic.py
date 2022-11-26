@@ -4,8 +4,8 @@ Simulator: SIE
 
 This script simulates `Imaging` of a 'galaxy-scale' strong lens where:
 
- - The lens galaxy's total mass distribution is an `EllIsothermal` and `ExternalShear`.
- - The source galaxy's light is an `EllSersic`.
+ - The lens galaxy's total mass distribution is an `Isothermal` and `ExternalShear`.
+ - The source galaxy's light is an `Sersic`.
 """
 # %matplotlib inline
 # from pyprojroot import here
@@ -75,7 +75,7 @@ __Ray Tracing__
 
 Setup the lens galaxy's mass (SIE+Shear) and source galaxy light (elliptical Sersic) for this simulated lens.
 
-For lens modeling, defining ellipticity in terms of the `elliptical_comps` improves the model-fitting procedure.
+For lens modeling, defining ellipticity in terms of the `ell_comps` improves the model-fitting procedure.
 
 However, for simulating a strong lens you may find it more intuitive to define the elliptical geometry using the 
 axis-ratio of the profile (axis_ratio = semi-major axis / semi-minor axis = b/a) and position angle, where angle is
@@ -85,19 +85,19 @@ We can use the **PyAutoLens** `convert` module to determine the elliptical compo
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    mass=al.mp.EllIsothermal(
+    mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
     ),
-    shear=al.mp.ExternalShear(elliptical_comps=(0.05, 0.05)),
+    shear=al.mp.ExternalShear(ell_comps=(0.05, 0.05)),
 )
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    bulge=al.lp.EllSersic(
+    bulge=al.lp.Sersic(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=60.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=60.0),
         intensity=0.3,
         effective_radius=0.1,
         sersic_index=1.0,

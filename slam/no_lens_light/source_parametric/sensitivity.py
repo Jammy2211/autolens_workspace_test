@@ -7,14 +7,14 @@ lens, first the Source, then the (lens) Light and finally the Mass. Each of thes
 which customize the model and analysis in that pipeline.
 
 The models fitted in earlier pipelines determine the model used in later pipelines. For example, if the SOURCE PIPELINE
-uses a parametric `EllSersic` profile for the bulge, this will be used in the subsequent MASS PIPELINE.
+uses a parametric `Sersic` profile for the bulge, this will be used in the subsequent MASS PIPELINE.
 
 Using a SOURCE PARAMETRIC PIPELINE, MASS PIPELINE and SUBHALO PIPELINE this SLaM script fits `Imaging` of a strong lens
 system, where in the final model:
 
  - The lens galaxy's light is omitted from the data and model.
- - The lens galaxy's total mass distribution is an `EllIsothermal`.
- - The source galaxy is an `EllSersic`.
+ - The lens galaxy's total mass distribution is an `Isothermal`.
+ - The source galaxy is an `Sersic`.
 
 It ends by performing sensitivity mapping of the data using the above model, so as to determine where in the data
 subhalos of a given mass could have been detected if present.
@@ -116,8 +116,8 @@ __SOURCE PARAMETRIC PIPELINE (no lens light)__
 The SOURCE PARAMETRIC PIPELINE (no lens light) uses one search to initialize a robust model for the source galaxy's 
 light, which in this example:
 
- - Uses a parametric `EllSersic` bulge for the source's light (omitting a disk / envelope).
- - Uses an `EllIsothermal` model for the lens's total mass distribution with an `ExternalShear`.
+ - Uses a parametric `Sersic` bulge for the source's light (omitting a disk / envelope).
+ - Uses an `Isothermal` model for the lens's total mass distribution with an `ExternalShear`.
  - Fixes the mass profile centre to (0.0, 0.0) (this assumption will be relaxed in the MASS PIPELINE).
 """
 analysis = al.AnalysisImaging(dataset=imaging)
@@ -126,9 +126,9 @@ source_parametric_results = slam.source_parametric.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    mass=af.Model(al.mp.EllIsothermal),
+    mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
-    source_bulge=af.Model(al.lp.EllSersic),
+    source_bulge=af.Model(al.lp.Sersic),
     mass_centre=(0.0, 0.0),
     redshift_lens=0.5,
     redshift_source=1.0,
@@ -140,8 +140,8 @@ __MASS TOTAL PIPELINE (no lens light)__
 The MASS TOTAL PIPELINE (no lens light) uses one search to fits a complex lens mass model to a high level of accuracy, 
 using the lens mass model and source model of the SOURCE PIPELINE to initialize the model priors. In this example it:
 
- - Uses an `EllPowerLaw` model for the lens's total mass distribution [The centre if unfixed from (0.0, 0.0)].
- - Uses the `EllSersic` model representing a bulge for the source's light.
+ - Uses an `PowerLaw` model for the lens's total mass distribution [The centre if unfixed from (0.0, 0.0)].
+ - Uses the `Sersic` model representing a bulge for the source's light.
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
@@ -153,7 +153,7 @@ mass_results = slam.mass_total.no_lens_light(
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_results=source_parametric_results,
-    mass=af.Model(al.mp.EllPowerLaw),
+    mass=af.Model(al.mp.PowerLaw),
 )
 
 """
@@ -186,7 +186,7 @@ subhalo_results = slam.subhalo.sensitivity_mapping_imaging(
     mask=mask,
     psf=imaging.psf,
     mass_results=mass_results,
-    subhalo_mass=af.Model(al.mp.SphNFWMCRLudlow),
+    subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
 )

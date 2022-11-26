@@ -6,8 +6,8 @@ This script gives a profile of a `PySwarmsGlobal` model-fit to an `Imaging` data
 that is initialized from an SIE, where:
 
  - The lens galaxy's light is omitted.
- - The lens galaxy's total mass distribution is an `EllPowerLaw`.
- - The source galaxy's light is a parametric `EllSersic`.
+ - The lens galaxy's total mass distribution is an `PowerLaw`.
+ - The source galaxy's light is a parametric `Sersic`.
 """
 # %matplotlib inline
 # from pyprojroot import here
@@ -73,9 +73,9 @@ imaging_plotter.subplot_imaging()
 __Model + Search + Analysis + Model-Fit (Search 1)__
 """
 lens = af.Model(
-    al.Galaxy, redshift=0.5, mass=al.mp.EllIsothermal, shear=al.mp.ExternalShear
+    al.Galaxy, redshift=0.5, mass=al.mp.Isothermal, shear=al.mp.ExternalShear
 )
-source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.EllSersic)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.Sersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
@@ -92,7 +92,7 @@ __Model + Analysis + Model-Fit (Search 2)__
 """
 source = result_1.model.galaxies.source
 
-mass = af.Model(al.mp.EllPowerLaw)
+mass = af.Model(al.mp.PowerLaw)
 mass.take_attributes(result_1.model.galaxies.lens.mass)
 mass.slope = af.UniformPrior(lower_limit=1.0, upper_limit=3.0)
 shear = result_1.model.galaxies.lens.shear

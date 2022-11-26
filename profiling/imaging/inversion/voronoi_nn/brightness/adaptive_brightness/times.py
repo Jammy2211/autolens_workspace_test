@@ -63,25 +63,25 @@ The lens galaxy used to fit the data, which is identical to the lens galaxy used
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    bulge=al.lp.EllSersic(
+    bulge=al.lp.Sersic(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
         intensity=4.0,
         effective_radius=0.6,
         sersic_index=3.0,
     ),
-    disk=al.lp.EllExponential(
+    disk=al.lp.Exponential(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
         intensity=2.0,
         effective_radius=1.6,
     ),
-    mass=al.mp.EllIsothermal(
+    mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=45.0),
     ),
-    shear=al.mp.ExternalShear(elliptical_comps=(0.001, 0.001)),
+    shear=al.mp.ExternalShear(ell_comps=(0.001, 0.001)),
 )
 
 
@@ -135,9 +135,9 @@ Generate the hyper-images used to adapt the source pixelization and regularizati
 """
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    bulge=al.lp.EllSersic(
+    bulge=al.lp.Sersic(
         centre=(0.1, 0.1),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=60.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=60.0),
         intensity=0.3,
         effective_radius=1.0,
         sersic_index=2.5,
@@ -171,12 +171,12 @@ Tracers using a power-law and decomposed mass model, just to provide run times o
 """
 lens_galaxy_power_law = al.Galaxy(
     redshift=0.5,
-    mass=al.mp.EllPowerLaw(
+    mass=al.mp.PowerLaw(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.8, angle=45.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=45.0),
     ),
-    shear=al.mp.ExternalShear(elliptical_comps=(0.001, 0.001)),
+    shear=al.mp.ExternalShear(ell_comps=(0.001, 0.001)),
 )
 tracer_power_law = al.Tracer.from_galaxies(
     galaxies=[lens_galaxy_power_law, source_galaxy]
@@ -184,28 +184,28 @@ tracer_power_law = al.Tracer.from_galaxies(
 
 lens_galaxy_decomposed = al.Galaxy(
     redshift=0.5,
-    bulge=al.lmp.EllSersic(
+    bulge=al.lmp.Sersic(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.9, angle=45.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
         intensity=4.0,
         effective_radius=0.6,
         sersic_index=3.0,
         mass_to_light_ratio=0.05,
     ),
-    disk=al.lmp.EllExponential(
+    disk=al.lmp.Exponential(
         centre=(0.0, 0.0),
-        elliptical_comps=al.convert.elliptical_comps_from(axis_ratio=0.7, angle=30.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
         intensity=2.0,
         effective_radius=1.6,
         mass_to_light_ratio=0.05,
     ),
-    dark=al.mp.EllNFW(
+    dark=al.mp.NFW(
         centre=(0.0, 0.0),
-        elliptical_comps=(0.05, 0.05),
+        ell_comps=(0.05, 0.05),
         kappa_s=0.12,
         scale_radius=20.0,
     ),
-    shear=al.mp.ExternalShear(elliptical_comps=(0.001, 0.001)),
+    shear=al.mp.ExternalShear(ell_comps=(0.001, 0.001)),
 )
 tracer_decomposed = al.Tracer.from_galaxies(
     galaxies=[lens_galaxy_decomposed, source_galaxy]
@@ -248,7 +248,7 @@ start_overall = time.time()
 __Lens Light (Grid2D)__
 
 Compute the light profile of the foreground lens galaxy, which for this script uses an `EllpiticalSersic` bulge and
-`EllExponential` disk. This computes the `image` of each `LightProfile` and adds them together. 
+`Exponential` disk. This computes the `image` of each `LightProfile` and adds them together. 
 
 It also includes a `blurring_image` which represents all flux values not within the mask, but which will blur into the
 mask after PSF convolution.
@@ -307,10 +307,10 @@ profiling_dict["Lens Light Convolution"] = (time.time() - start) / repeats
 __Ray Tracing (SIE)__
 
 Compute the deflection angles and ray-trace the image-pixels to the source plane. The run-time of this step depends
-on the lens galaxy mass model, for this example we use a fast `EllIsothermal` meaning this step is not the 
+on the lens galaxy mass model, for this example we use a fast `Isothermal` meaning this step is not the 
 bottleneck.
 
-This uses the fast `EllIsothermal` profile.
+This uses the fast `Isothermal` profile.
 
 Deflection angle calculations are profiled fully in the package`profiling/deflections`.
 
@@ -342,7 +342,7 @@ profiling_dict["Ray Tracing (SIE)"] = (time.time() - start) / repeats
 """
 __Ray Tracing (Power-Law)__
 
-Compute the deflection angles again, but now using the more expensive `EllPowerLaw` profile.
+Compute the deflection angles again, but now using the more expensive `PowerLaw` profile.
 """
 start = time.time()
 for i in range(repeats):
@@ -357,7 +357,7 @@ profiling_dict["Ray Tracing (Power-Law)"] = (time.time() - start) / repeats
 __Ray Tracing (Decomposed)__
 
 Compute the deflection angles again, now using a very expensive decomposed mass model consisting of 
-two `EllSersic`'s and an `EllNFW`.
+two `Sersic`'s and an `NFW`.
 """
 start = time.time()
 for i in range(repeats):
