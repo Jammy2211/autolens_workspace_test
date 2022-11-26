@@ -28,8 +28,10 @@ import autolens as al
 """
 __Dataset__
 """
-dataset_name = "mass_sie__source_point__0"
-dataset_path = path.join("dataset", "point_source", dataset_name)
+dataset_label = "build"
+dataset_type = "point_source"
+
+dataset_path = path.join("dataset", dataset_label, dataset_type)
 
 image_2d = al.Array2D.from_fits(
     file_path=path.join(dataset_path, "image.fits"), pixel_scales=0.05
@@ -66,9 +68,9 @@ point_solver = al.PointSolver(grid=grid_2d, pixel_scale_precision=0.025)
 __Search__
 """
 search = af.DynestyStatic(
-    path_prefix=path.join("visualizer"),
-    name="point_source",
-    unique_tag=dataset_name,
+    path_prefix=path.join("build", "visualizer", "point_source"),
+    name="test",
+    unique_tag="test",
     nlive=50,
     number_of_cores=1,
 )

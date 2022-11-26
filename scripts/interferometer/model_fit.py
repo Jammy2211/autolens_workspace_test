@@ -166,8 +166,6 @@ fit_interferometer_plotter.subplot_fit_dirty_images()
 dynesty_plotter = aplt.DynestyPlotter(samples=result.samples)
 dynesty_plotter.cornerplot()
 
-os._exit(1)
-
 """
 Checkout `autolens_workspace/*/results` for a full description of analysing results in **PyAutoLens**.
 """
