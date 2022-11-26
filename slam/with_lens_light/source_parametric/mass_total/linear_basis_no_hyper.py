@@ -127,66 +127,66 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
-max_mge_r = 2.5
-rn = 15
-gaussian_per_basis = 5
-
-log10_sigma_list = np.linspace(-2, np.log10(max_mge_r), rn)
-
-overall_gaussian_list = []
-
-centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-
-for j in range(gaussian_per_basis):
-
-    ell_comps_0 = af.GaussianPrior(mean=0.0, sigma=0.3)
-    ell_comps_1 = af.GaussianPrior(mean=0.0, sigma=0.3)
-
-    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(rn))
-
-    for i, gaussian in enumerate(gaussian_list):
-
-        gaussian.centre.centre_0 = centre_0
-        gaussian.centre.centre_1 = centre_1
-        gaussian.ell_comps.ell_comps_0 = ell_comps_0
-        gaussian.ell_comps.ell_comps_1 = ell_comps_1
-        gaussian.sigma = 10 ** log10_sigma_list[i]
-
-    overall_gaussian_list += gaussian_list
-
-lens_bulge = af.Model(al.lp_basis.Basis, light_profile_list=overall_gaussian_list)
-
-# bulge_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-# bulge_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+# max_mge_r = 2.5
+# rn = 15
+# gaussian_per_basis = 5
 #
-# gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+# log10_sigma_list = np.linspace(-2, np.log10(max_mge_r), rn)
 #
-# for i, gaussian in enumerate(gaussian_list):
+# overall_gaussian_list = []
 #
-#     gaussian.centre = gaussian_list[0].centre
-#     gaussian.ell_comps = gaussian_list[0].ell_comps
-#     gaussian.sigma = bulge_a + (bulge_b * np.log10(i + 1))
+# centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+# centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 #
-# lens_bulge = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+# for j in range(gaussian_per_basis):
 #
-# disk_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-# disk_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+#     ell_comps_0 = af.GaussianPrior(mean=0.0, sigma=0.3)
+#     ell_comps_1 = af.GaussianPrior(mean=0.0, sigma=0.3)
 #
-# gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+#     gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(rn))
 #
-# for i, gaussian in enumerate(gaussian_list):
+#     for i, gaussian in enumerate(gaussian_list):
 #
-#     gaussian.centre = gaussian_list[0].centre
-#     gaussian.ell_comps = gaussian_list[0].ell_comps
-#     gaussian.sigma = disk_a + (disk_b * np.log10(i + 1))
+#         gaussian.centre.centre_0 = centre_0
+#         gaussian.centre.centre_1 = centre_1
+#         gaussian.ell_comps.ell_comps_0 = ell_comps_0
+#         gaussian.ell_comps.ell_comps_1 = ell_comps_1
+#         gaussian.sigma = 10 ** log10_sigma_list[i]
 #
-# lens_disk = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+#     overall_gaussian_list += gaussian_list
 #
-# source_bulge = af.Model(al.lp.SersicCore)
-# source_bulge.radius_break = 0.05
-# source_bulge.gamma = 0.0
-# source_bulge.alpha = 2.0
+# lens_bulge = af.Model(al.lp_basis.Basis, light_profile_list=overall_gaussian_list)
+
+bulge_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
+bulge_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+
+gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+
+for i, gaussian in enumerate(gaussian_list):
+
+    gaussian.centre = gaussian_list[0].centre
+    gaussian.ell_comps = gaussian_list[0].ell_comps
+    gaussian.sigma = bulge_a + (bulge_b * np.log10(i + 1))
+
+lens_bulge = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+
+disk_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
+disk_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+
+gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+
+for i, gaussian in enumerate(gaussian_list):
+
+    gaussian.centre = gaussian_list[0].centre
+    gaussian.ell_comps = gaussian_list[0].ell_comps
+    gaussian.sigma = disk_a + (disk_b * np.log10(i + 1))
+
+lens_disk = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+
+source_bulge = af.Model(al.lp.SersicCore)
+source_bulge.radius_break = 0.05
+source_bulge.gamma = 0.0
+source_bulge.alpha = 2.0
 
 source_parametric_results = slam.source_parametric.with_lens_light(
     settings_autofit=settings_autofit,
@@ -223,66 +223,66 @@ analysis = al.AnalysisImaging(
     dataset=imaging, hyper_dataset_result=source_parametric_results.last
 )
 
-max_mge_r = 2.5
-rn = 15
-gaussian_per_basis = 5
-
-log10_sigma_list = np.linspace(-2, np.log10(max_mge_r), rn)
-
-overall_gaussian_list = []
-
-centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-
-for j in range(gaussian_per_basis):
-
-    ell_comps_0 = af.GaussianPrior(mean=0.0, sigma=0.3)
-    ell_comps_1 = af.GaussianPrior(mean=0.0, sigma=0.3)
-
-    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(rn))
-
-    for i, gaussian in enumerate(gaussian_list):
-
-        gaussian.centre.centre_0 = centre_0
-        gaussian.centre.centre_1 = centre_1
-        gaussian.ell_comps.ell_comps_0 = ell_comps_0
-        gaussian.ell_comps.ell_comps_1 = ell_comps_1
-        gaussian.sigma = 10 ** log10_sigma_list[i]
-
-    overall_gaussian_list += gaussian_list
-
-basis = af.Model(al.lp_basis.Basis, light_profile_list=overall_gaussian_list)
-
-# bulge_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-# bulge_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+# max_mge_r = 2.5
+# rn = 15
+# gaussian_per_basis = 5
 #
-# gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+# log10_sigma_list = np.linspace(-2, np.log10(max_mge_r), rn)
 #
-# for i, gaussian in enumerate(gaussian_list):
+# overall_gaussian_list = []
 #
-#     gaussian.centre = gaussian_list[0].centre
-#     gaussian.ell_comps = gaussian_list[0].ell_comps
-#     gaussian.sigma = bulge_a + (bulge_b * np.log10(i + 1))
+# centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+# centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 #
-# lens_bulge = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+# for j in range(gaussian_per_basis):
 #
-# disk_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-# disk_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+#     ell_comps_0 = af.GaussianPrior(mean=0.0, sigma=0.3)
+#     ell_comps_1 = af.GaussianPrior(mean=0.0, sigma=0.3)
 #
-# gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+#     gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(rn))
 #
-# for i, gaussian in enumerate(gaussian_list):
+#     for i, gaussian in enumerate(gaussian_list):
 #
-#     gaussian.centre = gaussian_list[0].centre
-#     gaussian.ell_comps = gaussian_list[0].ell_comps
-#     gaussian.sigma = disk_a + (disk_b * np.log10(i + 1))
+#         gaussian.centre.centre_0 = centre_0
+#         gaussian.centre.centre_1 = centre_1
+#         gaussian.ell_comps.ell_comps_0 = ell_comps_0
+#         gaussian.ell_comps.ell_comps_1 = ell_comps_1
+#         gaussian.sigma = 10 ** log10_sigma_list[i]
 #
-# lens_disk = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+#     overall_gaussian_list += gaussian_list
 #
-# source_bulge = af.Model(al.lp.SersicCore)
-# source_bulge.radius_break = 0.05
-# source_bulge.gamma = 0.0
-# source_bulge.alpha = 2.0
+# lens_bulge = af.Model(al.lp_basis.Basis, light_profile_list=overall_gaussian_list)
+
+bulge_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
+bulge_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+
+gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+
+for i, gaussian in enumerate(gaussian_list):
+
+    gaussian.centre = gaussian_list[0].centre
+    gaussian.ell_comps = gaussian_list[0].ell_comps
+    gaussian.sigma = bulge_a + (bulge_b * np.log10(i + 1))
+
+lens_bulge = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+
+disk_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
+disk_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+
+gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+
+for i, gaussian in enumerate(gaussian_list):
+
+    gaussian.centre = gaussian_list[0].centre
+    gaussian.ell_comps = gaussian_list[0].ell_comps
+    gaussian.sigma = disk_a + (disk_b * np.log10(i + 1))
+
+lens_disk = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+
+source_bulge = af.Model(al.lp.SersicCore)
+source_bulge.radius_break = 0.05
+source_bulge.gamma = 0.0
+source_bulge.alpha = 2.0
 
 light_results = slam.light_parametric.with_lens_light(
     settings_autofit=settings_autofit,
