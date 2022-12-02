@@ -1,0 +1,779 @@
+Chameleon:
+  centre_0:
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.0001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  centre_1:
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.0001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  core_radius_0:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.0
+    type: Uniform
+    upper_limit: 30.0
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  core_radius_1:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.0
+    type: Uniform
+    upper_limit: 30.0
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  ell_comps_0:
+    gaussian_limits:
+      lower: -1.0
+      upper: 1.0
+    lower_limit: -0.001
+    type: Uniform
+    upper_limit: 0.001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-05
+  ell_comps_1:
+    gaussian_limits:
+      lower: '-1.0'
+      upper: '1.0'
+    lower_limit: -0.001
+    type: Uniform
+    upper_limit: 0.001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-05
+  intensity:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.99999
+    type: LogUniform
+    upper_limit: 1.0000001
+    width_modifier:
+      type: Relative
+      value: 1.0e-08
+ChameleonSph:
+  centre_0:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.0001
+  centre_1:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.0001
+  core_radius_0:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.0
+    type: Uniform
+    upper_limit: 30.0
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  core_radius_1:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.0
+    type: Uniform
+    upper_limit: 30.0
+    width_modifier:
+      type: Absolute
+      value: 0.01
+DevVaucouleurs:
+  centre_0:
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.0001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  centre_1:
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.0001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  effective_radius:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.99999
+    type: Uniform
+    upper_limit: 1.000001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-07
+  ell_comps_0:
+    gaussian_limits:
+      lower: -1.0
+      upper: 1.0
+    lower_limit: -0.001
+    type: Uniform
+    upper_limit: 0.001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-05
+  ell_comps_1:
+    gaussian_limits:
+      lower: '-1.0'
+      upper: '1.0'
+    lower_limit: -0.001
+    type: Uniform
+    upper_limit: 0.001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-05
+  intensity:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.99999
+    type: LogUniform
+    upper_limit: 1.0000001
+    width_modifier:
+      type: Relative
+      value: 1.0e-08
+DevVaucouleursSph:
+  centre_0:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.0001
+  centre_1:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.0001
+  effective_radius:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.99999
+    type: Uniform
+    upper_limit: 1.000001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-07
+Exponential:
+  centre_0:
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.0001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  centre_1:
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.0001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  effective_radius:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.99999
+    type: Uniform
+    upper_limit: 1.000001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-07
+  ell_comps_0:
+    gaussian_limits:
+      lower: -1.0
+      upper: 1.0
+    lower_limit: -0.001
+    type: Uniform
+    upper_limit: 0.001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-05
+  ell_comps_1:
+    gaussian_limits:
+      lower: '-1.0'
+      upper: '1.0'
+    lower_limit: -0.001
+    type: Uniform
+    upper_limit: 0.001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-05
+  intensity:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.99999
+    type: LogUniform
+    upper_limit: 1.0000001
+    width_modifier:
+      type: Relative
+      value: 1.0e-08
+ExponentialSph:
+  centre_0:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.0001
+  centre_1:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.0001
+  effective_radius:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.99999
+    type: Uniform
+    upper_limit: 1.000001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-07
+Gaussian:
+  centre_0:
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.0001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  centre_1:
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.0001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  ell_comps_0:
+    gaussian_limits:
+      lower: -1.0
+      upper: 1.0
+    lower_limit: -0.001
+    type: Uniform
+    upper_limit: 0.001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-05
+  ell_comps_1:
+    gaussian_limits:
+      lower: '-1.0'
+      upper: '1.0'
+    lower_limit: -0.001
+    type: Uniform
+    upper_limit: 0.001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-05
+  intensity:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.99999
+    type: LogUniform
+    upper_limit: 1.0000001
+    width_modifier:
+      type: Relative
+      value: 1.0e-08
+  sigma:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.0
+    type: Uniform
+    upper_limit: 25.0
+    width_modifier:
+      type: Relative
+      value: 0.01
+GaussianSph:
+  centre_0:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.0001
+  centre_1:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.0001
+  sigma:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.0
+    type: Uniform
+    upper_limit: 25.0
+    width_modifier:
+      type: Relative
+      value: 0.01
+Point:
+  centre_0:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.3
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.05
+  centre_1:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.3
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.05
+PointFlux:
+  centre_0:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.3
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.05
+  centre_1:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.3
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.05
+  flux:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 1.0e-06
+    type: LogUniform
+    upper_limit: 1000000.0
+    width_modifier:
+      type: Relative
+      value: 0.5
+PointSourceChi:
+  centre_0:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.3
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.05
+  centre_1:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.3
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.05
+Sersic:
+  centre_0:
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.0001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  centre_1:
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.0001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  effective_radius:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.99999
+    type: Uniform
+    upper_limit: 1.000001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-07
+  ell_comps_0:
+    gaussian_limits:
+      lower: -1.0
+      upper: 1.0
+    lower_limit: -0.001
+    type: Uniform
+    upper_limit: 0.001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-05
+  ell_comps_1:
+    gaussian_limits:
+      lower: '-1.0'
+      upper: '1.0'
+    lower_limit: -0.001
+    type: Uniform
+    upper_limit: 0.001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-05
+  intensity:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.99999
+    type: LogUniform
+    upper_limit: 1.0000001
+    width_modifier:
+      type: Relative
+      value: 1.0e-08
+  sersic_index:
+    gaussian_limits:
+      lower: 0.5
+      upper: inf
+    lower_limit: 1.9999
+    type: Uniform
+    upper_limit: 2.0001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-06
+SersicCore:
+  alpha:
+    gaussian_limits:
+      lower: 4.5
+      upper: 5.5
+    lower_limit: 4.5
+    type: Uniform
+    upper_limit: 5.5
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  centre_0:
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.0001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  centre_1:
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.0001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  effective_radius:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.99999
+    type: Uniform
+    upper_limit: 1.000001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-07
+  ell_comps_0:
+    gaussian_limits:
+      lower: -1.0
+      upper: 1.0
+    lower_limit: -0.001
+    type: Uniform
+    upper_limit: 0.001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-05
+  ell_comps_1:
+    gaussian_limits:
+      lower: '-1.0'
+      upper: '1.0'
+    lower_limit: -0.001
+    type: Uniform
+    upper_limit: 0.001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-05
+  gamma:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.0
+    type: Uniform
+    upper_limit: 0.5
+    width_modifier:
+      type: Absolute
+      value: 0.1
+  intensity:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 1.0e-05
+    type: LogUniform
+    upper_limit: 1000.0
+    width_modifier:
+      type: Relative
+      value: 0.01
+  radius_break:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.0
+    type: Uniform
+    upper_limit: 10.0
+    width_modifier:
+      type: Absolute
+      value: 0.1
+  sersic_index:
+    gaussian_limits:
+      lower: 0.5
+      upper: inf
+    lower_limit: 1.9999
+    type: Uniform
+    upper_limit: 2.0001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-06
+SersicCoreSph:
+  alpha:
+    gaussian_limits:
+      lower: 4.5
+      upper: 5.5
+    lower_limit: 4.5
+    type: Uniform
+    upper_limit: 5.5
+    width_modifier:
+      type: Absolute
+      value: 0.01
+  centre_0:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.0001
+  centre_1:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.0001
+  effective_radius:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.99999
+    type: Uniform
+    upper_limit: 1.000001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-07
+  gamma:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.0
+    type: Uniform
+    upper_limit: 0.5
+    width_modifier:
+      type: Absolute
+      value: 0.1
+  intensity:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 1.0e-05
+    type: LogUniform
+    upper_limit: 1000.0
+    width_modifier:
+      type: Relative
+      value: 0.01
+  radius_break:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.0
+    type: Uniform
+    upper_limit: 10.0
+    width_modifier:
+      type: Absolute
+      value: 0.1
+  sersic_index:
+    gaussian_limits:
+      lower: 0.5
+      upper: inf
+    lower_limit: 1.9999
+    type: Uniform
+    upper_limit: 2.0001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-06
+SersicSph:
+  centre_0:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.0001
+  centre_1:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -inf
+    mean: 0.0
+    sigma: 0.001
+    type: Gaussian
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.0001
+  effective_radius:
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+    lower_limit: 0.99999
+    type: Uniform
+    upper_limit: 1.000001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-07
+  sersic_index:
+    gaussian_limits:
+      lower: 0.5
+      upper: inf
+    lower_limit: 1.9999
+    type: Uniform
+    upper_limit: 2.0001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-06

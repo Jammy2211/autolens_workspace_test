@@ -1,0 +1,21 @@
+external_shear.ExternalShear:
+  gamma_0:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -1.0e-05
+    type: Uniform
+    upper_limit: 1.0e-05
+    width_modifier:
+      type: Absolute
+      value: 1.0e-07
+  gamma_1:
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+    lower_limit: -1.0e-05
+    type: Uniform
+    upper_limit: 1.0e-05
+    width_modifier:
+      type: Absolute
+      value: 1.0e-07
