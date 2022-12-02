@@ -1,0 +1,55 @@
+NFWTruncatedSph:
+  centre_0:
+    type: Gaussian
+    mean: 0.0
+    sigma: 0.001
+    lower_limit: -inf
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.0001
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+  centre_1:
+    type: Gaussian
+    mean: 0.0
+    sigma: 0.001
+    lower_limit: -inf
+    upper_limit: inf
+    width_modifier:
+      type: Absolute
+      value: 0.0001
+    gaussian_limits:
+      lower: -inf
+      upper: inf
+  kappa_s:
+    type: Uniform
+    lower_limit: 0.0999
+    upper_limit: 0.1001
+    width_modifier:
+      type: Relative
+      value: 1.0e-06
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+  scale_radius:
+    type: Uniform
+    lower_limit: 19.9
+    upper_limit: 20.1
+    width_modifier:
+      type: Relative
+      value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
+  truncation_radius:
+    type: Uniform
+    lower_limit: 0.0
+    upper_limit: 30.0
+    width_modifier:
+      type: Relative
+      value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf

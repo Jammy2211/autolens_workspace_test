@@ -1,0 +1,99 @@
+dataset:
+  subplot_dataset: true
+  absolute_signal_to_noise_map: true
+  data: true
+  inverse_noise_map: true
+  noise_map: true
+  potential_chi_squared_map: true
+  signal_to_noise_map: true
+imaging:
+  psf: true
+interferometer:
+  amplitudes_vs_uv_distances: true
+  dirty_image: true
+  dirty_inverse_noise_map: true
+  dirty_noise_map: true
+  dirty_signal_to_noise_map: true
+  phases_vs_uv_distances: true
+  uv_wavelengths: true
+positions:
+  image_with_positions: true
+fit:
+  subplot_fit: true
+  subplot_of_planes: true
+  subplot_plane_images: true
+  subtracted_images_of_planes: true
+  chi_squared_map: true
+  data: true
+  model_data: true
+  model_images_of_planes: true
+  noise_map: true
+  normalized_residual_map: true
+  residual_map: true
+  signal_to_noise_map: true
+  all_at_end_fits: true
+  all_at_end_png: true
+fit_imaging: {}
+fit_interferometer:
+  amplitudes_vs_uv_distances: true
+  dirty_chi_squared_map: true
+  dirty_image: true
+  dirty_inverse_noise_map: true
+  dirty_noise_map: true
+  dirty_normalized_residual_map: true
+  dirty_residual_map: true
+  dirty_signal_to_noise_map: true
+  phases_vs_uv_distances: true
+  uv_wavelengths: true
+ray_tracing:
+  all_at_end_fits: true
+  all_at_end_png: true
+  convergence: true
+  deflections: true
+  image: true
+  magnification: true
+  potential: true
+  source_plane_image: true
+  subplot_plane_images: true
+  subplot_ray_tracing: true
+inversion:
+  subplot_inversion: true
+  chi_squared_map: true
+  errors: true
+  normalized_residual_map: true
+  reconstructed_image: true
+  reconstruction: true
+  regularization_weights: true
+  residual_map: true
+  all_at_end_png: true
+galaxies:
+  convergence: true
+  image: true
+  potential: true
+fit_quantity:
+  subplot_fit: true
+  chi_squared_map: true
+  image: true
+  model_image: true
+  noise_map: true
+  residual_map: true
+  all_at_end_fits: true
+  all_at_end_png: true
+hyper:
+  fit_no_hyper: true
+  images_of_planes: true
+  contribution_map_list: true
+  model_image: true
+other:
+  stochastic_histogram: true
+plane:
+  subplot_plane: true
+  subplot_galaxy_images: true
+  convergence: true
+  deflections: true
+  image: true
+  magnification: true
+  potential: true
+  source_plane_image: true
+  all_at_end_fits: true
+  all_at_end_png: true

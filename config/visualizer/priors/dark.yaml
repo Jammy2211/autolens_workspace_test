@@ -1,515 +1,515 @@
 gnfw.gNFW:
   centre_0:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
+    gaussian_limits:
+      lower: -inf
+      upper: inf
   centre_1:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
+    gaussian_limits:
+      lower: -inf
+      upper: inf
   ell_comps_0:
+    type: Uniform
+    lower_limit: -0.001
+    upper_limit: 0.001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-05
     gaussian_limits:
       lower: -1.0
       upper: 1.0
-    lower_limit: -0.001
+  ell_comps_1:
     type: Uniform
+    lower_limit: -0.001
     upper_limit: 0.001
     width_modifier:
       type: Absolute
       value: 1.0e-05
-  ell_comps_1:
     gaussian_limits:
       lower: '-1.0'
       upper: '1.0'
-    lower_limit: -0.001
-    type: Uniform
-    upper_limit: 0.001
-    width_modifier:
-      type: Absolute
-      value: 1.0e-05
   inner_slope:
-    gaussian_limits:
-      lower: -1.0
-      upper: 3.0
-    lower_limit: 0.0
     type: Uniform
+    lower_limit: 0.0
     upper_limit: 2.0
     width_modifier:
       type: Absolute
       value: 0.01
-  kappa_s:
     gaussian_limits:
-      lower: 0.0
-      upper: inf
-    lower_limit: 0.0999
+      lower: -1.0
+      upper: 3.0
+  kappa_s:
     type: Uniform
+    lower_limit: 0.0999
     upper_limit: 0.1001
     width_modifier:
       type: Relative
       value: 1.0e-06
-  scale_radius:
     gaussian_limits:
       lower: 0.0
       upper: inf
-    lower_limit: 19.9
+  scale_radius:
     type: Uniform
+    lower_limit: 19.9
     upper_limit: 20.1
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
 gnfw.gNFWSph:
   centre_0:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
+    gaussian_limits:
+      lower: -inf
+      upper: inf
   centre_1:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
-  inner_slope:
     gaussian_limits:
-      lower: -1.0
-      upper: 3.0
-    lower_limit: 0.0
+      lower: -inf
+      upper: inf
+  inner_slope:
     type: Uniform
+    lower_limit: 0.0
     upper_limit: 2.0
     width_modifier:
       type: Absolute
       value: 0.01
-  kappa_s:
     gaussian_limits:
-      lower: 0.0
-      upper: inf
-    lower_limit: 0.0999
+      lower: -1.0
+      upper: 3.0
+  kappa_s:
     type: Uniform
+    lower_limit: 0.0999
     upper_limit: 0.1001
     width_modifier:
       type: Relative
       value: 1.0e-06
-  scale_radius:
     gaussian_limits:
       lower: 0.0
       upper: inf
-    lower_limit: 19.9
+  scale_radius:
     type: Uniform
+    lower_limit: 19.9
     upper_limit: 20.1
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
 nfw.NFW:
   centre_0:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
+    gaussian_limits:
+      lower: -inf
+      upper: inf
   centre_1:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
+    gaussian_limits:
+      lower: -inf
+      upper: inf
   ell_comps_0:
+    type: Uniform
+    lower_limit: -0.001
+    upper_limit: 0.001
+    width_modifier:
+      type: Absolute
+      value: 1.0e-05
     gaussian_limits:
       lower: -1.0
       upper: 1.0
-    lower_limit: -0.001
+  ell_comps_1:
     type: Uniform
+    lower_limit: -0.001
     upper_limit: 0.001
     width_modifier:
       type: Absolute
       value: 1.0e-05
-  ell_comps_1:
     gaussian_limits:
       lower: '-1.0'
       upper: '1.0'
-    lower_limit: -0.001
-    type: Uniform
-    upper_limit: 0.001
-    width_modifier:
-      type: Absolute
-      value: 1.0e-05
   kappa_s:
-    gaussian_limits:
-      lower: 0.0
-      upper: inf
-    lower_limit: 0.0999
     type: Uniform
+    lower_limit: 0.0999
     upper_limit: 0.1001
     width_modifier:
       type: Relative
       value: 1.0e-06
-  scale_radius:
     gaussian_limits:
       lower: 0.0
       upper: inf
-    lower_limit: 19.9
+  scale_radius:
     type: Uniform
+    lower_limit: 19.9
     upper_limit: 20.1
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
 nfw.NFWSph:
   centre_0:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
+    gaussian_limits:
+      lower: -inf
+      upper: inf
   centre_1:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
-  kappa_s:
     gaussian_limits:
-      lower: 0.0
+      lower: -inf
       upper: inf
-    lower_limit: 0.0999
+  kappa_s:
     type: Uniform
+    lower_limit: 0.0999
     upper_limit: 0.1001
     width_modifier:
       type: Relative
       value: 1.0e-06
-  scale_radius:
     gaussian_limits:
       lower: 0.0
       upper: inf
-    lower_limit: 19.9
+  scale_radius:
     type: Uniform
+    lower_limit: 19.9
     upper_limit: 20.1
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
 nfw_mcr.NFWMCRDuffySph:
   centre_0:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
+    gaussian_limits:
+      lower: -inf
+      upper: inf
   centre_1:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
-  mass_at_200:
     gaussian_limits:
-      lower: 0.0
+      lower: -inf
       upper: inf
-    lower_limit: 100000000.0
+  mass_at_200:
     type: LogUniform
+    lower_limit: 100000000.0
     upper_limit: 1000000000000000.0
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
   redshift_object:
-    gaussian_limits:
-      lower: 0.0
-      upper: inf
-    lower_limit: 0.0
     type: Uniform
+    lower_limit: 0.0
     upper_limit: 1.0
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
   redshift_source:
-    gaussian_limits:
-      lower: 0.0
-      upper: inf
-    lower_limit: 0.0
     type: Uniform
+    lower_limit: 0.0
     upper_limit: 1.0
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
 nfw_mcr.NFWMCRLudlowSph:
   centre_0:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
+    gaussian_limits:
+      lower: -inf
+      upper: inf
   centre_1:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
-  mass_at_200:
     gaussian_limits:
-      lower: 0.0
+      lower: -inf
       upper: inf
-    lower_limit: 100000000.0
+  mass_at_200:
     type: LogUniform
+    lower_limit: 100000000.0
     upper_limit: 1000000000000000.0
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
   redshift_object:
-    gaussian_limits:
-      lower: 0.0
-      upper: inf
-    lower_limit: 0.0
     type: Uniform
+    lower_limit: 0.0
     upper_limit: 1.0
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
   redshift_source:
-    gaussian_limits:
-      lower: 0.0
-      upper: inf
-    lower_limit: 0.0
     type: Uniform
+    lower_limit: 0.0
     upper_limit: 1.0
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
 nfw_truncated.NFWTruncatedSph:
   centre_0:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
+    gaussian_limits:
+      lower: -inf
+      upper: inf
   centre_1:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
-  kappa_s:
     gaussian_limits:
-      lower: 0.0
+      lower: -inf
       upper: inf
-    lower_limit: 0.0999
+  kappa_s:
     type: Uniform
+    lower_limit: 0.0999
     upper_limit: 0.1001
     width_modifier:
       type: Relative
       value: 1.0e-06
-  scale_radius:
     gaussian_limits:
       lower: 0.0
       upper: inf
-    lower_limit: 19.9
+  scale_radius:
     type: Uniform
+    lower_limit: 19.9
     upper_limit: 20.1
     width_modifier:
       type: Relative
       value: 0.01
-  truncation_radius:
     gaussian_limits:
       lower: 0.0
       upper: inf
-    lower_limit: 0.0
+  truncation_radius:
     type: Uniform
+    lower_limit: 0.0
     upper_limit: 30.0
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
 nfw_truncated_mcr.NFWTruncatedMCRDuffySph:
   centre_0:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
+    gaussian_limits:
+      lower: -inf
+      upper: inf
   centre_1:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
-  mass_at_200:
     gaussian_limits:
-      lower: 0.0
+      lower: -inf
       upper: inf
-    lower_limit: 100000000.0
+  mass_at_200:
     type: LogUniform
+    lower_limit: 100000000.0
     upper_limit: 1000000000000000.0
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
   redshift_object:
-    gaussian_limits:
-      lower: 0.0
-      upper: inf
-    lower_limit: 0.0
     type: Uniform
+    lower_limit: 0.0
     upper_limit: 1.0
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
   redshift_source:
-    gaussian_limits:
-      lower: 0.0
-      upper: inf
-    lower_limit: 0.0
     type: Uniform
+    lower_limit: 0.0
     upper_limit: 1.0
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
 nfw_truncated_mcr.NFWTruncatedMCRLudlowSph:
   centre_0:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
+    gaussian_limits:
+      lower: -inf
+      upper: inf
   centre_1:
-    gaussian_limits:
-      lower: -inf
-      upper: inf
-    lower_limit: -inf
+    type: Gaussian
     mean: 0.0
     sigma: 0.001
-    type: Gaussian
+    lower_limit: -inf
     upper_limit: inf
     width_modifier:
       type: Absolute
       value: 0.0001
-  mass_at_200:
     gaussian_limits:
-      lower: 0.0
+      lower: -inf
       upper: inf
-    lower_limit: 100000000.0
+  mass_at_200:
     type: LogUniform
+    lower_limit: 100000000.0
     upper_limit: 1000000000000000.0
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
   redshift_object:
-    gaussian_limits:
-      lower: 0.0
-      upper: inf
-    lower_limit: 0.0
     type: Uniform
+    lower_limit: 0.0
     upper_limit: 1.0
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
   redshift_source:
-    gaussian_limits:
-      lower: 0.0
-      upper: inf
-    lower_limit: 0.0
     type: Uniform
+    lower_limit: 0.0
     upper_limit: 1.0
     width_modifier:
       type: Relative
       value: 0.01
+    gaussian_limits:
+      lower: 0.0
+      upper: inf
