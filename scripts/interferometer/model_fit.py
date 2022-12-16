@@ -45,7 +45,7 @@ with the lens model.
 """
 dataset_label = "build"
 dataset_type = "interferometer"
-dataset_name = "no_lens_light"
+dataset_name = "with_lens_light"
 
 dataset_path = path.join("dataset", dataset_label, dataset_type, dataset_name)
 
@@ -89,7 +89,8 @@ __Model__
 lens = af.Model(
     al.Galaxy,
     redshift=0.5,
-    mass=al.mp.IsothermalSph,
+    bulge=al.lp.DevVaucouleursSph(centre=(0.0, 0.0)),
+    mass=al.mp.IsothermalSph(centre=(0.0, 0.0)),
 )
 
 pixelization = af.Model(

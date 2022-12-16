@@ -104,6 +104,8 @@ search_1 = af.DynestyStatic(
     **settings_autofit.search_dict,
     nlive=200,
     walks=10,
+    maxcall=250000,
+    maxiter=250000
 )
 
 result_1 = search_1.fit(model=model_1, analysis=analysis_1, **settings_autofit.fit_dict)
@@ -126,6 +128,8 @@ search_2 = af.DynestyStatic(
     **settings_autofit.search_dict,
     nlive=200,
     walks=10,
+    maxcall=250000,
+    maxiter=250000
 )
 
 result_2 = search_2.fit(model=model_2, analysis=analysis_2, **settings_autofit.fit_dict)

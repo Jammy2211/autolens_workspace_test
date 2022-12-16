@@ -40,7 +40,7 @@ Load and plot the strong lens dataset `mass_sie__source_sersic` via .fits files,
 """
 dataset_label = "build"
 dataset_type = "imaging"
-dataset_name = "no_lens_light"
+dataset_name = "with_lens_light"
 
 dataset_path = path.join("dataset", dataset_label, dataset_type, dataset_name)
 
@@ -89,7 +89,8 @@ __Model__
 lens = af.Model(
     al.Galaxy,
     redshift=0.5,
-    mass=al.mp.IsothermalSph,
+    bulge=al.lp.DevVaucouleursSph(centre=(0.0, 0.0)),
+    mass=al.mp.IsothermalSph(centre=(0.0, 0.0)),
 )
 
 pixelization = af.Model(

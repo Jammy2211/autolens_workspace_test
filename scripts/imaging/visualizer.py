@@ -33,7 +33,7 @@ Load and plot the strong lens dataset `mass_sie__source_sersic` via .fits files,
 """
 dataset_label = "build"
 dataset_type = "imaging"
-dataset_name = "no_lens_light"
+dataset_name = "with_lens_light"
 
 dataset_path = path.join("dataset", dataset_label, dataset_type, dataset_name)
 

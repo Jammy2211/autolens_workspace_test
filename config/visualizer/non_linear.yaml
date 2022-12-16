@@ -23,10 +23,7 @@ mcmc:
       nwalkers: 50
     updates:
       iterations_per_update: 2500
-      log_every_update: 1
-      model_results_every_update: 1
       remove_state_files_at_end: true
-      visualize_every_update: 1
   Zeus:
     auto_correlations:
       change_threshold: 0.01
@@ -61,10 +58,7 @@ mcmc:
       nwalkers: 50
     updates:
       iterations_per_update: 500
-      log_every_update: 1
-      model_results_every_update: 1
-      remove_state_files_at_end: true
-      visualize_every_update: 1
+    remove_state_files_at_end: true
 nest:
   DynestyDynamic:
     initialize:
@@ -102,10 +96,7 @@ nest:
       walks: 5
     updates:
       iterations_per_update: 2500
-      log_every_update: 1
-      model_results_every_update: 1
       remove_state_files_at_end: true
-      visualize_every_update: 1
   DynestyStatic:
     initialize:
       method: prior
@@ -139,10 +130,7 @@ nest:
       walks: 5
     updates:
       iterations_per_update: 2500
-      log_every_update: 1
-      model_results_every_update: 1
       remove_state_files_at_end: true
-      visualize_every_update: 1
   UltraNest:
     initialize:
       method: prior
@@ -222,10 +210,7 @@ optimize:
       total_draws: 50
     updates:
       iterations_per_update: 500
-      log_every_update: 1
-      model_results_every_update: 1
-      remove_state_files_at_end: true
-      visualize_every_update: 1
+    remove_state_files_at_end: true
   PySwarmsGlobal:
     initialize:
       ball_lower_limit: 0.49
@@ -249,10 +234,7 @@ optimize:
       social: 0.3
     updates:
       iterations_per_update: 2500
-      log_every_update: 1
-      model_results_every_update: 1
       remove_state_files_at_end: true
-      visualize_every_update: 1
   PySwarmsLocal:
     initialize:
       ball_lower_limit: 0.49
@@ -278,7 +260,4 @@ optimize:
       social: 0.3
     updates:
       iterations_per_update: 500
-      log_every_update: 1
-      model_results_every_update: 1
-      remove_state_files_at_end: true
-      visualize_every_update: 1
+    remove_state_files_at_end: true

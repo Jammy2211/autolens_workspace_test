@@ -1,0 +1,12 @@
+his is the script I have
+7:39
+to draw 1000 points, it will cost 0.25s on the cambridge machine
+7:40
+I think there are ways to optimize it like not using "append" function.
+7:41
+A library called "legacycontour" needs to be installed by hand. The instruction is written in the code. (edited)
+
+
+Qiuhan He
+  7:47 PM
+In the code, the return of random_points_in_polygon 's [:, 0] are x coordinates, [:, 1] are y coordinates, which are different from the way of PyAutoLens, but you can easily swap it when you implement it in PyAutoLens.
