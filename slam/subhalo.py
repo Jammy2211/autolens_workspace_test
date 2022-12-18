@@ -149,10 +149,8 @@ def detection(
         facc=0.2,
     )
 
-    number_of_cores = 2
-
     subhalo_grid_search = af.SearchGridSearch(
-        search=search, number_of_steps=number_of_steps, number_of_cores=number_of_cores
+        search=search, number_of_steps=number_of_steps, number_of_cores=settings_autofit.number_of_cores,
     )
 
     subhalo_result = subhalo_grid_search.fit(
