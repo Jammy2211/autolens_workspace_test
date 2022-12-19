@@ -147,6 +147,7 @@ def detection(
         nlive=50,
         walks=5,
         facc=0.2,
+        force_x1_cpu=True # ensures parallelizing over grid search works.
     )
 
     subhalo_grid_search = af.SearchGridSearch(

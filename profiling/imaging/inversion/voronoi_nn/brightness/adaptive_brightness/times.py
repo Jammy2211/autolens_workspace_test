@@ -219,7 +219,7 @@ Performs the complete fit for the overall run-time to fit the lens model to the 
 This also ensures any uncached numba methods are called before profiling begins, and therefore compilation time
 is not factored into the project run times.
 
-https://github.com/Jammy2211/PyAutoLens/blob/master/autolens/fit/fit.py
+https://github.com/Jammy2211/PyAutoLens/blob/main/autolens/fit/fit.py
 """
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
@@ -257,7 +257,7 @@ The calculation below uses a `Grid2D` object with a fixed sub-size of 2.
 
 To see examples of `LightProfile` image calculations checkout the `image_2d_from` methods at the following link:
 
-https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/light_profile_list.py
+https://github.com/Jammy2211/PyAutoGalaxy/blob/main/autogalaxy/profiles/light_profile_list.py
 """
 start = time.time()
 for i in range(repeats):
@@ -272,7 +272,7 @@ __Lens Light (Grid2DIterate)__
 This is an alternative method of computing the lens galaxy images above, which uses a grid whose sub-size adaptively
 increases depending on a required fractional accuracy of the light profile.
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/two_d/grid_2d_iterate.py
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/structures/grids/two_d/grid_2d_iterate.py
 """
 masked_imaging_iterate = imaging.apply_mask(mask=mask)
 masked_imaging_iterate = masked_imaging_iterate.apply_settings(
@@ -293,7 +293,7 @@ Convolves the lens light image above with the PSF and subtracts this from the ob
 
 This uses the methods in `Convolver.__init__` and `Convolver.convolve_image`:
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/operators/convolver.py
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/operators/convolver.py
 """
 start = time.time()
 for i in range(repeats):
@@ -316,11 +316,11 @@ Deflection angle calculations are profiled fully in the package`profiling/deflec
 
 To see examples of deflection angle calculations checkout the `deflections_yx_2d_from` methods at the following link:
 
-https://github.com/Jammy2211/PyAutoGalaxy/blob/master/autogalaxy/profiles/mass_profile_list/total_mass_profiles.py
+https://github.com/Jammy2211/PyAutoGalaxy/blob/main/autogalaxy/profiles/mass_profile_list/total_mass_profiles.py
 
 Ray tracing is handled in the following module:
 
-https://github.com/Jammy2211/PyAutoLens/blob/master/autolens/lens/ray_tracing.py
+https://github.com/Jammy2211/PyAutoLens/blob/main/autolens/lens/ray_tracing.py
 
 The image-plane pixelization computed below must be ray-traced just like the image-grid and is therefore included in
 the profiling time below.
@@ -376,7 +376,7 @@ which the code computes below using the hyper_galaxy_image of the source galaxy.
 
 Checkout the functions `VoronoiNNBrightnessImage.weight_map_from`
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/pixelizations.py
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/pixelizations.py
 """
 start = time.time()
 for i in range(repeats):
@@ -398,7 +398,7 @@ https://en.wikipedia.org/wiki/K-means_clustering
 
 Checkout the functions `Grid2DSparse.__init__` and `Grid2DSparse.from_total_pixels_grid_and_weight_map`
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/grids.py 
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/structures/grids/grids.py 
 """
 start = time.time()
 for i in range(repeats):
@@ -419,7 +419,7 @@ image-plane mask) have as described in **HowToLens** chapter 4 tutorial 5.
 
 Checkout the function `relocated_grid_from` for a full description of the method:
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/two_d/abstract_grid_2d.py
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/structures/grids/two_d/abstract_grid_2d.py
 """
 start = time.time()
 for i in range(repeats):
@@ -433,7 +433,7 @@ The pixelization grid is also subject to border relocation.
 
 Checkout the function `relocated_pxielization_grid_from_pixelization_grid` for a full description of the method:
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/two_d/abstract_grid_2d.py
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/structures/grids/two_d/abstract_grid_2d.py
 """
 start = time.time()
 for i in range(repeats):
@@ -453,7 +453,7 @@ pixel.
 
 Checkout `Mesh2DVoronoiNN.__init__` for a full description:
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/structures/grids/two_d/grid_2d_pixelization.py
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/structures/grids/two_d/grid_2d_pixelization.py
 """
 start = time.time()
 for i in range(repeats):
@@ -472,8 +472,8 @@ time the calculation below, but will use the `mapper` that comes out later in th
 
 Checkout the modules below for a full description of a `Mapper` and the `mapping_matrix`:
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers.py
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/util/mapper_util.py 
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/mappers.py
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/util/mapper_util.py 
 """
 mapper = mappers.MapperVoronoi(
     source_grid_slim=relocated_grid,
@@ -498,11 +498,11 @@ function below describes this method.
 
 MapperVoronoi.pix_index_for_sub_slim_index:
 
- https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers.py
+ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/mappers.py
  
 pixelization_index_for_VoronoiNN_sub_slim_index_from:
  
- https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/util/mapper_util.py 
+ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/util/mapper_util.py 
 """
 start = time.time()
 for i in range(repeats):
@@ -519,7 +519,7 @@ described at the GitHub link below and in ther following paper as matrix `f` htt
 
 Mapper.__init__:
 
- https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers.py
+ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/mappers.py
 """
 start = time.time()
 for i in range(repeats):
@@ -544,7 +544,7 @@ This therefore creates a 'image' of the source pixel (which corresponds to a set
 Before reconstructing the source, we blur every one of these source pixel images with the Point Spread Function of our 
 dataset via 2D convolution. This uses the methods in `Convolver.__init__` and `Convolver.convolve_mapping_matrix`:
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/operators/convolver.py
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/operators/convolver.py
 """
 start = time.time()
 for i in range(repeats):
@@ -566,7 +566,7 @@ in https://arxiv.org/pdf/astro-ph/0302587.pdf.
 
 The calculation is performed by thge method `data_vector_via_blurred_mapping_matrix_from` at:
 
- https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/util/inversion_util.py
+ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/util/inversion_util.py
 """
 start = time.time()
 subtracted_image = masked_imaging.image - convolved_image
@@ -585,7 +585,7 @@ The `curvature_matrix` F is the second matrix, given by equation (4) in https://
 
 The calculation is performed by the method `curvature_matrix_via_mapping_matrix_from` at:
 
- https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/util/inversion_util.py
+ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/util/inversion_util.py
 """
 start = time.time()
 for i in range(repeats):
@@ -602,7 +602,7 @@ which adapt to the surface brightness of the source galaxy.
 
  pixel_signals_from_signal_scale:
 
- https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/mappers.py
+ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/mappers.py
 """
 start = time.time()
 for i in range(repeats):
@@ -618,7 +618,7 @@ The pixel signal scales are now used to construct the regularization weight_list
 
  adaptive_regularization_weights_from:
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/regularization_util.py
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/regularization_util.py
 """
 start = time.time()
 for i in range(repeats):
@@ -639,7 +639,7 @@ In this example we create an adaptive regularization matrix from the quantities 
 
 A complete description of regularization is at the link below.
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/regularization.py
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/regularization.py
 """
 start = time.time()
 for i in range(repeats):
@@ -678,7 +678,7 @@ __Log Det [F + Lambda H]__
 
 The log determinant of [F + reg_coeff*H] is used to determine the Bayesian evidence of the solution.
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/inversions.py
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/inversions.py
 """
 start = time.time()
 for i in range(repeats):
@@ -690,7 +690,7 @@ __Log Det [Lambda H]__
 
 The evidence also uses the log determinant of Lambda H.
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/inversions.py
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/inversions.py
 """
 start = time.time()
 for i in range(repeats):
@@ -703,7 +703,7 @@ __Image Reconstruction__
 Finally, now we have the reconstructed source pixel fluxes we can map the source flux back to the image plane (via
 the blurred mapping_matrix) and reconstruct the image data.
 
-https://github.com/Jammy2211/PyAutoArray/blob/master/autoarray/inversion/inversions.py
+https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/inversions.py
 """
 start = time.time()
 for i in range(repeats):
