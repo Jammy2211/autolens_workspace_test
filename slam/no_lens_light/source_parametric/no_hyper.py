@@ -83,15 +83,6 @@ settings_autofit = af.SettingsSearch(
 )
 
 """
-__Redshifts__
-
-The redshifts of the lens and source galaxies, which are used to perform unit converions of the model and data (e.g. 
-from arc-seconds to kiloparsecs, masses to solar masses, etc.).
-"""
-redshift_lens = 0.5
-redshift_source = 1.0
-
-"""
 __HYPER SETUP__
 
 The `SetupHyper` determines which hyper-mode features are used during the model-fit as is used identically to the
@@ -128,7 +119,7 @@ source_results = slam.source_parametric.no_lens_light(
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
     source_bulge=af.Model(al.lp.Sersic),
-    redshift_lens=0.5,
+    redshift_lens=0.4,
     redshift_source=1.0,
 )
 

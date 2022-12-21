@@ -476,8 +476,8 @@ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/mappers.p
 https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/util/mapper_util.py 
 """
 mapper = mappers.MapperVoronoi(
-    source_grid_slim=relocated_grid,
-    source_mesh_grid=grid_VoronoiNN,
+    source_plane_data_grid=relocated_grid,
+    source_plane_mesh_grid=grid_VoronoiNN,
     data_pixelization_grid=sparse_image_plane_grid,
     hyper_image=source_galaxy.hyper_galaxy_image,
 )
@@ -527,9 +527,9 @@ for i in range(repeats):
     mapping_matrix = al.util.mapper.mapping_matrix_from(
         pix_index_for_sub_slim_index=pix_index_for_sub_slim_index,
         pixels=mapper.pixels,
-        total_mask_pixels=mapper.source_grid_slim.mask.pixels_in_mask,
+        total_mask_pixels=mapper.source_plane_data_grid.mask.pixels_in_mask,
         slim_index_for_sub_slim_index=mapper._slim_index_for_sub_slim_index,
-        sub_fraction=mapper.source_grid_slim.mask.sub_fraction,
+        sub_fraction=mapper.source_plane_data_grid.mask.sub_fraction,
     )
 
 profiling_dict["Mapping Matrix (f)"] = (time.time() - start) / repeats
@@ -645,8 +645,8 @@ start = time.time()
 for i in range(repeats):
     regularization_matrix = al.util.regularization.weighted_regularization_matrix_from(
         regularization_weights=regularization_weights,
-        neighbors=mapper.source_mesh_grid.neighbors,
-        neighbors_size=mapper.source_mesh_grid.neighbors_size,
+        neighbors=mapper.source_plane_mesh_grid.neighbors,
+        neighbors_size=mapper.source_plane_mesh_grid.neighbors_size,
     )
 profiling_dict["Regularization Matrix (H)"] = (time.time() - start) / repeats
 
