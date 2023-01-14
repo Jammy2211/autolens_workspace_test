@@ -94,7 +94,7 @@ light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
-source_results = slam.source_parametric.no_lens_light(
+source_results = slam.source_lp.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,

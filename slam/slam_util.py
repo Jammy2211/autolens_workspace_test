@@ -200,7 +200,7 @@ def mass__from(mass, result: af.Result, unfix_mass_centre: bool = False) -> af.M
     Parameters
     ----------
     results
-        The result of a previous SOURCE PARAMETRIC PIPELINE or SOURCE PIXELIZED PIPELINE.
+        The result of a previous SOURCE PARAMETRIC PIPELINE or SOURCE PIX PIPELINE.
     unfix_mass_centre
         If the `mass_centre` was fixed to an input value in a previous pipeline, then `True` will unfix it and make it
         free parameters that are fitted for.

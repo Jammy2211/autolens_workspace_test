@@ -1,5 +1,5 @@
 external_shear.ExternalShear:
-  gamma_0:
+  gamma_1:
     type: Uniform
     lower_limit: -1.0e-05
     upper_limit: 1.0e-05
@@ -9,7 +9,7 @@ external_shear.ExternalShear:
     gaussian_limits:
       lower: -inf
       upper: inf
-  gamma_1:
+  gamma_2:
     type: Uniform
     lower_limit: -1.0e-05
     upper_limit: 1.0e-05

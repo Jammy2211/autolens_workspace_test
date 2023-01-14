@@ -19,9 +19,9 @@ a strong lens system, where in the final model:
 
 This runner uses the SLaM pipelines:
 
- `source_parametric/with_lens_light`
- `source_pixelized/with_lens_light`
- `light_parametric/with_lens_light`
+ `source_lp`
+ `source_pix/with_lens_light`
+ `light_lp`
  `mass_total/mass_light_dark`
 
 Check them out for a detailed description of the analysis!
@@ -140,7 +140,7 @@ bulge = af.Model(al.lp.Sersic)
 disk = af.Model(al.lp.Sersic)
 bulge.centre = disk.centre
 
-source_parametric_results = slam.source_parametric.with_lens_light(
+source_lp_results = slam.source_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -155,37 +155,37 @@ source_parametric_results = slam.source_parametric.with_lens_light(
 )
 
 """
-__SOURCE PIXELIZED PIPELINE (with lens light)__
+__SOURCE PIX PIPELINE (with lens light)__
 
-The SOURCE PIXELIZED PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
+The SOURCE PIX PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
 that reconstructs the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` 
 regularization, to set up the model and hyper images, and then:
 
  - Uses a `VoronoiBrightnessImage` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the
- SOURCE PIXELIZED PIPELINE.
+ SOURCE PIX PIPELINE.
 """
 
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_dataset_result=source_parametric_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_lp_results.last
 )
 
-source_pixelized_results = slam.source_pixelized.no_lens_light(
+source_pix_results = slam.source_pix.no_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_parametric_results=source_parametric_results,
+    source_lp_results=source_lp_results,
     pixelization=al.mesh.VoronoiBrightnessImage,
     regularization=al.reg.AdaptiveBrightness,
 )
 
 
 """
-__LIGHT PARAMETRIC PIPELINE__
+__LIGHT LP PIPELINE__
 
-The LIGHT PARAMETRIC PIPELINE uses one search to fit a complex lens light model to a high level of accuracy, using the
-lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE PIXELIZED PIPELINE.
+The LIGHT LP PIPELINE uses one search to fit a complex lens light model to a high level of accuracy, using the
+lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE PIX PIPELINE.
 In this example it:
 
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
@@ -193,7 +193,7 @@ In this example it:
 
  - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE PARAMETRIC PIPELINE].
 
- - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIXELIZED PIPELINE].
+ - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIX PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
@@ -202,11 +202,11 @@ bulge = af.Model(al.lp.Sersic)
 disk = af.Model(al.lp.Sersic)
 bulge.centre = disk.centre
 
-light_results = slam.light_parametric.with_lens_light(
+light_results = slam.light_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_pixelized_results,
+    source_results=source_pix_results,
     lens_bulge=bulge,
     lens_disk=disk,
 )
@@ -215,22 +215,22 @@ light_results = slam.light_parametric.with_lens_light(
 __MASS LIGHT DARK PIPELINE (with lens light)__
 
 The MASS LIGHT DARK PIPELINE (with lens light) uses one search to fits a complex lens mass model to a high level of 
-accuracy, using the source model of the SOURCE PIPELINE and the lens light model of the LIGHT PARAMETRIC PIPELINE to 
+accuracy, using the source model of the SOURCE PIPELINE and the lens light model of the LIGHT LP PIPELINE to 
 initialize the model priors . In this example it:
 
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
- light and its stellar mass [12 parameters: fixed from LIGHT PARAMETRIC PIPELINE].
+ light and its stellar mass [12 parameters: fixed from LIGHT LP PIPELINE].
 
  - The lens galaxy's dark matter mass distribution is a `NFWMCRLudlow` whose centre is aligned with bulge of 
  the light and stellar mass model above [5 parameters].
 
- - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIXELIZED PIPELINE].
+ - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIX PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the MASS 
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_dataset_result=source_pixelized_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_pix_results.last
 )
 
 lens_bulge = af.Model(al.lmp.Sersic)
@@ -242,7 +242,7 @@ mass_results = slam.mass_light_dark.with_lens_light(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_pixelized_results,
+    source_results=source_pix_results,
     light_results=light_results,
     lens_bulge=lens_bulge,
     lens_disk=af.Model(al.lmp.Sersic),
@@ -271,7 +271,7 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_dataset_result=source_pixelized_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_pix_results.last
 )
 
 subhalo_results = slam.subhalo.detection(

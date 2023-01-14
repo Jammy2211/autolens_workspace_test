@@ -101,7 +101,7 @@ model_1 = af.Collection(
 analysis_1 = al.AnalysisImaging(dataset=imaging)
 
 search_1 = af.DynestyStatic(
-    name="source_basis_cast",
+    name="source_lp_cast",
     **settings_autofit.search_dict,
     nlive=200,
     walks=10,

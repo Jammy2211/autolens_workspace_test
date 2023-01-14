@@ -18,8 +18,8 @@ lens system, where in the final model:
 
 This runner uses the SLaM pipelines:
 
- `source_parametric/source_parametric__with_lens_light`
- `light_parametric/with_lens_light`
+ `source_lp/source_lp__with_lens_light`
+ `light_lp`
  `mass_total/mass_total__with_lens_light`
 
 Check them out for a detailed description of the analysis!
@@ -145,7 +145,7 @@ bulge = af.Model(al.lp.Sersic)
 disk = af.Model(al.lp.Exponential)
 bulge.centre = disk.centre
 
-source_parametric_results = slam.source_parametric.with_lens_light(
+source_lp_results = slam.source_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -160,9 +160,9 @@ source_parametric_results = slam.source_parametric.with_lens_light(
 )
 
 """
-__LIGHT PARAMETRIC PIPELINE__
+__LIGHT LP PIPELINE__
 
-The LIGHT PARAMETRIC PIPELINE uses one search to fit a complex lens light model to a high level of accuracy, using the
+The LIGHT LP PIPELINE uses one search to fit a complex lens light model to a high level of accuracy, using the
 lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE PARAMETRIC PIPELINE.
 In this example it:
 
@@ -177,18 +177,18 @@ In this example it:
  PIPELINE [fixed values].
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_dataset_result=source_parametric_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_lp_results.last
 )
 
 bulge = af.Model(al.lp.Sersic)
 disk = af.Model(al.lp.Exponential)
 bulge.centre = disk.centre
 
-light_results = slam.light_parametric.with_lens_light(
+light_results = slam.light_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_parametric_results,
+    source_results=source_lp_results,
     lens_bulge=bulge,
     lens_disk=disk,
 )
@@ -198,10 +198,10 @@ __MASS TOTAL PIPELINE (with lens light)__
 
 The MASS TOTAL PIPELINE (with lens light) uses one search to fits a complex lens mass model to a high level of accuracy, 
 using the lens mass model and source model of the SOURCE PIPELINE to initialize the model priors and the lens light
-model of the LIGHT PARAMETRIC PIPELINE. In this example it:
+model of the LIGHT LP PIPELINE. In this example it:
 
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
- light [fixed from LIGHT PARAMETRIC PIPELINE].
+ light [fixed from LIGHT LP PIPELINE].
 
  - Uses an `PowerLaw` model for the lens's total mass distribution [priors initialized from SOURCE 
  PARAMETRIC PIPELINE + centre unfixed from (0.0, 0.0)].
@@ -212,14 +212,14 @@ model of the LIGHT PARAMETRIC PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_dataset_result=source_parametric_results.last
+    dataset=masked_imaging, hyper_dataset_result=source_lp_results.last
 )
 
-mass_results = slam.mass_total.with_lens_light(
+mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_parametric_results,
+    source_results=source_lp_results,
     light_results=light_results,
     mass=af.Model(al.mp.PowerLaw),
 )

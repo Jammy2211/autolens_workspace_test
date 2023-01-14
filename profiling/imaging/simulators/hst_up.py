@@ -85,7 +85,7 @@ lens_galaxy = al.Galaxy(
         einstein_radius=1.6,
         ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=45.0),
     ),
-    shear=al.mp.ExternalShear(gamma=(0.001, 0.001)),
+    shear=al.mp.ExternalShear(gamma_1=0.001, gamma_2=0.001),
 )
 
 source_galaxy = al.Galaxy(

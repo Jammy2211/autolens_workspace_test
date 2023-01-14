@@ -17,7 +17,7 @@ You can run an integration test as follows:
 
 .. code-block:: bash
 
-    python slam/imaging/no_lens_light/source_parametric/mass_total/no_hyper.py
+    python slam/imaging/no_lens_light/source_lp/mass_total/no_hyper.py
 
 
 Workspace Version
