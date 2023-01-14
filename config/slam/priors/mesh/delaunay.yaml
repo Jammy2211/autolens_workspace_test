@@ -2,7 +2,7 @@ DelaunayBrightnessImage:
   pixels:
     type: Uniform
     lower_limit: 50.0
-    upper_limit: 2500.0
+    upper_limit: 200.0
     width_modifier:
       type: Absolute
       value: 100.0

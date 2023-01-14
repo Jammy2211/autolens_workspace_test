@@ -10,7 +10,7 @@ def set_lens_light_centres(lens, light_centre: Tuple[float, float]):
     Parameters
     ----------
     lens : af.Model(al.Galaxy)
-        The `Galaxy` containing the light models of the distribution of the lens galaxy's bulge, disk and envelope.
+        The `Galaxy` containing the light models of the distribution of the lens galaxy's bulge and disk.
     light_centre
        If input, the centre of every light model centre is set using this (y,x) value.
     """
@@ -20,9 +20,6 @@ def set_lens_light_centres(lens, light_centre: Tuple[float, float]):
 
     if lens.disk is not None:
         lens.disk.centre = light_centre
-
-    if lens.envelope is not None:
-        lens.envelope.centre = light_centre
 
 
 def set_lens_light_model_centre_priors(
@@ -38,7 +35,7 @@ def set_lens_light_model_centre_priors(
     Parameters
     ----------
     lens : af.Model(al.Galaxy)
-        The `Galaxy` containing the light models of the distribution of the lens galaxy's bulge, disk and envelope.
+        The `Galaxy` containing the light models of the distribution of the lens galaxy's bulge and disk.
     light_centre_gaussian_prior_values : (float, float) or None
        If input, the mean and sigma of every light model centre is set using these values as (mean, sigma).
     """
@@ -53,10 +50,6 @@ def set_lens_light_model_centre_priors(
     if lens.disk is not None:
         lens.disk.centre_0 = af.GaussianPrior(mean=mean, sigma=sigma)
         lens.disk.centre_1 = af.GaussianPrior(mean=mean, sigma=sigma)
-
-    if lens.envelope is not None:
-        lens.envelope.centre_0 = af.GaussianPrior(mean=mean, sigma=sigma)
-        lens.envelope.centre_1 = af.GaussianPrior(mean=mean, sigma=sigma)
 
 
 def pass_light_and_mass_profile_priors(
@@ -200,7 +193,7 @@ def mass__from(mass, result: af.Result, unfix_mass_centre: bool = False) -> af.M
     Parameters
     ----------
     results
-        The result of a previous SOURCE PARAMETRIC PIPELINE or SOURCE PIX PIPELINE.
+        The result of a previous SOURCE LP PIPELINE or SOURCE PIX PIPELINE.
     unfix_mass_centre
         If the `mass_centre` was fixed to an input value in a previous pipeline, then `True` will unfix it and make it
         free parameters that are fitted for.
@@ -225,9 +218,7 @@ def mass__from(mass, result: af.Result, unfix_mass_centre: bool = False) -> af.M
     return mass
 
 
-def source__from(
-    result: af.Result, setup_hyper: al.SetupHyper, source_is_model: bool = False
-) -> af.Model:
+def source__from(result: af.Result, source_is_model: bool = False) -> af.Model:
     """
     Setup the source model using the previous pipeline and search results.
 
@@ -250,8 +241,6 @@ def source__from(
         search result it is loaded from. If `False`, it is an instance of that search's result.
     """
 
-    hyper_galaxy = setup_hyper.hyper_galaxy_source_from(result=result)
-
     if not hasattr(result.instance.galaxies.source, "pixelization"):
 
         if source_is_model:
@@ -261,8 +250,6 @@ def source__from(
                 redshift=result.instance.galaxies.source.redshift,
                 bulge=result.model.galaxies.source.bulge,
                 disk=result.model.galaxies.source.disk,
-                envelope=result.model.galaxies.source.envelope,
-                hyper_galaxy=hyper_galaxy,
             )
 
         else:
@@ -272,8 +259,6 @@ def source__from(
                 redshift=result.instance.galaxies.source.redshift,
                 bulge=result.instance.galaxies.source.bulge,
                 disk=result.instance.galaxies.source.disk,
-                envelope=result.instance.galaxies.source.envelope,
-                hyper_galaxy=hyper_galaxy,
             )
 
     if hasattr(result, "hyper"):
@@ -290,7 +275,6 @@ def source__from(
                 al.Galaxy,
                 redshift=result.instance.galaxies.source.redshift,
                 pixelization=pixelization,
-                hyper_galaxy=hyper_galaxy,
             )
 
         else:
@@ -305,7 +289,6 @@ def source__from(
                 al.Galaxy,
                 redshift=result.instance.galaxies.source.redshift,
                 pixelization=pixelization,
-                hyper_galaxy=hyper_galaxy,
             )
 
     else:
@@ -322,7 +305,6 @@ def source__from(
                 al.Galaxy,
                 redshift=result.instance.galaxies.source.redshift,
                 pixelization=pixelization,
-                hyper_galaxy=hyper_galaxy,
             )
 
         else:
@@ -337,12 +319,11 @@ def source__from(
                 al.Galaxy,
                 redshift=result.instance.galaxies.source.redshift,
                 pixelization=pixelization,
-                hyper_galaxy=hyper_galaxy,
             )
 
 
 def source__from_result_model_if_parametric(
-    result: af.Result, setup_hyper: al.SetupHyper
+    result: af.Result,
 ) -> af.Model:
     """
     Setup the source model for a MASS PIPELINE using the previous SOURCE PIPELINE results.
@@ -367,10 +348,8 @@ def source__from_result_model_if_parametric(
 
     if hasattr(result.instance.galaxies.source, "pixelization"):
         if result.instance.galaxies.source.pixelization is not None:
-            return source__from(
-                result=result, setup_hyper=setup_hyper, source_is_model=False
-            )
-    return source__from(result=result, setup_hyper=setup_hyper, source_is_model=True)
+            return source__from(result=result, source_is_model=False)
+    return source__from(result=result, source_is_model=True)
 
 
 def clean_clumps_of_hyper_images(clumps):
@@ -480,65 +459,3 @@ def lmp_from(
         return lp.lmp_model_from(intensity=intensity)
 
     return lp
-
-
-# def gaussian_dict_lp_from(
-#     galaxy: al.Galaxy, fit: Union[al.FitImaging, al.FitInterferometer]
-# ) -> Dict[str, al.LightProfile]:
-#
-#     if (
-#         galaxy.bulge is not None
-#         or galaxy.disk is not None
-#         or galaxy.envelope is not None
-#     ):
-#         raise al.exc.GalaxyException(
-#             "Cannot convert Gaussian dict from linear to not linear if bulge, disk and / or envelope"
-#             "light profiles are defined."
-#         )
-#
-#     gaussian_dict = {}
-#
-#     for key, value in galaxy.__dict__.items():
-#
-#         if isinstance(value, al.lp_linear.LightProfileLinear):
-#
-#             gaussian_linear = value
-#
-#             intensity = fit.linear_light_profile_intensity_dict[gaussian_linear]
-#
-#             gaussian = gaussian_linear.lp_instance_from(intensity=intensity)
-#
-#             gaussian_dict[key] = gaussian
-#
-#     return gaussian_dict
-#
-#
-# def gaussian_dict_lmp_from(
-#     galaxy: al.Galaxy, fit: Union[al.FitImaging, al.FitInterferometer]
-# ) -> Dict[str, al.LightProfile]:
-#
-#     if (
-#         galaxy.bulge is not None
-#         or galaxy.disk is not None
-#         or galaxy.envelope is not None
-#     ):
-#         raise al.exc.GalaxyException(
-#             "Cannot convert Gaussian dict from linear to not linear if bulge, disk and / or envelope"
-#             "light profiles are defined."
-#         )
-#
-#     gaussian_dict = {}
-#
-#     for key, value in galaxy.__dict__.items():
-#
-#         if isinstance(value, LightProfileLinear):
-#
-#             gaussian_linear = value
-#
-#             intensity = fit.linear_light_profile_intensity_dict[gaussian_linear]
-#
-#             gaussian = gaussian_linear.lmp_model_from(intensity=intensity)
-#             gaussian_dict[key] = gaussian
-#             gaussian.mass_to_light_ratio = gaussian_dict["gaussian_0"].mass_to_light_ratio
-#
-#     return gaussian_dict

@@ -83,9 +83,9 @@ setup_hyper = al.SetupHyper(
 )
 
 """
-__SOURCE PARAMETRIC PIPELINE (no lens light)__
+__SOURCE LP PIPELINE (no lens light)__
 
-The SOURCE PARAMETRIC PIPELINE (no lens light) uses one search to initialize a robust model for the source galaxy's 
+The SOURCE LP PIPELINE (no lens light) uses one search to initialize a robust model for the source galaxy's 
 light, which in this example:
 
  - Uses a parametric `Sersic` bulge for the source's light (omitting a disk / envelope).

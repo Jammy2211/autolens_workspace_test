@@ -99,8 +99,8 @@ lens = af.Model(
     shear=al.mp.ExternalShear,
 )
 
-lens.shear.gamma.gamma_0 = 0.001
-lens.shear.gamma.gamma_1 = 0.001
+lens.shear.gamma_1 = 0.001
+lens.shear.gamma_2 = 0.001
 
 lens.mass.slope = 1.9
 

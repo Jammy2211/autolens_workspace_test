@@ -26,7 +26,7 @@ def run(
     setup_hyper
         The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
     source_lp_results
-        The results of the SLaM SOURCE PARAMETRIC PIPELINE which ran before this pipeline.
+        The results of the SLaM SOURCE LP PIPELINE which ran before this pipeline.
     pixelization
         The pixelization used by the `Inversion` which fits the source light.
     regularization
@@ -34,47 +34,27 @@ def run(
     """
 
     """
-    __Model + Search + Analysis + Model-Fit (Search 1)__
-
-    In search 1 of the SOURCE PIX PIPELINE we fit a lens model where:
-
-    - The lens galaxy light is modeled using a parametric / basis bulge + disk + envelope [parameters fixed to result of SOURCE
-    PARAMETER PIPELINE].
-     - The lens galaxy mass is modeled using a total mass distribution [parameters fixed to result of SOURCE PARAMETRIC 
-     PIPELINE].
-     - The source galaxy's light is a `VoronoiMagnification` pixelization and `Constant` regularization scheme.
-
-    This search aims to quickly estimate values for the pixelization resolution and regularization coefficient.
-    """
-
-    instance = source_lp_results.last.instance
-    fit = source_lp_results.last.max_log_likelihood_fit
-
-    bulge = slam_util.lp_from(component=instance.galaxies.lens.bulge, fit=fit)
-    disk = slam_util.lp_from(component=instance.galaxies.lens.disk, fit=fit)
-    envelope = slam_util.lp_from(component=instance.galaxies.lens.envelope, fit=fit)
-
-    """
     __Model + Search + Analysis + Model-Fit (Search 3)__
 
     In search 3 of the SOURCE PIX PIPELINE we fit a lens model where:
 
-    - The lens galaxy light is modeled using a parametric / basis bulge + disk + envelope [parameters fixed to result of SOURCE
-    PARAMETER PIPELINE].
+    - The lens galaxy light is modeled using a parametric / basis bulge + disk [parameters fixed to result 
+    of SOURCE LP PIPELINE].
      - The lens galaxy mass is modeled using a total mass distribution [parameters fixed to result of search 2].
      - The source galaxy's light is the input pixelization and regularization.
 
     This search aims to estimate values for the pixelization and regularization scheme.
     """
 
+    analysis.set_hyper_dataset(result=source_lp_results.last)
+
     model_1 = af.Collection(
         galaxies=af.Collection(
             lens=af.Model(
                 al.Galaxy,
                 redshift=source_lp_results.last.instance.galaxies.lens.redshift,
-                bulge=bulge,
-                disk=disk,
-                envelope=envelope,
+                bulge=source_lp_results.last.instance.galaxies.lens.bulge,
+                disk=source_lp_results.last.instance.galaxies.lens.disk,
                 mass=source_lp_results.last.instance.galaxies.lens.mass,
                 shear=source_lp_results.last.instance.galaxies.lens.shear,
                 hyper_galaxy=setup_hyper.hyper_galaxy_lens_from(
@@ -87,18 +67,9 @@ def run(
                 pixelization=af.Model(
                     al.Pixelization, mesh=mesh, regularization=regularization
                 ),
-                hyper_galaxy=setup_hyper.hyper_galaxy_source_from(
-                    result=source_lp_results.last
-                ),
             ),
         ),
         clumps=slam_util.clumps_from(result=source_lp_results.last),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from(
-            result=source_lp_results.last, as_model=False
-        ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from(
-            result=source_lp_results.last
-        ),
     )
 
     search_1 = af.DynestyStatic(
@@ -108,17 +79,17 @@ def run(
         dlogz=10.0,
     )
 
-    analysis.set_hyper_dataset(result=source_lp_results.last)
-
-    result_1 = search.fit(model=model_1, analysis=analysis, **settings_autofit.fit_dict)
+    result_1 = search_1.fit(
+        model=model_1, analysis=analysis, **settings_autofit.fit_dict
+    )
 
     """
     __Model + Search + Analysis + Model-Fit (Search 4)__
 
     In search 4 of the SOURCE PIX PIPELINE we fit a lens model where:
 
-    - The lens galaxy light is modeled using a parametric / basis bulge + disk + envelope [parameters fixed to result of SOURCE
-    PARAMETER PIPELINE].
+    - The lens galaxy light is modeled using a parametric / basis bulge + disk [parameters fixed to result of 
+    SOURCE LP PIPELINE].
      - The lens galaxy mass is modeled using a total mass distribution [parameters initialized from the results of the 
      search 2].
      - The source galaxy's light is the input pixelization and regularization scheme [parameters fixed to the result 
@@ -139,7 +110,6 @@ def run(
                 redshift=result_1.instance.galaxies.lens.redshift,
                 bulge=result_1.instance.galaxies.lens.bulge,
                 disk=result_1.instance.galaxies.lens.disk,
-                envelope=result_1.instance.galaxies.lens.envelope,
                 mass=mass,
                 shear=source_lp_results.last.model.galaxies.lens.shear,
                 hyper_galaxy=result_1.instance.galaxies.lens.hyper_galaxy,
@@ -148,16 +118,9 @@ def run(
                 al.Galaxy,
                 redshift=result_1.instance.galaxies.source.redshift,
                 pixelization=result_1.instance.galaxies.source.pixelization,
-                hyper_galaxy=result_1.instance.galaxies.source.hyper_galaxy,
             ),
         ),
         clumps=slam_util.clumps_from(result=source_lp_results.last),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from(
-            result=source_lp_results.last, as_model=False
-        ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from(
-            result=source_lp_results.last
-        ),
     )
 
     search_2 = af.DynestyStatic(
@@ -166,7 +129,9 @@ def run(
         nlive=50,
     )
 
-    result_2 = search_2.fit(model=model_2, analysis=analysis, **settings_autofit.fit_dict)
+    result_2 = search_2.fit(
+        model=model_2, analysis=analysis, **settings_autofit.fit_dict
+    )
 
     """
     __Hyper Extension__
@@ -183,7 +148,6 @@ def run(
         result=result_2,
         analysis=analysis,
         search_previous=search_2,
-        include_hyper_image_sky=True,
     )
 
     return af.ResultsCollection([result_1, result_2])

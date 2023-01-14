@@ -60,7 +60,7 @@ def detection(
     """
 
     source = slam_util.source__from_result_model_if_parametric(
-        result=mass_results.last, setup_hyper=setup_hyper
+        result=mass_results.last,
     )
 
     lens = mass_results.last.model.galaxies.lens
@@ -69,12 +69,6 @@ def detection(
     model = af.Collection(
         galaxies=af.Collection(lens=lens, source=source),
         clumps=slam_util.clumps_from(result=mass_results.last, mass_as_model=True),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from(
-            result=mass_results.last, as_model=True
-        ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from(
-            result=mass_results.last
-        ),
     )
 
     search_no_subhalo = af.DynestyStatic(
@@ -127,18 +121,12 @@ def detection(
     subhalo.mass.redshift_source = result_1.instance.galaxies.source.redshift
 
     source = slam_util.source__from_result_model_if_parametric(
-        result=mass_results.last, setup_hyper=setup_hyper
+        result=mass_results.last,
     )
 
     model = af.Collection(
         galaxies=af.Collection(lens=lens, subhalo=subhalo, source=source),
         clumps=slam_util.clumps_from(result=result_1, mass_as_model=True),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from(
-            result=mass_results.last, as_model=True
-        ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from(
-            result=mass_results.last
-        ),
     )
 
     search = af.DynestyStatic(
@@ -203,12 +191,6 @@ def detection(
             source=subhalo_result.model.galaxies.source,
         ),
         clumps=slam_util.clumps_from(result=subhalo_result, mass_as_model=True),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from(
-            result=mass_results.last, as_model=True
-        ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from(
-            result=mass_results.last
-        ),
     )
 
     search = af.DynestyStatic(

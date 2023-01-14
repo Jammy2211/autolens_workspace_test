@@ -9,7 +9,7 @@ which customize the model and analysis in that pipeline.
 The models fitted in earlier pipelines determine the model used in later pipelines. For example, if the SOURCE PIPELINE
 uses a parametric `Sersic` profile for the bulge, this will be used in the subsequent MASS TOTAL PIPELINE.
 
-Using a SOURCE PARAMETRIC PIPELINE, LIGHT LP PIPELINE, MASS TOTAL PIPELINE and SUBHALO PIPELINE this SLaM script
+Using a SOURCE LP PIPELINE, LIGHT LP PIPELINE, MASS TOTAL PIPELINE and SUBHALO PIPELINE this SLaM script
 fits `Interferometer` of a strong lens system, where in the final model:
 
  - The lens galaxy's light is a bulge+disk `Sersic` and `Exponential`.
@@ -20,7 +20,7 @@ fits `Interferometer` of a strong lens system, where in the final model:
 This uses the SLaM pipelines:
 
  `source_lp`
- `source__inversion/with_lens_light`
+ `source_pix`
  `light_lp`
  `mass_total`
  `subhalo/detection`
@@ -95,9 +95,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_autofit = af.SettingsSearch(
-    path_prefix=path.join(
-        "slam", "light_sersic__mass_total__source_pix", "hyper_all"
-    ),
+    path_prefix=path.join("slam", "light_sersic__mass_total__source_pix", "hyper_all"),
     number_of_cores=1,
     session=None,
 )
@@ -123,15 +121,12 @@ of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed con
 """
 setup_hyper = al.SetupHyper(
     hyper_galaxies_lens=True,
-    hyper_galaxies_source=True,
-    hyper_image_sky=None,
-    hyper_background_noise=al.hyper_data.HyperBackgroundNoise,
 )
 
 """
-__SOURCE PARAMETRIC PIPELINE (with lens light)__
+__SOURCE LP PIPELINE (with lens light)__
 
-The SOURCE PARAMETRIC PIPELINE (with lens light) uses three searches to initialize a robust model for the 
+The SOURCE LP PIPELINE (with lens light) uses three searches to initialize a robust model for the 
 source galaxy's light, which in this example:
  
  - Uses a parametric `Sersic` bulge and `Exponential` disk with centres aligned for the lens
@@ -174,7 +169,7 @@ regularization, to set up the model and hyper images, and then:
 
  - Uses a `VoronoiBrightnessImage` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
- - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the
+ - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
 
 Settings:
@@ -192,7 +187,7 @@ analysis = al.AnalysisInterferometer(
     settings_inversion=al.SettingsInversion(use_linear_operators=True),
 )
 
-source_pix_results = slam.source_pix.with_lens_light(
+source_pix_results = slam.source_pix.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -209,7 +204,7 @@ lens mass model and source light model fixed to the maximum log likelihood resul
 In this example it:
 
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
- light [Do not use the results of the SOURCE PARAMETRIC PIPELINE to initialize priors].
+ light [Do not use the results of the SOURCE LP PIPELINE to initialize priors].
 
  - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE PIX PIPELINE].
 

@@ -9,7 +9,7 @@ which customize the model and analysis in that pipeline.
 The models fitted in earlier pipelines determine the model used in later pipelines. For example, if the SOURCE PIPELINE
 uses a parametric `Sersic` profile for the bulge, this will be used in the subsequent MASS PIPELINE.
 
-Using a SOURCE PARAMETRIC PIPELINE, LIGHT LP PIPELINE, MASS PIPELINE and SUBHALO PIPELINE this SLaM script
+Using a SOURCE LP PIPELINE, LIGHT LP PIPELINE, MASS PIPELINE and SUBHALO PIPELINE this SLaM script
 fits `Imaging` of a strong lens system, where in the final model:
 
  - The lens galaxy's light is a bulge+disk `Sersic` and `Exponential`.
@@ -23,7 +23,7 @@ subhalos of a given mass could have been detected if present.
 This uses the SLaM pipelines:
 
  `source_lp`
- `source__inversion/with_lens_light`
+ `source_pix`
  `light_lp`
  `mass_total`
  `subhalo/detection`
@@ -82,10 +82,8 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_autofit = af.SettingsSearch(
-    path_prefix=path.join(
-        "slam", "light_sersic__mass_total__source_lp", "no_hyper"
-    ),
-    number_of_cores=1,
+    path_prefix=path.join("slam", "source_lp", "mass_total", "sensitivity"),
+    number_of_cores=2,
     session=None,
 )
 
@@ -110,15 +108,12 @@ of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed con
 """
 setup_hyper = al.SetupHyper(
     hyper_galaxies_lens=False,
-    hyper_galaxies_source=False,
-    hyper_image_sky=None,
-    hyper_background_noise=None,
 )
 
 """
-__SOURCE PARAMETRIC PIPELINE (with lens light)__
+__SOURCE LP PIPELINE (with lens light)__
 
-The SOURCE PARAMETRIC PIPELINE (with lens light) uses three searches to initialize a robust model for the 
+The SOURCE LP PIPELINE (with lens light) uses three searches to initialize a robust model for the 
 source galaxy's light, which in this example:
  
  - Uses a parametric `Sersic` bulge and `Exponential` disk with centres aligned for the lens
@@ -154,15 +149,15 @@ source_lp_results = slam.source_lp.run(
 __LIGHT LP PIPELINE__
 
 The LIGHT LP PIPELINE uses one search to fit a complex lens light model to a high level of accuracy, using the
-lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE PARAMETRIC PIPELINE.
+lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE LP PIPELINE.
 In this example it:
 
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
- light [Do not use the results of the SOURCE PARAMETRIC PIPELINE to initialize priors].
+ light [Do not use the results of the SOURCE LP PIPELINE to initialize priors].
 
- - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE PARAMETRIC PIPELINE].
+ - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE LP PIPELINE].
 
- - Uses the `Sersic` model representing a bulge for the source's light [fixed from SOURCE PARAMETRIC PIPELINE].
+ - Uses the `Sersic` model representing a bulge for the source's light [fixed from SOURCE LP PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
@@ -227,24 +222,25 @@ PyAutoLens `AnalysisImaging` class.
 class AnalysisImagingSensitivity(al.AnalysisImaging):
     def __init__(self, dataset):
 
+        # TODO : PRELOADS, need to make sure w_tilde isnt repeated over and over.
+
         super().__init__(dataset=dataset)
 
         self.hyper_galaxy_image_path_dict = (
             mass_results.last.hyper_galaxy_image_path_dict
         )
-        self.hyper_model_image = mass_results.last.hyper_model_image
+        self.hyper_model_image_2d = mass_results.last.hyper_model_image
 
 
-subhalo_results = slam.subhalo.sensitivity_mapping(
-    path_prefix=path_prefix,
+subhalo_results = slam.subhalo.sensitivity_mapping_imaging(
+    settings_autofit=settings_autofit,
     analysis_cls=AnalysisImagingSensitivity,
-    mask=mask,
-    psf=imaging.psf,
+    mask_2d=mask,
+    psf_2d=imaging.psf,
     mass_results=mass_results,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
-    number_of_cores=2,
 )
 
 """

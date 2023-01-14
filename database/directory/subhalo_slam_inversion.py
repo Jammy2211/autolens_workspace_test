@@ -81,9 +81,9 @@ setup_hyper = al.SetupHyper(
     #  hyper_background_noise=al.hyper_data.HyperBackgroundNoise,
 )
 """
-__SOURCE PARAMETRIC PIPELINE (with lens light)__
+__SOURCE LP PIPELINE (with lens light)__
 
-The SOURCE PARAMETRIC PIPELINE (with lens light) uses three searches to initialize a robust model for the 
+The SOURCE LP PIPELINE (with lens light) uses three searches to initialize a robust model for the 
 source galaxy's light, which in this example:
 
  - Uses a parametric `Sersic` bulge and `Exponential` disk with centres aligned for the lens
@@ -124,7 +124,7 @@ regularization, to set up the model and hyper images, and then:
 
  - Uses a `VoronoiBrightnessImage` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
- - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the
+ - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
 """
 
@@ -132,7 +132,7 @@ analysis = al.AnalysisImaging(
     dataset=imaging, hyper_dataset_result=source_lp_results.last
 )
 
-source_pix_results = slam.source_pix.with_lens_light(
+source_pix_results = slam.source_pix.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -149,7 +149,7 @@ lens mass model and source light model fixed to the maximum log likelihood resul
 In this example it:
 
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
- light [Do not use the results of the SOURCE PARAMETRIC PIPELINE to initialize priors].
+ light [Do not use the results of the SOURCE LP PIPELINE to initialize priors].
 
  - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE PIX PIPELINE].
 

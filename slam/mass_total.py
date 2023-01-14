@@ -5,12 +5,13 @@ from . import extensions
 
 from typing import Union, Optional, Tuple
 
+
 def run(
     settings_autofit: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_hyper: al.SetupHyper,
     source_results: af.ResultsCollection,
-    light_results: af.ResultsCollection,
+    light_results: Optional[af.ResultsCollection],
     mass: af.Model = af.Model(al.mp.Isothermal),
     smbh: Optional[af.Model] = None,
     mass_centre: Optional[Tuple[float, float]] = None,
@@ -27,7 +28,7 @@ def run(
     setup_hyper
         The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
     source_results
-        The results of the SLaM SOURCE PARAMETRIC PIPELINE or SOURCE PIX PIPELINE which ran before this pipeline.
+        The results of the SLaM SOURCE LP PIPELINE or SOURCE PIX PIPELINE which ran before this pipeline.
     light_results
         The results of the SLaM LIGHT LP PIPELINE which ran before this pipeline.
     mass
@@ -64,41 +65,37 @@ def run(
     if smbh is not None:
         smbh.centre = mass.centre
 
-    instance = light_results.last.instance
-    fit = light_results.last.max_log_likelihood_fit
+    if light_results is None:
 
-    bulge = slam_util.lp_from(component=instance.galaxies.lens.bulge, fit=fit)
-    disk = slam_util.lp_from(component=instance.galaxies.lens.disk, fit=fit)
-    envelope = slam_util.lp_from(component=instance.galaxies.lens.envelope, fit=fit)
+        bulge = None
+        disk = None
+        hyper_galaxy = None
+
+    else:
+
+        bulge = light_results.last.instance.galaxies.lens.bulge
+        disk = light_results.last.instance.galaxies.lens.disk
+        hyper_galaxy = setup_hyper.hyper_galaxy_lens_from(result=light_results.last)
 
     source = slam_util.source__from_result_model_if_parametric(
-        result=light_results.last, setup_hyper=setup_hyper
+        result=source_results.last,
     )
 
     model = af.Collection(
         galaxies=af.Collection(
             lens=af.Model(
                 al.Galaxy,
-                redshift=light_results.last.instance.galaxies.lens.redshift,
+                redshift=source_results.last.instance.galaxies.lens.redshift,
                 bulge=bulge,
                 disk=disk,
-                envelope=envelope,
                 mass=mass,
                 shear=source_results.last.model.galaxies.lens.shear,
                 smbh=smbh,
-                hyper_galaxy=setup_hyper.hyper_galaxy_lens_from(
-                    result=light_results.last
-                ),
+                hyper_galaxy=hyper_galaxy,
             ),
             source=source,
         ),
         clumps=slam_util.clumps_from(result=source_results.last, mass_as_model=True),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from(
-            result=light_results.last, as_model=True
-        ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from(
-            result=light_results.last
-        ),
     )
 
     search = af.DynestyStatic(
@@ -127,7 +124,6 @@ def run(
             result=result_1,
             analysis=analysis,
             search_previous=search,
-            include_hyper_image_sky=True,
         )
 
     if end_with_stochastic_extension:

@@ -9,7 +9,7 @@ which customize the model and analysis in that pipeline.
 The models fitted in earlier pipelines determine the model used in later pipelines. For example, if the SOURCE PIPELINE
 uses a parametric `Sersic` profile for the bulge, this will be used in the subsequent MASS TOTAL PIPELINE.
 
-Using a SOURCE PARAMETRIC PIPELINE, SOURCE PIX PIPELINE and a MASS TOTAL PIPELINE this SLaM script fits `Interferometer` of a
+Using a SOURCE LP PIPELINE, SOURCE PIX PIPELINE and a MASS TOTAL PIPELINE this SLaM script fits `Interferometer` of a
 strong lens system, where in the final model:
 
  - The lens galaxy's light is omitted from the data and model.
@@ -113,18 +113,15 @@ The `SetupHyper` determines which hyper-mode features are used during the model-
 """
 setup_hyper = al.SetupHyper(
     hyper_galaxies_lens=False,
-    hyper_galaxies_source=False,
-    hyper_image_sky=None,
-    hyper_background_noise=None,
 )
 
 """
-__SOURCE PARAMETRIC PIPELINE (no lens light)__
+__SOURCE LP PIPELINE (no lens light)__
 
-The SOURCE PARAMETRIC PIPELINE (no lens light) uses one search to initialize a robust model for the source galaxy's 
+The SOURCE LP PIPELINE (no lens light) uses one search to initialize a robust model for the source galaxy's 
 light, which in this example:
 
- - Uses a parametric `Sersic` bulge for the source's light (omitting a disk / envelope).
+ - Uses a parametric `Sersic` bulge for the source's light (omitting a disk).
  - Uses an `Isothermal` model for the lens's total mass distribution with an `ExternalShear`.
 
 Settings:
@@ -155,7 +152,7 @@ regularization, to set up the model and hyper images, and then:
 
  - Uses a `VoronoiBrightnessImage` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
- - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the
+ - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
 
 Settings:
@@ -172,7 +169,7 @@ analysis = al.AnalysisInterferometer(
     ),
 )
 
-source_pix_results = slam.source_pix.no_lens_light(
+source_pix_results = slam.source_pix.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,

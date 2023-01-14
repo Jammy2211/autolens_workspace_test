@@ -9,18 +9,17 @@ which customize the model and analysis in that pipeline.
 The models fitted in earlier pipelines determine the model used in later pipelines. For example, if the SOURCE PIPELINE
 uses a parametric `Sersic` profile for the bulge, this will be used in the subsequent MASS PIPELINE.
 
-Using a SOURCE PARAMETRIC PIPELINE, LIGHT LP PIPELINE, MASS PIPELINE and SUBHALO PIPELINE this SLaM script
+Using a SOURCE LP PIPELINE, LIGHT LP PIPELINE, MASS PIPELINE and SUBHALO PIPELINE this SLaM script
 fits `Imaging` of a strong lens system, where in the final model:
 
- - The lens galaxy's light is a bulge+disk `Sersic` and `Exponential`.
+ - The lens galaxy's light is not modeled.
  - The lens galaxy's total mass distribution is an `Isothermal`.
  - A dark matter subhalo near The lens galaxy mass is included as a`NFWMCRLudlowSph`.
- - The source galaxy is an `Inversion`.
+ - The source galaxy is an `Sersic`.
 
 This uses the SLaM pipelines:
 
  `source_lp`
- `source__inversion/with_lens_light`
  `light_lp`
  `mass_total`
  `subhalo/detection`
@@ -79,9 +78,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_autofit = af.SettingsSearch(
-    path_prefix=path.join(
-        "slam", "light_sersic__mass_total__source_pix", "hyper_all"
-    ),
+    path_prefix=path.join("slam", "source_lp", "mass_total", "no_lens_light"),
     number_of_cores=1,
     session=None,
 )
@@ -106,16 +103,13 @@ extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter value
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_hyper = al.SetupHyper(
-    hyper_galaxies_lens=True,
-    hyper_galaxies_source=True,
-    hyper_image_sky=al.hyper_data.HyperImageSky,
-    #  hyper_background_noise=al.hyper_data.HyperBackgroundNoise,
+    hyper_galaxies_lens=False,
 )
 
 """
-__SOURCE PARAMETRIC PIPELINE (with lens light)__
+__SOURCE LP PIPELINE (with lens light)__
 
-The SOURCE PARAMETRIC PIPELINE (with lens light) uses three searches to initialize a robust model for the 
+The SOURCE LP PIPELINE (with lens light) uses three searches to initialize a robust model for the 
 source galaxy's light, which in this example:
  
  - Uses a parametric `Sersic` bulge and `Exponential` disk with centres aligned for the lens
@@ -129,78 +123,17 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
-bulge = af.Model(al.lp.Sersic)
-disk = af.Model(al.lp.Exponential)
-bulge.centre = disk.centre
-
 source_lp_results = slam.source_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    lens_bulge=bulge,
-    lens_disk=disk,
+    lens_bulge=None,
+    lens_disk=None,
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
     source_bulge=af.Model(al.lp.Sersic),
-    mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
-)
-
-"""
-__SOURCE PIX PIPELINE (with lens light)__
-
-The SOURCE PIX PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
-that reconstructs the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` 
-regularization, to set up the model and hyper images, and then:
-
- - Uses a `VoronoiBrightnessImage` pixelization.
- - Uses an `AdaptiveBrightness` regularization.
- - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the
- SOURCE PIX PIPELINE.
-"""
-
-analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_lp_results.last
-)
-
-source_pix_results = slam.source_pix.with_lens_light(
-    settings_autofit=settings_autofit,
-    analysis=analysis,
-    setup_hyper=setup_hyper,
-    source_lp_results=source_lp_results,
-    mesh=al.mesh.VoronoiBrightnessImage,
-    regularization=al.reg.AdaptiveBrightness,
-)
-
-"""
-__LIGHT LP PIPELINE__
-
-The LIGHT LP PIPELINE uses one search to fit a complex lens light model to a high level of accuracy, using the
-lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE PIX PIPELINE.
-In this example it:
-
- - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
- light [Do not use the results of the SOURCE PARAMETRIC PIPELINE to initialize priors].
-
- - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE PIX PIPELINE].
-
- - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIX PIPELINE].
-
- - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
- PIPELINE [fixed values].
-"""
-bulge = af.Model(al.lp.Sersic)
-disk = af.Model(al.lp.Exponential)
-bulge.centre = disk.centre
-
-light_results = slam.light_lp.run(
-    settings_autofit=settings_autofit,
-    analysis=analysis,
-    setup_hyper=setup_hyper,
-    source_results=source_pix_results,
-    lens_bulge=bulge,
-    lens_disk=disk,
 )
 
 """
@@ -222,15 +155,15 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_pix_results.last
+    dataset=imaging, hyper_dataset_result=source_lp_results.last
 )
 
 mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_pix_results,
-    light_results=light_results,
+    source_results=source_lp_results,
+    light_results=None,
     mass=af.Model(al.mp.PowerLaw),
 )
 
@@ -251,7 +184,7 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_pix_results.last
+    dataset=imaging, hyper_dataset_result=source_lp_results.last
 )
 
 subhalo_results = slam.subhalo.detection(

@@ -9,18 +9,17 @@ which customize the model and analysis in that pipeline.
 The models fitted in earlier pipelines determine the model used in later pipelines. For example, if the SOURCE PIPELINE
 uses a parametric `Sersic` profile for the bulge, this will be used in the subsequent MASS PIPELINE.
 
-Using a SOURCE PARAMETRIC PIPELINE, LIGHT LP PIPELINE, MASS PIPELINE and SUBHALO PIPELINE this SLaM script
+Using a SOURCE LP PIPELINE, LIGHT LP PIPELINE, MASS PIPELINE and SUBHALO PIPELINE this SLaM script
 fits `Imaging` of a strong lens system, where in the final model:
 
  - The lens galaxy's light is a bulge+disk `Sersic` and `Exponential`.
  - The lens galaxy's total mass distribution is an `Isothermal`.
  - A dark matter subhalo near The lens galaxy mass is included as a`NFWMCRLudlowSph`.
- - The source galaxy is an `Inversion`.
+ - The source galaxy is an `Sersic`.
 
 This uses the SLaM pipelines:
 
  `source_lp`
- `source__inversion/with_lens_light`
  `light_lp`
  `mass_total`
  `subhalo/detection`
@@ -33,7 +32,6 @@ Check them out for a full description of the analysis!
 # %cd $workspace_path
 # print(f"Working Directory has been set to `{workspace_path}`")
 
-import numpy as np
 import os
 from os import path
 
@@ -80,9 +78,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_autofit = af.SettingsSearch(
-    path_prefix=path.join(
-        "slam", "light_sersic__mass_total__source_pix", "linwar_light_hyper_all"
-    ),
+    path_prefix=path.join("slam", "source_lp", "mass_total", "hyper"),
     number_of_cores=1,
     session=None,
 )
@@ -108,15 +104,12 @@ of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed con
 """
 setup_hyper = al.SetupHyper(
     hyper_galaxies_lens=True,
-    hyper_galaxies_source=True,
-    hyper_image_sky=al.hyper_data.HyperImageSky,
-    hyper_background_noise=al.hyper_data.HyperBackgroundNoise,
 )
 
 """
-__SOURCE PARAMETRIC PIPELINE (with lens light)__
+__SOURCE LP PIPELINE (with lens light)__
 
-The SOURCE PARAMETRIC PIPELINE (with lens light) uses three searches to initialize a robust model for the 
+The SOURCE LP PIPELINE (with lens light) uses three searches to initialize a robust model for the 
 source galaxy's light, which in this example:
  
  - Uses a parametric `Sersic` bulge and `Exponential` disk with centres aligned for the lens
@@ -130,129 +123,52 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
-max_mge_r = 2.5
-rn = 15
-gaussian_per_basis = 5
-
-log10_sigma_list = np.linspace(-2, np.log10(max_mge_r), rn)
-
-overall_gaussian_list = []
-
-centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-
-for j in range(gaussian_per_basis):
-
-    ell_comps_0 = af.GaussianPrior(mean=0.0, sigma=0.3)
-    ell_comps_1 = af.GaussianPrior(mean=0.0, sigma=0.3)
-
-    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(rn))
-
-    for i, gaussian in enumerate(gaussian_list):
-
-        gaussian.centre.centre_0 = centre_0
-        gaussian.centre.centre_1 = centre_1
-        gaussian.ell_comps.ell_comps_0 = ell_comps_0
-        gaussian.ell_comps.ell_comps_1 = ell_comps_1
-        gaussian.sigma = 10 ** log10_sigma_list[i]
-
-    overall_gaussian_list += gaussian_list
-
-lens_bulge = af.Model(al.lp_basis.Basis, light_profile_list=overall_gaussian_list)
+bulge = af.Model(al.lp.Sersic)
+disk = af.Model(al.lp.Exponential)
+bulge.centre = disk.centre
 
 source_lp_results = slam.source_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    lens_bulge=lens_bulge,
-    lens_disk=None,
+    lens_bulge=bulge,
+    lens_disk=disk,
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
-    source_bulge=af.Model(al.lp_linear.Sersic),
+    source_bulge=af.Model(al.lp.Sersic),
     mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
 )
 
 """
-__SOURCE PIX PIPELINE (with lens light)__
-
-The SOURCE PIX PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
-that reconstructs the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` 
-regularization, to set up the model and hyper images, and then:
-
- - Uses a `VoronoiBrightnessImage` pixelization.
- - Uses an `AdaptiveBrightness` regularization.
- - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PARAMETRIC PIPELINE through to the
- SOURCE PIX PIPELINE.
-"""
-
-analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_lp_results.last
-)
-
-source_pix_results = slam.source_pix.with_lens_light(
-    settings_autofit=settings_autofit,
-    analysis=analysis,
-    setup_hyper=setup_hyper,
-    source_lp_results=source_lp_results,
-    mesh=al.mesh.VoronoiBrightnessImage,
-    regularization=al.reg.AdaptiveBrightness,
-)
-
-"""
 __LIGHT LP PIPELINE__
 
 The LIGHT LP PIPELINE uses one search to fit a complex lens light model to a high level of accuracy, using the
-lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE PIX PIPELINE.
+lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE LP PIPELINE.
 In this example it:
 
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
- light [Do not use the results of the SOURCE PARAMETRIC PIPELINE to initialize priors].
+ light [Do not use the results of the SOURCE LP PIPELINE to initialize priors].
 
- - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE PIX PIPELINE].
+ - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE LP PIPELINE].
 
- - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIX PIPELINE].
+ - Uses the `Sersic` model representing a bulge for the source's light [fixed from SOURCE LP PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-max_mge_r = 2.5
-rn = 15
-gaussian_per_basis = 5
-
-log10_sigma_list = np.linspace(-2, np.log10(max_mge_r), rn)
-
-overall_gaussian_list = []
-
-centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-
-for j in range(gaussian_per_basis):
-
-    ell_comps_0 = af.GaussianPrior(mean=0.0, sigma=0.3)
-    ell_comps_1 = af.GaussianPrior(mean=0.0, sigma=0.3)
-
-    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(rn))
-
-    for i, gaussian in enumerate(gaussian_list):
-
-        gaussian.centre.centre_0 = centre_0
-        gaussian.centre.centre_1 = centre_1
-        gaussian.ell_comps.ell_comps_0 = ell_comps_0
-        gaussian.ell_comps.ell_comps_1 = ell_comps_1
-        gaussian.sigma = 10 ** log10_sigma_list[i]
-
-    overall_gaussian_list += gaussian_list
-
-lens_bulge = af.Model(al.lp_basis.Basis, light_profile_list=overall_gaussian_list)
+bulge = af.Model(al.lp.Sersic)
+disk = af.Model(al.lp.Exponential)
+bulge.centre = disk.centre
 
 light_results = slam.light_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_pix_results,
-    lens_bulge=lens_bulge,
+    source_results=source_lp_results,
+    lens_bulge=bulge,
+    lens_disk=disk,
 )
 
 """
@@ -274,14 +190,14 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_pix_results.last
+    dataset=imaging, hyper_dataset_result=source_lp_results.last
 )
 
 mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
-    source_results=source_pix_results,
+    source_results=source_lp_results,
     light_results=light_results,
     mass=af.Model(al.mp.PowerLaw),
 )
@@ -303,7 +219,7 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_pix_results.last
+    dataset=imaging, hyper_dataset_result=source_lp_results.last
 )
 
 subhalo_results = slam.subhalo.detection(

@@ -13,7 +13,6 @@ def run(
     source_results: af.ResultsCollection,
     lens_bulge: Optional[af.Model] = af.Model(al.lp.Sersic),
     lens_disk: Optional[af.Model] = None,
-    lens_envelope: Optional[af.Model] = None,
     end_with_hyper_extension: bool = False,
 ) -> af.ResultsCollection:
     """
@@ -29,16 +28,13 @@ def run(
     setup_hyper
         The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
     source_results
-        The results of the SLaM SOURCE PARAMETRIC PIPELINE or SOURCE PIX PIPELINE which ran before this pipeline.
+        The results of the SLaM SOURCE LP PIPELINE or SOURCE PIX PIPELINE which ran before this pipeline.
     lens_bulge
         The `LightProfile` `Model` used to represent the light distribution of the lens galaxy's bulge (set to
         None to omit a bulge).
     lens_disk
         The `LightProfile` `Model` used to represent the light distribution of the lens galaxy's disk (set to
         None to omit a disk).
-    lens_envelope
-        The `LightProfile` `Model` used to represent the light distribution of the lens galaxy's envelope (set to
-        None to omit an envelope).
     end_with_hyper_extension
         If `True` a hyper extension is performed at the end of the pipeline. If this feature is used, you must be
         certain you have manually passed the new hyper images geneted in this search to the next pipelines.
@@ -49,7 +45,7 @@ def run(
 
     In search 1 of the LIGHT LP PIPELINE we fit a lens model where:
 
-     - The lens galaxy light is modeled using a parametric / basis bulge + disk + envelope [no prior initialization].
+     - The lens galaxy light is modeled using a parametric / basis bulge + disk [no prior initialization].
      - The lens galaxy mass is modeled using SOURCE PIPELINE's mass distribution [Parameters fixed from SOURCE PIPELINE].
      - The source galaxy's light is modeled using SOURCE PIPELINE's model [Parameters fixed from SOURCE PIPELINE].
 
@@ -67,9 +63,7 @@ def run(
         result=source_results.last, noise_factor_is_model=True
     )
 
-    source = slam_util.source__from(
-        result=source_results.last, setup_hyper=setup_hyper, source_is_model=False
-    )
+    source = slam_util.source__from(result=source_results.last, source_is_model=False)
 
     model = af.Collection(
         galaxies=af.Collection(
@@ -78,7 +72,6 @@ def run(
                 redshift=source_results.last.instance.galaxies.lens.redshift,
                 bulge=lens_bulge,
                 disk=lens_disk,
-                envelope=lens_envelope,
                 mass=source_results.last.instance.galaxies.lens.mass,
                 shear=source_results.last.instance.galaxies.lens.shear,
                 hyper_galaxy=hyper_galaxy,
@@ -86,12 +79,6 @@ def run(
             source=source,
         ),
         clumps=slam_util.clumps_from(result=source_results.last, light_as_model=True),
-        hyper_image_sky=setup_hyper.hyper_image_sky_from(
-            result=source_results.last, as_model=True
-        ),
-        hyper_background_noise=setup_hyper.hyper_background_noise_from(
-            result=source_results.last
-        ),
     )
 
     search = af.DynestyStatic(
@@ -118,7 +105,6 @@ def run(
             result=result_1,
             analysis=analysis,
             search_previous=search,
-            include_hyper_image_sky=True,
         )
 
     return af.ResultsCollection([result_1])

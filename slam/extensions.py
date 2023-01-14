@@ -60,7 +60,7 @@ def stochastic_fit(
     include_pixelization: bool = False,
     include_regularization: bool = False,
     search_cls: af.NonLinearSearch = af.DynestyStatic,
-    search_pixelization_dict: Optional[Dict] = None,
+    search_pix_dict: Optional[Dict] = None,
     info: Optional[Dict] = None,
     pickle_files: Optional[List] = None,
 ):
@@ -94,8 +94,8 @@ def stochastic_fit(
         fitted for (if `False` it is passed as an `instance`).
     """
 
-    if search_pixelization_dict is None:
-        search_pixelization_dict = {"nlive": 100}
+    if search_pix_dict is None:
+        search_pix_dict = {"nlive": 100}
 
     stochastic_model = al.util.model.stochastic_model_from(
         result=result,
@@ -108,7 +108,7 @@ def stochastic_fit(
     return al.util.model.stochastic_fit(
         stochastic_model=stochastic_model,
         search_cls=search_cls,
-        search_pixelization_dict=search_pixelization_dict,
+        search_pix_dict=search_pix_dict,
         result=result,
         analysis=analysis,
         search_previous=search_previous,
