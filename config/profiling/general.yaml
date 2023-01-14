@@ -18,7 +18,7 @@ numba:
   cache: true
   nopython: true
   parallel: false
-  use_numba: false
+  use_numba: true
 output:
   force_pickle_overwrite: false
   identifier_version: 4

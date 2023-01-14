@@ -147,11 +147,13 @@ def detection(
         nlive=50,
         walks=5,
         facc=0.2,
-        force_x1_cpu=True # ensures parallelizing over grid search works.
+        force_x1_cpu=True,  # ensures parallelizing over grid search works.
     )
 
     subhalo_grid_search = af.SearchGridSearch(
-        search=search, number_of_steps=number_of_steps, number_of_cores=settings_autofit.number_of_cores,
+        search=search,
+        number_of_steps=number_of_steps,
+        number_of_cores=settings_autofit.number_of_cores,
     )
 
     subhalo_result = subhalo_grid_search.fit(
@@ -169,7 +171,7 @@ def detection(
     __Model + Search + Analysis + Model-Fit (Search 3)__
 
     In search 3 of the SUBHALO PIPELINE we refit the lens and source models above but now including a subhalo, where 
-    the subhalo model is initalized from the highest evidence model of the subhalo grid search.
+    the subhalo model is initialized from the highest evidence model of the subhalo grid search.
 
      - The lens galaxy mass is modeled using MASS PIPELINE's mass distribution [Priors initialized from MASS PIPELINE].
      - The source galaxy's light is parametric or an inversion depending on the previous MASS PIPELINE [Model and 

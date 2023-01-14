@@ -101,7 +101,7 @@ We can now compute the observed fluxes of the `Point`, give we know how much eac
 """
 flux = 1.0
 fluxes = [flux * np.abs(magnification) for magnification in magnifications]
-fluxes = al.ValuesIrregular(values=fluxes)
+fluxes = al.ArrayIrregular(values=fluxes)
 
 """
 __Output__
@@ -140,7 +140,7 @@ point_dataset = al.PointDataset(
     positions=positions,
     positions_noise_map=positions.values_via_value_from(value=grid_2d.pixel_scale),
     fluxes=fluxes,
-    fluxes_noise_map=al.ValuesIrregular(values=[1.0, 1.0]),
+    fluxes_noise_map=al.ArrayIrregular(values=[1.0, 1.0]),
 )
 
 point_dict = al.PointDict(point_dataset_list=[point_dataset])

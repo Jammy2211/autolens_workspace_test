@@ -32,8 +32,8 @@ file_path = os.path.join(profiling_path, "times", al.__version__)
 """
 Whether w_tilde is used dictates the output folder.
 """
-# use_w_tilde = True
-use_w_tilde = False
+use_w_tilde = True
+# use_w_tilde = False
 
 if use_w_tilde:
     file_path = os.path.join(file_path, "w_tilde")
@@ -44,8 +44,8 @@ else:
 """
 Whether the lens light is a linear object or not.
 """
-use_lens_light_linear = True
-# use_lens_light_linear = False
+# use_lens_light_linear = True
+use_lens_light_linear = False
 
 if use_lens_light_linear:
 
@@ -82,40 +82,21 @@ print(f"circular mask mask_radius = {mask_radius}")
 print(f"psf shape = {psf_shape_2d}")
 print(f"pixelization shape = {mesh_shape_2d}")
 
-"""
-The lens galaxy used to fit the data, which is identical to the lens galaxy used to simulate the data. 
-"""
-gaussian_m = 0.05
-gaussian_c = 1.0
-
-gaussians = [al.lp_linear.Gaussian() for i in range(50)]
-
-for i, gaussian in enumerate(gaussians):
-
-    gaussian.centre = gaussians[0].centre
-    gaussian.ell_comps = gaussians[0].ell_comps
-    gaussian.sigma = (gaussian_m * i) + gaussian_c
-
-gaussian_dict = {f"gaussian_{i}": gaussian for i, gaussian in enumerate(gaussians)}
-
-galaxy = al.Galaxy(redshift=0.5, **gaussian_dict)
-
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    #  bulge=bulge_cls(
-    #      centre=(0.0, 0.0),
-    #      ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
-    #   #   intensity=4.0,
-    #      effective_radius=0.6,
-    #      sersic_index=3.0,
-    #  ),
-    #  disk=disk_cls(
-    #      centre=(0.0, 0.0),
-    #      ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
-    # #     intensity=2.0,
-    #      effective_radius=1.6,
-    #  ),
-    **gaussian_dict,
+    bulge=bulge_cls(
+        centre=(0.0, 0.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
+        intensity=4.0,
+        effective_radius=0.6,
+        sersic_index=3.0,
+    ),
+    disk=disk_cls(
+        centre=(0.0, 0.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
+        intensity=2.0,
+        effective_radius=1.6,
+    ),
     mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,

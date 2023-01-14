@@ -129,7 +129,7 @@ tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
 tracer_plotter = aplt.TracerPlotter(
     tracer=tracer,
-    grid=real_space_mask.masked_grid_sub_1,
+    grid=real_space_mask.derive_grid.unmasked_sub_1,
     mat_plot_2d=aplt.MatPlot2D(
         output=aplt.Output(path=workspace_path, filename="image_pre_ft", format="png")
     ),

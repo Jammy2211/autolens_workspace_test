@@ -154,7 +154,8 @@ __Result__
 print(result.max_log_likelihood_instance)
 
 tracer_plotter = aplt.TracerPlotter(
-    tracer=result.max_log_likelihood_tracer, grid=real_space_mask_2d.masked_grid_sub_1
+    tracer=result.max_log_likelihood_tracer,
+    grid=real_space_mask_2d.derive_grid.all_false_sub_1,
 )
 tracer_plotter.subplot_tracer()
 

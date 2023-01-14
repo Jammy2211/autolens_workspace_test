@@ -458,7 +458,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/structures/grids/tw
 start = time.time()
 for i in range(repeats):
     grid_voronoi = al.Mesh2DVoronoi(
-        grid=relocated_pixelization_grid,
+        values=relocated_pixelization_grid,
         nearest_pixelization_index_for_slim_index=sparse_image_plane_grid.sparse_index_for_slim_index,
     )
 profiling_dict["Voronoi Mesh"] = (time.time() - start) / repeats

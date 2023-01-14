@@ -109,6 +109,7 @@ search_1 = af.DynestyStatic(
 
 result_1 = search_1.fit(model=model_1, analysis=analysis_1, **settings_autofit.fit_dict)
 
+
 def cast_method(
     component: Union[al.LightProfile], fit: Union[al.FitImaging, al.FitInterferometer]
 ) -> al.lp_basis.Basis:
@@ -133,13 +134,14 @@ def cast_method(
 
     return basis
 
+
 # The cast method above works on an input light profile component, e.g. the `Basis` class.
 
 # The solution should allow us to cast everything at once via a single function.
 
 basis_casted = cast_method(
     component=result_1.instance.galaxies.source.bulge,
-    fit=result_1.max_log_likelihood_fit
+    fit=result_1.max_log_likelihood_fit,
 )
 
 basis_casted = af.Model(basis_casted)
