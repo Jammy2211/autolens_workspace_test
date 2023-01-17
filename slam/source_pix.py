@@ -75,7 +75,7 @@ def run(
     search_1 = af.DynestyStatic(
         name="source_pix[1]_light[fixed]_mass[fixed]_source[pix_init]",
         **settings_autofit.search_dict,
-        nlive=30,
+        nlive=50,
         dlogz=10.0,
     )
 

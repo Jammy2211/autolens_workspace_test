@@ -23,4 +23,4 @@ You can run an integration test as follows:
 Workspace Version
 =================
 
-This version of the workspace are built and tested for using **PyAutoLens v2022.11.26.11**.
+This version of the workspace are built and tested for using **PyAutoLens v2023.1.15.1**.

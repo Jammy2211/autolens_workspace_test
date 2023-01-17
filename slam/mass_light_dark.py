@@ -223,16 +223,16 @@ def run__from_light_linear(
     lens_bulge = slam_util.lmp_from(lp=instance.galaxies.lens.bulge, fit=fit)
     lens_disk = slam_util.lmp_from(lp=instance.galaxies.lens.disk, fit=fit)
 
-    lens_bulge = slam_util.update_mass_to_light_ratio_prior(
-        lmp_model=lens_bulge,
-        result=light_results.last,
-        einstein_mass_range=einstein_mass_range,
-    )
-    lens_disk = slam_util.update_mass_to_light_ratio_prior(
-        lmp_model=lens_disk,
-        result=light_results.last,
-        einstein_mass_range=einstein_mass_range,
-    )
+    # lens_bulge = slam_util.update_mass_to_light_ratio_prior(
+    #     lmp_model=lens_bulge,
+    #     result=light_results.last,
+    #     einstein_mass_range=einstein_mass_range,
+    # )
+    # lens_disk = slam_util.update_mass_to_light_ratio_prior(
+    #     lmp_model=lens_disk,
+    #     result=light_results.last,
+    #     einstein_mass_range=einstein_mass_range,
+    # )
 
     dark.mass_at_200 = af.LogUniformPrior(lower_limit=1e10, upper_limit=1e15)
     dark.redshift_object = light_results.last.instance.galaxies.lens.redshift

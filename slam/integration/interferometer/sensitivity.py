@@ -131,7 +131,7 @@ Settings:
 """
 analysis = al.AnalysisInterferometer(dataset=interferometer)
 
-source_lp_results = slam.source_lp.no_lens_light(
+source_lp_results = slam.source_lp.run(
     path_prefix=path_prefix,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -195,7 +195,7 @@ analysis = al.AnalysisInterferometer(
     ),
 )
 
-mass_results = slam.mass_total.no_lens_light(
+mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,

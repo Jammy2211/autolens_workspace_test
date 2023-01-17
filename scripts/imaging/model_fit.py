@@ -86,11 +86,19 @@ positions = al.Grid2DIrregular.from_json(
 __Model__
 
 """
+bulge = af.Model(al.lp.DevVaucouleursSph)
+bulge.centre.centre_0 = 0.0
+bulge.centre.centre_1 = 0.0
+
+mass = af.Model(al.mp.IsothermalSph)
+mass.centre.centre_0 = 0.0
+mass.centre.centre_1 = 0.0
+
 lens = af.Model(
     al.Galaxy,
     redshift=0.5,
-    bulge=al.lp.DevVaucouleursSph(centre=(0.0, 0.0)),
-    mass=al.mp.IsothermalSph(centre=(0.0, 0.0)),
+    bulge=bulge,
+    mass=mass
 )
 
 pixelization = af.Model(

@@ -94,7 +94,7 @@ light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
-source_results = slam.source_lp.no_lens_light(
+source_results = slam.source_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
@@ -116,7 +116,7 @@ using the lens mass model and source model of the SOURCE PIPELINE to initialize 
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
-mass_results = slam.mass_total.no_lens_light(
+mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,

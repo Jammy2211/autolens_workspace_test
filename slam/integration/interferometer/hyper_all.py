@@ -1,6 +1,6 @@
 """
-SLaM (Source, Light and Mass): Light Parametric + Mass Total + Subhalo NFW + Source Parametric
-==============================================================================================
+SLaM (Source, Light and Mass): Source Light Pixelized + Light Profile + Mass Total + Subhalo NFW
+================================================================================================
 
 SLaM pipelines break the analysis down into multiple pipelines which focus on modeling a specific aspect of the strong
 lens, first the Source, then the (lens) Light and finally the Mass. Each of these pipelines has it own inputs which
