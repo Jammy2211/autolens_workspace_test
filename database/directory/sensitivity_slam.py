@@ -51,7 +51,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_autofit = af.SettingsSearch(
-    path_prefix=path.join("database", "directory", "subhalo_slam"),
+    path_prefix=path.join("database", "directory", "sensitivity_slam"),
     number_of_cores=1,
     session=None,
 )
@@ -125,27 +125,33 @@ mass_results = slam.mass_total.run(
 )
 
 """
-__SUBHALO PIPELINE (single plane detection)__
+__SUBHALO PIPELINE (sensitivity mapping)__
 
-The SUBHALO PIPELINE (single plane detection) consists of the following searches:
+The SUBHALO PIPELINE (sensitivity mapping) performs sensitivity mapping of the data using the lens model
+fitted above, so as to determine where subhalos of what mass could be detected in the data. A full description of
+sensitivty mapping if given in the script `sensitivity_mapping.py`.
 
- 1) Refit the lens and source model, to refine the model evidence for comparing to the models fitted which include a 
- subhalo. This uses the same model as fitted in the MASS PIPELINE. 
- 2) Performs a grid-search of non-linear searches to attempt to detect a dark matter subhalo. 
- 3) If there is a successful detection a final search is performed to refine its parameters.
-
-For this runner the `SetupSubhalo` customizes:
-
- - If the parameteric source galaxy is treated as a model (all free parameters) or instance (all fixed) during the 
-   subhalo detection grid search.
- - The NxN size of the grid-search.
+Each model-fit performed by sensitivity mapping creates a new instance of an `Analysis` class, which contains the
+data simulated by the `simulate_function` for that model. This requires us to write a wrapper around the 
+PyAutoLens `AnalysisImaging` class.
 """
-analysis = al.AnalysisImaging(dataset=imaging)
+class AnalysisImagingSensitivity(al.AnalysisImaging):
+    def __init__(self, dataset):
 
-subhalo_results = slam.subhalo.detection(
+        # TODO : PRELOADS, need to make sure w_tilde isnt repeated over and over.
+
+        super().__init__(dataset=dataset)
+
+        self.hyper_galaxy_image_path_dict = (
+            mass_results.last.hyper_galaxy_image_path_dict
+        )
+        self.hyper_model_image_2d = mass_results.last.hyper_model_image
+
+subhalo_results = slam.subhalo.sensitivity_mapping_imaging(
     settings_autofit=settings_autofit,
-    analysis=analysis,
-    setup_hyper=setup_hyper,
+    analysis_cls=AnalysisImagingSensitivity,
+    mask_2d=mask,
+    psf_2d=imaging.psf,
     mass_results=mass_results,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,
@@ -157,7 +163,7 @@ ___Database__
 
 The name of the database, which corresponds to the output results folder.
 """
-database_file = "database_directory_subhalo_slam.sqlite"
+database_file = "database_directory_sensitivity_slam.sqlite"
 
 """
 Remove database is making a new build (you could delete manually via your mouse). Building the database is slow, so 
@@ -179,7 +185,7 @@ Add all results in the directory "output/slacs" to the database, which we manipu
 Avoid rerunning this once the file `slacs.sqlite` has been built.
 """
 agg.add_directory(
-    directory=path.join("output", "database", "directory", "subhalo_slam")
+    directory=path.join("output", "database", "directory", "sensitivity_slam")
 )
 
 """
@@ -200,73 +206,9 @@ info_gen = agg_best_fits.values("info")
 
 for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_gen):
 
-    grid_search_result = fit_grid["result"]
+    sensitivity_result = fit_grid["result"]
 
     """
     The log likelihoods of the grid search result, on a native 2D grid.
     """
-    print(grid_search_result.log_likelihoods_native)
-
-    # subhalo_search_result = al.subhalo.SubhaloResult(
-    #     grid_search_result=grid_search_result, result_no_subhalo=fit_grid.parent
-    # )
-    #
-    # plot_path = path.join("database", "plot", "subhalo_slam", "likelihood")
-    #
-    # mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=plot_path, format="png"))
-    #
-    # subhalo_plotter = al.subhalo.SubhaloPlotter(
-    #     subhalo_result=subhalo_search_result,
-    #     fit_imaging_detect=fit_imaging_detect,
-    #     use_log_evidences=False,
-    #     use_stochastic_log_evidences=False,
-    #     mat_plot_2d=mat_plot_2d,
-    # )
-    # subhalo_plotter.subplot_detection_imaging(remove_zeros=True)
-    # subhalo_plotter.subplot_detection_fits()
-    # subhalo_plotter.set_filename(filename="image_2d")
-    # subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=False)
-    # subhalo_plotter.set_filename(filename="image_2d")
-    # subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=True)
-    #
-    # plot_path = path.join("database", "plot", "subhalo_slam", "evidence")
-    #
-    # mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=plot_path, format="png"))
-    #
-    # subhalo_plotter = al.subhalo.SubhaloPlotter(
-    #     subhalo_result=subhalo_search_result,
-    #     fit_imaging_detect=fit_imaging_detect,
-    #     use_log_evidences=True,
-    #     use_stochastic_log_evidences=False,
-    #     mat_plot_2d=mat_plot_2d,
-    # )
-    # subhalo_plotter.subplot_detection_imaging(remove_zeros=True)
-    # subhalo_plotter.subplot_detection_fits()
-    # subhalo_plotter.set_filename(filename="image_2d")
-    # subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=False)
-    # subhalo_plotter.set_filename(filename="image_2d")
-    # subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=True)
-    #
-    # try:
-    #
-    #     plot_path = path.join("database", "plot", "subhalo_slam", "stochastic")
-    #
-    #     mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=plot_path, format="png"))
-    #
-    #     subhalo_plotter = al.subhalo.SubhaloPlotter(
-    #         subhalo_result=subhalo_search_result,
-    #         fit_imaging_detect=fit_imaging_detect,
-    #         use_log_evidences=True,
-    #         use_stochastic_log_evidences=True,
-    #         mat_plot_2d=mat_plot_2d,
-    #     )
-    #     subhalo_plotter.subplot_detection_imaging(remove_zeros=True)
-    #     subhalo_plotter.subplot_detection_fits()
-    #     subhalo_plotter.set_filename(filename="image_2d")
-    #     subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=False)
-    #     subhalo_plotter.set_filename(filename="image_2d")
-    #     subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=True)
-    #
-    # except ValueError:
-    #
-    #     pass
+    print(sensitivity_result.log_likelihoods_native)

@@ -338,9 +338,10 @@ def sensitivity_mapping_imaging(
     iterate over just two `mass_at_200` values corresponding to subhalos of mass 1e6 and 1e11, of which only the latter
     will be shown to be detectable.
     """
-    perturbation_model.mass.mass_at_200 = af.UniformPrior(
-        lower_limit=1e6, upper_limit=1e11
-    )
+    # perturbation_model.mass.mass_at_200 = af.UniformPrior(
+    #     lower_limit=1e6, upper_limit=1e11
+    # )
+    perturbation_model.mass.mass_at_200 = 1e10
     perturbation_model.mass.centre.centre_0 = af.UniformPrior(
         lower_limit=-grid_dimension_arcsec, upper_limit=grid_dimension_arcsec
     )
