@@ -206,9 +206,14 @@ info_gen = agg_best_fits.values("info")
 
 for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_gen):
 
+    """
+    This should return an instance of the `SensitivityResult` object.
+    """
     sensitivity_result = fit_grid["result"]
 
     """
-    The log likelihoods of the grid search result, on a native 2D grid.
+    The log likelihoods of the base fits, perturbed fits and their difference.
     """
-    print(sensitivity_result.log_likelihoods_native)
+    print(sensitivity_result.log_likelihoods_base_native)
+    print(sensitivity_result.log_likelihoods_perturbed_native)
+    print(sensitivity_result.log_likelihoods_increase_native)
