@@ -98,6 +98,8 @@ source_results = slam.source_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
+    lens_bulge=None,
+    lens_disk=None,
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
     source_bulge=af.Model(al.lp.Sersic),
@@ -121,6 +123,7 @@ mass_results = slam.mass_total.run(
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_results=source_results,
+    light_results=None,
     mass=af.Model(al.mp.PowerLaw),
 )
 

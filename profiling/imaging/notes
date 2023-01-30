@@ -1,0 +1,16 @@
+Fit Time = 5.631390810012817
+
+Time For curvagture diag: 1.216947078704834
+Time to copy in memory: 0.060398101806640625
+Time For operated mapping matrix: 1.2289559841156006
+Time For lp mapping op matrix: 1.9073486328125e-06
+Time For off diag: 0.320936918258667
+Time for diag: 6.937980651855469e-05
+Time For lp mapping op matrix: 2.1457672119140625e-06
+Time For off diag: 0.34778666496276855
+Time for diag: 7.033348083496094e-05
+Inversion fit run times for image type hst
+
+Number of pixels = 15380
+
+Number of sub-pixels = 246080

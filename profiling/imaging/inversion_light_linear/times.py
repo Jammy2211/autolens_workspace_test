@@ -44,10 +44,11 @@ else:
 """
 Whether the lens light is a linear object or not.
 """
-bulge_cls = al.lp.Sersic
-disk_cls = al.lp.Exponential
 
-file_path = os.path.join(file_path, "lens_light_normal")
+bulge_cls = al.lp_linear.Sersic
+disk_cls = al.lp_linear.Exponential
+
+file_path = os.path.join(file_path, "lens_light_linear")
 
 """
 The number of repeats used to estimate the run time.
@@ -75,14 +76,12 @@ lens_galaxy = al.Galaxy(
     bulge=bulge_cls(
         centre=(0.0, 0.0),
         ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
-        intensity=4.0,
         effective_radius=0.6,
         sersic_index=3.0,
     ),
     disk=disk_cls(
         centre=(0.0, 0.0),
         ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
-        intensity=2.0,
         effective_radius=1.6,
     ),
     mass=al.mp.Isothermal(

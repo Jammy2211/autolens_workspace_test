@@ -52,7 +52,7 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = af.SettingsSearch(
     path_prefix=path.join("database", "directory", "sensitivity_slam"),
-    number_of_cores=1,
+    number_of_cores=2,
     session=None,
 )
 
@@ -98,6 +98,8 @@ source_results = slam.source_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_hyper=setup_hyper,
+    lens_bulge=None,
+    lens_disk=None,
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
     source_bulge=af.Model(al.lp.Sersic),
@@ -121,6 +123,7 @@ mass_results = slam.mass_total.run(
     analysis=analysis,
     setup_hyper=setup_hyper,
     source_results=source_results,
+    light_results=None,
     mass=af.Model(al.mp.PowerLaw),
 )
 
@@ -214,6 +217,6 @@ for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_ge
     """
     The log likelihoods of the base fits, perturbed fits and their difference.
     """
-    print(sensitivity_result.log_likelihoods_base_native)
-    print(sensitivity_result.log_likelihoods_perturbed_native)
-    print(sensitivity_result.log_likelihoods_increase_native)
+    print(sensitivity_result.log_likelihoods_base)
+    print(sensitivity_result.log_likelihoods_perturbed)
+    print(sensitivity_result.log_likelihood_differences)
