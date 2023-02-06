@@ -17,6 +17,7 @@ conf.instance.push(new_path=path.join(cwd, "config", "profiling"))
 
 import time
 import json
+import numpy as np
 
 import autolens as al
 import autolens.plot as aplt
@@ -39,7 +40,7 @@ Whether the lens light is a linear object or not.
 """
 
 bulge_cls = al.lp_linear.Sersic
-# disk_cls = al.lp.Exponential
+disk_cls = al.lp_linear.Exponential
 
 file_path = os.path.join(file_path, "lens_light_linear")
 
@@ -65,11 +66,11 @@ lens_galaxy = al.Galaxy(
         effective_radius=0.6,
         sersic_index=3.0,
     ),
-    # disk=disk_cls(
-    #     centre=(0.0, 0.0),
-    #     ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
-    #     effective_radius=1.6,
-    # ),
+    disk=disk_cls(
+        centre=(0.0, 0.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
+        effective_radius=1.6,
+    ),
     mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
@@ -149,14 +150,18 @@ fit_mapping = al.FitImaging(
     settings_inversion=al.SettingsInversion(use_w_tilde=False),
 )
 
+print(fit_mapping.figure_of_merit)
+
 fit_w_tilde = al.FitImaging(
     dataset=masked_imaging,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=True),
 )
 
+print(np.max(np.abs(fit_mapping.inversion.curvature_matrix - fit_w_tilde.inversion.curvature_matrix)))
+print(fit_w_tilde.figure_of_merit)
 
-import numpy as np
+
 
 # print(fit_mapping.inversion.data_vector - fit_w_tilde.inversion.data_vector)
 # print(np.max(np.abs(fit_mapping.inversion.data_vector - fit_w_tilde.inversion.data_vector)))
@@ -164,29 +169,17 @@ import numpy as np
 
 import autoarray as aa
 
-mapper_index_range = fit_w_tilde.inversion.index_range_list_from(cls=al.AbstractMapper)[0]
-func_index_range = fit_w_tilde.inversion.index_range_list_from(cls=aa.AbstractLinearObjFuncList)[0]
+mapper_index_range = fit_w_tilde.inversion.param_range_list_from(cls=al.AbstractMapper)[0]
+func_index_range = fit_w_tilde.inversion.param_range_list_from(cls=aa.AbstractLinearObjFuncList)[0]
 
 
-print("lp_linear diag:")
-print(fit_mapping.inversion.curvature_matrix[0:1,0:1] - fit_w_tilde.inversion.curvature_matrix[0:1,0:1])
-print(np.max(np.abs(fit_mapping.inversion.curvature_matrix[0:1,0:1] - fit_w_tilde.inversion.curvature_matrix[0:1,0:1])))
+print(np.max(np.abs(fit_mapping.inversion.data_vector - fit_w_tilde.inversion.data_vector)))
 
-print("pix diag:")
-print(fit_mapping.inversion.curvature_matrix[1:-1,1:-1] - fit_w_tilde.inversion.curvature_matrix[1:-1,1:-1])
-print(np.max(np.abs(fit_mapping.inversion.curvature_matrix[1:-1,1:-1] - fit_w_tilde.inversion.curvature_matrix[1:-1,1:-1])))
+print(np.max(np.abs(fit_mapping.inversion.reconstruction - fit_w_tilde.inversion.reconstruction)))
+print(np.max(np.abs(fit_mapping.inversion.mapped_reconstructed_image - fit_w_tilde.inversion.mapped_reconstructed_image)))
 
-print("lp_linear mapper off-diag:")
-print(fit_mapping.inversion.curvature_matrix[0:1,1:-1] - fit_w_tilde.inversion.curvature_matrix[0:1,1:-1])
-print(np.max(np.abs(fit_mapping.inversion.curvature_matrix[0:1,1:-1] - fit_w_tilde.inversion.curvature_matrix[0:1,1:-1])))
-
-print("lp_linear mapper off-diag (transpoe):")
-print(fit_mapping.inversion.curvature_matrix[1:-1, 0:1] - fit_w_tilde.inversion.curvature_matrix[1:-1, 0:1])
-print(np.max(np.abs(fit_mapping.inversion.curvature_matrix[1:-1, 0:1] - fit_w_tilde.inversion.curvature_matrix[1:-1, 0:1])))
-
-print("Whole Matrix:")
-print(fit_mapping.inversion.curvature_matrix - fit_w_tilde.inversion.curvature_matrix)
-print(np.max(np.abs(fit_mapping.inversion.curvature_matrix - fit_w_tilde.inversion.curvature_matrix)))
+print(fit_mapping.log_likelihood)
+print(fit_w_tilde.log_likelihood)
 
 print(fit_mapping.figure_of_merit)
 print(fit_w_tilde.figure_of_merit)

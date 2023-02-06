@@ -96,6 +96,17 @@ basis = al.lp_basis.Basis(
 lens_galaxy = al.Galaxy(
     redshift=0.5,
     bulge=basis,
+    # bulge=bulge_cls(
+    #     centre=(0.0, 0.0),
+    #     ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
+    #     effective_radius=0.6,
+    #     sersic_index=3.0,
+    # ),
+    disk=disk_cls(
+        centre=(0.0, 0.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
+        effective_radius=1.6,
+    ),
     mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
