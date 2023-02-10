@@ -5,6 +5,7 @@ from . import extensions
 
 from typing import Optional, Tuple, Union
 
+
 def run(
     settings_autofit: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
@@ -80,7 +81,6 @@ def run(
         result=light_results.last,
         einstein_mass_range=einstein_mass_range,
     )
-
 
     dark.mass_at_200 = af.LogUniformPrior(lower_limit=1e10, upper_limit=1e15)
     dark.redshift_object = light_results.last.instance.galaxies.lens.redshift

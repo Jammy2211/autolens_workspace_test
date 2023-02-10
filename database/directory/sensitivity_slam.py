@@ -138,6 +138,8 @@ Each model-fit performed by sensitivity mapping creates a new instance of an `An
 data simulated by the `simulate_function` for that model. This requires us to write a wrapper around the 
 PyAutoLens `AnalysisImaging` class.
 """
+
+
 class AnalysisImagingSensitivity(al.AnalysisImaging):
     def __init__(self, dataset):
 
@@ -149,6 +151,7 @@ class AnalysisImagingSensitivity(al.AnalysisImaging):
             mass_results.last.hyper_galaxy_image_path_dict
         )
         self.hyper_model_image_2d = mass_results.last.hyper_model_image
+
 
 subhalo_results = slam.subhalo.sensitivity_mapping_imaging(
     settings_autofit=settings_autofit,

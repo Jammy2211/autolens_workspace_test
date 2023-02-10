@@ -320,7 +320,7 @@ subhalo_results = slam.subhalo.detection(
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
-    end_with_stochastic_extension=True
+    end_with_stochastic_extension=True,
 )
 
 """

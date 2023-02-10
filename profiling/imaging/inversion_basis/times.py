@@ -80,9 +80,7 @@ for i, gaussian_index in enumerate(range(total_gaussians)):
 
     gaussian = al.lp_linear.Gaussian(
         centre=(0.0, 0.0),
-        ell_comps=(
-            0.0, 0.0
-        ),
+        ell_comps=(0.0, 0.0),
         sigma=0.1 * i,
     )
 
@@ -90,7 +88,9 @@ for i, gaussian_index in enumerate(range(total_gaussians)):
 
 basis = al.lp_basis.Basis(
     light_profile_list=gaussian_list,
-    regularization=al.reg.ConstantZeroth(coefficient_neighbor=0.0, coefficient_zeroth=1.0)
+    regularization=al.reg.ConstantZeroth(
+        coefficient_neighbor=0.0, coefficient_zeroth=1.0
+    ),
 )
 
 lens_galaxy = al.Galaxy(

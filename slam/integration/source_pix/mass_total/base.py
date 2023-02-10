@@ -154,7 +154,9 @@ regularization, to set up the model and hyper images, and then:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=imaging, hyper_dataset_result=source_lp_results.last)
+analysis = al.AnalysisImaging(
+    dataset=imaging, hyper_dataset_result=source_lp_results.last
+)
 
 source_pix_results = slam.source_pix.run(
     settings_autofit=settings_autofit,
@@ -258,7 +260,7 @@ subhalo_results = slam.subhalo.detection(
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
-    end_with_stochastic_extension=True
+    end_with_stochastic_extension=True,
 )
 
 """

@@ -80,9 +80,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_autofit = af.SettingsSearch(
-    path_prefix=path.join(
-        "slam", "source_pix", "mass_total", "linear_parametric"
-    ),
+    path_prefix=path.join("slam", "source_pix", "mass_total", "linear_parametric"),
     number_of_cores=1,
     session=None,
 )
@@ -107,7 +105,7 @@ extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter value
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_hyper = al.SetupHyper(
-    hyper_galaxies_lens=True,
+    hyper_galaxies_lens=False,
 )
 
 """

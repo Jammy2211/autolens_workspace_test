@@ -158,5 +158,3 @@ fit_w_tilde = al.FitImaging(
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=True),
 )
-
-

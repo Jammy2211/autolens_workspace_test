@@ -158,9 +158,15 @@ fit_w_tilde = al.FitImaging(
     settings_inversion=al.SettingsInversion(use_w_tilde=True),
 )
 
-print(np.max(np.abs(fit_mapping.inversion.curvature_matrix - fit_w_tilde.inversion.curvature_matrix)))
+print(
+    np.max(
+        np.abs(
+            fit_mapping.inversion.curvature_matrix
+            - fit_w_tilde.inversion.curvature_matrix
+        )
+    )
+)
 print(fit_w_tilde.figure_of_merit)
-
 
 
 # print(fit_mapping.inversion.data_vector - fit_w_tilde.inversion.data_vector)
@@ -169,14 +175,35 @@ print(fit_w_tilde.figure_of_merit)
 
 import autoarray as aa
 
-mapper_index_range = fit_w_tilde.inversion.param_range_list_from(cls=al.AbstractMapper)[0]
-func_index_range = fit_w_tilde.inversion.param_range_list_from(cls=aa.AbstractLinearObjFuncList)[0]
+mapper_index_range = fit_w_tilde.inversion.param_range_list_from(cls=al.AbstractMapper)[
+    0
+]
+func_index_range = fit_w_tilde.inversion.param_range_list_from(
+    cls=aa.AbstractLinearObjFuncList
+)[0]
 
 
-print(np.max(np.abs(fit_mapping.inversion.data_vector - fit_w_tilde.inversion.data_vector)))
+print(
+    np.max(
+        np.abs(fit_mapping.inversion.data_vector - fit_w_tilde.inversion.data_vector)
+    )
+)
 
-print(np.max(np.abs(fit_mapping.inversion.reconstruction - fit_w_tilde.inversion.reconstruction)))
-print(np.max(np.abs(fit_mapping.inversion.mapped_reconstructed_image - fit_w_tilde.inversion.mapped_reconstructed_image)))
+print(
+    np.max(
+        np.abs(
+            fit_mapping.inversion.reconstruction - fit_w_tilde.inversion.reconstruction
+        )
+    )
+)
+print(
+    np.max(
+        np.abs(
+            fit_mapping.inversion.mapped_reconstructed_image
+            - fit_w_tilde.inversion.mapped_reconstructed_image
+        )
+    )
+)
 
 print(fit_mapping.log_likelihood)
 print(fit_w_tilde.log_likelihood)
