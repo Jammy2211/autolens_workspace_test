@@ -9,8 +9,10 @@ include_2d:
   border: true
   grid: true
   positions: true
-  caustics: true
-  critical_curves: true
+  tangential_critical_curves: true
+  tangential_caustics: true
+  radial_critical_curves: true
+  radial_caustics: true
   light_profile_centres: true
   mass_profile_centres: true
   multiple_images: true

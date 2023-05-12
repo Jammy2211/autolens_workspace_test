@@ -158,7 +158,7 @@ try:
     dataset_path = path.join("dataset", "interferometer", "instruments", instrument)
 
     interferometer = al.Interferometer.from_fits(
-        visibilities_path=path.join(dataset_path, "visibilities.fits"),
+        data_path=path.join(dataset_path, "visibilities.fits"),
         noise_map_path=path.join(dataset_path, "noise_map.fits"),
         uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
         real_space_mask=real_space_mask,
@@ -173,7 +173,7 @@ except FileNotFoundError:
     )
 
     interferometer = al.Interferometer.from_fits(
-        visibilities_path=path.join(dataset_path, "visibilities.fits"),
+        data_path=path.join(dataset_path, "visibilities.fits"),
         noise_map_path=path.join(dataset_path, "noise_map.fits"),
         uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
         real_space_mask=real_space_mask,
@@ -309,14 +309,14 @@ Output an image of the fit, so that we can inspect that it fits the data as expe
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
         path=file_path,
-        filename=f"{instrument}_subplot_fit_interferometer",
+        filename=f"{instrument}_subplot_fit",
         format="png",
     )
 )
 fit_interferometer_plotter = aplt.FitInterferometerPlotter(
     fit=fit, mat_plot_2d=mat_plot_2d
 )
-fit_interferometer_plotter.subplot_fit_interferometer()
+fit_interferometer_plotter.subplot_fit()
 fit_interferometer_plotter.subplot_fit_dirty_images()
 fit_interferometer_plotter.subplot_fit_real_space()
 

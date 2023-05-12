@@ -119,7 +119,7 @@ imaging = simulator.via_tracer_from(tracer=tracer, grid=grid)
 Output the simulated dataset to the dataset path as .fits files.
 """
 imaging.output_to_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     overwrite=True,
@@ -129,7 +129,7 @@ imaging.output_to_fits(
 Plot the simulated `Imaging` dataset before outputting it to fits.
 """
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_imaging()
+imaging_plotter.subplot_dataset()
 
 """
 Output a subplot of the simulated dataset, the image and a subplot of the `Tracer`'s quantities to the dataset path 
@@ -141,8 +141,8 @@ mat_plot_2d = aplt.MatPlot2D(
 )
 
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging, mat_plot_2d=mat_plot_2d)
-imaging_plotter.subplot_imaging()
-imaging_plotter.figures_2d(image=True)
+imaging_plotter.subplot_dataset()
+imaging_plotter.figures_2d(data=True)
 
 tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d)
 tracer_plotter.subplot_tracer()

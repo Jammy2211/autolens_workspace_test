@@ -113,13 +113,25 @@ pixel_scale = pixel_scales_dict[instrument]
 Load the dataset for this instrument / resolution.
 """
 dataset_path = path.join("dataset", "imaging", "instruments", instrument)
+dataset_jwst_path = path.join("dataset", "jwst")
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
-    psf_path=path.join(dataset_path, "psf.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
+    psf_path=path.join(dataset_jwst_path, f'psf356_cut.fits'),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
 )
+
+imaging.psf = al.Kernel2D.from_gaussian(shape_native=(11,11), pixel_scales=pixel_scale, sigma=0.1, centre=(0.01, 0.0), normalize=True)
+
+# imaging = al.Imaging.from_fits(data_path=path.join(dataset_path, 'data_scaled.fits'),
+#                                noise_map_path=path.join(dataset_path, 'noise356.fits'),
+#                                psf_path=path.join(dataset_path, f'psf356_cut.fits'),
+#                                pixel_scales=0.063)
+#
+# print(imaging.psf)
+# print(sum(imaging.psf))
+# stop
 
 """
 Apply the 2D mask, which for the settings above is representative of the masks we typically use to model strong lenses.
@@ -150,13 +162,19 @@ fit_mapping = al.FitImaging(
     settings_inversion=al.SettingsInversion(use_w_tilde=False),
 )
 
-print(fit_mapping.figure_of_merit)
-
 fit_w_tilde = al.FitImaging(
     dataset=masked_imaging,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=True),
 )
+
+index_list = fit_w_tilde.inversion.param_range_list_from(cls=al.AbstractMapper)
+print(index_list)
+
+import autoarray as aa
+
+index_list = fit_w_tilde.inversion.param_range_list_from(cls=aa.AbstractLinearObjFuncList)
+print(index_list)
 
 print(
     np.max(
@@ -166,8 +184,62 @@ print(
         )
     )
 )
-print(fit_w_tilde.figure_of_merit)
 
+print(
+    np.max(
+        np.abs(
+            fit_mapping.inversion.curvature_matrix[0:2, 0:2]
+            - fit_w_tilde.inversion.curvature_matrix[ 0:2, 0:2]
+        )
+    )
+)
+
+
+print(
+    np.max(
+        np.abs(
+            fit_mapping.inversion.curvature_matrix[0:2, 2:1226]
+            - fit_w_tilde.inversion.curvature_matrix[0:2, 2:1226]
+        )
+    )
+)
+
+print()
+
+
+data_linear_func_matrix_dict = fit_mapping.inversion.data_linear_func_matrix_dict
+
+mapper_list = fit_mapping.inversion.cls_list_from(cls=aa.AbstractMapper)
+mapper = mapper_list[0]
+
+data_to_pix_unique = mapper.unique_mappings.data_to_pix_unique
+data_weights = mapper.unique_mappings.data_weights
+pix_lengths = mapper.unique_mappings.pix_lengths
+pix_pixels = mapper.params
+
+linear_func_list = fit_mapping.inversion.cls_list_from(cls=aa.AbstractLinearObjFuncList)
+
+linear_func_pixels = len(linear_func_list)
+
+off_diag = np.zeros((pix_pixels, linear_func_pixels))
+
+data_pixels = data_weights.shape[0]
+
+for data_0 in range(data_pixels):
+
+    for pix_0_index in range(pix_lengths[data_0]):
+
+        data_0_weight = data_weights[data_0, pix_0_index]
+        pix_0 = data_to_pix_unique[data_0, pix_0_index]
+
+        for linear_index in range(linear_func_pixels):
+
+            off_diag[pix_0, linear_index] += data_linear_func_matrix_dict[data_0, linear_index] * data_0_weight
+
+print(fit_mapping.inversion.curvature_matrix[2:1226, 0:2])
+print(off_diag)
+
+aaa
 
 # print(fit_mapping.inversion.data_vector - fit_w_tilde.inversion.data_vector)
 # print(np.max(np.abs(fit_mapping.inversion.data_vector - fit_w_tilde.inversion.data_vector)))

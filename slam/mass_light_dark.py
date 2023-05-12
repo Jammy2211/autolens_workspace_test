@@ -9,7 +9,7 @@ from typing import Optional, Tuple, Union
 def run(
     settings_autofit: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
-    setup_hyper: al.SetupHyper,
+    setup_adapt: al.SetupAdapt,
     source_results: af.ResultsCollection,
     light_results: af.ResultsCollection,
     lens_bulge: Optional[af.Model] = af.Model(al.lp.Sersic),
@@ -17,17 +17,17 @@ def run(
     dark: af.Model = af.Model(al.mp.NFWMCRLudlow),
     smbh: Optional[af.Model] = None,
     einstein_mass_range: Optional[Tuple[float, float]] = (0.01, 5.0),
-    end_with_hyper_extension: bool = False,
-    end_with_stochastic_extension: bool = False,
+    end_with_adapt_extension: bool = False,
 ) -> af.ResultsCollection:
     """
     The SLaM MASS LIGHT DARK PIPELINE for fitting imaging data with a lens light component.
+
     Parameters
     ----------
     analysis
         The analysis class which includes the `log_likelihood_function` and can be customized for the SLaM model-fit.
-    setup_hyper
-        The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
+    setup_adapt
+        The setup of the adapt fit.
     source_results
         The results of the SLaM SOURCE PARAMETRIC PIPELINE or SOURCE PIXELIZED PIPELINE which ran before this pipeline.
     light_results
@@ -48,23 +48,28 @@ def run(
     einstein_mass_range
         The values an the estimate of the Einstein Mass in the LIGHT PIPELINE is multiplied by to set the lower and
         upper limits of the profile's mass-to-light ratio.
-    end_with_hyper_extension
+    end_with_adapt_extension
         If `True` a hyper extension is performed at the end of the pipeline. If this feature is used, you must be
         certain you have manually passed the new hyper images geneted in this search to the next pipelines.
     """
 
     """
     __Model + Search + Analysis + Model-Fit (Search 1)__
+    
     In search 1 of the MASS LIGHT DARK PIPELINE we fit a lens model where:
+    
      - The lens galaxy light and stellar mass is modeled using light and mass profiles [Priors on light model parameters
      initialized from LIGHT PIPELINE].
      - The lens galaxy dark mass is modeled using a dark mass distribution [No prior initialization].
      - The source galaxy's light is parametric or an inversion depending on the previous pipeline [Model and priors 
      initialized from SOURCE PIPELINE].
+     
     This search aims to accurately estimate the lens mass model, using the improved mass model priors and source model 
     of the SOURCE PIPELINE and LIGHT PIPELINE.
+    
     The `mass_to_light_ratio` prior of each light and stellar profile is set using the Einstein Mass estimate of the
     SOURCE PIPELINE, specifically using values which are 1% and 500% this estimate.
+    
     The dark matter mass profile has the lens and source redshifts added to it, which are used to determine its mass
     from the mass-to-concentration relation of Ludlow et al.    
     """
@@ -78,6 +83,12 @@ def run(
     lens_disk = slam_util.pass_light_and_mass_profile_priors(
         lmp_model=lens_disk,
         result_light_component=light_results.last.model.galaxies.lens.disk,
+        result=light_results.last,
+        einstein_mass_range=einstein_mass_range,
+    )
+    lens_point = slam_util.pass_light_and_mass_profile_priors(
+        lmp_model=lens_point,
+        result_light_component=light_results.last.model.galaxies.lens.point,
         result=light_results.last,
         einstein_mass_range=einstein_mass_range,
     )
@@ -100,16 +111,14 @@ def run(
                 redshift=light_results.last.instance.galaxies.lens.redshift,
                 bulge=lens_bulge,
                 disk=lens_disk,
+                point=lens_point,
                 dark=dark,
-                shear=source_results.last.model.galaxies.lens.shear,
+                shear=source_results[0].model.galaxies.lens.shear,
                 smbh=smbh,
-                hyper_galaxy=setup_hyper.hyper_galaxy_lens_from(
-                    result=light_results.last
-                ),
             ),
             source=source,
         ),
-        clumps=slam_util.clumps_from(result=source_results.last, mass_as_model=True),
+        clumps=slam_util.clumps_from(result=source_results[0], mass_as_model=True),
     )
 
     search = af.DynestyStatic(
@@ -122,29 +131,19 @@ def run(
 
     """
     __Hyper Extension__
-    The above search may be extended with a hyper-search, if the SetupHyper has one or more of the following inputs:
+    
+    The above search may be extended with a hyper-search, if the SetupAdapt has one or more of the following inputs:
+    
      - The source is modeled using a pixelization with a regularization scheme.
-     - One or more `HyperGalaxy`'s are included.
-     - The background sky is included via `hyper_image_sky` input.
-     - The background noise is included via the `hyper_background_noise`.
     """
 
-    if end_with_hyper_extension:
+    if end_with_adapt_extension:
 
-        result_1 = extensions.hyper_fit(
-            setup_hyper=setup_hyper,
+        result_1 = extensions.adapt_fit(
+            setup_adapt=setup_adapt,
             result=result_1,
             analysis=analysis,
             search_previous=search,
-        )
-
-    if end_with_stochastic_extension:
-
-        extensions.stochastic_fit(
-            result=result_1,
-            analysis=analysis,
-            search_previous=search,
-            **settings_autofit.fit_dict,
         )
 
     return af.ResultsCollection([result_1])
@@ -153,14 +152,13 @@ def run(
 def run__from_light_linear(
     settings_autofit: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
-    setup_hyper: al.SetupHyper,
+    setup_adapt: al.SetupAdapt,
     source_results: af.ResultsCollection,
     light_results: af.ResultsCollection,
     dark: af.Model = af.Model(al.mp.NFWMCRLudlow),
     smbh: Optional[af.Model] = None,
     einstein_mass_range: Optional[Tuple[float, float]] = (0.01, 5.0),
-    end_with_hyper_extension: bool = False,
-    end_with_stochastic_extension: bool = False,
+    end_with_adapt_extension: bool = False,
 ) -> af.ResultsCollection:
     """
     The SLaM MASS LIGHT DARK PIPELINE for fitting imaging data with a lens light component.
@@ -169,8 +167,8 @@ def run__from_light_linear(
     ----------
     analysis
         The analysis class which includes the `log_likelihood_function` and can be customized for the SLaM model-fit.
-    setup_hyper
-        The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
+    setup_adapt
+        The setup of the adapt fit.
     source_results
         The results of the SLaM SOURCE LP PIPELINE or SOURCE PIX PIPELINE which ran before this pipeline.
     light_results
@@ -191,7 +189,7 @@ def run__from_light_linear(
     einstein_mass_range
         The values an the estimate of the Einstein Mass in the LIGHT PIPELINE is multiplied by to set the lower and
         upper limits of the profile's mass-to-light ratio.
-    end_with_hyper_extension
+    end_with_adapt_extension
         If `True` a hyper extension is performed at the end of the pipeline. If this feature is used, you must be
         certain you have manually passed the new hyper images geneted in this search to the next pipelines.
     """
@@ -222,17 +220,23 @@ def run__from_light_linear(
 
     lens_bulge = slam_util.lmp_from(lp=instance.galaxies.lens.bulge, fit=fit)
     lens_disk = slam_util.lmp_from(lp=instance.galaxies.lens.disk, fit=fit)
+    lens_point = slam_util.lmp_from(lp=instance.galaxies.lens.point, fit=fit)
 
-    # lens_bulge = slam_util.update_mass_to_light_ratio_prior(
-    #     lmp_model=lens_bulge,
-    #     result=light_results.last,
-    #     einstein_mass_range=einstein_mass_range,
-    # )
-    # lens_disk = slam_util.update_mass_to_light_ratio_prior(
-    #     lmp_model=lens_disk,
-    #     result=light_results.last,
-    #     einstein_mass_range=einstein_mass_range,
-    # )
+    lens_bulge = slam_util.update_mass_to_light_ratio_prior(
+        lmp_model=lens_bulge,
+        result=light_results.last,
+        einstein_mass_range=einstein_mass_range,
+    )
+    lens_disk = slam_util.update_mass_to_light_ratio_prior(
+        lmp_model=lens_disk,
+        result=light_results.last,
+        einstein_mass_range=einstein_mass_range,
+    )
+    lens_point = slam_util.update_mass_to_light_ratio_prior(
+        lmp_model=lens_point,
+        result=light_results.last,
+        einstein_mass_range=einstein_mass_range,
+    )
 
     dark.mass_at_200 = af.LogUniformPrior(lower_limit=1e10, upper_limit=1e15)
     dark.redshift_object = light_results.last.instance.galaxies.lens.redshift
@@ -252,16 +256,14 @@ def run__from_light_linear(
                 redshift=light_results.last.instance.galaxies.lens.redshift,
                 bulge=lens_bulge,
                 disk=lens_disk,
+                point=lens_point,
                 dark=dark,
-                shear=source_results.last.model.galaxies.lens.shear,
+                shear=source_results[0].model.galaxies.lens.shear,
                 smbh=smbh,
-                hyper_galaxy=setup_hyper.hyper_galaxy_lens_from(
-                    result=light_results.last
-                ),
             ),
             source=source,
         ),
-        clumps=slam_util.clumps_from(result=source_results.last, mass_as_model=True),
+        clumps=slam_util.clumps_from(result=source_results[0], mass_as_model=True),
     )
 
     search = af.DynestyStatic(
@@ -275,30 +277,18 @@ def run__from_light_linear(
     """
     __Hyper Extension__
 
-    The above search may be extended with a hyper-search, if the SetupHyper has one or more of the following inputs:
+    The above search may be extended with a hyper-search, if the SetupAdapt has one or more of the following inputs:
 
      - The source is modeled using a pixelization with a regularization scheme.
-     - One or more `HyperGalaxy`'s are included.
-     - The background sky is included via `hyper_image_sky` input.
-     - The background noise is included via the `hyper_background_noise`.
     """
 
-    if end_with_hyper_extension:
+    if end_with_adapt_extension:
 
-        result_1 = extensions.hyper_fit(
-            setup_hyper=setup_hyper,
+        result_1 = extensions.adapt_fit(
+            setup_adapt=setup_adapt,
             result=result_1,
             analysis=analysis,
             search_previous=search,
-        )
-
-    if end_with_stochastic_extension:
-
-        extensions.stochastic_fit(
-            result=result_1,
-            analysis=analysis,
-            search_previous=search,
-            **settings_autofit.fit_dict,
         )
 
     return af.ResultsCollection([result_1])

@@ -44,7 +44,7 @@ dataset_name = "mass_sie__source_sersic"
 dataset_path = path.join("dataset", "interferometer", dataset_name)
 
 interferometer = al.Interferometer.from_fits(
-    visibilities_path=path.join(dataset_path, "visibilities.fits"),
+    data_path=path.join(dataset_path, "visibilities.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
     real_space_mask=real_space_mask,
@@ -61,15 +61,15 @@ We made this choice so the script runs fast, and we discuss below how PyAutoLens
 datasets from an instrument like ALMA.
 """
 interferometer_plotter = aplt.InterferometerPlotter(
-    interferometer=interferometer,
+    dataset=interferometer,
     mat_plot_2d=aplt.MatPlot2D(
         output=aplt.Output(path=workspace_path, filename="visibilities", format="png")
     ),
 )
-interferometer_plotter.figures_2d(visibilities=True)
+interferometer_plotter.figures_2d(data=True)
 
 interferometer_plotter = aplt.InterferometerPlotter(
-    interferometer=interferometer,
+    dataset=interferometer,
     mat_plot_2d=aplt.MatPlot2D(
         output=aplt.Output(path=workspace_path, filename="uv_wavelengths", format="png")
     ),
@@ -77,7 +77,7 @@ interferometer_plotter = aplt.InterferometerPlotter(
 interferometer_plotter.figures_2d(uv_wavelengths=True)
 
 interferometer_plotter = aplt.InterferometerPlotter(
-    interferometer=interferometer,
+    dataset=interferometer,
     mat_plot_2d=aplt.MatPlot2D(
         output=aplt.Output(path=workspace_path, filename="dirty_image", format="png")
     ),
@@ -86,7 +86,7 @@ interferometer_plotter = aplt.InterferometerPlotter(
 interferometer_plotter.figures_2d(dirty_image=True)
 
 interferometer_plotter = aplt.InterferometerPlotter(
-    interferometer=interferometer,
+    dataset=interferometer,
     mat_plot_2d=aplt.MatPlot2D(
         output=aplt.Output(
             path=workspace_path, filename="dirty_signal_to_noise", format="png"
@@ -176,7 +176,7 @@ Visualization of the fit can be performed in the uv-plane or in real-space.
 
 Note that the fit is not performed in real-space, but plotting it in real-space is often more informative.
 """
-fit_interferometer_plotter.subplot_fit_interferometer()
+fit_interferometer_plotter.subplot_fit()
 fit_interferometer_plotter.subplot_fit_real_space()
 
 """
@@ -241,11 +241,11 @@ __Model__
 
 We first compose the model, in the same way described in the `modeling.py` overview script:
 """
-lens_galaxy_model = af.Model(al.Galaxy, redshift=0.5, mass=al.mp.Isothermal)
+lens = af.Model(al.Galaxy, redshift=0.5, mass=al.mp.Isothermal)
 
-source_galaxy_model = af.Model(al.Galaxy, redshift=1.0, disk=al.lp.Exponential)
+source = af.Model(al.Galaxy, redshift=1.0, disk=al.lp.Exponential)
 
-galaxies = af.Collection(lens=lens_galaxy_model, source=source_galaxy_model)
+galaxies = af.Collection(lens=lens, source=source)
 model = af.Collection(galaxies=galaxies)
 
 """
@@ -284,7 +284,7 @@ results.
 fit_interferometer_plotter = aplt.FitInterferometerPlotter(
     fit=result.max_log_likelihood_fit
 )
-fit_interferometer_plotter.subplot_fit_interferometer()
+fit_interferometer_plotter.subplot_fit()
 fit_interferometer_plotter.subplot_fit_dirty_images()
 
 """

@@ -74,7 +74,7 @@ Load the dataset for this instrument / resolution.
 dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,

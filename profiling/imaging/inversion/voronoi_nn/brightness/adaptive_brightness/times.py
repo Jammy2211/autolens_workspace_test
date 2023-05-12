@@ -18,7 +18,7 @@ conf.instance.push(new_path=path.join(cwd, "config", "profiling"))
 import time
 import numpy as np
 import json
-from autoarray.inversion import mappers
+from autoarray.inversion.pixelization import mappers
 import autolens as al
 import autolens.plot as aplt
 
@@ -51,7 +51,7 @@ These settings control various aspects of how long a fit takes. The values below
 sub_size = 4
 mask_radius = 3.5
 psf_shape_2d = (21, 21)
-pixels = 2500
+pixels = 1000
 
 print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
@@ -109,7 +109,7 @@ Load the dataset for this instrument / resolution.
 dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
@@ -143,27 +143,31 @@ source_galaxy = al.Galaxy(
         sersic_index=2.5,
     ),
 )
-lens_hyper_image = lens_galaxy.image_2d_from(grid=masked_imaging.grid).binned
-source_hyper_image = source_galaxy.image_2d_from(grid=masked_imaging.grid).binned
-hyper_model_image = lens_hyper_image + source_hyper_image
-lens_galaxy.hyper_galaxy_image = lens_hyper_image
-lens_galaxy.hyper_model_image = hyper_model_image
+lens_hyper_data = lens_galaxy.image_2d_from(grid=masked_imaging.grid).binned
+source_hyper_data = source_galaxy.image_2d_from(grid=masked_imaging.grid).binned
+adapt_model_image = lens_hyper_data + source_hyper_data
+lens_galaxy.adapt_galaxy_image = lens_hyper_data
+lens_galaxy.adapt_model_image = adapt_model_image
 
 """
 The source galaxy whose `VoronoiNNBrightness` `Pixelization` fits the data.
 """
-mesh = al.mesh.VoronoiNNBrightnessImage(
-    pixels=pixels, weight_floor=0.3, weight_power=15.0
+
+
+pixelization = al.Pixelization(
+    mesh=al.mesh.VoronoiNNBrightnessImage(
+        pixels=pixels, weight_floor=0.3, weight_power=15.0
+    ),
+    regularization=al.reg.AdaptiveBrightnessSplit(
+        inner_coefficient=0.001, outer_coefficient=100.0, signal_scale=0.05
+    ),
 )
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
     pixelization=pixelization,
-    regularization=al.reg.AdaptiveBrightnessSplit(
-        inner_coefficient=0.001, outer_coefficient=100.0, signal_scale=0.05
-    ),
-    hyper_galaxy_image=source_hyper_image,
-    hyper_model_image=hyper_model_image,
+    adapt_galaxy_image=source_hyper_data,
+    adapt_model_image=adapt_model_image,
 )
 
 """
@@ -325,8 +329,8 @@ https://github.com/Jammy2211/PyAutoLens/blob/main/autolens/lens/ray_tracing.py
 The image-plane pixelization computed below must be ray-traced just like the image-grid and is therefore included in
 the profiling time below.
 """
-weight_map = source_galaxy.pixelization.weight_map_from(
-    hyper_image=source_galaxy.hyper_galaxy_image
+weight_map = source_galaxy.pixelization.mesh.weight_map_from(
+    hyper_data=source_galaxy.adapt_galaxy_image
 )
 sparse_image_plane_grid = al.Grid2DSparse.from_total_pixels_grid_and_weight_map(
     total_pixels=pixels, grid=masked_imaging.grid, weight_map=weight_map
@@ -372,7 +376,7 @@ profiling_dict["Ray Tracing (Decomposed)"] = (time.time() - start) / repeats
 __Image-Plane Weight Map__
 
 To determine the image-plane pixelization a weight KMeans algorithm will be called. This requires a weight map, 
-which the code computes below using the hyper_galaxy_image of the source galaxy.
+which the code computes below using the adapt_galaxy_image of the source galaxy.
 
 Checkout the functions `VoronoiNNBrightnessImage.weight_map_from`
 
@@ -380,8 +384,8 @@ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/pixelizat
 """
 start = time.time()
 for i in range(repeats):
-    weight_map = source_galaxy.pixelization.weight_map_from(
-        hyper_image=source_galaxy.hyper_galaxy_image
+    weight_map = source_galaxy.pixelization.mesh.weight_map_from(
+        hyper_data=source_galaxy.adapt_galaxy_image
     )
 
 profiling_dict["Image-plane Weight-Map"] = (time.time() - start) / repeats
@@ -479,7 +483,7 @@ mapper = mappers.MapperVoronoi(
     source_plane_data_grid=relocated_grid,
     source_plane_mesh_grid=grid_VoronoiNN,
     data_pixelization_grid=sparse_image_plane_grid,
-    hyper_image=source_galaxy.hyper_galaxy_image,
+    hyper_data=source_galaxy.adapt_galaxy_image,
 )
 
 """
@@ -760,11 +764,11 @@ Output an image of the fit, so that we can inspect that it fits the data as expe
 """
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
-        path=file_path, filename=f"{instrument}_subplot_fit_imaging", format="png"
+        path=file_path, filename=f"{instrument}_subplot_fit", format="png"
     )
 )
 fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_imaging_plotter.subplot_fit_imaging()
+fit_imaging_plotter.subplot_fit()
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(

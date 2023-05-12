@@ -53,7 +53,7 @@ __Dataset + Masking__
 dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     pixel_scales=0.05,
@@ -66,7 +66,7 @@ mask = al.Mask2D.circular(
 imaging = imaging.apply_mask(mask=mask)
 
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_imaging()
+imaging_plotter.subplot_dataset()
 
 """
 __Model + Search + Analysis + Model-Fit (Search 1)__

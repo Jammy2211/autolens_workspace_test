@@ -73,7 +73,7 @@ dataset_path = path.join("dataset", dataset_type, dataset_label, dataset_name)
 
 imaging_list = [
     al.Imaging.from_fits(
-        image_path=path.join(dataset_path, f"{color}_image.fits"),
+        data_path=path.join(dataset_path, f"{color}_image.fits"),
         psf_path=path.join(dataset_path, f"{color}_psf.fits"),
         noise_map_path=path.join(dataset_path, f"{color}_noise_map.fits"),
         pixel_scales=pixel_scales,
@@ -99,10 +99,10 @@ for imaging, color in zip(imaging_list, color_list):
     )
 
     imaging_plotter = aplt.ImagingPlotter(imaging=imaging, mat_plot_2d=mat_plot_2d)
-    imaging_plotter.figures_2d(image=True)
+    imaging_plotter.figures_2d(data=True)
 
 """
-__Masking__
+__Mask__
 
 The model-fit requires a `Mask2D` defining the regions of the image we fit the lens model to the data, which we define
 and use to set up the `Imaging` object that the lens model fits.
@@ -133,7 +133,7 @@ for imaging in imaging_list:
     )
 
     imaging_plotter = aplt.ImagingPlotter(imaging=imaging, mat_plot_2d=mat_plot_2d)
-    imaging_plotter.figures_2d(image=True)
+    imaging_plotter.figures_2d(data=True)
 
 """
 __Analysis__
@@ -245,8 +245,10 @@ for result, color in zip(result_list, color_list):
         border=False,
         light_profile_centres=False,
         mass_profile_centres=False,
-        critical_curves=False,
-        caustics=False,
+        tangential_critical_curves=False,
+        radial_critical_curves=False,
+        tangential_caustics=False,
+radial_caustics=False,
     )
 
     tracer_plotter = aplt.TracerPlotter(
@@ -335,7 +337,7 @@ dataset_name = "mass_sie__source_sersic"
 dataset_path = path.join("dataset", dataset_type, dataset_label, dataset_name)
 
 interferometer = al.Interferometer.from_fits(
-    visibilities_path=path.join(dataset_path, "visibilities.fits"),
+    data_path=path.join(dataset_path, "visibilities.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
     real_space_mask=real_space_mask,
@@ -347,7 +349,7 @@ mat_plot_2d = aplt.MatPlot2D(
 )
 
 interferometer_plotter = aplt.InterferometerPlotter(
-    interferometer=interferometer, mat_plot_2d=mat_plot_2d
+    dataset=interferometer, mat_plot_2d=mat_plot_2d
 )
 interferometer_plotter.figures_2d(dirty_image=True)
 
@@ -360,7 +362,7 @@ __Imaging Dataset__
 # dataset_path = path.join("dataset", dataset_type, dataset_label, dataset_name)
 #
 # imaging = al.Imaging.from_fits(
-#     image_path=path.join(dataset_path, "g_image.fits"),
+#     data_path=path.join(dataset_path, "g_image.fits"),
 #     psf_path=path.join(dataset_path, "g_psf.fits"),
 #     noise_map_path=path.join(dataset_path, "g_noise_map.fits"),
 #     pixel_scales=0.08,
@@ -378,4 +380,4 @@ __Imaging Dataset__
 # )
 #
 # imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-# imaging_plotter.subplot_imaging()
+# imaging_plotter.subplot_dataset()

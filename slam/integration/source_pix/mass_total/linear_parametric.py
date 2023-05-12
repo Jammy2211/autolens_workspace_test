@@ -57,7 +57,7 @@ dataset_name = "light_sersic__mass_sie__source_sersic"
 dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     pixel_scales=0.2,
@@ -72,7 +72,7 @@ imaging = imaging.apply_mask(mask=mask)
 imaging_plotter = aplt.ImagingPlotter(
     imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
 )
-imaging_plotter.subplot_imaging()
+imaging_plotter.subplot_dataset()
 
 """
 __Settings AutoFit__
@@ -80,7 +80,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_autofit = af.SettingsSearch(
-    path_prefix=path.join("slam", "source_pix", "mass_total", "linear_parametric"),
+    path_prefix=path.join("slam", "source_pix", "mass_total", "linear_parametric_21"),
     number_of_cores=1,
     session=None,
 )
@@ -95,17 +95,17 @@ redshift_lens = 0.5
 redshift_source = 1.0
 
 """
-__HYPER SETUP__
+__Adapt Setup__
 
-The `SetupHyper` determines which hyper-mode features are used during the model-fit as is used identically to the
+The `SetupAdapt` determines which hyper-mode features are used during the model-fit as is used identically to the
 hyper pipeline examples.
 
-The `SetupHyper` input `hyper_fixed_after_source` fixes the hyper-parameters to the values computed by the hyper 
+The `SetupAdapt` input `hyper_fixed_after_source` fixes the hyper-parameters to the values computed by the hyper 
 extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter values at this point, model comparison 
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
-setup_hyper = al.SetupHyper(
-    hyper_galaxies_lens=False,
+setup_adapt = al.SetupAdapt(
+    mesh_pixels_fixed=1500,
 )
 
 """
@@ -128,7 +128,6 @@ analysis = al.AnalysisImaging(dataset=imaging)
 source_lp_results = slam.source_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
     lens_bulge=af.Model(al.lp_linear.Sersic),
     lens_disk=af.Model(al.lp_linear.Sersic),
     mass=af.Model(al.mp.Isothermal),
@@ -153,13 +152,13 @@ regularization, to set up the model and hyper images, and then:
 """
 
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_lp_results.last
+    dataset=imaging, adapt_result=source_lp_results.last
 )
 
 source_pix_results = slam.source_pix.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
+    setup_adapt=setup_adapt,
     source_lp_results=source_lp_results,
     mesh=al.mesh.VoronoiBrightnessImage,
     regularization=al.reg.AdaptiveBrightness,
@@ -182,10 +181,14 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
+analysis = al.AnalysisImaging(
+    dataset=imaging, adapt_result=source_pix_results.last
+)
+
 light_results = slam.light_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
+    setup_adapt=setup_adapt,
     source_results=source_pix_results,
     lens_bulge=af.Model(al.lp_linear.Sersic),
     lens_disk=af.Model(al.lp_linear.Sersic),
@@ -209,14 +212,12 @@ model of the LIGHT LP PIPELINE. In this example it:
  
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
-analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_pix_results.last
-)
+analysis = al.AnalysisImaging(dataset=imaging, adapt_result=light_results.last)
 
 mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
+    setup_adapt=setup_adapt,
     source_results=source_pix_results,
     light_results=light_results,
     mass=af.Model(al.mp.PowerLaw),
@@ -238,14 +239,11 @@ For this runner the SUBHALO PIPELINE customizes:
  - The `number_of_cores` used for the gridsearch, where `number_of_cores > 1` performs the model-fits in paralle using
  the Python multiprocessing module.
 """
-analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_pix_results.last
-)
+analysis = al.AnalysisImaging(dataset=imaging, adapt_result=mass_results.last)
 
 subhalo_results = slam.subhalo.detection(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
     mass_results=mass_results,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,

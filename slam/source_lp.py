@@ -9,7 +9,6 @@ from typing import Callable, Union, Optional, Tuple
 def run(
     settings_autofit: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
-    setup_hyper: al.SetupHyper,
     lens_bulge: Optional[af.Model] = af.Model(al.lp.Sersic),
     lens_disk: Optional[af.Model] = af.Model(al.lp.Exponential),
     mass: af.Model = af.Model(al.mp.Isothermal),
@@ -28,8 +27,8 @@ def run(
     ----------
     analysis
         The analysis class which includes the `log_likelihood_function` and can be customized for the SLaM model-fit.
-    setup_hyper
-        The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
+    setup_adapt
+        The setup of the adapt fit.
     lens_bulge
         The `LightProfile` `Model` used to represent the light distribution of the lens galaxy's bulge (set to
         None to omit a bulge).
@@ -104,22 +103,6 @@ def run(
 
     result_1 = search_1.fit(
         model=model_1, analysis=analysis, **settings_autofit.fit_dict
-    )
-
-    """
-    __Hyper Extension__
-
-    The above search is extended with a hyper-search if the SetupHyper has one or more of the following inputs:
-
-     - The background sky is included via `hyper_image_sky`.
-     - The background noise is included via the `hyper_background_noise`.
-     - The source galaxy includes a `HyperGalaxy` for scaling the noise.
-    """
-    result_1 = extensions.hyper_fit(
-        setup_hyper=setup_hyper,
-        result=result_1,
-        analysis=analysis,
-        search_previous=search_1,
     )
 
     return af.ResultsCollection([result_1])

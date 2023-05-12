@@ -34,7 +34,7 @@ import autolens.plot as aplt
 """
 __Paths__
 """
-dataset_name = "light_sersic_exp__mass_sie__source_sersic"
+dataset_name = "simple_lens"
 
 path_prefix = path.join("searches", "inversion", "lens_light_sersic_x2")
 
@@ -52,7 +52,7 @@ __Dataset + Masking__
 dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     pixel_scales=0.05,
@@ -65,14 +65,14 @@ mask = al.Mask2D.circular(
 imaging = imaging.apply_mask(mask=mask)
 
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_imaging()
+imaging_plotter.subplot_dataset()
 
 """
-__HYPER SETUP__
+__Adapt Setup__
 
-This tests uses the hyper galaxies feature on the lens.
+This tests uses the galaxies feature on the lens.
 """
-setup_hyper = al.SetupHyper(
+setup_adapt = al.SetupAdapt(
     hyper_galaxies_lens=True,
     hyper_galaxies_source=False,
     hyper_image_sky=None,
@@ -150,8 +150,8 @@ analysis = al.AnalysisImaging(dataset=imaging)
 
 result_3 = search_3.fit(model=model, analysis=analysis)
 
-result_3 = extensions.hyper_fit(
-    setup_hyper=setup_hyper,
+result_3 = extensions.adapt_fit(
+    setup_adapt=setup_adapt,
     result=result_3,
     analysis=analysis,
     include_hyper_image_sky=False,
@@ -167,7 +167,7 @@ lens = af.Model(
     disk=result_3.instance.galaxies.lens.disk,
     mass=result_3.instance.galaxies.lens.mass,
     shear=result_3.instance.galaxies.lens.shear,
-    hyper_galaxy=setup_hyper.hyper_galaxy_lens_from(result=result_3),
+    hyper_galaxy=setup_adapt.hyper_galaxy_lens_from(result=result_3),
 )
 
 source = af.Model(
@@ -186,12 +186,12 @@ search_4 = af.DynestyStatic(
     nlive=30,
 )
 
-analysis = al.AnalysisImaging(dataset=imaging, hyper_dataset_result=result_3)
+analysis = al.AnalysisImaging(dataset=imaging, adapt_result=result_3)
 
 result_4 = search_4.fit(model=model, analysis=analysis)
 
-result_4 = extensions.hyper_fit(
-    setup_hyper=setup_hyper,
+result_4 = extensions.adapt_fit(
+    setup_adapt=setup_adapt,
     result=result_4,
     analysis=analysis,
     include_hyper_image_sky=False,
@@ -200,7 +200,7 @@ result_4 = extensions.hyper_fit(
 """
 __Model + Analysis + Model-Fit (Search 5)__
 """
-hyper_galaxy = setup_hyper.hyper_galaxy_lens_from(
+hyper_galaxy = setup_adapt.hyper_galaxy_lens_from(
     result=result_4, noise_factor_is_model=True
 )
 
@@ -226,6 +226,6 @@ model = af.Collection(
     galaxies=af.Collection(lens=lens, source=result_4.instance.galaxies.source)
 )
 
-analysis = al.AnalysisImaging(dataset=imaging, hyper_dataset_result=result_4)
+analysis = al.AnalysisImaging(dataset=imaging, adapt_result=result_4)
 
 result_5 = search_5.fit(model=model, analysis=analysis)

@@ -9,9 +9,9 @@ general:
   hpc:
     hpc_mode: true
     iterations_per_update: 10000
-  hyper:
-    hyper_minimum_percent: 0.01
-    hyper_noise_limit: 100000000.0
+  adapt:
+    adapt_minimum_percent: 0.01
+    adapt_noise_limit: 100000000.0
     stochastic_outputs: false
   inversion:
     interpolated_grid_shape: image_grid
@@ -37,7 +37,9 @@ general:
     should_profile: false
   test:
     check_figure_of_merit_sanity: false
+    bypass_figure_of_merit_sanity: false
     check_preloads: false
+    preloads_check_threshold: 0.1     # If the figure of merit of a fit with and without preloads is greater than this threshold, the check preload test fails and an exception raised for a model-fit.
     disable_positions_lh_inversion_check: true
   w_tilde:
     snr_cut_iteration: false
@@ -349,8 +351,10 @@ visualize:
       half_light_radius: true
     include_2d:
       border: true
-      caustics: true
-      critical_curves: true
+      tangential_caustics: true
+      radial_caustics: true
+      tangential_critical_curves: true
+      radial_critical_curves: true
       grid: false
       light_profile_centres: true
       mapper_image_plane_mesh_grid: true
@@ -632,7 +636,7 @@ visualize:
       residual_map: false
       signal_to_noise_map: false
       subplot_fit: true
-      subplots_of_planes_fits: true
+      subplots_of_planes: true
       subtracted_images_of_planes: false
     fit_quantity:
       all_at_end_fits: false
@@ -644,9 +648,9 @@ visualize:
       normalized_residual_map: false
       residual_map: false
       subplot_fit: true
-    hyper:
+    adapt:
       contribution_map_list: false
-      fit_no_hyper: true
+      fit_no_adapt: true
       images_of_galaxies: true
       model_image: true
     inversion:
@@ -674,7 +678,7 @@ visualize:
       magnification: false
       potential: false
       source_plane_image: false
-      subplot_plane_images: true
+      subplot_plane_images: false
       subplot_ray_tracing: true
     samples:
       corner: true

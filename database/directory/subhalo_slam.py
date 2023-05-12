@@ -33,7 +33,7 @@ dataset_name = "mass_sie__source_sersic"
 dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     pixel_scales=0.2,
@@ -66,16 +66,16 @@ redshift_lens = 0.5
 redshift_source = 1.0
 
 """
-__HYPER SETUP__
+__Adapt Setup__
 
-The `SetupHyper` determines which hyper-mode features are used during the model-fit as is used identically to the
+The `SetupAdapt` determines which hyper-mode features are used during the model-fit as is used identically to the
 hyper pipeline examples.
 
-The `SetupHyper` input `hyper_fixed_after_source` fixes the hyper-parameters to the values computed by the hyper 
+The `SetupAdapt` input `hyper_fixed_after_source` fixes the hyper-parameters to the values computed by the hyper 
 extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter values at this point, model comparison 
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
-setup_hyper = al.SetupHyper(
+setup_adapt = al.SetupAdapt(
     hyper_galaxies_lens=False,
     hyper_galaxies_source=False,
     hyper_image_sky=None,
@@ -97,7 +97,7 @@ analysis = al.AnalysisImaging(dataset=imaging)
 source_results = slam.source_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
+    setup_adapt=setup_adapt,
     lens_bulge=None,
     lens_disk=None,
     mass=af.Model(al.mp.Isothermal),
@@ -121,7 +121,7 @@ analysis = al.AnalysisImaging(dataset=imaging)
 mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
+    setup_adapt=setup_adapt,
     source_results=source_results,
     light_results=None,
     mass=af.Model(al.mp.PowerLaw),
@@ -148,7 +148,6 @@ analysis = al.AnalysisImaging(dataset=imaging)
 subhalo_results = slam.subhalo.detection(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
     mass_results=mass_results,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,

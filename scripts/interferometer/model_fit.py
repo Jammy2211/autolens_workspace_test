@@ -29,7 +29,7 @@ import autolens as al
 import autolens.plot as aplt
 
 """
-__Masking__
+__Mask__
 
 We define the ‘real_space_mask’ which defines the grid the image the strong lens is evaluated using.
 """
@@ -50,7 +50,7 @@ dataset_name = "with_lens_light"
 dataset_path = path.join("dataset", dataset_label, dataset_type, dataset_name)
 
 interferometer = al.Interferometer.from_fits(
-    visibilities_path=path.join(dataset_path, "visibilities.fits"),
+    data_path=path.join(dataset_path, "visibilities.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
     real_space_mask=real_space_mask_2d,
@@ -165,7 +165,7 @@ tracer_plotter.subplot_tracer()
 fit_interferometer_plotter = aplt.FitInterferometerPlotter(
     fit=result.max_log_likelihood_fit
 )
-fit_interferometer_plotter.subplot_fit_interferometer()
+fit_interferometer_plotter.subplot_fit()
 fit_interferometer_plotter.subplot_fit_dirty_images()
 
 dynesty_plotter = aplt.DynestyPlotter(samples=result.samples)

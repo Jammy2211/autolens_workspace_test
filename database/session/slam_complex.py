@@ -55,7 +55,7 @@ dataset_name = "light_sersic__mass_sie__source_sersic"
 dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     pixel_scales=0.2,
@@ -70,7 +70,7 @@ masked_imaging = imaging.apply_mask(mask=mask)
 imaging_plotter = aplt.ImagingPlotter(
     imaging=masked_imaging, visuals_2d=aplt.Visuals2D(mask=mask)
 )
-imaging_plotter.subplot_imaging()
+imaging_plotter.subplot_dataset()
 
 """
 ___Session__
@@ -102,16 +102,16 @@ redshift_lens = 0.5
 redshift_source = 1.0
 
 """
-__HYPER SETUP__
+__Adapt Setup__
 
-The `SetupHyper` determines which hyper-mode features are used during the model-fit as is used identically to the
+The `SetupAdapt` determines which hyper-mode features are used during the model-fit as is used identically to the
 hyper pipeline examples.
 
-The `SetupHyper` input `hyper_fixed_after_source` fixes the hyper-parameters to the values computed by the hyper 
+The `SetupAdapt` input `hyper_fixed_after_source` fixes the hyper-parameters to the values computed by the hyper 
 extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter values at this point, model comparison 
 of different models in the LIGHT PIPELINE and MASS LIGHT DARK PIPELINE can be performed consistently.
 """
-setup_hyper = al.SetupHyper(
+setup_adapt = al.SetupAdapt(
     hyper_galaxies_lens=True,
     hyper_galaxies_source=True,
     hyper_image_sky=al.hyper_data.HyperImageSky,
@@ -143,7 +143,6 @@ bulge.centre = disk.centre
 source_lp_results = slam.source_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
     lens_bulge=bulge,
     lens_disk=disk,
     mass=af.Model(al.mp.Isothermal),
@@ -168,13 +167,13 @@ regularization, to set up the model and hyper images, and then:
 """
 
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_dataset_result=source_lp_results.last
+    dataset=masked_imaging, adapt_result=source_lp_results.last
 )
 
 source_pix_results = slam.source_pix.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
+    setup_adapt=setup_adapt,
     source_lp_results=source_lp_results,
     pixelization=al.mesh.VoronoiBrightnessImage,
     regularization=al.reg.AdaptiveBrightness,
@@ -205,7 +204,7 @@ bulge.centre = disk.centre
 light_results = slam.light_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
+    setup_adapt=setup_adapt,
     source_results=source_pix_results,
     lens_bulge=bulge,
     lens_disk=disk,
@@ -230,7 +229,7 @@ initialize the model priors . In this example it:
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_dataset_result=source_pix_results.last
+    dataset=masked_imaging, adapt_result=source_pix_results.last
 )
 
 lens_bulge = af.Model(al.lmp.Sersic)
@@ -241,7 +240,7 @@ dark.centre = lens_bulge.centre
 mass_results = slam.mass_light_dark.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
+    setup_adapt=setup_adapt,
     source_results=source_pix_results,
     light_results=light_results,
     lens_bulge=lens_bulge,
@@ -270,13 +269,12 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=masked_imaging, hyper_dataset_result=source_pix_results.last
+    dataset=masked_imaging, adapt_result=source_pix_results.last
 )
 
 subhalo_results = slam.subhalo.detection(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
     mass_results=mass_results,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,

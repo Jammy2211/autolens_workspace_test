@@ -48,11 +48,15 @@ print()
 """
 These settings control various aspects of how long a fit takes. The values below are default PyAutoLens values.
 """
-sub_size = 4
-mask_radius = 3.5
+sub_size = 1
+mask_radius = 3.0
 psf_shape_2d = (21, 21)
 mesh_shape_2d = (60, 60)
 
+use_positive_only_solver = True
+positive_only_maxiter = 5000
+
+# use_positive_only_solver = False
 
 print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
@@ -121,7 +125,7 @@ Load the dataset for this instrument / resolution.
 dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
@@ -161,7 +165,11 @@ tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 fit = al.FitImaging(
     dataset=masked_imaging,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
+    settings_inversion=al.SettingsInversion(
+        use_w_tilde=use_w_tilde,
+        use_positive_only_solver=use_positive_only_solver,
+        positive_only_maxiter=positive_only_maxiter,
+    ),
 )
 print(fit.figure_of_merit)
 
@@ -175,7 +183,11 @@ for i in range(repeats):
     fit = al.FitImaging(
         dataset=masked_imaging,
         tracer=tracer,
-        settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
+        settings_inversion=al.SettingsInversion(
+            use_w_tilde=use_w_tilde,
+            use_positive_only_solver=use_positive_only_solver,
+            positive_only_maxiter=positive_only_maxiter,
+        ),
     )
     fit.log_evidence
 fit_time = (time.time() - start) / repeats
@@ -196,7 +208,11 @@ tracer = al.Tracer.from_galaxies(
 fit = al.FitImaging(
     dataset=masked_imaging,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
+    settings_inversion=al.SettingsInversion(
+        use_w_tilde=use_w_tilde,
+        use_positive_only_solver=use_positive_only_solver,
+        positive_only_maxiter=positive_only_maxiter,
+    ),
     profiling_dict=profiling_dict,
 )
 fit.figure_of_merit
@@ -269,11 +285,11 @@ Output an image of the fit, so that we can inspect that it fits the data as expe
 """
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
-        path=file_path, filename=f"{instrument}_subplot_fit_imaging", format="png"
+        path=file_path, filename=f"{instrument}_subplot_fit", format="png"
     )
 )
 fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_imaging_plotter.subplot_fit_imaging()
+fit_imaging_plotter.subplot_fit()
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(

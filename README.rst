@@ -4,7 +4,7 @@ PyAutoLens Workspace Test
 Welcome to the **PyAutoLens** test workspace.
 
 This workspace mirrors the `autolens_workspace <https://github.com/Jammy2211/autolens_workspace>`_ but runs the example
-scripts and pipelines fast, by skipping the non-linear search. It is used by **PyAutoLens** developers to perform
+scripts and pipelines fast, by skipping the non-linear search. It is developers to perform
 automated integration tests of example scripts.
 
 To run the pipelines in this project you must add the autolens_workspace_test directory to your PYTHONPATH:
@@ -23,4 +23,4 @@ You can run an integration test as follows:
 Workspace Version
 =================
 
-This version of the workspace are built and tested for using **PyAutoLens v2023.1.15.1**.
+This version of the workspace are built and tested for using **PyAutoLens v2023.3.27.1**.

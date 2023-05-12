@@ -33,6 +33,7 @@ Check them out for a full description of the analysis!
 # %cd $workspace_path
 # print(f"Working Directory has been set to `{workspace_path}`")
 
+import numpy as np
 import os
 from os import path
 
@@ -56,14 +57,15 @@ dataset_name = "light_sersic__mass_sie__source_sersic"
 dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     pixel_scales=0.2,
 )
 
+mask_radius = 3.0
 mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
+    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=mask_radius
 )
 
 imaging = imaging.apply_mask(mask=mask)
@@ -71,7 +73,7 @@ imaging = imaging.apply_mask(mask=mask)
 imaging_plotter = aplt.ImagingPlotter(
     imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
 )
-imaging_plotter.subplot_imaging()
+imaging_plotter.subplot_dataset()
 
 """
 __Settings AutoFit__
@@ -94,17 +96,17 @@ redshift_lens = 0.5
 redshift_source = 1.0
 
 """
-__HYPER SETUP__
+__Adapt Setup__
 
-The `SetupHyper` determines which hyper-mode features are used during the model-fit as is used identically to the
+The `SetupAdapt` determines which hyper-mode features are used during the model-fit as is used identically to the
 hyper pipeline examples.
 
-The `SetupHyper` input `hyper_fixed_after_source` fixes the hyper-parameters to the values computed by the hyper 
+The `SetupAdapt` input `hyper_fixed_after_source` fixes the hyper-parameters to the values computed by the hyper 
 extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter values at this point, model comparison 
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
-setup_hyper = al.SetupHyper(
-    hyper_galaxies_lens=False,
+setup_adapt = al.SetupAdapt(
+   mesh_pixels_fixed=25
 )
 
 """
@@ -124,52 +126,96 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
-bulge_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-bulge_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
 
-gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 
-for i, gaussian in enumerate(gaussian_list):
+total_gaussians = 30
+gaussian_per_basis = 1
 
-    gaussian.centre = gaussian_list[0].centre
-    gaussian.ell_comps = gaussian_list[0].ell_comps
-    gaussian.sigma = bulge_a + (bulge_b * np.log10(i + 1))
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 
-lens_bulge = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+bulge_gaussian_list = []
+
+for j in range(gaussian_per_basis):
+
+    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+
+    for i, gaussian in enumerate(gaussian_list):
+
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
+
+    bulge_gaussian_list += gaussian_list
+
+lens_bulge = af.Model(
+    al.lp_basis.Basis,
+    light_profile_list=bulge_gaussian_list,
+    regularization=al.reg.ConstantZeroth(coefficient_neighbor=0.0, coefficient_zeroth=1.0)
+)
+
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
+
+disk_gaussian_list = []
+
+for j in range(gaussian_per_basis):
+
+    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+
+    for i, gaussian in enumerate(gaussian_list):
+
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
+
+    disk_gaussian_list += gaussian_list
+
+lens_disk = af.Model(
+    al.lp_basis.Basis,
+    light_profile_list=disk_gaussian_list,
+    regularization=al.reg.ConstantZeroth(coefficient_neighbor=0.0, coefficient_zeroth=1.0)
+)
 
 
-disk_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-disk_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
-
-gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
-
-for i, gaussian in enumerate(gaussian_list):
-
-    gaussian.centre = gaussian_list[0].centre
-    gaussian.ell_comps = gaussian_list[0].ell_comps
-    gaussian.sigma = disk_a + (disk_b * np.log10(i + 1))
-
-lens_disk = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
 
 
-source_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-source_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
 
-gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+centre_0 = af.GaussianPrior(mean=0.0, sigma=0.3)
+centre_1 = af.GaussianPrior(mean=0.0, sigma=0.3)
 
-for i, gaussian in enumerate(gaussian_list):
+total_gaussians = 30
+gaussian_per_basis = 1
 
-    gaussian.centre = gaussian_list[0].centre
-    gaussian.ell_comps = gaussian_list[0].ell_comps
-    gaussian.sigma = source_a + (source_b * np.log10(i + 1))
+log10_sigma_list = np.linspace(-2, np.log10(1.0), total_gaussians)
 
-source_bulge = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+bulge_gaussian_list = []
+
+for j in range(gaussian_per_basis):
+
+    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+
+    for i, gaussian in enumerate(gaussian_list):
+
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
+
+    bulge_gaussian_list += gaussian_list
+
+source_bulge = af.Model(
+    al.lp_basis.Basis,
+    light_profile_list=bulge_gaussian_list,
+    regularization=al.reg.ConstantZeroth(coefficient_neighbor=0.0, coefficient_zeroth=1.0)
+)
 
 
 source_lp_results = slam.source_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
     lens_bulge=lens_bulge,
     lens_disk=lens_disk,
     mass=af.Model(al.mp.Isothermal),
@@ -192,15 +238,15 @@ regularization, to set up the model and hyper images, and then:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
 """
-
 analysis = al.AnalysisImaging(dataset=imaging)
 
 source_pix_results = slam.source_pix.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
+    setup_adapt=setup_adapt,
     source_lp_results=source_lp_results,
     mesh=al.mesh.VoronoiBrightnessImage,
+    mesh_init_shape=(5,5),
     regularization=al.reg.AdaptiveBrightness,
 )
 
@@ -221,41 +267,68 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-bulge_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-bulge_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
-
-gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
-
-for i, gaussian in enumerate(gaussian_list):
-
-    gaussian.centre = gaussian_list[0].centre
-    gaussian.ell_comps = gaussian_list[0].ell_comps
-    gaussian.sigma = bulge_a + (bulge_b * np.log10(i + 1))
-
-lens_bulge = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
 
 
-disk_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-disk_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 
-gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+total_gaussians = 30
+gaussian_per_basis = 1
 
-for i, gaussian in enumerate(gaussian_list):
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 
-    gaussian.centre = gaussian_list[0].centre
-    gaussian.ell_comps = gaussian_list[0].ell_comps
-    gaussian.sigma = disk_a + (disk_b * np.log10(i + 1))
+bulge_gaussian_list = []
 
-lens_disk = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+for j in range(gaussian_per_basis):
+
+    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+
+    for i, gaussian in enumerate(gaussian_list):
+
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
+
+    bulge_gaussian_list += gaussian_list
+
+lens_bulge = af.Model(
+    al.lp_basis.Basis,
+    light_profile_list=bulge_gaussian_list,
+    regularization=al.reg.ConstantZeroth(coefficient_neighbor=0.0, coefficient_zeroth=1.0)
+)
+
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
+
+disk_gaussian_list = []
+
+for j in range(gaussian_per_basis):
+
+    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+
+    for i, gaussian in enumerate(gaussian_list):
+
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
+
+    disk_gaussian_list += gaussian_list
+
+lens_disk = af.Model(
+    al.lp_basis.Basis,
+    light_profile_list=disk_gaussian_list,
+    regularization=al.reg.ConstantZeroth(coefficient_neighbor=0.0, coefficient_zeroth=1.0)
+)
 
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_pix_results.last
+    dataset=imaging, adapt_result=source_pix_results.last
 )
 
 light_results = slam.light_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
+    setup_adapt=setup_adapt,
     source_results=source_pix_results,
     lens_bulge=lens_bulge,
     lens_disk=lens_disk,
@@ -280,13 +353,13 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_pix_results.last
+    dataset=imaging, adapt_result=source_pix_results.last
 )
 
 mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
+    setup_adapt=setup_adapt,
     source_results=source_pix_results,
     light_results=light_results,
     mass=af.Model(al.mp.PowerLaw),
@@ -309,18 +382,16 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, hyper_dataset_result=source_pix_results.last
+    dataset=imaging, adapt_result=source_pix_results.last
 )
 
 subhalo_results = slam.subhalo.detection(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
     mass_results=mass_results,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
-    end_with_stochastic_extension=True,
 )
 
 """

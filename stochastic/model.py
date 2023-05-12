@@ -28,17 +28,17 @@ instrument = "hst"
 dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=0.05,
 )
 
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_imaging()
+imaging_plotter.subplot_dataset()
 
 """
-__Masking__
+__Mask__
 
 The model-fit requires a `Mask2D` defining the regions of the image we fit the lens model to the data, which we define
 and use to set up the `Imaging` object that the lens model fits.
@@ -53,13 +53,12 @@ mask = al.Mask2D.circular_annular(
 imaging = imaging.apply_mask(mask=mask)
 
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_imaging()
+imaging_plotter.subplot_dataset()
 
 """
 __Model__
 
-We compose our lens model using `Model` objects, which represent the galaxies we fit to our data. In this 
-example we fit a lens model where:
+We compose a lens model where:
 
  - The lens galaxy's total mass distribution is an `Isothermal` and `ExternalShear` [7 parameters].
 
@@ -190,7 +189,7 @@ tracer_plotter = aplt.TracerPlotter(
 tracer_plotter.subplot_tracer()
 
 fit_imaging_plotter = aplt.FitImagingPlotter(fit=result.max_log_likelihood_fit)
-fit_imaging_plotter.subplot_fit_imaging()
+fit_imaging_plotter.subplot_fit()
 
 dynesty_plotter = aplt.DynestyPlotter(samples=result.samples)
 dynesty_plotter.cornerplot()

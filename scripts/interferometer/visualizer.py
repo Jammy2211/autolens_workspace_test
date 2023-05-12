@@ -26,7 +26,7 @@ import autofit as af
 import autolens as al
 
 """
-__Masking__
+__Mask__
 """
 real_space_mask_2d = al.Mask2D.circular(
     shape_native=(400, 400), pixel_scales=0.2, radius=3.0, sub_size=1
@@ -42,7 +42,7 @@ dataset_name = "with_lens_light"
 dataset_path = path.join("dataset", dataset_label, dataset_type, dataset_name)
 
 interferometer = al.Interferometer.from_fits(
-    visibilities_path=path.join(dataset_path, "visibilities.fits"),
+    data_path=path.join(dataset_path, "visibilities.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
     real_space_mask=real_space_mask_2d,

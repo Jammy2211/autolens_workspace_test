@@ -9,11 +9,12 @@ from typing import Union, Optional
 def run(
     settings_autofit: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
-    setup_hyper: al.SetupHyper,
+    setup_adapt: al.SetupAdapt,
     source_results: af.ResultsCollection,
     lens_bulge: Optional[af.Model] = af.Model(al.lp.Sersic),
     lens_disk: Optional[af.Model] = None,
-    end_with_hyper_extension: bool = False,
+    lens_point: Optional[af.Model] = None,
+    end_with_adapt_extension: bool = False,
 ) -> af.ResultsCollection:
     """
     The SlaM LIGHT LP PIPELINE for fitting imaging data with a lens light component.
@@ -25,8 +26,8 @@ def run(
         parallelization, etc.).
     analysis
         The analysis class which includes the `log_likelihood_function` and can be customized for the SLaM model-fit.
-    setup_hyper
-        The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
+    setup_adapt
+        The setup of the adapt fit.
     source_results
         The results of the SLaM SOURCE LP PIPELINE or SOURCE PIX PIPELINE which ran before this pipeline.
     lens_bulge
@@ -35,7 +36,10 @@ def run(
     lens_disk
         The `LightProfile` `Model` used to represent the light distribution of the lens galaxy's disk (set to
         None to omit a disk).
-    end_with_hyper_extension
+    lens_point
+        The `LightProfile` `Model` used to represent the light distribution of the lens galaxy's point-source(s)
+        emission (e.g. a nuclear star burst region) or compact central structures (e.g. an unresolved bulge).
+    end_with_adapt_extension
         If `True` a hyper extension is performed at the end of the pipeline. If this feature is used, you must be
         certain you have manually passed the new hyper images geneted in this search to the next pipelines.
     """
@@ -53,16 +57,6 @@ def run(
     SOURCE PIPELINE as the mass and source models were not properly initialized.
     """
 
-    """
-    If hyper-galaxy noise scaling for the lens is on, it may have scaled the noise to high values in the SOURCE
-    PIPELINE (which fitted a simpler lens light model than this pipeline). The new lens light model fitted in this
-    pipeline may fit the data better, requiring a reducing level of noise scaling. For this reason, the noise scaling
-    normalization is included as a free parameter.
-    """
-    hyper_galaxy = setup_hyper.hyper_galaxy_lens_from(
-        result=source_results.last, noise_factor_is_model=True
-    )
-
     source = slam_util.source__from(result=source_results.last, source_is_model=False)
 
     model = af.Collection(
@@ -72,17 +66,19 @@ def run(
                 redshift=source_results.last.instance.galaxies.lens.redshift,
                 bulge=lens_bulge,
                 disk=lens_disk,
-                mass=source_results.last.instance.galaxies.lens.mass,
-                shear=source_results.last.instance.galaxies.lens.shear,
-                hyper_galaxy=hyper_galaxy,
+                point=lens_point,
+                mass=source_results[0].instance.galaxies.lens.mass,
+                shear=source_results[0].instance.galaxies.lens.shear,
             ),
             source=source,
         ),
-        clumps=slam_util.clumps_from(result=source_results.last, light_as_model=True),
+        clumps=slam_util.clumps_from(result=source_results[0], light_as_model=True),
     )
 
     search = af.DynestyStatic(
-        name="light[1]_light[lp]", **settings_autofit.search_dict, nlive=150
+        name="light[1]_light[lp]",
+        **settings_autofit.search_dict,
+        nlive=150,
     )
 
     result_1 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
@@ -90,18 +86,15 @@ def run(
     """
     __Hyper Extension__
 
-    The above search is extended with a hyper-search if the SetupHyper has one or more of the following inputs:
+    The above search is extended with a hyper-search if the SetupAdapt has one or more of the following inputs:
 
      - The source is modeled using a pixelization with a regularization scheme.
-     - One or more `HyperGalaxy`'s are included.
-     - The background sky is included via `hyper_image_sky` input.
-     - The background noise is included via the `hyper_background_noise`.
     """
 
-    if end_with_hyper_extension:
+    if end_with_adapt_extension:
 
-        result_1 = extensions.hyper_fit(
-            setup_hyper=setup_hyper,
+        result_1 = extensions.adapt_fit(
+            setup_adapt=setup_adapt,
             result=result_1,
             analysis=analysis,
             search_previous=search,

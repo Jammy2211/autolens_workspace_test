@@ -102,7 +102,7 @@ Load the dataset for this instrument / resolution.
 dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
@@ -167,11 +167,11 @@ Output an image of the fit, so that we can inspect that it fits the data as expe
 """
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
-        path=file_path, filename=f"{instrument}_subplot_fit_imaging", format="png"
+        path=file_path, filename=f"{instrument}_subplot_fit", format="png"
     )
 )
 fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_imaging_plotter.subplot_fit_imaging()
+fit_imaging_plotter.subplot_fit()
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(

@@ -59,7 +59,7 @@ dataset_name = "mass_sie__source_sersic"
 dataset_path = path.join("dataset", "interferometer", dataset_name)
 
 interferometer = al.Interferometer.from_fits(
-    visibilities_path=path.join(dataset_path, "visibilities.fits"),
+    data_path=path.join(dataset_path, "visibilities.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
 )
@@ -81,8 +81,8 @@ interferometer = al.MaskedInterferometer(
     settings=settings_interferometer,
 )
 
-interferometer_plotter = aplt.InterferometerPlotter(interferometer=interferometer)
-interferometer_plotter.subplot_interferometer()
+interferometer_plotter = aplt.InterferometerPlotter(dataset=interferometer)
+interferometer_plotter.subplot_dataset()
 
 """
 __Paths__
@@ -107,12 +107,12 @@ redshift_lens = 0.5
 redshift_source = 1.0
 
 """
-__HYPER SETUP__
+__Adapt Setup__
 
-The `SetupHyper` determines which hyper-mode features are used during the model-fit.
+The `SetupAdapt` determines which hyper-mode features are used during the model-fit.
 """
-setup_hyper = al.SetupHyper(
-    hyper_galaxies_lens=False,
+setup_adapt = al.SetupAdapt(
+    mesh_pixels_fixed=1500,
 )
 
 """
@@ -134,7 +134,7 @@ analysis = al.AnalysisInterferometer(dataset=interferometer)
 source_lp_results = slam.source_lp.run(
     path_prefix=path_prefix,
     analysis=analysis,
-    setup_hyper=setup_hyper,
+    setup_adapt=setup_adapt,
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
     source_bulge=af.Model(al.lp.Sersic),
@@ -172,7 +172,7 @@ analysis = al.AnalysisInterferometer(
 source_pix_results = slam.source_pix.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
+    setup_adapt=setup_adapt,
     source_lp_results=source_lp_results,
     mesh=al.mesh.VoronoiBrightnessImage,
     regularization=al.reg.AdaptiveBrightness,
@@ -198,7 +198,7 @@ analysis = al.AnalysisInterferometer(
 mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_hyper=setup_hyper,
+    setup_adapt=setup_adapt,
     source_results=source_pix_results,
     mass=af.Model(al.mp.PowerLaw),
 )
@@ -221,10 +221,10 @@ class AnalysisInterferometerSensitivity(al.AnalysisInterferometer):
 
         super().__init__(dataset=dataset)
 
-        self.hyper_galaxy_image_path_dict = (
-            mass_results.last.hyper_galaxy_image_path_dict
+        self.adapt_galaxy_image_path_dict = (
+            mass_results.last.adapt_galaxy_image_path_dict
         )
-        self.hyper_model_image = mass_results.last.hyper_model_image
+        self.adapt_model_image = mass_results.last.adapt_model_image
 
 
 subhalo_results = slam.subhalo.sensitivity_mapping_interferometer(

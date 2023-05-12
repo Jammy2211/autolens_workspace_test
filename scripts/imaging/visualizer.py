@@ -38,17 +38,17 @@ dataset_name = "with_lens_light"
 dataset_path = path.join("dataset", dataset_label, dataset_type, dataset_name)
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=0.2,
 )
 
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_imaging()
+imaging_plotter.subplot_dataset()
 
 """
-__Masking__
+__Mask__
 """
 mask_2d = al.Mask2D.circular_annular(
     shape_native=imaging.shape_native,
@@ -60,7 +60,7 @@ mask_2d = al.Mask2D.circular_annular(
 imaging = imaging.apply_mask(mask=mask_2d)
 
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_imaging()
+imaging_plotter.subplot_dataset()
 
 """
 __Positions__

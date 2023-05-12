@@ -20,19 +20,20 @@ positions:
   image_with_positions: true
 fit:
   subplot_fit: true
-  subplot_of_planes: true
-  subplot_plane_images: true
-  subtracted_images_of_planes: true
+  subplot_of_planes: false
+  subplot_plane_images: false
+  subtracted_images_of_planes: false
   chi_squared_map: true
   data: true
   model_data: true
-  model_images_of_planes: true
+  model_images_of_planes: false
   noise_map: true
   normalized_residual_map: true
   residual_map: true
   signal_to_noise_map: true
-  all_at_end_fits: true
-  all_at_end_png: true
+  all_at_end_png: true                     # Plot all individual plots listed below as .png (even if False)?
+  all_at_end_fits: true                    # Plot all individual plots listed below as .fits (even if False)?
+  all_at_end_pdf: false                    # Plot all individual plots listed below as publication-quality .pdf (even if False)?
 fit_imaging: {}
 fit_interferometer:
   amplitudes_vs_uv_distances: true
@@ -46,15 +47,16 @@ fit_interferometer:
   phases_vs_uv_distances: true
   uv_wavelengths: true
 ray_tracing:
-  all_at_end_fits: true
-  all_at_end_png: true
+  all_at_end_png: true                     # Plot all individual plots listed below as .png (even if False)?
+  all_at_end_fits: true                    # Plot all individual plots listed below as .fits (even if False)?
+  all_at_end_pdf: false                    # Plot all individual plots listed below as publication-quality .pdf (even if False)?
   convergence: true
   deflections: true
   image: true
   magnification: true
   potential: true
   source_plane_image: true
-  subplot_plane_images: true
+  subplot_plane_images: false
   subplot_ray_tracing: true
 inversion:
   subplot_inversion: true
@@ -77,10 +79,10 @@ fit_quantity:
   model_image: true
   noise_map: true
   residual_map: true
-  all_at_end_fits: true
-  all_at_end_png: true
-hyper:
-  fit_no_hyper: true
+  all_at_end_png: true                     # Plot all individual plots listed below as .png (even if False)?
+  all_at_end_fits: true                    # Plot all individual plots listed below as .fits (even if False)?
+  all_at_end_pdf: false                    # Plot all individual plots listed below as publication-quality .pdf (even if False)?
+adapt:
   images_of_planes: true
   contribution_map_list: true
   model_image: true
@@ -88,12 +90,13 @@ other:
   stochastic_histogram: true
 plane:
   subplot_plane: true
-  subplot_galaxy_images: true
+  subplot_galaxy_images: false
   convergence: true
   deflections: true
   image: true
   magnification: true
   potential: true
   source_plane_image: true
-  all_at_end_fits: true
-  all_at_end_png: true
+  all_at_end_png: true                     # Plot all individual plots listed below as .png (even if False)?
+  all_at_end_fits: true                    # Plot all individual plots listed below as .fits (even if False)?
+  all_at_end_pdf: false                    # Plot all individual plots listed below as publication-quality .pdf (even if False)?

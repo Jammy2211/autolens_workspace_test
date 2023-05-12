@@ -45,17 +45,17 @@ dataset_name = "with_lens_light"
 dataset_path = path.join("dataset", dataset_label, dataset_type, dataset_name)
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=0.2,
 )
 
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_imaging()
+imaging_plotter.subplot_dataset()
 
 """
-__Masking__
+__Mask__
 
 The model-fit requires a `Mask2D` defining the regions of the image we fit the lens model to the data, which we define
 and use to set up the `Imaging` object that the lens model fits.
@@ -70,7 +70,7 @@ mask_2d = al.Mask2D.circular_annular(
 imaging = imaging.apply_mask(mask=mask_2d)
 
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_imaging()
+imaging_plotter.subplot_dataset()
 
 """
 __Positions__
@@ -167,7 +167,7 @@ tracer_plotter = aplt.TracerPlotter(
 tracer_plotter.subplot_tracer()
 
 fit_imaging_plotter = aplt.FitImagingPlotter(fit=result.max_log_likelihood_fit)
-fit_imaging_plotter.subplot_fit_imaging()
+fit_imaging_plotter.subplot_fit()
 
 dynesty_plotter = aplt.DynestyPlotter(samples=result.samples)
 dynesty_plotter.cornerplot()

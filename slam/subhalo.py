@@ -11,13 +11,11 @@ import numpy as np
 def detection(
     settings_autofit: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
-    setup_hyper: al.SetupHyper,
     mass_results: af.ResultsCollection,
     subhalo_mass: af.Model = af.Model(al.mp.NFWMCRLudlowSph),
     free_redshift: bool = False,
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
-    end_with_stochastic_extension: bool = False,
 ) -> af.ResultsCollection:
     """
     The SLaM SUBHALO PIPELINE for fitting imaging data with or without a lens light component, where it is assumed
@@ -27,8 +25,8 @@ def detection(
     ----------
     analysis
         The analysis class which includes the `log_likelihood_function` and can be customized for the SLaM model-fit.
-    setup_hyper
-        The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
+    setup_adapt
+        The setup of the adapt fit.
     mass_results
         The results of the SLaM MASS PIPELINE which ran before this pipeline.
     subhalo_mass
@@ -64,7 +62,6 @@ def detection(
     )
 
     lens = mass_results.last.model.galaxies.lens
-    lens.hyper_galaxy = setup_hyper.hyper_galaxy_lens_from(result=mass_results.last)
 
     model = af.Collection(
         galaxies=af.Collection(lens=lens, source=source),
@@ -72,7 +69,7 @@ def detection(
     )
 
     search_no_subhalo = af.DynestyStatic(
-        name="subhalo[1]_mass[total_refine]", **settings_autofit.search_dict, nlive=100
+        name="subhalo[1]_mass[total_refine]", **settings_autofit.search_dict, nlive=200, walks=10
     )
 
     result_1 = search_no_subhalo.fit(
@@ -132,7 +129,7 @@ def detection(
     search = af.DynestyStatic(
         name=f"subhalo[2]_mass[total]_source_subhalo[{search_tag}]",
         **settings_autofit.search_dict_x1_core,
-        nlive=50,
+        nlive=150,
         walks=5,
         facc=0.2,
         force_x1_cpu=True,  # ensures parallelizing over grid search works.
@@ -196,19 +193,10 @@ def detection(
     search = af.DynestyStatic(
         name=f"subhalo[3]_subhalo[{refine_tag}]",
         **settings_autofit.search_dict,
-        nlive=100,
+        nlive=500, walks=10
     )
 
     result_3 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
-
-    if end_with_stochastic_extension:
-
-        extensions.stochastic_fit(
-            result=result_3,
-            analysis=analysis,
-            search_previous=search,
-            **settings_autofit.fit_dict,
-        )
 
     return af.ResultsCollection([result_1, subhalo_result, result_3])
 
@@ -584,7 +572,7 @@ def sensitivity_mapping_interferometer(
         analysis here before we return the simulated data.
         """
         return al.Interferometer(
-            visibilities=simulated_interferometer.visibilities,
+            data=simulated_interferometer.visibilities,
             noise_map=simulated_interferometer.noise_map,
             uv_wavelengths=uv_wavelengths,
             real_space_mask=real_space_mask_2d,

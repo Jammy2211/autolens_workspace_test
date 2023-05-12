@@ -11,8 +11,10 @@ include:
     half_light_radius: true
   include_2d:
     border: true
-    caustics: true
-    critical_curves: true
+    tangential_caustics: true
+    radial_caustics: true
+    tangential_critical_curves: true
+    radial_critical_curves: true
     grid: false
     light_profile_centres: true
     mapper_image_plane_mesh_grid: true
@@ -286,7 +288,7 @@ plots:
     residual_map: false
     signal_to_noise_map: false
     subplot_fit: false
-    subplots_of_planes_fits: false
+    subplots_of_planes: false
     subtracted_images_of_planes: false
   fit_quantity:
     all_at_end_fits: false
@@ -298,9 +300,8 @@ plots:
     normalized_residual_map: false
     residual_map: false
     subplot_fit: false
-  hyper:
-    contribution_map_list: false
-    fit_no_hyper: false
+  adapt:
+    contribution_map_list: falseadapt-
     images_of_galaxies: false
     model_image: false
   inversion:

@@ -49,11 +49,16 @@ sub-size of the grid is iteratively increased (in steps of 2, 4, 8, 16, 24) unti
 This ensures that the divergent and bright central regions of the source galaxy are fully resolved when determining the
 total flux emitted within a pixel.
 """
-grid_2d = al.Grid2DIterate.uniform(
+# grid_2d = al.Grid2DIterate.uniform(
+#     shape_native=(100, 100),
+#     pixel_scales=0.1,
+#     fractional_accuracy=0.9999,
+#     sub_steps=[2, 4, 8, 16, 24],
+# )
+
+grid_2d = al.Grid2D.uniform(
     shape_native=(100, 100),
-    pixel_scales=0.1,
-    fractional_accuracy=0.9999,
-    sub_steps=[2, 4, 8, 16, 24],
+    pixel_scales=0.2,
 )
 
 """
@@ -89,27 +94,34 @@ lens_galaxy = al.Galaxy(
     redshift=0.5,
     bulge=al.lp.Sersic(
         centre=(0.0, 0.0),
-        ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
+        ell_comps=(0.0, 0.0),
         intensity=1.0,
-        effective_radius=0.8,
-        sersic_index=4.0,
+        effective_radius=1.0,
+        sersic_index=2.0,
+    ),
+    disk=al.lp.Sersic(
+        centre=(0.0, 0.0),
+        ell_comps=(0.0, 0.0),
+        intensity=1.0,
+        effective_radius=1.0,
+        sersic_index=1.0,
     ),
     mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
-        ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
+        ell_comps=(0.0, 0.0),
     ),
-    shear=al.mp.ExternalShear(gamma_1=0.05, gamma_2=0.05),
+    shear=al.mp.ExternalShear(gamma_1=0.0, gamma_2=0.0),
 )
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
     bulge=al.lp.Sersic(
         centre=(0.0, 0.0),
-        ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=60.0),
-        intensity=0.3,
-        effective_radius=0.1,
-        sersic_index=1.0,
+        ell_comps=(0.0, 0.0),
+        intensity=1.0,
+        effective_radius=1.0,
+        sersic_index=2.0,
     ),
 )
 
@@ -134,7 +146,7 @@ imaging = simulator.via_tracer_from(tracer=tracer, grid=grid_2d)
 Plot the simulated `Imaging` dataset before outputting it to fits.
 """
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_imaging()
+imaging_plotter.subplot_dataset()
 
 """
 __Output__
@@ -142,7 +154,7 @@ __Output__
 Output the simulated dataset to the dataset path as .fits files.
 """
 imaging.output_to_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     overwrite=True,
@@ -158,8 +170,8 @@ For a faster run time, the tracer visualization uses the binned grid instead of 
 mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png"))
 
 imaging_plotter = aplt.ImagingPlotter(imaging=imaging, mat_plot_2d=mat_plot_2d)
-imaging_plotter.subplot_imaging()
-imaging_plotter.figures_2d(image=True)
+imaging_plotter.subplot_dataset()
+imaging_plotter.figures_2d(data=True)
 
 tracer_plotter = aplt.TracerPlotter(
     tracer=tracer, grid=grid_2d.binned, mat_plot_2d=mat_plot_2d

@@ -160,7 +160,7 @@ mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png")
 point_dataset_plotter = aplt.PointDatasetPlotter(
     point_dataset=point_dataset, mat_plot_1d=mat_plot_1d, mat_plot_2d=mat_plot_2d
 )
-point_dataset_plotter.subplot_point_dataset()
+point_dataset_plotter.subplot_dataset()
 
 tracer_plotter = aplt.TracerPlotter(
     tracer=tracer, grid=grid_2d, mat_plot_2d=mat_plot_2d

@@ -1,3 +1,12 @@
+linalg.solve: 0.042246341705322266 + 0.0061492919921875  ( 'source_pixels': 1261)
+nnls: 1.8814313411712646 ( 'source_pixels': 1261)
+bounds:
+
+
+
+
+
+
 Fit Time = 5.631390810012817
 
 Time For curvagture diag: 1.216947078704834

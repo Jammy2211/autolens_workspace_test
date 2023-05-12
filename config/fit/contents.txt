@@ -5,6 +5,6 @@ non-linear
 notation
     Configs defining labels and formatting of model parameters when used for visualization.
 priors
-    Configs defining default priors assumed on every lens model component and set of parameters.
+    Configs defining default priors assumed on every model component and set of parameters.
 visualize
     Configs defining what images are output by a lens model fit.

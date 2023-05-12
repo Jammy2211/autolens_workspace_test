@@ -35,20 +35,24 @@ Whether w_tilde is used dictates the output folder.
 use_w_tilde = True
 # use_w_tilde = False
 
-if use_w_tilde:
-    file_path = os.path.join(file_path, "w_tilde")
-else:
-    file_path = os.path.join(file_path, "mapping")
+use_positive_only_solver = True
+# use_positive_only_solver = False
 
+force_edge_pixels_to_zeros = True
+# force_edge_pixels_to_zeros = False
+
+settings_inversion = al.SettingsInversion(
+    use_w_tilde=use_w_tilde,
+    use_positive_only_solver=use_positive_only_solver,
+    force_edge_pixels_to_zeros=force_edge_pixels_to_zeros
+)
 
 """
 Whether the lens light is a linear object or not.
 """
 
-bulge_cls = al.lp_linear.Sersic
-disk_cls = al.lp_linear.Exponential
-
-file_path = os.path.join(file_path, "lens_light_linear")
+bulge_cls = al.lp.Sersic
+disk_cls = al.lp.Exponential
 
 """
 The number of repeats used to estimate the run time.
@@ -63,7 +67,7 @@ These settings control various aspects of how long a fit takes. The values below
 sub_size = 4
 mask_radius = 3.5
 psf_shape_2d = (21, 21)
-mesh_shape_2d = (60, 60)
+mesh_shape_2d = (50, 50)
 
 
 print(f"sub grid size = {sub_size}")
@@ -72,7 +76,7 @@ print(f"psf shape = {psf_shape_2d}")
 print(f"pixelization shape = {mesh_shape_2d}")
 
 
-total_gaussians = 20
+total_gaussians = 100
 
 gaussian_list = []
 
@@ -86,27 +90,34 @@ for i, gaussian_index in enumerate(range(total_gaussians)):
 
     gaussian_list.append(gaussian)
 
+# basis = al.lp_basis.Basis(
+#     light_profile_list=gaussian_list,
+#     # regularization=al.reg.ConstantZeroth(
+#     #     coefficient_neighbor=0.0, coefficient_zeroth=1.0e-3
+#     # ),
+# )
+
+bulge=al.lp_linear.Sersic(
+    centre=(0.0, 0.0),
+    ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
+#       intensity=4.0,
+    effective_radius=0.6,
+    sersic_index=3.0,
+)
+disk=al.lp_linear.Exponential(
+    centre=(0.0, 0.0),
+    ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
+#        intensity=2.0,
+    effective_radius=1.6,
+)
+
 basis = al.lp_basis.Basis(
-    light_profile_list=gaussian_list,
-    regularization=al.reg.ConstantZeroth(
-        coefficient_neighbor=0.0, coefficient_zeroth=1.0
-    ),
+    light_profile_list=[bulge, disk],
 )
 
 lens_galaxy = al.Galaxy(
     redshift=0.5,
     bulge=basis,
-    # bulge=bulge_cls(
-    #     centre=(0.0, 0.0),
-    #     ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
-    #     effective_radius=0.6,
-    #     sersic_index=3.0,
-    # ),
-    disk=disk_cls(
-        centre=(0.0, 0.0),
-        ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
-        effective_radius=1.6,
-    ),
     mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
@@ -118,7 +129,9 @@ lens_galaxy = al.Galaxy(
 """
 The source galaxy whose `DelaunayMagnification` `Pixelization` fits the data.
 """
-mesh = al.mesh.DelaunayMagnification(shape=mesh_shape_2d)
+# mesh = al.mesh.DelaunayMagnification(shape=mesh_shape_2d)
+mesh = al.mesh.VoronoiNNMagnification(shape=mesh_shape_2d)
+
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
@@ -151,7 +164,7 @@ Load the dataset for this instrument / resolution.
 dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
 imaging = al.Imaging.from_fits(
-    image_path=path.join(dataset_path, "image.fits"),
+    data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
@@ -178,7 +191,7 @@ mask = al.Mask2D.circular(
 masked_imaging = imaging.apply_mask(mask=mask)
 
 masked_imaging = masked_imaging.apply_settings(
-    settings=al.SettingsImaging(sub_size=sub_size)
+    settings=al.SettingsImaging(sub_size_pixelization=sub_size)
 )
 
 """
@@ -191,9 +204,15 @@ tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 fit = al.FitImaging(
     dataset=masked_imaging,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
+    settings_inversion=settings_inversion,
 )
 print(fit.figure_of_merit)
+
+preloads = al.Preloads(
+    linear_func_operated_mapping_matrix_dict=fit.inversion.linear_func_operated_mapping_matrix_dict,
+    data_linear_func_matrix_dict=fit.inversion.data_linear_func_matrix_dict,
+    # mapper_operated_mapping_matrix_dict=fit.inversion.mapper_operated_mapping_matrix_dict,
+)
 
 """
 __Fit Time__
@@ -205,7 +224,8 @@ for i in range(repeats):
     fit = al.FitImaging(
         dataset=masked_imaging,
         tracer=tracer,
-        settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
+        settings_inversion=settings_inversion,
+        preloads=preloads
     )
     fit.log_evidence
 fit_time = (time.time() - start) / repeats
@@ -226,7 +246,8 @@ tracer = al.Tracer.from_galaxies(
 fit = al.FitImaging(
     dataset=masked_imaging,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
+    settings_inversion=settings_inversion,
+    preloads=preloads,
     profiling_dict=profiling_dict,
 )
 fit.figure_of_merit
@@ -299,11 +320,11 @@ Output an image of the fit, so that we can inspect that it fits the data as expe
 """
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
-        path=file_path, filename=f"{instrument}_subplot_fit_imaging", format="png"
+        path=file_path, filename=f"{instrument}_subplot_fit", format="png"
     )
 )
 fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_imaging_plotter.subplot_fit_imaging()
+fit_imaging_plotter.subplot_fit()
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
@@ -335,3 +356,12 @@ print(info_dict)
 
 with open(path.join(file_path, f"{instrument}_info.json"), "w+") as outfile:
     json.dump(info_dict, outfile, indent=4)
+
+mapper = fit.inversion.cls_list_from(cls=al.AbstractMapper)[0]
+
+print(f"Chi Squared: {fit.chi_squared}")
+print(f"Regularization Term: {fit.inversion.regularization_term}")
+print(f"Log Det Curvature Reg Matrix Term: {fit.inversion.log_det_curvature_reg_matrix_term}")
+print(f"Log Det Regularization Matrix Term: {fit.inversion.log_det_regularization_matrix_term}")
+print(f"Noise Normalization: {fit.noise_normalization}")
+print(f"Figure of Merit: {fit.figure_of_merit}")

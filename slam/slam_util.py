@@ -234,8 +234,8 @@ def source__from(result: af.Result, source_is_model: bool = False) -> af.Model:
     ----------
     result : af.Result
         The result of the previous source pipeline.
-    setup_hyper
-        The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
+    setup_adapt
+        The setup of the adapt fit.
     source_is_model
         If `True` the source is returned as a *model* where the parameters are fitted for using priors of the
         search result it is loaded from. If `False`, it is an instance of that search's result.
@@ -261,14 +261,14 @@ def source__from(result: af.Result, source_is_model: bool = False) -> af.Model:
                 disk=result.instance.galaxies.source.disk,
             )
 
-    if hasattr(result, "hyper"):
+    if hasattr(result, "adapt"):
 
         if source_is_model:
 
             pixelization = af.Model(
                 al.Pixelization,
-                mesh=result.hyper.instance.galaxies.source.pixelization.mesh,
-                regularization=result.hyper.model.galaxies.source.pixelization.regularization,
+                mesh=result.adapt.instance.galaxies.source.pixelization.mesh,
+                regularization=result.adapt.model.galaxies.source.pixelization.regularization,
             )
 
             return af.Model(
@@ -281,8 +281,8 @@ def source__from(result: af.Result, source_is_model: bool = False) -> af.Model:
 
             pixelization = af.Model(
                 al.Pixelization,
-                mesh=result.hyper.instance.galaxies.source.pixelization.mesh,
-                regularization=result.hyper.instance.galaxies.source.pixelization.regularization,
+                mesh=result.adapt.instance.galaxies.source.pixelization.mesh,
+                regularization=result.adapt.instance.galaxies.source.pixelization.regularization,
             )
 
             return af.Model(
@@ -340,8 +340,8 @@ def source__from_result_model_if_parametric(
     ----------
     result
         The result of the previous source pipeline.
-    setup_hyper
-        The setup of the hyper analysis if used (e.g. hyper-galaxy noise scaling).
+    setup_adapt
+        The setup of the adapt fit.
     """
 
     # TODO : Should not depend on name of pixelization being "pixelization"
@@ -352,15 +352,15 @@ def source__from_result_model_if_parametric(
     return source__from(result=result, source_is_model=True)
 
 
-def clean_clumps_of_hyper_images(clumps):
+def clean_clumps_of_adapt_images(clumps):
 
     for clump in clumps:
 
-        if hasattr(clump, "hyper_model_image"):
-            del clump.hyper_model_image
+        if hasattr(clump, "adapt_model_image"):
+            del clump.adapt_model_image
 
-        if hasattr(clump, "hyper_galaxy_image"):
-            del clump.hyper_galaxy_image
+        if hasattr(clump, "adapt_galaxy_image"):
+            del clump.adapt_galaxy_image
 
 
 def clumps_from(
@@ -391,7 +391,9 @@ def clumps_from(
 
         for clump_index in range(len(result.instance.clumps)):
 
-            clumps[clump_index].light.centre = result.instance.clumps[
+            if clumps[clump_index].light is not None:
+
+                clumps[clump_index].light.centre = result.instance.clumps[
                 clump_index
             ].light.centre
     #     clumps[clump_index].light.intensity = result.model.clumps[clump_index].light.intensity
@@ -402,7 +404,7 @@ def clumps_from(
 
         clumps = result.instance.clumps.as_model(())
 
-    clean_clumps_of_hyper_images(clumps=clumps)
+    clean_clumps_of_adapt_images(clumps=clumps)
 
     return clumps
 

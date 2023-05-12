@@ -113,8 +113,8 @@ interferometer = simulator.via_tracer_from(tracer=tracer, grid=grid)
 """
 Lets plot the simulated interferometer dataset before we output it to fits.
 """
-interferometer_plotter = aplt.InterferometerPlotter(interferometer=interferometer)
-interferometer_plotter.subplot_interferometer()
+interferometer_plotter = aplt.InterferometerPlotter(dataset=interferometer)
+interferometer_plotter.subplot_dataset()
 interferometer_plotter.subplot_dirty_images()
 
 """
@@ -123,7 +123,7 @@ __Output__
 Output the simulated dataset to the dataset path as .fits files.
 """
 interferometer.output_to_fits(
-    visibilities_path=path.join(dataset_path, "visibilities.fits"),
+    data_path=path.join(dataset_path, "visibilities.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
     overwrite=True,
@@ -137,9 +137,9 @@ Output a subplot of the simulated dataset, the image and the tracer's quantities
 mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png"))
 
 interferometer_plotter = aplt.InterferometerPlotter(
-    interferometer=interferometer, mat_plot_2d=mat_plot_2d
+    dataset=interferometer, mat_plot_2d=mat_plot_2d
 )
-interferometer_plotter.subplot_interferometer()
+interferometer_plotter.subplot_dataset()
 interferometer_plotter.subplot_dirty_images()
 
 tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d)
