@@ -13,8 +13,10 @@ def run(
     source_results: af.ResultsCollection,
     light_results: Optional[af.ResultsCollection],
     mass: af.Model = af.Model(al.mp.Isothermal),
+    multipole: Optional[af.Model] = None,
     smbh: Optional[af.Model] = None,
     mass_centre: Optional[Tuple[float, float]] = None,
+    reset_shear_prior: bool = False,
     end_with_adapt_extension: bool = False,
 ) -> af.ResultsCollection:
     """
@@ -37,6 +39,10 @@ def run(
     mass_centre
        If input, a fixed (y,x) centre of the mass profile is used which is not treated as a free parameter by the
        non-linear search.
+    reset_shear_prior
+        If `True`, the shear of the mass model is reset to the config priors (e.g. broad uniform). This is useful
+        when the mass model changes in a way that adds azimuthal structure (e.g. `PowerLawMultipole`) that the
+        shear in ass models in earlier pipelines may have absorbed some of the signal of.
     end_with_adapt_extension
         If `True` a hyper extension is performed at the end of the pipeline. If this feature is used, you must be
         certain you have manually passed the new hyper images geneted in this search to the next pipelines.
@@ -76,6 +82,17 @@ def run(
         disk = light_results.last.instance.galaxies.lens.disk
         point = light_results.last.instance.galaxies.lens.point
 
+    if not reset_shear_prior:
+        shear = source_results[0].model.galaxies.lens.shear
+    else:
+        shear = al.mp.ExternalShear
+
+    if multipole is not None:
+
+        multipole.centre = mass.centre
+        multipole.einstein_radius = mass.einstein_radius
+        multipole.slope = mass.slope
+
     source = slam_util.source__from_result_model_if_parametric(
         result=source_results.last,
     )
@@ -89,7 +106,8 @@ def run(
                 disk=disk,
                 point=point,
                 mass=mass,
-                shear=source_results[0].model.galaxies.lens.shear,
+                multipole=multipole,
+                shear=shear,
                 smbh=smbh,
             ),
             source=source,

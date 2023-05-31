@@ -97,7 +97,7 @@ def run(
     search_1 = af.DynestyStatic(
         name="source_lp[1]_light[lp]_mass[total]_source[lp]",
         **settings_autofit.search_dict,
-        nlive=200,
+        nlive=202,
         walks=10,
     )
 

@@ -36,6 +36,7 @@ Check them out for a full description of the analysis!
 # %cd $workspace_path
 # print(f"Working Directory has been set to `{workspace_path}`")
 
+import numpy as np
 import os
 from os import path
 
@@ -125,8 +126,8 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=imaging)
 
-bulge = af.Model(al.lp.Sersic)
-disk = af.Model(al.lp.Exponential)
+bulge = af.Model(al.lp_linear.Sersic)
+disk = af.Model(al.lp_linear.Exponential)
 bulge.centre = disk.centre
 
 source_lp_results = slam.source_lp.run(
@@ -136,7 +137,7 @@ source_lp_results = slam.source_lp.run(
     lens_disk=disk,
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
-    source_bulge=af.Model(al.lp.Sersic),
+    source_bulge=af.Model(al.lp_linear.Sersic),
     mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
@@ -159,9 +160,22 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-bulge = af.Model(al.lp.Sersic)
-disk = af.Model(al.lp.Exponential)
-bulge.centre = disk.centre
+# bulge = af.Model(al.lp_linear.Sersic)
+# disk = af.Model(al.lp_linear.Exponential)
+# bulge.centre = disk.centre
+
+bulge_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
+bulge_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+
+gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+
+for i, gaussian in enumerate(gaussian_list):
+
+    gaussian.centre = gaussian_list[0].centre
+    gaussian.ell_comps = gaussian_list[0].ell_comps
+    gaussian.sigma = bulge_a + (bulge_b * np.log10(i + 1))
+
+lens_bulge = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
 
 light_results = slam.light_lp.run(
     settings_autofit=settings_autofit,
@@ -226,7 +240,7 @@ class AnalysisImagingSensitivity(al.AnalysisImaging):
         self.adapt_galaxy_image_path_dict = (
             mass_results.last.adapt_galaxy_image_path_dict
         )
-        self.adapt_model_image_2d = mass_results.last.adapt_model_image
+        self.adapt_model_image = mass_results.last.adapt_model_image
 
 
 subhalo_results = slam.subhalo.sensitivity_mapping_imaging(

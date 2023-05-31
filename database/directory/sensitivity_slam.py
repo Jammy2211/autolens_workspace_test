@@ -150,7 +150,7 @@ class AnalysisImagingSensitivity(al.AnalysisImaging):
         self.adapt_galaxy_image_path_dict = (
             mass_results.last.adapt_galaxy_image_path_dict
         )
-        self.adapt_model_image_2d = mass_results.last.adapt_model_image
+        self.adapt_model_image = mass_results.last.adapt_model_image
 
 
 subhalo_results = slam.subhalo.sensitivity_mapping_imaging(

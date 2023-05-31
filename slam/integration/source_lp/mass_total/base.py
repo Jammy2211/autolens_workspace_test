@@ -123,6 +123,7 @@ analysis = al.AnalysisImaging(dataset=imaging)
 
 bulge = af.Model(al.lp.Sersic)
 disk = af.Model(al.lp.Exponential)
+# disk = af.Model(al.lp.Sersic)
 bulge.centre = disk.centre
 
 source_lp_results = slam.source_lp.run(
@@ -189,6 +190,9 @@ analysis = al.AnalysisImaging(
     dataset=imaging, adapt_result=source_lp_results.last
 )
 
+multipole = af.Model(al.mp.PowerLawMultipole)
+multipole.m = 4
+
 mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
@@ -196,6 +200,8 @@ mass_results = slam.mass_total.run(
     source_results=source_lp_results,
     light_results=light_results,
     mass=af.Model(al.mp.PowerLaw),
+    multipole=multipole,
+    reset_shear_prior=True
 )
 
 """

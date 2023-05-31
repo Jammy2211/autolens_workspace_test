@@ -352,6 +352,12 @@ def sensitivity_mapping_imaging(
     """
     simulation_instance = mass_results.last.instance
 
+    # fit = mass_results.last.max_log_likelihood_fit
+    #
+    # simulation_instance.galaxies.lens.bulge = fit.model_obj_linear_light_profiles_to_light_profiles.galaxies[0].bulge
+    # simulation_instance.galaxies.lens.disk = fit.model_obj_linear_light_profiles_to_light_profiles.galaxies[0].disk
+    # simulation_instance.galaxies.source.bulge = fit.model_obj_linear_light_profiles_to_light_profiles.galaxies[-1].bulge
+
     """
     We now write the `simulate_function`, which takes the `simulation_instance` of our model (defined above) and uses it to 
     simulate a dataset which is subsequently fitted.
