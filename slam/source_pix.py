@@ -60,10 +60,10 @@ def run(
 
     analysis.set_adapt_dataset(result=source_lp_results.last)
 
-    mass = slam_util.mass__from(
+    mass = al.util.chaining.mass__from(
         mass=source_lp_results.last.model.galaxies.lens.mass,
-        result=source_lp_results.last,
-        unfix_mass_centre=True,
+        mass_result=source_lp_results.last.model.galaxies.lens.mass,
+        unfix_mass_centre=True
     )
 
     mesh_init.shape = mesh_init_shape

@@ -49,7 +49,7 @@ __Dataset + Masking__
 """
 dataset_path = path.join("dataset", "imaging", "subhalo", dataset_name)
 
-imaging = al.Imaging.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
@@ -57,13 +57,13 @@ imaging = al.Imaging.from_fits(
 )
 
 mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=2.5
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=2.5
 )
 
-imaging = imaging.apply_mask(mask=mask)
+dataset = dataset.apply_mask(mask=mask)
 
-imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_dataset()
+dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
+dataset_plotter.subplot_dataset()
 
 """
 __Model + Search + Analysis + Model-Fit (Search 1)__
@@ -84,7 +84,7 @@ search_1 = af.DynestyStatic(
     path_prefix=path_prefix, name="search[1]_sie", unique_tag=dataset_name, nlive=150
 )
 
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=dataset)
 
 result_1 = search_1.fit(model=model, analysis=analysis)
 
@@ -108,7 +108,7 @@ search_2 = af.DynestyStatic(
     nlive=50,
 )
 
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=dataset)
 
 result_2 = search_2.fit(model=model, analysis=analysis)
 
@@ -143,6 +143,6 @@ model = af.Collection(
     )
 )
 
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=dataset)
 
 result_3 = search_3.fit(model=model, analysis=analysis)

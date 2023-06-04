@@ -60,8 +60,8 @@ def run(
     This search aims to accurately estimate the lens mass model, using the improved mass model priors and source model 
     of the SOURCE PIPELINE
     """
-    mass = slam_util.mass__from(
-        mass=mass, result=source_results[0], unfix_mass_centre=True
+    mass = al.util.chaining.mass__from(
+        mass=mass, mass_result=source_results.last.model.galaxies.lens.mass, unfix_mass_centre=True
     )
 
     if mass_centre is not None:

@@ -15,7 +15,7 @@ psf = np.array([[0.1, 0.3, 0.0], [0.1, 0.3, 0.1], [0.1, 0.1, 0.2]])
 
 psf = aa.Kernel2D.no_mask(values=psf, pixel_scales=(1.0, 1.0))
 
-imaging = aa.Imaging(
+dataset = aa.Imaging(
         data=image,
     noise_map=noise_map,
         psf=psf )
@@ -34,13 +34,13 @@ mask = np.array(
 
 mask = aa.Mask2D(mask=mask, sub_size=1, pixel_scales=(1.0, 1.0))
 
-imaging = imaging.apply_mask(mask=mask)
-imaging = imaging.apply_settings(settings=aa.SettingsImaging(sub_size_pixelization=2))
+dataset = dataset.apply_mask(mask=mask)
+dataset = dataset.apply_settings(settings=aa.SettingsImaging(sub_size_pixelization=2))
 
-print(imaging.noise_map)
+print(dataset.noise_map)
 
-# imaging.data[4] = 2.0
-# imaging.noise_map[3] = 4.0
+# dataset.data[4] = 2.0
+# dataset.noise_map[3] = 4.0
 
 mask = imaging.mask
 
@@ -54,9 +54,9 @@ linear_func = aa.m.MockLinearObjFuncList(
 )
 
 mapper_grids = aa.MapperGrids(
-    source_plane_data_grid=imaging.grid,
+    source_plane_data_grid=dataset.grid,
     source_plane_mesh_grid=aa.Mesh2DRectangular.overlay_grid(
-        grid=imaging.grid, shape_native=(3, 3)
+        grid=dataset.grid, shape_native=(3, 3)
     ),
     image_plane_mesh_grid=None,
     hyper_data=aa.Array2D.ones(shape_native=(3, 3), pixel_scales=0.1),
@@ -67,13 +67,13 @@ mapper = aa.MapperRectangularNoInterp(
 )
 
 inversion_mapping = aa.Inversion(
-    dataset=imaging,
+    dataset=dataset,
     linear_obj_list=[linear_func, mapper],
     settings=aa.SettingsInversion(use_w_tilde=False),
 )
 
 inversion_w_tilde = aa.Inversion(
-    dataset=imaging,
+    dataset=dataset,
     linear_obj_list=[linear_func, mapper],
     settings=aa.SettingsInversion(use_w_tilde=True),
 )
@@ -122,7 +122,7 @@ inversion_w_tilde = aa.Inversion(
 #
 #                 off_diag[pix_0, linear_index] += (
 #                         data_0_weight * curvature_vector[data_index, linear_index] * kernel_value
-#                 ) / imaging.noise_map[data_index]**2
+#                 ) / dataset.noise_map[data_index]**2
 #
 #
 # curvature_matrix = np.zeros(shape=inversion_mapping.curvature_matrix.shape)

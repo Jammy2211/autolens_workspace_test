@@ -33,7 +33,7 @@ __Mask__
 
 We define the ‘real_space_mask’ which defines the grid the image the strong lens is evaluated using.
 """
-real_space_mask_2d = al.Mask2D.circular(
+real_space_mask = al.Mask2D.circular(
     shape_native=(100, 100), pixel_scales=0.2, radius=3.0, sub_size=1
 )
 
@@ -49,18 +49,18 @@ dataset_name = "with_lens_light"
 
 dataset_path = path.join("dataset", dataset_label, dataset_type, dataset_name)
 
-interferometer = al.Interferometer.from_fits(
-    data_path=path.join(dataset_path, "visibilities.fits"),
+dataset = al.Interferometer.from_fits(
+    data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
-    real_space_mask=real_space_mask_2d,
+    real_space_mask=real_space_mask,
 )
 
 """
 __Inversion Settings (Run Times)__
 
 """
-settings_interferometer = al.SettingsInterferometer(transformer_class=al.TransformerDFT)
+settings_dataset = al.SettingsInterferometer(transformer_class=al.TransformerDFT)
 settings_inversion = al.SettingsInversion(use_linear_operators=False)
 
 """
@@ -70,7 +70,7 @@ This includes a `SettingsInterferometer`, which includes the method used to Four
 image of the strong lens to the uv-plane and compare directly to the visiblities. We use a non-uniform fast Fourier 
 transform, which is the most efficient method for interferometer datasets containing ~1-10 million visibilities.
 """
-interferometer = interferometer.apply_settings(settings=settings_interferometer)
+dataset = dataset.apply_settings(settings=settings_dataset)
 
 """
 __Positions__
@@ -134,7 +134,7 @@ The `AnalysisInterferometer` object defines the `log_likelihood_function` used b
 model to the `Interferometer`dataset.
 """
 analysis = al.AnalysisInterferometer(
-    dataset=interferometer,
+    dataset=dataset,
     positions_likelihood=positions_likelihood,
     settings_inversion=settings_inversion,
 )
@@ -158,18 +158,18 @@ print(result.max_log_likelihood_instance)
 
 tracer_plotter = aplt.TracerPlotter(
     tracer=result.max_log_likelihood_tracer,
-    grid=real_space_mask_2d.derive_grid.all_false_sub_1,
+    grid=real_space_mask.derive_grid.all_false_sub_1,
 )
 tracer_plotter.subplot_tracer()
 
-fit_interferometer_plotter = aplt.FitInterferometerPlotter(
+fit_plotter = aplt.FitInterferometerPlotter(
     fit=result.max_log_likelihood_fit
 )
-fit_interferometer_plotter.subplot_fit()
-fit_interferometer_plotter.subplot_fit_dirty_images()
+fit_plotter.subplot_fit()
+fit_plotter.subplot_fit_dirty_images()
 
-dynesty_plotter = aplt.DynestyPlotter(samples=result.samples)
-dynesty_plotter.cornerplot()
+search_plotter = aplt.DynestyPlotter(samples=result.samples)
+search_plotter.cornerplot()
 
 """
 Checkout `autolens_workspace/*/results` for a full description of analysing results in **PyAutoLens**.

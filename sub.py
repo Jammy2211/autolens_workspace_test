@@ -2,8 +2,8 @@ import autolens as al
 import matplotlib.pyplot as plt
 
 grid_2d = al.Grid2DIterate.uniform(shape_native=(160, 160), pixel_scales=0.05, fractional_accuracy=0.9999)
-psf_2d = al.Kernel2D.from_gaussian(shape_native=(21, 21), sigma=0.05, pixel_scales=grid_2d.pixel_scales, normalize=True)         #Define grid, psf, and simulator for Euclid as taken from the autolens workspace
-simulator = al.SimulatorImaging(exposure_time=9999*2260.0, psf=psf_2d, background_sky_level=1.0, add_poisson_noise=True)
+psf = al.Kernel2D.from_gaussian(shape_native=(21, 21), sigma=0.05, pixel_scales=grid_2d.pixel_scales, normalize=True)         #Define grid, psf, and simulator for Euclid as taken from the autolens workspace
+simulator = al.SimulatorImaging(exposure_time=9999*2260.0, psf=psf, background_sky_level=1.0, add_poisson_noise=True)
 
 
 

@@ -55,7 +55,7 @@ Load the `Imaging` data, define the `Mask2D` and plot them.
 dataset_name = "light_sersic__mass_sie__source_sersic"
 dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
 
-imaging = al.Imaging.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
@@ -63,15 +63,15 @@ imaging = al.Imaging.from_fits(
 )
 
 mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
 )
 
-imaging = imaging.apply_mask(mask=mask)
+dataset = dataset.apply_mask(mask=mask)
 
-imaging_plotter = aplt.ImagingPlotter(
-    imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
+dataset_plotter = aplt.ImagingPlotter(
+    dataset=dataset, visuals_2d=aplt.Visuals2D(mask=mask)
 )
-imaging_plotter.subplot_dataset()
+dataset_plotter.subplot_dataset()
 
 """
 __Settings AutoFit__
@@ -128,20 +128,49 @@ source galaxy's light, which in this example:
  - Mass Centre: Fix the mass profile centre to (0.0, 0.0) (this assumption will be relaxed in the MASS LIGHT DARK 
  PIPELINE).
 """
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=dataset)
 
-bulge_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-bulge_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+total_gaussians = 30
+gaussian_per_basis = 2
 
-gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+# The sigma values of the Gaussians will be fixed to values spanning 0.01 to the mask radius, 3.0".
+mask_radius = 3.0
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 
-for i, gaussian in enumerate(gaussian_list):
+# By defining the centre here, it creates two free parameters that are assigned below to all Gaussians.
 
-    gaussian.centre = gaussian_list[0].centre
-    gaussian.ell_comps = gaussian_list[0].ell_comps
-    gaussian.sigma = bulge_a + (bulge_b * np.log10(i + 1))
+centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 
-lens_bulge = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+bulge_gaussian_list = []
+
+for j in range(gaussian_per_basis):
+    # A list of Gaussian model components whose parameters are customized belows.
+
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
+
+    # Iterate over every Gaussian and customize its parameters.
+
+    for i, gaussian in enumerate(gaussian_list):
+        gaussian.centre.centre_0 = centre_0  # All Gaussians have same y centre.
+        gaussian.centre.centre_1 = centre_1  # All Gaussians have same x centre.
+        gaussian.ell_comps = gaussian_list[
+            0
+        ].ell_comps  # All Gaussians have same elliptical components.
+        gaussian.sigma = (
+            10 ** log10_sigma_list[i]
+        )  # All Gaussian sigmas are fixed to values above.
+
+    bulge_gaussian_list += gaussian_list
+
+# The Basis object groups many light profiles together into a single model component.
+
+lens_bulge = af.Model(
+    al.lp_basis.Basis,
+    light_profile_list=bulge_gaussian_list,
+)
 
 
 disk_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
@@ -196,7 +225,7 @@ regularization, to set up the model and hyper images, and then:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=dataset)
 
 source_pix_results = slam.source_pix.run(
     settings_autofit=settings_autofit,
@@ -225,18 +254,47 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-bulge_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-bulge_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+total_gaussians = 30
+gaussian_per_basis = 2
 
-gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+# The sigma values of the Gaussians will be fixed to values spanning 0.01 to the mask radius, 3.0".
+mask_radius = 3.0
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 
-for i, gaussian in enumerate(gaussian_list):
+# By defining the centre here, it creates two free parameters that are assigned below to all Gaussians.
 
-    gaussian.centre = gaussian_list[0].centre
-    gaussian.ell_comps = gaussian_list[0].ell_comps
-    gaussian.sigma = bulge_a + (bulge_b * np.log10(i + 1))
+centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 
-lens_bulge = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+bulge_gaussian_list = []
+
+for j in range(gaussian_per_basis):
+    # A list of Gaussian model components whose parameters are customized belows.
+
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
+
+    # Iterate over every Gaussian and customize its parameters.
+
+    for i, gaussian in enumerate(gaussian_list):
+        gaussian.centre.centre_0 = centre_0  # All Gaussians have same y centre.
+        gaussian.centre.centre_1 = centre_1  # All Gaussians have same x centre.
+        gaussian.ell_comps = gaussian_list[
+            0
+        ].ell_comps  # All Gaussians have same elliptical components.
+        gaussian.sigma = (
+            10 ** log10_sigma_list[i]
+        )  # All Gaussian sigmas are fixed to values above.
+
+    bulge_gaussian_list += gaussian_list
+
+# The Basis object groups many light profiles together into a single model component.
+
+lens_bulge = af.Model(
+    al.lp_basis.Basis,
+    light_profile_list=bulge_gaussian_list,
+)
 
 
 disk_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
@@ -281,7 +339,7 @@ initialize the model priors . In this example it:
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, adapt_result=source_pix_results.last
+    dataset=dataset, adapt_result=source_pix_results.last
 )
 
 lens_bulge = af.Model(al.lmp.Sersic)

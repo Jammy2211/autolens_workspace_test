@@ -157,8 +157,8 @@ Load the strong lens dataset `mass_sie__source_sersic` `from .fits files.
 try:
     dataset_path = path.join("dataset", "interferometer", "instruments", instrument)
 
-    interferometer = al.Interferometer.from_fits(
-        data_path=path.join(dataset_path, "visibilities.fits"),
+    dataset = al.Interferometer.from_fits(
+        data_path=path.join(dataset_path, "data.fits"),
         noise_map_path=path.join(dataset_path, "noise_map.fits"),
         uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
         real_space_mask=real_space_mask,
@@ -172,8 +172,8 @@ except FileNotFoundError:
         cosma_path, "dataset", "interferometer", "instruments", instrument
     )
 
-    interferometer = al.Interferometer.from_fits(
-        data_path=path.join(dataset_path, "visibilities.fits"),
+    dataset = al.Interferometer.from_fits(
+        data_path=path.join(dataset_path, "data.fits"),
         noise_map_path=path.join(dataset_path, "noise_map.fits"),
         uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
         real_space_mask=real_space_mask,
@@ -184,7 +184,7 @@ These settings control the run-time of the `Inversion` performed on the `Interfe
 """
 transformer_class = al.TransformerNUFFT
 
-interferometer = interferometer.apply_settings(
+dataset = dataset.apply_settings(
     settings=al.SettingsInterferometer(transformer_class=transformer_class)
 )
 """
@@ -193,7 +193,7 @@ __Numba Caching__
 Call FitImaging once to get all numba functions initialized.
 """
 fit = al.FitInterferometer(
-    dataset=interferometer,
+    dataset=dataset,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(
         use_w_tilde=use_w_tilde, use_w_tilde_numpy=use_w_tilde_numpy
@@ -209,7 +209,7 @@ Time FitImaging by itself, to compare to profiling dict call.
 start = time.time()
 for i in range(repeats):
     fit = al.FitInterferometer(
-        dataset=interferometer,
+        dataset=dataset,
         tracer=tracer,
         settings_inversion=al.SettingsInversion(
             use_w_tilde=use_w_tilde, use_w_tilde_numpy=use_w_tilde_numpy
@@ -231,7 +231,7 @@ tracer = al.Tracer.from_galaxies(
 )
 
 fit = al.FitInterferometer(
-    dataset=interferometer,
+    dataset=dataset,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(
         use_w_tilde=use_w_tilde, use_w_tilde_numpy=use_w_tilde_numpy
@@ -249,8 +249,8 @@ These two numbers are the primary driver of run time. More pixels = longer run t
 """
 
 print(f"Inversion fit run times for image type {instrument} \n")
-print(f"Number of pixels = {interferometer.grid.shape_slim} \n")
-print(f"Number of sub-pixels = {interferometer.grid.sub_shape_slim} \n")
+print(f"Number of pixels = {dataset.grid.shape_slim} \n")
+print(f"Number of sub-pixels = {dataset.grid.sub_shape_slim} \n")
 
 """
 Print the profiling results of every step of the fit for command line output when running profiling scripts.
@@ -313,19 +313,19 @@ mat_plot_2d = aplt.MatPlot2D(
         format="png",
     )
 )
-fit_interferometer_plotter = aplt.FitInterferometerPlotter(
+fit_plotter = aplt.FitInterferometerPlotter(
     fit=fit, mat_plot_2d=mat_plot_2d
 )
-fit_interferometer_plotter.subplot_fit()
-fit_interferometer_plotter.subplot_fit_dirty_images()
-fit_interferometer_plotter.subplot_fit_real_space()
+fit_plotter.subplot_fit()
+fit_plotter.subplot_fit_dirty_images()
+fit_plotter.subplot_fit_real_space()
 
 """
 The `info_dict` contains all the key information of the analysis which describes its run times.
 """
 info_dict = {}
 info_dict["repeats"] = repeats
-info_dict["image_pixels"] = interferometer.grid.sub_shape_slim
+info_dict["image_pixels"] = dataset.grid.sub_shape_slim
 info_dict["sub_size"] = sub_size
 info_dict["mask_radius"] = mask_radius
 # info_dict["source_pixels"] = len(reconstruction)

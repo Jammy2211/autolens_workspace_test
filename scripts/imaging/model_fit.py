@@ -44,15 +44,15 @@ dataset_name = "with_lens_light"
 
 dataset_path = path.join("dataset", dataset_label, dataset_type, dataset_name)
 
-imaging = al.Imaging.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=0.2,
 )
 
-imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_dataset()
+dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
+dataset_plotter.subplot_dataset()
 
 """
 __Mask__
@@ -60,17 +60,17 @@ __Mask__
 The model-fit requires a `Mask2D` defining the regions of the image we fit the lens model to the data, which we define
 and use to set up the `Imaging` object that the lens model fits.
 """
-mask_2d = al.Mask2D.circular_annular(
-    shape_native=imaging.shape_native,
-    pixel_scales=imaging.pixel_scales,
+mask = al.Mask2D.circular_annular(
+    shape_native=dataset.shape_native,
+    pixel_scales=dataset.pixel_scales,
     inner_radius=0.8,
     outer_radius=2.6,
 )
 
-imaging = imaging.apply_mask(mask=mask_2d)
+dataset = dataset.apply_mask(mask=mask)
 
-imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_dataset()
+dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
+dataset_plotter.subplot_dataset()
 
 """
 __Positions__
@@ -133,7 +133,7 @@ The `AnalysisImaging` object defines the `log_likelihood_function` used by the n
 the `Imaging` dataset. 
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, positions_likelihood=positions_likelihood
+    dataset=dataset, positions_likelihood=positions_likelihood
 )
 
 """
@@ -166,11 +166,11 @@ tracer_plotter = aplt.TracerPlotter(
 )
 tracer_plotter.subplot_tracer()
 
-fit_imaging_plotter = aplt.FitImagingPlotter(fit=result.max_log_likelihood_fit)
-fit_imaging_plotter.subplot_fit()
+fit_plotter = aplt.FitImagingPlotter(fit=result.max_log_likelihood_fit)
+fit_plotter.subplot_fit()
 
-dynesty_plotter = aplt.DynestyPlotter(samples=result.samples)
-dynesty_plotter.cornerplot()
+search_plotter = aplt.DynestyPlotter(samples=result.samples)
+search_plotter.cornerplot()
 
 """
 Checkout `autolens_workspace/*/results` for a full description of analysing results in **PyAutoLens**.

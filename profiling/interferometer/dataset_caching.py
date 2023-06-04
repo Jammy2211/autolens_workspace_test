@@ -70,8 +70,8 @@ real_space_mask = al.Mask2D.circular(
 )
 
 # mask = al.Mask2D.circular_annular(
-#     shape_native=imaging.shape_native,
-#     pixel_scales=imaging.pixel_scales,
+#     shape_native=dataset.shape_native,
+#     pixel_scales=dataset.pixel_scales,
 #     sub_size=sub_size,
 #     inner_radius=1.5,
 #     outer_radius=2.5,
@@ -84,27 +84,27 @@ instrument = "sma"
 
 dataset_path = path.join("dataset", "interferometer", "instruments", instrument)
 
-interferometer = al.Interferometer.from_fits(
-    data_path=path.join(dataset_path, "visibilities.fits"),
+dataset = al.Interferometer.from_fits(
+    data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
     real_space_mask=real_space_mask,
 )
 
 shape_vis = 200000
-interferometer.noise_map = 10000 + 10000j * np.ones(shape_vis)
-interferometer.uv_wavelengths = 10000.0 * np.random.rand(shape_vis, 2)
+dataset.noise_map = 10000 + 10000j * np.ones(shape_vis)
+dataset.uv_wavelengths = 10000.0 * np.random.rand(shape_vis, 2)
 
 """
 __Numba Caching__
 
 Call the dataset cached properties once to get all numba functions initialized.
 """
-masked_imaging.convolver
-del masked_imaging.__dict__["convolver"]
+masked_dataset.convolver
+del masked_dataset.__dict__["convolver"]
 
-masked_imaging.w_tilde
-del masked_imaging.__dict__["w_tilde"]
+masked_dataset.w_tilde
+del masked_dataset.__dict__["w_tilde"]
 
 """
 __Profiling Dict__
@@ -115,17 +115,17 @@ caching_dict = {}
 
 start = time.time()
 for i in range(repeats):
-    masked_imaging.convolver
-    del masked_imaging.__dict__["convolver"]
+    masked_dataset.convolver
+    del masked_dataset.__dict__["convolver"]
 time_calc = (time.time() - start) / repeats
 
 caching_dict["convolver"] = time_calc
 
 start = time.time()
 for i in range(repeats):
-    masked_imaging.w_tilde
-    print(masked_imaging.w_tilde.curvature_preload.shape)
-    del masked_imaging.__dict__["w_tilde"]
+    masked_dataset.w_tilde
+    print(masked_dataset.w_tilde.curvature_preload.shape)
+    del masked_dataset.__dict__["w_tilde"]
 time_calc = (time.time() - start) / repeats
 
 caching_dict["w_tilde"] = time_calc
@@ -137,8 +137,8 @@ These two numbers are the primary driver of run time. More pixels = longer run t
 """
 
 print(f"Dataset Caching run times for image type {instrument} \n")
-print(f"Number of pixels = {masked_imaging.grid.shape_slim} \n")
-print(f"Number of sub-pixels = {masked_imaging.grid.sub_shape_slim} \n")
+print(f"Number of pixels = {masked_dataset.grid.shape_slim} \n")
+print(f"Number of sub-pixels = {masked_dataset.grid.sub_shape_slim} \n")
 
 """
 Print the profiling results of every step of the fit for command line output when running profiling scripts.
@@ -171,7 +171,7 @@ The `info_dict` contains all the key information of the analysis which describes
 """
 info_dict = {}
 info_dict["repeats"] = repeats
-info_dict["image_pixels"] = masked_imaging.grid.sub_shape_slim
+info_dict["image_pixels"] = masked_dataset.grid.sub_shape_slim
 info_dict["sub_size"] = sub_size
 info_dict["mask_radius"] = mask_radius
 info_dict["psf_shape_2d"] = psf_shape_2d

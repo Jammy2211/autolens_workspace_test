@@ -102,18 +102,18 @@ tracer_plotter.figures_2d(image=True)
 """
 Pass the simulator a tracer, which creates the image which is simulated as an imaging dataset.
 """
-imaging = simulator.via_tracer_from(tracer=tracer, grid=grid)
+dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
 
 """
 Plot the simulated `Imaging` dataset before outputting it to fits.
 """
-imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_dataset()
+dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
+dataset_plotter.subplot_dataset()
 
 """
 Output the simulated dataset to the dataset path as .fits files.
 """
-imaging.output_to_fits(
+dataset.output_to_fits(
     data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
@@ -131,9 +131,9 @@ as .png files.
 """
 mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png"))
 
-imaging_plotter = aplt.ImagingPlotter(imaging=imaging, mat_plot_2d=mat_plot_2d)
-imaging_plotter.subplot_dataset()
-imaging_plotter.figures_2d(data=True)
+dataset_plotter = aplt.ImagingPlotter(dataset=dataset, mat_plot_2d=mat_plot_2d)
+dataset_plotter.subplot_dataset()
+dataset_plotter.figures_2d(data=True)
 
 tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d)
 tracer_plotter.subplot_tracer()

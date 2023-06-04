@@ -108,7 +108,7 @@ Load the dataset for this instrument / resolution.
 """
 dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
-imaging = al.Imaging.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
@@ -119,14 +119,14 @@ imaging = al.Imaging.from_fits(
 Apply the 2D mask, which for the settings above is representative of the masks we typically use to model strong lenses.
 """
 mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native,
-    pixel_scales=imaging.pixel_scales,
+    shape_native=dataset.shape_native,
+    pixel_scales=dataset.pixel_scales,
     sub_size=sub_size,
     radius=mask_radius,
 )
 
-masked_imaging = imaging.apply_mask(mask=mask)
-masked_imaging = masked_imaging.apply_settings(
+masked_dataset = dataset.apply_mask(mask=mask)
+masked_dataset = masked_dataset.apply_settings(
     settings=al.SettingsImaging(sub_size=sub_size)
 )
 
@@ -143,8 +143,8 @@ source_galaxy = al.Galaxy(
         sersic_index=2.5,
     ),
 )
-lens_hyper_image = lens_galaxy.image_2d_from(grid=masked_imaging.grid).binned
-source_hyper_image = source_galaxy.image_2d_from(grid=masked_imaging.grid).binned
+lens_hyper_image = lens_galaxy.image_2d_from(grid=masked_dataset.grid).binned
+source_hyper_image = source_galaxy.image_2d_from(grid=masked_dataset.grid).binned
 adapt_model_image = lens_hyper_image + source_hyper_image
 lens_galaxy.adapt_galaxy_image = lens_hyper_image
 lens_galaxy.adapt_model_image = adapt_model_image
@@ -223,12 +223,12 @@ https://github.com/Jammy2211/PyAutoLens/blob/main/autolens/fit/fit.py
 """
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
-fit = al.FitImaging(dataset=masked_imaging, tracer=tracer)
+fit = al.FitImaging(dataset=masked_dataset, tracer=tracer)
 fit.log_evidence
 
 start = time.time()
 for i in range(repeats):
-    fit = al.FitImaging(dataset=masked_imaging, tracer=tracer)
+    fit = al.FitImaging(dataset=masked_dataset, tracer=tracer)
     fit.log_evidence
 fit_time = (time.time() - start) / repeats
 
@@ -261,8 +261,8 @@ https://github.com/Jammy2211/PyAutoGalaxy/blob/main/autogalaxy/profiles/light_pr
 """
 start = time.time()
 for i in range(repeats):
-    image = lens_galaxy.image_2d_from(grid=masked_imaging.grid)
-    blurring_image = lens_galaxy.image_2d_from(grid=masked_imaging.blurring_grid)
+    image = lens_galaxy.image_2d_from(grid=masked_dataset.grid)
+    blurring_image = lens_galaxy.image_2d_from(grid=masked_dataset.blurring_grid)
 
 profiling_dict["Lens Light (Grid2D)"] = (time.time() - start) / repeats
 
@@ -274,7 +274,7 @@ increases depending on a required fractional accuracy of the light profile.
 
 https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/structures/grids/two_d/grid_2d_iterate.py
 """
-masked_imaging_iterate = imaging.apply_mask(mask=mask)
+masked_imaging_iterate = dataset.apply_mask(mask=mask)
 masked_imaging_iterate = masked_imaging_iterate.apply_settings(
     settings=al.SettingsImaging(grid_class=al.Grid2DIterate)
 )
@@ -282,7 +282,7 @@ masked_imaging_iterate = masked_imaging_iterate.apply_settings(
 start = time.time()
 for i in range(repeats):
     image = lens_galaxy.image_2d_from(grid=masked_imaging_iterate.grid)
-    blurring_image = lens_galaxy.image_2d_from(grid=masked_imaging.blurring_grid)
+    blurring_image = lens_galaxy.image_2d_from(grid=masked_dataset.blurring_grid)
 
 profiling_dict["Lens Light (Grid2DIterate)"] = (time.time() - start) / repeats
 
@@ -297,7 +297,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/operators/convolver
 """
 start = time.time()
 for i in range(repeats):
-    convolved_image = masked_imaging.convolver.convolve_image(
+    convolved_image = masked_dataset.convolver.convolve_image(
         image=image, blurring_image=blurring_image
     )
 
@@ -329,13 +329,13 @@ weight_map = source_galaxy.pixelization.weight_map_from(
     hyper_image=source_galaxy.adapt_galaxy_image
 )
 sparse_image_plane_grid = al.Grid2DSparse.from_total_pixels_grid_and_weight_map(
-    total_pixels=pixels, grid=masked_imaging.grid, weight_map=weight_map
+    total_pixels=pixels, grid=masked_dataset.grid, weight_map=weight_map
 )
 
 start = time.time()
 for i in range(repeats):
     tracer.deflections_yx_2d_from(grid=sparse_image_plane_grid)
-    traced_grid = tracer.traced_grid_2d_list_from(grid=masked_imaging.grid)[-1]
+    traced_grid = tracer.traced_grid_2d_list_from(grid=masked_dataset.grid)[-1]
 
 profiling_dict["Ray Tracing (SIE)"] = (time.time() - start) / repeats
 
@@ -348,7 +348,7 @@ start = time.time()
 for i in range(repeats):
     tracer.deflections_yx_2d_from(grid=sparse_image_plane_grid)
     traced_grid_power_law = tracer_power_law.traced_grid_2d_list_from(
-        grid=masked_imaging.grid
+        grid=masked_dataset.grid
     )[-1]
 
 profiling_dict["Ray Tracing (Power-Law)"] = (time.time() - start) / repeats
@@ -363,7 +363,7 @@ start = time.time()
 for i in range(repeats):
     tracer.deflections_yx_2d_from(grid=sparse_image_plane_grid)
     traced_grid_decomposed = tracer_decomposed.traced_grid_2d_list_from(
-        grid=masked_imaging.grid
+        grid=masked_dataset.grid
     )[-1]
 
 profiling_dict["Ray Tracing (Decomposed)"] = (time.time() - start) / repeats
@@ -403,12 +403,12 @@ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/structures/grids/gr
 start = time.time()
 for i in range(repeats):
     sparse_image_plane_grid = al.Grid2DSparse.from_total_pixels_grid_and_weight_map(
-        total_pixels=pixels, grid=masked_imaging.grid, weight_map=weight_map
+        total_pixels=pixels, grid=masked_dataset.grid, weight_map=weight_map
     )
 
 profiling_dict["Image-plane Pixelization (KMeans)"] = (time.time() - start) / repeats
 
-traced_sparse_grid = tracer.traced_sparse_grid_pg_list(grid=masked_imaging.grid)[-1]
+traced_sparse_grid = tracer.traced_sparse_grid_pg_list(grid=masked_dataset.grid)[-1]
 
 """
 __Border Relocation__
@@ -548,7 +548,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/operators/convolver
 """
 start = time.time()
 for i in range(repeats):
-    blurred_mapping_matrix = masked_imaging.convolver.convolve_mapping_matrix(
+    blurred_mapping_matrix = masked_dataset.convolver.convolve_mapping_matrix(
         mapping_matrix=mapping_matrix
     )
 profiling_dict["Blurred Mapping Matrix (f_blur)"] = (time.time() - start) / repeats
@@ -569,12 +569,12 @@ The calculation is performed by thge method `data_vector_via_blurred_mapping_mat
  https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/util/inversion_util.py
 """
 start = time.time()
-subtracted_image = masked_imaging.image - convolved_image
+subtracted_image = masked_dataset.image - convolved_image
 for i in range(repeats):
     data_vector = al.util.inversion.data_vector_via_blurred_mapping_matrix_from(
         blurred_mapping_matrix=blurred_mapping_matrix,
         image=subtracted_image,
-        noise_map=masked_imaging.noise_map,
+        noise_map=masked_dataset.noise_map,
     )
 profiling_dict["Data Vector (D)"] = (time.time() - start) / repeats
 
@@ -590,7 +590,7 @@ The calculation is performed by the method `curvature_matrix_via_mapping_matrix_
 start = time.time()
 for i in range(repeats):
     curvature_matrix = al.util.inversion.curvature_matrix_via_mapping_matrix_from(
-        mapping_matrix=blurred_mapping_matrix, noise_map=masked_imaging.noise_map
+        mapping_matrix=blurred_mapping_matrix, noise_map=masked_dataset.noise_map
     )
 profiling_dict["Curvature Matrix (F)"] = (time.time() - start) / repeats
 
@@ -717,8 +717,8 @@ These two numbers are the primary driver of run time. More pixels = longer run t
 """
 
 print(f"Inversion fit run times for image type {instrument} \n")
-print(f"Number of pixels = {masked_imaging.grid.shape_slim} \n")
-print(f"Number of sub-pixels = {masked_imaging.grid.sub_shape_slim} \n")
+print(f"Number of pixels = {masked_dataset.grid.shape_slim} \n")
+print(f"Number of sub-pixels = {masked_dataset.grid.sub_shape_slim} \n")
 
 """
 Print the profiling results of every step of the fit for command line output when running profiling scripts.
@@ -763,23 +763,23 @@ mat_plot_2d = aplt.MatPlot2D(
         path=file_path, filename=f"{instrument}_subplot_fit", format="png"
     )
 )
-fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_imaging_plotter.subplot_fit()
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_fit()
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
         path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"
     )
 )
-fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_imaging_plotter.subplot_of_planes(plane_index=1)
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_of_planes(plane_index=1)
 
 """
 The `info_dict` contains all the key information of the analysis which describes its run times.
 """
 info_dict = {}
 info_dict["repeats"] = repeats
-info_dict["image_pixels"] = masked_imaging.grid.sub_shape_slim
+info_dict["image_pixels"] = masked_dataset.grid.sub_shape_slim
 info_dict["sub_size"] = sub_size
 info_dict["mask_radius"] = 3.5
 info_dict["psf_shape_2d"] = (21, 21)

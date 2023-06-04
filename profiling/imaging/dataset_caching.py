@@ -73,7 +73,7 @@ Load the dataset for this instrument / resolution.
 """
 dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
-imaging = al.Imaging.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
@@ -84,23 +84,23 @@ imaging = al.Imaging.from_fits(
 Apply the 2D mask, which for the settings above is representative of the masks we typically use to model strong lenses.
 """
 mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native,
-    pixel_scales=imaging.pixel_scales,
+    shape_native=dataset.shape_native,
+    pixel_scales=dataset.pixel_scales,
     sub_size=sub_size,
     radius=mask_radius,
 )
 
 # mask = al.Mask2D.circular_annular(
-#     shape_native=imaging.shape_native,
-#     pixel_scales=imaging.pixel_scales,
+#     shape_native=dataset.shape_native,
+#     pixel_scales=dataset.pixel_scales,
 #     sub_size=sub_size,
 #     inner_radius=1.5,
 #     outer_radius=2.5,
 # )
 
-masked_imaging = imaging.apply_mask(mask=mask)
+masked_dataset = dataset.apply_mask(mask=mask)
 
-masked_imaging = masked_imaging.apply_settings(
+masked_dataset = masked_dataset.apply_settings(
     settings=al.SettingsImaging(sub_size=sub_size)
 )
 
@@ -109,11 +109,11 @@ __Numba Caching__
 
 Call the dataset cached properties once to get all numba functions initialized.
 """
-masked_imaging.convolver
-del masked_imaging.__dict__["convolver"]
+masked_dataset.convolver
+del masked_dataset.__dict__["convolver"]
 
-masked_imaging.w_tilde
-del masked_imaging.__dict__["w_tilde"]
+masked_dataset.w_tilde
+del masked_dataset.__dict__["w_tilde"]
 
 """
 __Profiling Dict__
@@ -124,17 +124,17 @@ caching_dict = {}
 
 start = time.time()
 for i in range(repeats):
-    masked_imaging.convolver
-    del masked_imaging.__dict__["convolver"]
+    masked_dataset.convolver
+    del masked_dataset.__dict__["convolver"]
 time_calc = (time.time() - start) / repeats
 
 caching_dict["convolver"] = time_calc
 
 start = time.time()
 for i in range(repeats):
-    masked_imaging.w_tilde
-    print(masked_imaging.w_tilde.curvature_preload.shape)
-    del masked_imaging.__dict__["w_tilde"]
+    masked_dataset.w_tilde
+    print(masked_dataset.w_tilde.curvature_preload.shape)
+    del masked_dataset.__dict__["w_tilde"]
 time_calc = (time.time() - start) / repeats
 
 caching_dict["w_tilde"] = time_calc
@@ -146,8 +146,8 @@ These two numbers are the primary driver of run time. More pixels = longer run t
 """
 
 print(f"Dataset Caching run times for image type {instrument} \n")
-print(f"Number of pixels = {masked_imaging.grid.shape_slim} \n")
-print(f"Number of sub-pixels = {masked_imaging.grid.sub_shape_slim} \n")
+print(f"Number of pixels = {masked_dataset.grid.shape_slim} \n")
+print(f"Number of sub-pixels = {masked_dataset.grid.sub_shape_slim} \n")
 
 """
 Print the profiling results of every step of the fit for command line output when running profiling scripts.
@@ -180,7 +180,7 @@ The `info_dict` contains all the key information of the analysis which describes
 """
 info_dict = {}
 info_dict["repeats"] = repeats
-info_dict["image_pixels"] = masked_imaging.grid.sub_shape_slim
+info_dict["image_pixels"] = masked_dataset.grid.sub_shape_slim
 info_dict["sub_size"] = sub_size
 info_dict["mask_radius"] = mask_radius
 info_dict["psf_shape_2d"] = psf_shape_2d

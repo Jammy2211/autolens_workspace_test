@@ -28,7 +28,7 @@ import autolens as al
 """
 __Mask__
 """
-real_space_mask_2d = al.Mask2D.circular(
+real_space_mask = al.Mask2D.circular(
     shape_native=(400, 400), pixel_scales=0.2, radius=3.0, sub_size=1
 )
 
@@ -41,11 +41,11 @@ dataset_name = "with_lens_light"
 
 dataset_path = path.join("dataset", dataset_label, dataset_type, dataset_name)
 
-interferometer = al.Interferometer.from_fits(
-    data_path=path.join(dataset_path, "visibilities.fits"),
+dataset = al.Interferometer.from_fits(
+    data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
-    real_space_mask=real_space_mask_2d,
+    real_space_mask=real_space_mask,
     settings=al.SettingsInterferometer(transformer_class=al.TransformerDFT),
 )
 
@@ -100,7 +100,7 @@ positions_likelihood = al.PositionsLHPenalty(positions=positions, threshold=1.0)
 __Analysis__
 """
 analysis = al.AnalysisInterferometer(
-    dataset=interferometer,
+    dataset=dataset,
     positions_likelihood=positions_likelihood,
     settings_inversion=al.SettingsInversion(
         use_w_tilde=False, use_linear_operators=False

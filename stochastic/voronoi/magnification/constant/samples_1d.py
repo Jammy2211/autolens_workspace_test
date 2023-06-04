@@ -147,7 +147,7 @@ if on_cosma:
 else:
     dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
-imaging = al.Imaging.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
@@ -158,23 +158,23 @@ imaging = al.Imaging.from_fits(
 Apply the 2D mask, which for the settings above is representative of the masks we typically use to model strong lenses.
 """
 mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native,
-    pixel_scales=imaging.pixel_scales,
+    shape_native=dataset.shape_native,
+    pixel_scales=dataset.pixel_scales,
     sub_size=sub_size,
     radius=mask_radius,
 )
 
 # mask = al.Mask2D.circular_annular(
-#     shape_native=imaging.shape_native,
-#     pixel_scales=imaging.pixel_scales,
+#     shape_native=dataset.shape_native,
+#     pixel_scales=dataset.pixel_scales,
 #     sub_size=sub_size,
 #     inner_radius=1.0,
 #     outer_radius=3.0,
 # )
 
-masked_imaging = imaging.apply_mask(mask=mask)
+masked_dataset = dataset.apply_mask(mask=mask)
 
-masked_imaging = masked_imaging.apply_settings(
+masked_dataset = masked_dataset.apply_settings(
     settings=al.SettingsImaging(sub_size=sub_size)
 )
 
@@ -191,7 +191,7 @@ def func(coefficient):
     source_galaxy.pixelization.regularization.coefficient = coefficient
     tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
     fit = al.FitImaging(
-        dataset=masked_imaging,
+        dataset=masked_dataset,
         tracer=tracer,
         settings_pixelization=al.SettingsPixelization(use_border=True),
     )
@@ -216,13 +216,13 @@ Output an image of the fit, so that we can inspect that it fits the data as expe
 """
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
-source_image = source_galaxy_true.image_2d_from(grid=masked_imaging.grid)
+source_image = source_galaxy_true.image_2d_from(grid=masked_dataset.grid)
 
 tracer.galaxies[1].adapt_galaxy_image = source_image
 tracer.galaxies[1].adapt_model_image = source_image
 
 fit = al.FitImaging(
-    dataset=masked_imaging,
+    dataset=masked_dataset,
     tracer=tracer,
     settings_pixelization=al.SettingsPixelization(use_border=True),
 )
@@ -232,16 +232,16 @@ mat_plot_2d = aplt.MatPlot2D(
         path=file_path, filename=f"{instrument}_subplot_fit", format="png"
     )
 )
-fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_imaging_plotter.subplot_fit()
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_fit()
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
         path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"
     )
 )
-fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_imaging_plotter.subplot_of_planes(plane_index=1)
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_of_planes(plane_index=1)
 
 
 """
@@ -250,7 +250,7 @@ __Info__
 The `info_dict` contains all the key information of the analysis which describes its run times.
 """
 info_dict = {}
-info_dict["image_pixels"] = masked_imaging.grid.sub_shape_slim
+info_dict["image_pixels"] = masked_dataset.grid.sub_shape_slim
 info_dict["stochastic_seed"] = stochastic_seed
 info_dict["sub_size"] = sub_size
 info_dict["mask_radius"] = mask_radius
@@ -308,7 +308,7 @@ for i, slope in enumerate(slope_list):
     tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
     fit = al.FitImaging(
-        dataset=masked_imaging,
+        dataset=masked_dataset,
         tracer=tracer,
         settings_pixelization=al.SettingsPixelization(use_border=True),
     )

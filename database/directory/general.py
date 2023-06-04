@@ -23,7 +23,7 @@ __Dataset + Masking__
 dataset_name = "mass_sie__source_sersic"
 dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
 
-imaging = al.Imaging.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
@@ -31,10 +31,10 @@ imaging = al.Imaging.from_fits(
 )
 
 mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
 )
 
-masked_imaging = imaging.apply_mask(mask=mask)
+masked_dataset = dataset.apply_mask(mask=mask)
 
 """
 __Model__
@@ -56,7 +56,7 @@ search = af.DynestyStatic(
     nlive=50,
 )
 
-analysis = al.AnalysisImaging(dataset=masked_imaging)
+analysis = al.AnalysisImaging(dataset=masked_dataset)
 
 search.fit(model=model, analysis=analysis)
 
@@ -130,23 +130,23 @@ for tracer in tracer_gen:
 imaging_agg = al.agg.ImagingAgg(aggregator=agg)
 imaging_gen = imaging_agg.dataset_gen_from()
 
-for imaging in imaging_gen:
+for dataset in imaging_gen:
 
     print(imaging)
 
-    imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-    imaging_plotter.subplot_dataset()
+    dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
+    dataset_plotter.subplot_dataset()
 
 fit_agg = al.agg.FitImagingAgg(
     aggregator=agg,
-    settings_imaging=al.SettingsImaging(sub_size=4),
+    settings_dataset=al.SettingsImaging(sub_size=4),
     settings_pixelization=al.SettingsPixelization(use_border=False),
 )
 fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
 
 for fit in fit_imaging_gen:
-    fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit)
-    fit_imaging_plotter.subplot_fit()
+    fit_plotter = aplt.FitImagingPlotter(fit=fit)
+    fit_plotter.subplot_fit()
 
 fit_agg = al.agg.FitImagingAgg(aggregator=agg)
 fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
@@ -162,5 +162,5 @@ for fit in fit_imaging_gen:
         units=aplt.Units(in_kpc=True),
     )
 
-    fit_imaging_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-    fit_imaging_plotter.figures_2d(normalized_residual_map=True)
+    fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+    fit_plotter.figures_2d(normalized_residual_map=True)

@@ -32,7 +32,7 @@ __Dataset + Masking__
 dataset_name = "mass_sie__source_sersic"
 dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
 
-imaging = al.Imaging.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
@@ -40,10 +40,10 @@ imaging = al.Imaging.from_fits(
 )
 
 mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
 )
 
-imaging = imaging.apply_mask(mask=mask)
+dataset = dataset.apply_mask(mask=mask)
 
 """
 __Settings AutoFit__
@@ -92,7 +92,7 @@ light, which in this example:
  - Uses an `Isothermal` model for the lens's total mass distribution with an `ExternalShear`.
  - Fixes the mass profile centre to (0.0, 0.0) (this assumption will be relaxed in the MASS PIPELINE).
 """
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=dataset)
 
 source_results = slam.source_lp.run(
     settings_autofit=settings_autofit,
@@ -116,7 +116,7 @@ using the lens mass model and source model of the SOURCE PIPELINE to initialize 
  - Uses an `PowerLaw` model for the lens's total mass distribution [The centre if unfixed from (0.0, 0.0)].
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=dataset)
 
 mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
@@ -156,8 +156,8 @@ class AnalysisImagingSensitivity(al.AnalysisImaging):
 subhalo_results = slam.subhalo.sensitivity_mapping_imaging(
     settings_autofit=settings_autofit,
     analysis_cls=AnalysisImagingSensitivity,
-    mask_2d=mask,
-    psf_2d=imaging.psf,
+    mask=mask,
+    psf=dataset.psf,
     mass_results=mass_results,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,

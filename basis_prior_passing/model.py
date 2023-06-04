@@ -29,7 +29,7 @@ Load, plot and mask the `Imaging` data.
 dataset_name = "mass_sie__source_sersic"
 dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
 
-imaging = al.Imaging.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
@@ -37,15 +37,15 @@ imaging = al.Imaging.from_fits(
 )
 
 mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
 )
 
-imaging = imaging.apply_mask(mask=mask)
+dataset = dataset.apply_mask(mask=mask)
 
-imaging_plotter = aplt.ImagingPlotter(
-    imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
+dataset_plotter = aplt.ImagingPlotter(
+    dataset=dataset, visuals_2d=aplt.Visuals2D(mask=mask)
 )
-imaging_plotter.subplot_dataset()
+dataset_plotter.subplot_dataset()
 
 """
 __Settings AutoFit__
@@ -121,7 +121,7 @@ model_1 = af.Collection(
     ),
 )
 
-analysis_1 = al.AnalysisImaging(dataset=imaging)
+analysis_1 = al.AnalysisImaging(dataset=dataset)
 
 search_1 = af.DynestyStatic(
     name="source_lp_1",
@@ -143,7 +143,7 @@ model_2 = af.Collection(
     ),
 )
 
-analysis_2 = al.AnalysisImaging(dataset=imaging)
+analysis_2 = al.AnalysisImaging(dataset=dataset)
 
 search_2 = af.DynestyStatic(
     name="source_lp_2",

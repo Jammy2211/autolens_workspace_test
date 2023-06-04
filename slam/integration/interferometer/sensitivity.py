@@ -58,8 +58,8 @@ Load the `Interferometer` data, define the visibility and real-space masks and p
 dataset_name = "mass_sie__source_sersic"
 dataset_path = path.join("dataset", "interferometer", dataset_name)
 
-interferometer = al.Interferometer.from_fits(
-    data_path=path.join(dataset_path, "visibilities.fits"),
+dataset = al.Interferometer.from_fits(
+    data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
 )
@@ -68,21 +68,21 @@ real_space_mask = al.Mask2D.circular(
     shape_native=(200, 200), pixel_scales=0.05, radius=3.0
 )
 
-visibilities_mask = np.full(fill_value=False, shape=interferometer.visibilities.shape)
+visibilities_mask = np.full(fill_value=False, shape=dataset.data.shape)
 
-settings_interferometer = al.SettingsInterferometer(
+settings_dataset = al.SettingsInterferometer(
     transformer_class=al.TransformerNUFFT
 )
 
-interferometer = al.MaskedInterferometer(
+dataset = al.MaskedInterferometer(
     interferometer=interferometer,
     visibilities_mask=visibilities_mask,
     real_space_mask=real_space_mask,
-    settings=settings_interferometer,
+    settings=settings_dataset,
 )
 
-interferometer_plotter = aplt.InterferometerPlotter(dataset=interferometer)
-interferometer_plotter.subplot_dataset()
+dataset_plotter = aplt.InterferometerPlotter(dataset=dataset)
+dataset_plotter.subplot_dataset()
 
 """
 __Paths__
@@ -129,7 +129,7 @@ Settings:
  - Mass Centre: Fix the mass profile centre to (0.0, 0.0) (this assumption will be relaxed in the SOURCE INVERSION 
  PIPELINE).
 """
-analysis = al.AnalysisInterferometer(dataset=interferometer)
+analysis = al.AnalysisInterferometer(dataset=dataset)
 
 source_lp_results = slam.source_lp.run(
     path_prefix=path_prefix,
@@ -163,7 +163,7 @@ Settings:
 settings_lens = al.SettingsLens(threshold=0.2)
 
 analysis = al.AnalysisInterferometer(
-    dataset=interferometer,
+    dataset=dataset,
     positions_likelihood=source_lp_results.last.positions_likelihood_from(
         factor=3.0, minimum_threshold=0.2
     ),
@@ -189,7 +189,7 @@ using the lens mass model and source model of the SOURCE PIPELINE to initialize 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS TOTAL PIPELINE.
 """
 analysis = al.AnalysisInterferometer(
-    dataset=interferometer,
+    dataset=dataset,
     positions_likelihood=source_pix_results.last.positions_likelihood_from(
         factor=3.0, minimum_threshold=0.2, use_resample=True
     ),
@@ -230,7 +230,7 @@ class AnalysisInterferometerSensitivity(al.AnalysisInterferometer):
 subhalo_results = slam.subhalo.sensitivity_mapping_interferometer(
     path_prefix=path_prefix,
     analysis_cls=AnalysisInterferometerSensitivity,
-    uv_wavelengths=interferometer.uv_wavelengths,
+    uv_wavelengths=dataset.uv_wavelengths,
     visibilities_mask=visibilities_mask,
     real_space_mask=real_space_mask,
     mass_results=mass_results,

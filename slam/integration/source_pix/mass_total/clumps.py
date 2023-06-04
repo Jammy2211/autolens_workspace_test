@@ -55,7 +55,7 @@ Load the `Imaging` data, define the `Mask2D` and plot them.
 dataset_name = "light_sersic__mass_sie__source_sersic"
 dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
 
-imaging = al.Imaging.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
@@ -63,15 +63,15 @@ imaging = al.Imaging.from_fits(
 )
 
 mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
 )
 
-imaging = imaging.apply_mask(mask=mask)
+dataset = dataset.apply_mask(mask=mask)
 
-imaging_plotter = aplt.ImagingPlotter(
-    imaging=imaging, visuals_2d=aplt.Visuals2D(mask=mask)
+dataset_plotter = aplt.ImagingPlotter(
+    dataset=dataset, visuals_2d=aplt.Visuals2D(mask=mask)
 )
-imaging_plotter.subplot_dataset()
+dataset_plotter.subplot_dataset()
 
 """
 __Settings AutoFit__
@@ -141,7 +141,7 @@ source galaxy's light, which in this example:
 
  - Mass Centre: Fix the mass profile centre to (0.0, 0.0) (this assumption will be relaxed in the MASS PIPELINE).
 """
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=dataset)
 
 bulge = af.Model(al.lp.Sersic)
 disk = af.Model(al.lp.Exponential)
@@ -174,7 +174,7 @@ regularization, to set up the model and hyper images, and then:
  SOURCE PIX PIPELINE.
 """
 
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=dataset)
 
 source_pix_results = slam.source_pix.run(
     settings_autofit=settings_autofit,
@@ -207,7 +207,7 @@ disk = af.Model(al.lp.Exponential)
 bulge.centre = disk.centre
 
 analysis = al.AnalysisImaging(
-    dataset=imaging, adapt_result=source_pix_results.last
+    dataset=dataset, adapt_result=source_pix_results.last
 )
 
 light_results = slam.light_lp.run(
@@ -238,7 +238,7 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, adapt_result=source_pix_results.last
+    dataset=dataset, adapt_result=source_pix_results.last
 )
 
 mass_results = slam.mass_total.run(
@@ -267,7 +267,7 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, adapt_result=source_pix_results.last
+    dataset=dataset, adapt_result=source_pix_results.last
 )
 
 subhalo_results = slam.subhalo.detection(

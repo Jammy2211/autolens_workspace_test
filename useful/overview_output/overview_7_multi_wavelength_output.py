@@ -71,7 +71,7 @@ dataset_name = "light_sersic__mass_sie__source_sersic"
 
 dataset_path = path.join("dataset", dataset_type, dataset_label, dataset_name)
 
-imaging_list = [
+dataset_list = [
     al.Imaging.from_fits(
         data_path=path.join(dataset_path, f"{color}_image.fits"),
         psf_path=path.join(dataset_path, f"{color}_psf.fits"),
@@ -89,7 +89,7 @@ Now how in the r-band, the lens outshines the source, whereas in the g-band the 
 The different variation of the colors of the lens and source across wavelength is a powerful tool for lensing modeling,
 as it helps PyAutoLens deblend the two objects.
 """
-for imaging, color in zip(imaging_list, color_list):
+for imaging, color in zip(dataset_list, color_list):
 
     mat_plot_2d = aplt.MatPlot2D(
         title=aplt.Title(label=f"{color}-band Image"),
@@ -98,8 +98,8 @@ for imaging, color in zip(imaging_list, color_list):
         ),
     )
 
-    imaging_plotter = aplt.ImagingPlotter(imaging=imaging, mat_plot_2d=mat_plot_2d)
-    imaging_plotter.figures_2d(data=True)
+    dataset_plotter = aplt.ImagingPlotter(dataset=dataset, mat_plot_2d=mat_plot_2d)
+    dataset_plotter.figures_2d(data=True)
 
 """
 __Mask__
@@ -110,20 +110,20 @@ and use to set up the `Imaging` object that the lens model fits.
 For multi-wavelength lens modeling, we use the same mask for every dataset whenever possible. This is not absolutely 
 necessary, but provides a more reliable analysis.
 """
-mask_2d_list = [
+mask_list = [
     al.Mask2D.circular(
-        shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
+        shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
     )
-    for imaging in imaging_list
+    for dataset in dataset_list
 ]
 
 
-imaging_list = [
-    imaging.apply_mask(mask=mask_2d)
-    for imaging, mask_2d in zip(imaging_list, mask_2d_list)
+dataset_list = [
+    dataset.apply_mask(mask=mask)
+    for imaging, mask in zip(dataset_list, mask_list)
 ]
 
-for imaging in imaging_list:
+for dataset in dataset_list:
 
     mat_plot_2d = aplt.MatPlot2D(
         title=aplt.Title(label=f"{color}-band Image"),
@@ -132,15 +132,15 @@ for imaging in imaging_list:
         ),
     )
 
-    imaging_plotter = aplt.ImagingPlotter(imaging=imaging, mat_plot_2d=mat_plot_2d)
-    imaging_plotter.figures_2d(data=True)
+    dataset_plotter = aplt.ImagingPlotter(dataset=dataset, mat_plot_2d=mat_plot_2d)
+    dataset_plotter.figures_2d(data=True)
 
 """
 __Analysis__
 
 We create a list of `AnalysisImaging` objects for every dataset.
 """
-analysis_list = [al.AnalysisImaging(dataset=imaging) for imaging in imaging_list]
+analysis_list = [al.AnalysisImaging(dataset=dataset) for dataset in dataset_list]
 
 """
 We now introduce the key new aspect to the PyAutoLens API in this overview, which is critical to fitting
@@ -283,7 +283,7 @@ c = af.UniformPrior(lower_limit=-10.0, upper_limit=10.0)
 linear = af.Add(af.Multiply(wavelength_list, m), c)
 
 analysis_list = [
-    al.AnalysisImaging(dataset=imaging).with_model(linear) for imaging in imaging_list
+    al.AnalysisImaging(dataset=dataset).with_model(linear) for dataset in dataset_list
 ]
 
 """
@@ -336,8 +336,8 @@ dataset_label = "interferometer"
 dataset_name = "mass_sie__source_sersic"
 dataset_path = path.join("dataset", dataset_type, dataset_label, dataset_name)
 
-interferometer = al.Interferometer.from_fits(
-    data_path=path.join(dataset_path, "visibilities.fits"),
+dataset = al.Interferometer.from_fits(
+    data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
     real_space_mask=real_space_mask,
@@ -348,10 +348,10 @@ mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(path=workspace_path, filename=f"dirty_image", format="png"),
 )
 
-interferometer_plotter = aplt.InterferometerPlotter(
-    dataset=interferometer, mat_plot_2d=mat_plot_2d
+dataset_plotter = aplt.InterferometerPlotter(
+    dataset=dataset, mat_plot_2d=mat_plot_2d
 )
-interferometer_plotter.figures_2d(dirty_image=True)
+dataset_plotter.figures_2d(dirty_image=True)
 
 """
 __Imaging Dataset__
@@ -361,23 +361,23 @@ __Imaging Dataset__
 # dataset_name = "light_sersic__mass_sie__source_sersic"
 # dataset_path = path.join("dataset", dataset_type, dataset_label, dataset_name)
 #
-# imaging = al.Imaging.from_fits(
+# dataset = al.Imaging.from_fits(
 #     data_path=path.join(dataset_path, "g_image.fits"),
 #     psf_path=path.join(dataset_path, "g_psf.fits"),
 #     noise_map_path=path.join(dataset_path, "g_noise_map.fits"),
 #     pixel_scales=0.08,
 # )
 #
-# mask_2d = al.Mask2D.circular(
-#     shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
+# mask = al.Mask2D.circular(
+#     shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
 # )
 #
-# imaging = imaging.apply_mask(mask=mask_2d)
+# dataset = dataset.apply_mask(mask=mask)
 #
 # mat_plot_2d = aplt.MatPlot2D(
 #     title=aplt.Title(label=f"{color}-band Image"),
 #     output=aplt.Output(path=workspace_path, filename=f"{color}_image", format="png")
 # )
 #
-# imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-# imaging_plotter.subplot_dataset()
+# dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
+# dataset_plotter.subplot_dataset()

@@ -113,7 +113,7 @@ Load the dataset for this instrument / resolution.
 """
 dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
-imaging = al.Imaging.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
@@ -124,15 +124,15 @@ imaging = al.Imaging.from_fits(
 Apply the 2D mask, which for the settings above is representative of the masks we typically use to model strong lenses.
 """
 mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native,
-    pixel_scales=imaging.pixel_scales,
+    shape_native=dataset.shape_native,
+    pixel_scales=dataset.pixel_scales,
     sub_size=sub_size,
     radius=mask_radius,
 )
 
-masked_imaging = imaging.apply_mask(mask=mask)
+masked_dataset = dataset.apply_mask(mask=mask)
 
-masked_imaging = masked_imaging.apply_settings(
+masked_dataset = masked_dataset.apply_settings(
     settings=al.SettingsImaging(sub_size=sub_size)
 )
 
@@ -144,7 +144,7 @@ Call FitImaging once to get all numba functions initialized.
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
 fit_mapping = al.FitImaging(
-    dataset=masked_imaging,
+    dataset=masked_dataset,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=False),
 )
@@ -154,7 +154,7 @@ stop
 
 
 fit_w_tilde = al.FitImaging(
-    dataset=masked_imaging,
+    dataset=masked_dataset,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=True),
 )

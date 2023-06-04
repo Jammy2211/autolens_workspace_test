@@ -33,7 +33,7 @@ dataset_type = "point_source"
 
 dataset_path = path.join("dataset", dataset_label, dataset_type)
 
-image_2d = al.Array2D.from_fits(
+data = al.Array2D.from_fits(
     file_path=path.join(dataset_path, "data.fits"), pixel_scales=0.05
 )
 
@@ -59,7 +59,7 @@ model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 __PointSolver__
 """
 grid_2d = al.Grid2D.uniform(
-    shape_native=image_2d.shape_native, pixel_scales=image_2d.pixel_scales
+    shape_native=data.shape_native, pixel_scales=data.pixel_scales
 )
 
 point_solver = al.PointSolver(grid=grid_2d, pixel_scale_precision=0.025)

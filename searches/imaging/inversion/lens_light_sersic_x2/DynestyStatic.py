@@ -51,7 +51,7 @@ __Dataset + Masking__
 """
 dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
 
-imaging = al.Imaging.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
@@ -59,13 +59,13 @@ imaging = al.Imaging.from_fits(
 )
 
 mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native, pixel_scales=imaging.pixel_scales, radius=3.0
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
 )
 
-imaging = imaging.apply_mask(mask=mask)
+dataset = dataset.apply_mask(mask=mask)
 
-imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_dataset()
+dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
+dataset_plotter.subplot_dataset()
 
 """
 __Adapt Setup__
@@ -96,7 +96,7 @@ search_1 = af.DynestyStatic(
     nlive=50,
 )
 
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=dataset)
 
 result_1 = search_1.fit(model=model, analysis=analysis)
 
@@ -119,7 +119,7 @@ search_2 = af.DynestyStatic(
     path_prefix=path_prefix, name="search[2]_sie", unique_tag=dataset_name, nlive=75
 )
 
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=dataset)
 
 result_2 = search_2.fit(model=model, analysis=analysis)
 
@@ -146,7 +146,7 @@ search_3 = af.DynestyStatic(
     nlive=75,
 )
 
-analysis = al.AnalysisImaging(dataset=imaging)
+analysis = al.AnalysisImaging(dataset=dataset)
 
 result_3 = search_3.fit(model=model, analysis=analysis)
 
@@ -186,7 +186,7 @@ search_4 = af.DynestyStatic(
     nlive=30,
 )
 
-analysis = al.AnalysisImaging(dataset=imaging, adapt_result=result_3)
+analysis = al.AnalysisImaging(dataset=dataset, adapt_result=result_3)
 
 result_4 = search_4.fit(model=model, analysis=analysis)
 
@@ -226,6 +226,6 @@ model = af.Collection(
     galaxies=af.Collection(lens=lens, source=result_4.instance.galaxies.source)
 )
 
-analysis = al.AnalysisImaging(dataset=imaging, adapt_result=result_4)
+analysis = al.AnalysisImaging(dataset=dataset, adapt_result=result_4)
 
 result_5 = search_5.fit(model=model, analysis=analysis)

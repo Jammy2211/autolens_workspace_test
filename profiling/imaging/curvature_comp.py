@@ -115,37 +115,37 @@ Load the dataset for this instrument / resolution.
 dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 dataset_jwst_path = path.join("dataset", "jwst")
 
-imaging = al.Imaging.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_jwst_path, f'psf356_cut.fits'),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
 )
 
-imaging.psf = al.Kernel2D.from_gaussian(shape_native=(11,11), pixel_scales=pixel_scale, sigma=0.1, centre=(0.01, 0.0), normalize=True)
+dataset.psf = al.Kernel2D.from_gaussian(shape_native=(11,11), pixel_scales=pixel_scale, sigma=0.1, centre=(0.01, 0.0), normalize=True)
 
-# imaging = al.Imaging.from_fits(data_path=path.join(dataset_path, 'data_scaled.fits'),
+# dataset = al.Imaging.from_fits(data_path=path.join(dataset_path, 'data_scaled.fits'),
 #                                noise_map_path=path.join(dataset_path, 'noise356.fits'),
 #                                psf_path=path.join(dataset_path, f'psf356_cut.fits'),
 #                                pixel_scales=0.063)
 #
-# print(imaging.psf)
-# print(sum(imaging.psf))
+# print(dataset.psf)
+# print(sum(dataset.psf))
 # stop
 
 """
 Apply the 2D mask, which for the settings above is representative of the masks we typically use to model strong lenses.
 """
 mask = al.Mask2D.circular(
-    shape_native=imaging.shape_native,
-    pixel_scales=imaging.pixel_scales,
+    shape_native=dataset.shape_native,
+    pixel_scales=dataset.pixel_scales,
     sub_size=sub_size,
     radius=mask_radius,
 )
 
-masked_imaging = imaging.apply_mask(mask=mask)
+masked_dataset = dataset.apply_mask(mask=mask)
 
-masked_imaging = masked_imaging.apply_settings(
+masked_dataset = masked_dataset.apply_settings(
     settings=al.SettingsImaging(sub_size=sub_size)
 )
 
@@ -157,13 +157,13 @@ Call FitImaging once to get all numba functions initialized.
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
 fit_mapping = al.FitImaging(
-    dataset=masked_imaging,
+    dataset=masked_dataset,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=False),
 )
 
 fit_w_tilde = al.FitImaging(
-    dataset=masked_imaging,
+    dataset=masked_dataset,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=True),
 )

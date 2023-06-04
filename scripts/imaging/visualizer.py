@@ -5,7 +5,7 @@ Viusalize: Imaging
 This script performs an imaging model fit, where all images are output during visualization as .png and .fits
 files.
 
-This tests all visualization outputs in **PyAutoLens** for imaging data.
+This tests all visualization outputs in **PyAutoLens** for dataset data.
 """
 # %matplotlib inline
 # from pyprojroot import here
@@ -37,30 +37,30 @@ dataset_name = "with_lens_light"
 
 dataset_path = path.join("dataset", dataset_label, dataset_type, dataset_name)
 
-imaging = al.Imaging.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=0.2,
 )
 
-imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_dataset()
+dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
+dataset_plotter.subplot_dataset()
 
 """
 __Mask__
 """
-mask_2d = al.Mask2D.circular_annular(
-    shape_native=imaging.shape_native,
-    pixel_scales=imaging.pixel_scales,
+mask = al.Mask2D.circular_annular(
+    shape_native=dataset.shape_native,
+    pixel_scales=dataset.pixel_scales,
     inner_radius=0.8,
     outer_radius=2.6,
 )
 
-imaging = imaging.apply_mask(mask=mask_2d)
+dataset = dataset.apply_mask(mask=mask)
 
-imaging_plotter = aplt.ImagingPlotter(imaging=imaging)
-imaging_plotter.subplot_dataset()
+dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
+dataset_plotter.subplot_dataset()
 
 """
 __Positions__
@@ -110,7 +110,7 @@ positions_likelihood = al.PositionsLHPenalty(positions=positions, threshold=1.0)
 __Analysis__ 
 """
 analysis = al.AnalysisImaging(
-    dataset=imaging, positions_likelihood=positions_likelihood
+    dataset=dataset, positions_likelihood=positions_likelihood
 )
 
 analysis.modify_before_fit(paths=paths, model=model)

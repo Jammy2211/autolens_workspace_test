@@ -43,8 +43,8 @@ object.
 dataset_name = "mass_sie__source_sersic"
 dataset_path = path.join("dataset", "interferometer", dataset_name)
 
-interferometer = al.Interferometer.from_fits(
-    data_path=path.join(dataset_path, "visibilities.fits"),
+dataset = al.Interferometer.from_fits(
+    data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
     real_space_mask=real_space_mask,
@@ -60,33 +60,33 @@ Square-Mile Array (SMA) dataset.
 We made this choice so the script runs fast, and we discuss below how PyAutoLens can scale up to large visibilities
 datasets from an instrument like ALMA.
 """
-interferometer_plotter = aplt.InterferometerPlotter(
-    dataset=interferometer,
+dataset_plotter = aplt.InterferometerPlotter(
+    dataset=dataset,
     mat_plot_2d=aplt.MatPlot2D(
         output=aplt.Output(path=workspace_path, filename="visibilities", format="png")
     ),
 )
-interferometer_plotter.figures_2d(data=True)
+dataset_plotter.figures_2d(data=True)
 
-interferometer_plotter = aplt.InterferometerPlotter(
-    dataset=interferometer,
+dataset_plotter = aplt.InterferometerPlotter(
+    dataset=dataset,
     mat_plot_2d=aplt.MatPlot2D(
         output=aplt.Output(path=workspace_path, filename="uv_wavelengths", format="png")
     ),
 )
-interferometer_plotter.figures_2d(uv_wavelengths=True)
+dataset_plotter.figures_2d(uv_wavelengths=True)
 
-interferometer_plotter = aplt.InterferometerPlotter(
-    dataset=interferometer,
+dataset_plotter = aplt.InterferometerPlotter(
+    dataset=dataset,
     mat_plot_2d=aplt.MatPlot2D(
         output=aplt.Output(path=workspace_path, filename="dirty_image", format="png")
     ),
 )
 
-interferometer_plotter.figures_2d(dirty_image=True)
+dataset_plotter.figures_2d(dirty_image=True)
 
-interferometer_plotter = aplt.InterferometerPlotter(
-    dataset=interferometer,
+dataset_plotter = aplt.InterferometerPlotter(
+    dataset=dataset,
     mat_plot_2d=aplt.MatPlot2D(
         output=aplt.Output(
             path=workspace_path, filename="dirty_signal_to_noise", format="png"
@@ -94,7 +94,7 @@ interferometer_plotter = aplt.InterferometerPlotter(
     ),
 )
 
-interferometer_plotter.figures_2d(dirty_signal_to_noise_map=True)
+dataset_plotter.figures_2d(dirty_signal_to_noise_map=True)
 
 
 """
@@ -158,7 +158,7 @@ transformer_class = al.TransformerNUFFT
 """
 The use this transformer in a fit, we use the `apply_settings` method.
 """
-interferometer = interferometer.apply_settings(
+dataset = dataset.apply_settings(
     settings=al.SettingsInterferometer(transformer_class=transformer_class)
 )
 
@@ -167,17 +167,17 @@ __Fitting__
 
 The interferometer can now be used with a `FitInterferometer` object to fit it to a data-set:
 """
-fit = al.FitInterferometer(dataset=interferometer, tracer=tracer)
+fit = al.FitInterferometer(dataset=dataset, tracer=tracer)
 
-fit_interferometer_plotter = aplt.FitInterferometerPlotter(fit=fit)
+fit_plotter = aplt.FitInterferometerPlotter(fit=fit)
 
 """
 Visualization of the fit can be performed in the uv-plane or in real-space. 
 
 Note that the fit is not performed in real-space, but plotting it in real-space is often more informative.
 """
-fit_interferometer_plotter.subplot_fit()
-fit_interferometer_plotter.subplot_fit_real_space()
+fit_plotter.subplot_fit()
+fit_plotter.subplot_fit_real_space()
 
 """
 Interferometer data can also be modeled using pixelized source's, which again perform the source reconstruction by
@@ -194,21 +194,21 @@ source_galaxy = al.Galaxy(
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
 fit = al.FitInterferometer(
-    dataset=interferometer,
+    dataset=dataset,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_linear_operators=True),
 )
 
-fit_interferometer_plotter = aplt.FitInterferometerPlotter(
+fit_plotter = aplt.FitInterferometerPlotter(
     fit=fit,
     mat_plot_2d=aplt.MatPlot2D(
         output=aplt.Output(
-            path=workspace_path, filename="model_visibilities", format="png"
+            path=workspace_path, filename="model_data", format="png"
         )
     ),
 )
-fit_interferometer_plotter.figures_2d(model_visibilities=True)
-fit_interferometer_plotter = aplt.FitInterferometerPlotter(
+fit_plotter.figures_2d(model_data=True)
+fit_plotter = aplt.FitInterferometerPlotter(
     fit=fit,
     mat_plot_2d=aplt.MatPlot2D(
         output=aplt.Output(
@@ -216,7 +216,7 @@ fit_interferometer_plotter = aplt.FitInterferometerPlotter(
         )
     ),
 )
-fit_interferometer_plotter.subplot_fit_dirty_images()
+fit_plotter.subplot_fit_dirty_images()
 
 """
 __Efficiency__
@@ -263,7 +263,7 @@ the lens model in the correct way for an interferometer dataset.
 
 This includes mapping the lens model from real-space to the uv-plane via the Fourier transform discussed above.
 """
-analysis = al.AnalysisInterferometer(dataset=interferometer)
+analysis = al.AnalysisInterferometer(dataset=dataset)
 
 """
 __Model-Fit__
@@ -281,11 +281,11 @@ __Result__
 The **PyAutoLens** visualization library and `FitInterferometer` object includes specific methods for plotting the 
 results.
 """
-fit_interferometer_plotter = aplt.FitInterferometerPlotter(
+fit_plotter = aplt.FitInterferometerPlotter(
     fit=result.max_log_likelihood_fit
 )
-fit_interferometer_plotter.subplot_fit()
-fit_interferometer_plotter.subplot_fit_dirty_images()
+fit_plotter.subplot_fit()
+fit_plotter.subplot_fit_dirty_images()
 
 """
 __Simulation__3
@@ -294,14 +294,14 @@ Simulated interferometer datasets can be generated using the ``SimulatorInterfer
 Gaussian noise to the visibilities:
 """
 simulator = al.SimulatorInterferometer(
-    uv_wavelengths=interferometer.uv_wavelengths, exposure_time=300.0, noise_sigma=0.01
+    uv_wavelengths=dataset.uv_wavelengths, exposure_time=300.0, noise_sigma=0.01
 )
 
 real_space_grid_2d = al.Grid2D.uniform(
     shape_native=real_space_mask.shape_native, pixel_scales=real_space_mask.pixel_scales
 )
 
-interferometer = simulator.via_tracer_from(tracer=tracer, grid=real_space_grid_2d)
+dataset = simulator.via_tracer_from(tracer=tracer, grid=real_space_grid_2d)
 
 """
 __Wrap Up__
