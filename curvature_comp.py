@@ -2,11 +2,13 @@ import numpy as np
 
 import autoarray as aa
 
-image=aa.Array2D.ones(shape_native=(7, 7), pixel_scales=(1.0, 1.0))
+image = aa.Array2D.ones(shape_native=(7, 7), pixel_scales=(1.0, 1.0))
 
 image[10:40] = 2.0
 
-noise_map=aa.Array2D.full(fill_value=1.0, shape_native=(7, 7), pixel_scales=(1.0, 1.0))
+noise_map = aa.Array2D.full(
+    fill_value=1.0, shape_native=(7, 7), pixel_scales=(1.0, 1.0)
+)
 
 noise_map[23] = 2.0
 noise_map[24] = 3.0
@@ -15,10 +17,7 @@ psf = np.array([[0.1, 0.3, 0.0], [0.1, 0.3, 0.1], [0.1, 0.1, 0.2]])
 
 psf = aa.Kernel2D.no_mask(values=psf, pixel_scales=(1.0, 1.0))
 
-dataset = aa.Imaging(
-        data=image,
-    noise_map=noise_map,
-        psf=psf )
+dataset = aa.Imaging(data=image, noise_map=noise_map, psf=psf)
 
 mask = np.array(
     [
@@ -86,7 +85,6 @@ inversion_w_tilde = aa.Inversion(
 
 
 # print(inversion_mapping.curvature_matrix[1,0])
-
 
 
 # For w_tilde we now investigate what goes into this off diagonal term:
@@ -162,7 +160,7 @@ aaaa
 
 print(inversion_mapping.curvature_matrix)
 
-print(inversion_mapping.curvature_matrix[0, 1: ] - off_diag)
+print(inversion_mapping.curvature_matrix[0, 1:] - off_diag)
 
 print()
 print("RESULT:")

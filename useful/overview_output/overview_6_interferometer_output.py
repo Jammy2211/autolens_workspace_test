@@ -40,7 +40,7 @@ __Dataset__
 We next load an interferometer dataset from fits files, which follows the same API that we have seen for an `Imaging`
 object.
 """
-dataset_name = "mass_sie__source_sersic"
+dataset_name = "no_lens_light"
 dataset_path = path.join("dataset", "interferometer", dataset_name)
 
 dataset = al.Interferometer.from_fits(
@@ -202,9 +202,7 @@ fit = al.FitInterferometer(
 fit_plotter = aplt.FitInterferometerPlotter(
     fit=fit,
     mat_plot_2d=aplt.MatPlot2D(
-        output=aplt.Output(
-            path=workspace_path, filename="model_data", format="png"
-        )
+        output=aplt.Output(path=workspace_path, filename="model_data", format="png")
     ),
 )
 fit_plotter.figures_2d(model_data=True)
@@ -281,9 +279,7 @@ __Result__
 The **PyAutoLens** visualization library and `FitInterferometer` object includes specific methods for plotting the 
 results.
 """
-fit_plotter = aplt.FitInterferometerPlotter(
-    fit=result.max_log_likelihood_fit
-)
+fit_plotter = aplt.FitInterferometerPlotter(fit=result.max_log_likelihood_fit)
 fit_plotter.subplot_fit()
 fit_plotter.subplot_fit_dirty_images()
 

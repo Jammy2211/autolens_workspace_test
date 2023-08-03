@@ -239,7 +239,7 @@ fit_time = (time.time() - start) / repeats
 """
 The profiling dictionary stores the run time of every total mass profile.
 """
-profiling_dict = {}
+run_time_dict = {}
 
 """
 We now start of the profiling timer and iterate through every step of the fitting strong lens data with 
@@ -268,7 +268,7 @@ for i in range(repeats):
     image = lens_galaxy.image_2d_from(grid=masked_dataset.grid)
     blurring_image = lens_galaxy.image_2d_from(grid=masked_dataset.blurring_grid)
 
-profiling_dict["Lens Light (Grid2D)"] = (time.time() - start) / repeats
+run_time_dict["Lens Light (Grid2D)"] = (time.time() - start) / repeats
 
 """
 __Lens Light (Grid2DIterate)__
@@ -288,7 +288,7 @@ for i in range(repeats):
     image = lens_galaxy.image_2d_from(grid=masked_imaging_iterate.grid)
     blurring_image = lens_galaxy.image_2d_from(grid=masked_dataset.blurring_grid)
 
-profiling_dict["Lens Light (Grid2DIterate)"] = (time.time() - start) / repeats
+run_time_dict["Lens Light (Grid2DIterate)"] = (time.time() - start) / repeats
 
 """
 __Lens Light Convolution__
@@ -305,7 +305,7 @@ for i in range(repeats):
         image=image, blurring_image=blurring_image
     )
 
-profiling_dict["Lens Light Convolution"] = (time.time() - start) / repeats
+run_time_dict["Lens Light Convolution"] = (time.time() - start) / repeats
 
 """
 __Ray Tracing (SIE)__
@@ -341,7 +341,7 @@ for i in range(repeats):
     tracer.deflections_yx_2d_from(grid=sparse_image_plane_grid)
     traced_grid = tracer.traced_grid_2d_list_from(grid=masked_dataset.grid)[-1]
 
-profiling_dict["Ray Tracing (SIE)"] = (time.time() - start) / repeats
+run_time_dict["Ray Tracing (SIE)"] = (time.time() - start) / repeats
 
 """
 __Ray Tracing (Power-Law)__
@@ -355,7 +355,7 @@ for i in range(repeats):
         grid=masked_dataset.grid
     )[-1]
 
-profiling_dict["Ray Tracing (Power-Law)"] = (time.time() - start) / repeats
+run_time_dict["Ray Tracing (Power-Law)"] = (time.time() - start) / repeats
 
 """
 __Ray Tracing (Decomposed)__
@@ -370,7 +370,7 @@ for i in range(repeats):
         grid=masked_dataset.grid
     )[-1]
 
-profiling_dict["Ray Tracing (Decomposed)"] = (time.time() - start) / repeats
+run_time_dict["Ray Tracing (Decomposed)"] = (time.time() - start) / repeats
 
 """
 __Image-Plane Weight Map__
@@ -388,7 +388,7 @@ for i in range(repeats):
         hyper_data=source_galaxy.adapt_galaxy_image
     )
 
-profiling_dict["Image-plane Weight-Map"] = (time.time() - start) / repeats
+run_time_dict["Image-plane Weight-Map"] = (time.time() - start) / repeats
 
 """
 __Image-plane Pixelization (KMeans)__
@@ -410,7 +410,7 @@ for i in range(repeats):
         total_pixels=pixels, grid=masked_dataset.grid, weight_map=weight_map
     )
 
-profiling_dict["Image-plane Pixelization (KMeans)"] = (time.time() - start) / repeats
+run_time_dict["Image-plane Pixelization (KMeans)"] = (time.time() - start) / repeats
 
 traced_sparse_grid = tracer.traced_sparse_grid_pg_list(grid=masked_dataset.grid)[-1]
 
@@ -428,7 +428,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/structures/grids/tw
 start = time.time()
 for i in range(repeats):
     relocated_grid = traced_grid.relocated_grid_from(grid=traced_grid)
-profiling_dict["Border Relocation"] = (time.time() - start) / repeats
+run_time_dict["Border Relocation"] = (time.time() - start) / repeats
 
 """
 __Border Relocation Pixelization__
@@ -444,7 +444,7 @@ for i in range(repeats):
     relocated_pixelization_grid = traced_grid.relocated_mesh_grid_from(
         pixelization_grid=traced_sparse_grid
     )
-profiling_dict["Border Relocation Pixelization"] = (time.time() - start) / repeats
+run_time_dict["Border Relocation Pixelization"] = (time.time() - start) / repeats
 
 """
 __VoronoiNN Mesh__
@@ -465,7 +465,7 @@ for i in range(repeats):
         grid=relocated_pixelization_grid,
         nearest_pixelization_index_for_slim_index=sparse_image_plane_grid.sparse_index_for_slim_index,
     )
-profiling_dict["VoronoiNN Mesh"] = (time.time() - start) / repeats
+run_time_dict["VoronoiNN Mesh"] = (time.time() - start) / repeats
 
 """
 We now combine grids computed above to create a `Mapper`, which describes how every image-plane (sub-)pixel maps to
@@ -512,7 +512,7 @@ start = time.time()
 for i in range(repeats):
     pix_index_for_sub_slim_index = mapper.pix_indexes_for_sub_slim_index
 diff = (time.time() - start) / repeats
-profiling_dict["Image-Source Pairing"] = (time.time() - start) / repeats
+run_time_dict["Image-Source Pairing"] = (time.time() - start) / repeats
 
 
 """
@@ -527,7 +527,6 @@ Mapper.__init__:
 """
 start = time.time()
 for i in range(repeats):
-
     mapping_matrix = al.util.mapper.mapping_matrix_from(
         pix_index_for_sub_slim_index=pix_index_for_sub_slim_index,
         pixels=mapper.pixels,
@@ -536,7 +535,7 @@ for i in range(repeats):
         sub_fraction=mapper.source_plane_data_grid.mask.sub_fraction,
     )
 
-profiling_dict["Mapping Matrix (f)"] = (time.time() - start) / repeats
+run_time_dict["Mapping Matrix (f)"] = (time.time() - start) / repeats
 
 """
 __Blurred Mapping Matrix (f_blur)__
@@ -555,7 +554,7 @@ for i in range(repeats):
     blurred_mapping_matrix = masked_dataset.convolver.convolve_mapping_matrix(
         mapping_matrix=mapping_matrix
     )
-profiling_dict["Blurred Mapping Matrix (f_blur)"] = (time.time() - start) / repeats
+run_time_dict["Blurred Mapping Matrix (f_blur)"] = (time.time() - start) / repeats
 
 """
 __Data Vector (D)__
@@ -580,7 +579,7 @@ for i in range(repeats):
         image=subtracted_image,
         noise_map=masked_dataset.noise_map,
     )
-profiling_dict["Data Vector (D)"] = (time.time() - start) / repeats
+run_time_dict["Data Vector (D)"] = (time.time() - start) / repeats
 
 """
 __Curvature Matrix (F)__
@@ -596,7 +595,7 @@ for i in range(repeats):
     curvature_matrix = al.util.inversion.curvature_matrix_via_mapping_matrix_from(
         mapping_matrix=blurred_mapping_matrix, noise_map=masked_dataset.noise_map
     )
-profiling_dict["Curvature Matrix (F)"] = (time.time() - start) / repeats
+run_time_dict["Curvature Matrix (F)"] = (time.time() - start) / repeats
 
 """
 __Source Pixel Signal Scales__
@@ -613,7 +612,7 @@ for i in range(repeats):
     pixel_signals = mapper.pixel_signals_from(
         signal_scale=source_galaxy.pixelization.regularization.signal_scale
     )
-profiling_dict["Source Pixel Signal Scales"] = (time.time() - start) / repeats
+run_time_dict["Source Pixel Signal Scales"] = (time.time() - start) / repeats
 
 """
 __Regularization weight_list__
@@ -631,7 +630,7 @@ for i in range(repeats):
         outer_coefficient=source_galaxy.pixelization.regularization.outer_coefficient,
         pixel_signals=pixel_signals,
     )
-profiling_dict["Source Pixel Signal Scales"] = (time.time() - start) / repeats
+run_time_dict["Source Pixel Signal Scales"] = (time.time() - start) / repeats
 
 """
 __Regularization Matrix (H)__
@@ -652,7 +651,7 @@ for i in range(repeats):
         neighbors=mapper.source_plane_mesh_grid.neighbors,
         neighbors_size=mapper.source_plane_mesh_grid.neighbors_size,
     )
-profiling_dict["Regularization Matrix (H)"] = (time.time() - start) / repeats
+run_time_dict["Regularization Matrix (H)"] = (time.time() - start) / repeats
 
 """
 __F + Lamdba H__
@@ -662,7 +661,7 @@ The linear system of equations solves for F + regularization_coefficient*H.
 start = time.time()
 for i in range(repeats):
     curvature_reg_matrix = np.add(curvature_matrix, regularization_matrix)
-profiling_dict["F + Lambda H"] = (time.time() - start) / repeats
+run_time_dict["F + Lambda H"] = (time.time() - start) / repeats
 
 """
 __Source Reconstruction (S)__
@@ -675,7 +674,7 @@ S is the vector of reconstructed source fluxes.
 start = time.time()
 for i in range(repeats):
     reconstruction = np.linalg.solve(curvature_reg_matrix, data_vector)
-profiling_dict["Source Reconstruction (S)"] = (time.time() - start) / repeats
+run_time_dict["Source Reconstruction (S)"] = (time.time() - start) / repeats
 
 """
 __Log Det [F + Lambda H]__
@@ -687,7 +686,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/inversion
 start = time.time()
 for i in range(repeats):
     2.0 * np.sum(np.log(np.diag(np.linalg.cholesky(curvature_reg_matrix))))
-profiling_dict["Log Det [F + Lambda H]"] = (time.time() - start) / repeats
+run_time_dict["Log Det [F + Lambda H]"] = (time.time() - start) / repeats
 
 """
 __Log Det [Lambda H]__
@@ -699,7 +698,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/inversion
 start = time.time()
 for i in range(repeats):
     2.0 * np.sum(np.log(np.diag(np.linalg.cholesky(regularization_matrix))))
-profiling_dict["Log Det [Lambda H]"] = (time.time() - start) / repeats
+run_time_dict["Log Det [Lambda H]"] = (time.time() - start) / repeats
 
 """
 __Image Reconstruction__
@@ -714,7 +713,7 @@ for i in range(repeats):
     al.util.inversion.mapped_reconstructed_data_via_mapping_matrix_from(
         mapping_matrix=blurred_mapping_matrix, reconstruction=reconstruction
     )
-profiling_dict["Image Reconstruction"] = (time.time() - start) / repeats
+run_time_dict["Image Reconstruction"] = (time.time() - start) / repeats
 
 """
 These two numbers are the primary driver of run time. More pixels = longer run time.
@@ -727,7 +726,7 @@ print(f"Number of sub-pixels = {masked_dataset.grid.sub_shape_slim} \n")
 """
 Print the profiling results of every step of the fit for command line output when running profiling scripts.
 """
-for key, value in profiling_dict.items():
+for key, value in run_time_dict.items():
     print(key, value)
 
 """
@@ -740,13 +739,13 @@ This is stored in a folder using the **PyAutoLens** version number so that profi
 if not os.path.exists(file_path):
     os.makedirs(file_path)
 
-filename = f"{instrument}_profiling_dict.json"
+filename = f"{instrument}_run_time_dict.json"
 
 if os.path.exists(path.join(file_path, filename)):
     os.remove(path.join(file_path, filename))
 
 with open(path.join(file_path, filename), "w") as outfile:
-    json.dump(profiling_dict, outfile)
+    json.dump(run_time_dict, outfile)
 
 """
 Output the profiling run time of the entire fit.

@@ -1,6 +1,5 @@
 import autofit as af
 import autolens as al
-from . import slam_util
 
 from typing import Tuple, Union
 
@@ -10,9 +9,11 @@ def run(
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_adapt: al.SetupAdapt,
     source_lp_results: af.ResultsCollection,
-    mesh_init : af.Model(al.AbstractMesh) = af.Model(al.mesh.DelaunayMagnification),
-    mesh_init_shape : Tuple[int, int] = (34, 34),
-    regularization_init : af.Model(al.AbstractRegularization) = af.Model(al.reg.AdaptiveBrightnessSplit),
+    mesh_init: af.Model(al.AbstractMesh) = af.Model(al.mesh.DelaunayMagnification),
+    mesh_init_shape: Tuple[int, int] = (34, 34),
+    regularization_init: af.Model(al.AbstractRegularization) = af.Model(
+        al.reg.AdaptiveBrightnessSplit
+    ),
     mesh: af.Model(al.AbstractMesh) = af.Model(al.mesh.DelaunayBrightnessImage),
     regularization: af.Model(al.AbstractRegularization) = af.Model(
         al.reg.AdaptiveBrightnessSplit
@@ -60,10 +61,10 @@ def run(
 
     analysis.set_adapt_dataset(result=source_lp_results.last)
 
-    mass = al.util.chaining.mass__from(
+    mass = al.util.chaining.mass_from(
         mass=source_lp_results.last.model.galaxies.lens.mass,
         mass_result=source_lp_results.last.model.galaxies.lens.mass,
-        unfix_mass_centre=True
+        unfix_mass_centre=True,
     )
 
     mesh_init.shape = mesh_init_shape
@@ -86,7 +87,7 @@ def run(
                 ),
             ),
         ),
-        clumps=slam_util.clumps_from(result=source_lp_results.last),
+        clumps=al.util.chaining.clumps_from(result=source_lp_results.last),
     )
 
     search_1 = af.DynestyStatic(
@@ -132,12 +133,14 @@ def run(
                 ),
             ),
         ),
-        clumps=slam_util.clumps_from(result=source_lp_results.last),
+        clumps=al.util.chaining.clumps_from(result=source_lp_results.last),
     )
 
     if setup_adapt.mesh_pixels_fixed is not None:
         if hasattr(model_2.galaxies.source.pixelization.mesh, "pixels"):
-            model_2.galaxies.source.pixelization.mesh.pixels = setup_adapt.mesh_pixels_fixed
+            model_2.galaxies.source.pixelization.mesh.pixels = (
+                setup_adapt.mesh_pixels_fixed
+            )
 
     search_2 = af.DynestyStatic(
         name="source_pix[2]_light[fixed]_mass[fixed]_source[pix]",

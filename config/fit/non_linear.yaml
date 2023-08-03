@@ -17,10 +17,6 @@ mcmc:
       number_of_cores: 1
     printing:
       silence: false
-    prior_passer:
-      sigma: 3.0
-      use_errors: true
-      use_widths: true
     run:
       nsteps: 2000
     search:
@@ -42,10 +38,6 @@ mcmc:
       number_of_cores: 1
     printing:
       silence: false
-    prior_passer:
-      sigma: 3.0
-      use_errors: true
-      use_widths: true
     run:
       check_walkers: true
       light_mode: false
@@ -72,10 +64,6 @@ nest:
       number_of_cores: 1
     printing:
       silence: false
-    prior_passer:
-      sigma: 3.0
-      use_errors: true
-      use_widths: true
     run:
       dlogz_init: 0.01
       logl_max_init: .inf
@@ -109,10 +97,6 @@ nest:
       number_of_cores: 1
     printing:
       silence: false
-    prior_passer:
-      sigma: 3.0
-      use_errors: true
-      use_widths: true
     run:
       dlogz: null
       logl_max: .inf
@@ -146,10 +130,6 @@ optimize:
       method: ball
     printing:
       silence: false
-    prior_passer:
-      sigma: 3.0
-      use_errors: true
-      use_widths: true
     search:
       total_draws: 50
     updates:
@@ -164,10 +144,6 @@ optimize:
       number_of_cores: 1
     printing:
       silence: false
-    prior_passer:
-      sigma: 3.0
-      use_errors: true
-      use_widths: true
     run:
       iters: 2000
     search:
@@ -188,10 +164,6 @@ optimize:
       number_of_cores: 1
     printing:
       silence: false
-    prior_passer:
-      sigma: 3.0
-      use_errors: true
-      use_widths: true
     run:
       iters: 2000
     search:

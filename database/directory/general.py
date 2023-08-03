@@ -20,8 +20,8 @@ import autolens.plot as aplt
 """
 __Dataset + Masking__
 """
-dataset_name = "mass_sie__source_sersic"
-dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
+dataset_name = "no_lens_light"
+dataset_path = path.join("dataset", "imaging", dataset_name)
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
@@ -122,7 +122,6 @@ tracer_gen = tracer_agg.max_log_likelihood_gen_from()
 grid = al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.1)
 
 for tracer in tracer_gen:
-
     tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
     tracer_plotter.figures_2d(convergence=True, potential=True)
 
@@ -131,7 +130,6 @@ imaging_agg = al.agg.ImagingAgg(aggregator=agg)
 imaging_gen = imaging_agg.dataset_gen_from()
 
 for dataset in imaging_gen:
-
     print(imaging)
 
     dataset_plotter = aplt.ImagingPlotter(dataset=dataset)

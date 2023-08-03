@@ -117,12 +117,18 @@ dataset_jwst_path = path.join("dataset", "jwst")
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
-    psf_path=path.join(dataset_jwst_path, f'psf356_cut.fits'),
+    psf_path=path.join(dataset_jwst_path, f"psf356_cut.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
 )
 
-dataset.psf = al.Kernel2D.from_gaussian(shape_native=(11,11), pixel_scales=pixel_scale, sigma=0.1, centre=(0.01, 0.0), normalize=True)
+dataset.psf = al.Kernel2D.from_gaussian(
+    shape_native=(11, 11),
+    pixel_scales=pixel_scale,
+    sigma=0.1,
+    centre=(0.01, 0.0),
+    normalize=True,
+)
 
 # dataset = al.Imaging.from_fits(data_path=path.join(dataset_path, 'data_scaled.fits'),
 #                                noise_map_path=path.join(dataset_path, 'noise356.fits'),
@@ -173,7 +179,9 @@ print(index_list)
 
 import autoarray as aa
 
-index_list = fit_w_tilde.inversion.param_range_list_from(cls=aa.AbstractLinearObjFuncList)
+index_list = fit_w_tilde.inversion.param_range_list_from(
+    cls=aa.AbstractLinearObjFuncList
+)
 print(index_list)
 
 print(
@@ -189,7 +197,7 @@ print(
     np.max(
         np.abs(
             fit_mapping.inversion.curvature_matrix[0:2, 0:2]
-            - fit_w_tilde.inversion.curvature_matrix[ 0:2, 0:2]
+            - fit_w_tilde.inversion.curvature_matrix[0:2, 0:2]
         )
     )
 )
@@ -226,15 +234,14 @@ off_diag = np.zeros((pix_pixels, linear_func_pixels))
 data_pixels = data_weights.shape[0]
 
 for data_0 in range(data_pixels):
-
     for pix_0_index in range(pix_lengths[data_0]):
-
         data_0_weight = data_weights[data_0, pix_0_index]
         pix_0 = data_to_pix_unique[data_0, pix_0_index]
 
         for linear_index in range(linear_func_pixels):
-
-            off_diag[pix_0, linear_index] += data_linear_func_matrix_dict[data_0, linear_index] * data_0_weight
+            off_diag[pix_0, linear_index] += (
+                data_linear_func_matrix_dict[data_0, linear_index] * data_0_weight
+            )
 
 print(fit_mapping.inversion.curvature_matrix[2:1226, 0:2])
 print(off_diag)

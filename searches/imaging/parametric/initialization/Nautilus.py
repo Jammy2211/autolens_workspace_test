@@ -2,7 +2,7 @@
 Modeling: Mass Total + Source Parametric
 ========================================
 
-This script gives a profile of a `DynestyStatic` model-fit to an `Imaging` dataset where the lens model is initialized,
+This script gives a profile of a `Nautilus` model-fit to an `Imaging` dataset where the lens model is initialized,
 where:
 
  - The lens galaxy's light is omitted (and is not present in the simulated data).
@@ -31,30 +31,51 @@ import autolens.plot as aplt
 """
 __Paths__
 """
-dataset_name = "light_sersic__mass_sie__source_sersic_compact"
-dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
-path_prefix = path.join("searches", "grid_iterate")
+dataset_name = "with_lens_light_search"
+path_prefix = path.join("searches", "parametric", "initialization")
 
 """
 __Search__
 """
-search = af.DynestyStatic(
+search = af.Nautilus(
     path_prefix=path_prefix,
-    name="non_cored",
+    name="Nautilus",
     unique_tag=dataset_name,
-    nlive=100,
-    walks=10,
+    verbose=True,
+ #   n_live=250,
+    # nlive=50,
+    # walks=10,
+    # iterations_per_update=5000,
+)
+
+search = af.Nautilus(
+    path_prefix=path_prefix,
+    name="Nautilus_x250_linear",
+    unique_tag=dataset_name,
+    n_live=250,
+    verbose=True,
+#    force_x1_cpu=True,
+    number_of_cores=1,
+    # nlive=50,
+    # walks=10,
+    # iterations_per_update=5000,
 )
 
 """
 __Dataset + Masking__
 """
+dataset_path = path.join("dataset", "imaging", dataset_name)
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    pixel_scales=0.05,
+    pixel_scales=0.1,
+)
+
+
+positions = al.Grid2DIrregular.from_json(
+    file_path=path.join(dataset_path, "positions.json")
 )
 
 dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
@@ -69,26 +90,20 @@ dataset = dataset.apply_mask(mask=mask)
 dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
 dataset_plotter.subplot_dataset()
 
-dataset = dataset.apply_settings(
-    settings=al.SettingsImaging(grid_class=al.Grid2D, sub_size=1)
-)
-
 """
 __Model + Search + Analysis + Model-Fit__
 """
 
 lens = af.Model(
-    al.Galaxy,
-    redshift=0.5,
-    bulge=al.lp.Sersic,
-    mass=al.mp.Isothermal,
-    shear=al.mp.ExternalShear,
+    al.Galaxy, redshift=0.5, bulge=al.lp_linear.Sersic, mass=al.mp.Isothermal, shear=al.mp.ExternalShear
 )
-source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.Sersic)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp_linear.Sersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
-analysis = al.AnalysisImaging(dataset=dataset)
+analysis = al.AnalysisImaging(dataset=dataset,
+                              positions_likelihood=al.PositionsLHPenalty(threshold=0.4, positions=positions),
+                              )
 
 result = search.fit(model=model, analysis=analysis)
 

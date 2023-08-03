@@ -30,7 +30,7 @@ general:
     log_to_file: false
     model_results_decimal_places: 3
     remove_files: false
-    samples_to_csv: false
+    samples_to_csv: true
   profiling:
     parallel_profile: false
     repeats: 1
@@ -39,7 +39,7 @@ general:
     check_figure_of_merit_sanity: false
     bypass_figure_of_merit_sanity: false
     check_preloads: false
-    preloads_check_threshold: 0.1     # If the figure of merit of a fit with and without preloads is greater than this threshold, the check preload test fails and an exception raised for a model-fit.
+    preloads_check_threshold: 1.0     # If the figure of merit of a fit with and without preloads is greater than this threshold, the check preload test fails and an exception raised for a model-fit.
     disable_positions_lh_inversion_check: true
   w_tilde:
     snr_cut_iteration: false
@@ -64,7 +64,7 @@ logging:
     handlers:
     - console
     - file
-    level: DEBUG
+    level: INFO
   version: 1
 non_linear:
   GridSearch:
@@ -86,10 +86,6 @@ non_linear:
         number_of_cores: 1
       printing:
         silence: false
-      prior_passer:
-        sigma: 3.0
-        use_errors: true
-        use_widths: true
       run:
         nsteps: 2000
       search:
@@ -111,10 +107,6 @@ non_linear:
         number_of_cores: 1
       printing:
         silence: false
-      prior_passer:
-        sigma: 3.0
-        use_errors: true
-        use_widths: true
       run:
         check_walkers: true
         light_mode: false
@@ -141,10 +133,6 @@ non_linear:
         number_of_cores: 1
       printing:
         silence: false
-      prior_passer:
-        sigma: 3.0
-        use_errors: true
-        use_widths: true
       run:
         dlogz_init: 0.01
         logl_max_init: .inf
@@ -178,10 +166,6 @@ non_linear:
         number_of_cores: 1
       printing:
         silence: false
-      prior_passer:
-        sigma: 3.0
-        use_errors: true
-        use_widths: true
       run:
         dlogz: null
         logl_max: .inf
@@ -214,10 +198,6 @@ non_linear:
         number_of_cores: 1
       printing:
         silence: false
-      prior_passer:
-        sigma: 3.0
-        use_errors: true
-        use_widths: true
       run:
         Lepsilon: 0.001
         cluster_num_live_points: 40
@@ -278,10 +258,6 @@ non_linear:
         method: ball
       printing:
         silence: false
-      prior_passer:
-        sigma: 3.0
-        use_errors: true
-        use_widths: true
       search:
         total_draws: 50
       updates:
@@ -296,10 +272,6 @@ non_linear:
         number_of_cores: 1
       printing:
         silence: false
-      prior_passer:
-        sigma: 3.0
-        use_errors: true
-        use_widths: true
       run:
         iters: 2000
       search:
@@ -320,10 +292,6 @@ non_linear:
         number_of_cores: 1
       printing:
         silence: false
-      prior_passer:
-        sigma: 3.0
-        use_errors: true
-        use_widths: true
       run:
         iters: 2000
       search:

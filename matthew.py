@@ -1,6 +1,7 @@
 import numpy as np
 import scipy
 
+
 def fnnls_modified(
     ZTZ,
     ZTx,
@@ -77,13 +78,11 @@ def fnnls_modified(
 
     # Extra loop in case a support is set to update s and d
     if P_initial.shape[0] != 0:
-
         s[P] = lstsq((ZTZ)[P][:, P], (ZTx)[P])
         d = s.clip(min=0)
 
     # B1
     while (not np.all(P)) and np.max(w[~P]) > tolerance:
-
         count += 1
 
         current_P = (
@@ -98,7 +97,6 @@ def fnnls_modified(
 
         # C1
         while np.any(P) and np.min(s[P]) <= tolerance:
-
             sub_count += 1
 
             s, d, P = fix_constraint(ZTZ, ZTx, s, d, P, tolerance, lstsq)
@@ -122,6 +120,7 @@ def fnnls_modified(
     print(f"Total Iterations = {count} / {sub_count}")
 
     return d
+
 
 def fix_constraint(
     ZTZ,
@@ -215,7 +214,9 @@ start = time.time()
 reconstruction = fnnls_modified(
     ZTZ,
     ZTx,
-    lstsq=lambda A, x: linalg.solve(A, x, assume_a="pos", overwrite_a=True, overwrite_b=True, check_finite=False),
+    lstsq=lambda A, x: linalg.solve(
+        A, x, assume_a="pos", overwrite_a=True, overwrite_b=True, check_finite=False
+    ),
 )
 
 print(time.time() - start)

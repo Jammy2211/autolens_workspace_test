@@ -50,8 +50,8 @@ __Dataset__
 
 Load the `Imaging` data, define the `Mask2D` and plot them.
 """
-dataset_name = "light_sersic__mass_sie__source_sersic"
-dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
+dataset_name = "with_lens_light"
+dataset_path = path.join("dataset", "imaging", dataset_name)
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
@@ -175,7 +175,6 @@ disk_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
 gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
 
 for i, gaussian in enumerate(gaussian_list):
-
     gaussian.centre = gaussian_list[0].centre
     gaussian.ell_comps = gaussian_list[0].ell_comps
     gaussian.sigma = disk_a + (disk_b * np.log10(i + 1))
@@ -189,7 +188,6 @@ source_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
 gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
 
 for i, gaussian in enumerate(gaussian_list):
-
     gaussian.centre = gaussian_list[0].centre
     gaussian.ell_comps = gaussian_list[0].ell_comps
     gaussian.sigma = source_a + (source_b * np.log10(i + 1))
@@ -275,7 +273,6 @@ disk_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
 gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
 
 for i, gaussian in enumerate(gaussian_list):
-
     gaussian.centre = gaussian_list[0].centre
     gaussian.ell_comps = gaussian_list[0].ell_comps
     gaussian.sigma = disk_a + (disk_b * np.log10(i + 1))
@@ -311,9 +308,7 @@ initialize the model priors . In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the MASS 
  LIGHT DARK PIPELINE.
 """
-analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_result=source_lp_results.last
-)
+analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
 
 mass_results = slam.mass_light_dark.run__from_light_linear(
     settings_autofit=settings_autofit,
@@ -322,7 +317,6 @@ mass_results = slam.mass_light_dark.run__from_light_linear(
     source_results=source_lp_results,
     light_results=light_results,
     dark=af.Model(al.mp.NFWMCRLudlow),
-    einstein_mass_range=(0.01, 5.0),
 )
 
 """

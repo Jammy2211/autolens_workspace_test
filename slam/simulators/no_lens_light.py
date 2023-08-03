@@ -28,14 +28,13 @@ gives it a descriptive name. They define the folder the dataset is output to on 
  - The psf will be output to `/autolens_workspace/dataset/dataset_type/dataset_label/dataset_name/psf.fits`.
 """
 dataset_type = "imaging"
-dataset_label = "no_lens_light"
-dataset_name = "mass_sie__source_sersic"
+dataset_name = "no_lens_light"
 
 """
 The path where the dataset will be output, which in this case is:
 `/autolens_workspace/dataset/imaging/no_lens_light/mass_sie__source_sersic`
 """
-dataset_path = path.join("dataset", dataset_type, dataset_label, dataset_name)
+dataset_path = path.join("dataset", dataset_type, dataset_name)
 
 """
 __Simulate__

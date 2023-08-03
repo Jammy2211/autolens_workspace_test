@@ -94,7 +94,6 @@ instrument = "alma_low_res"
 # instrument = "alma_high_res"
 
 if instrument == "sma":
-
     real_shape_native = (64, 64)
     pixel_scales = (0.15625, 0.15625)
 
@@ -107,7 +106,6 @@ if instrument == "sma":
     )
 
 elif instrument == "alma_low_res":
-
     real_shape_native = (256, 256)
     pixel_scales = (0.0390625, 0.0390625)
 
@@ -121,7 +119,6 @@ elif instrument == "alma_low_res":
     )
 
 elif instrument == "alma_high_res":
-
     # real_shape_native = (1024, 1024)
     # pixel_scales = (0.0048828125, 0.0048828125)
 
@@ -143,7 +140,6 @@ elif instrument == "alma_high_res":
     )
 
 else:
-
     raise Exception
 
 """
@@ -164,7 +160,6 @@ try:
     )
 
 except FileNotFoundError:
-
     cosma_path = "/cosma7/data/dp004/dc-nigh1/autolens"
 
     dataset_path = path.join(
@@ -226,10 +221,10 @@ __Profiling Dict__
 
 Apply mask, settings and profiling dict to fit, such that timings of every individiual function are provided.
 """
-profiling_dict = {}
+run_time_dict = {}
 
 tracer = al.Tracer.from_galaxies(
-    galaxies=[lens_galaxy, source_galaxy], profiling_dict=profiling_dict
+    galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time_dict
 )
 
 fit = al.FitInterferometer(
@@ -238,11 +233,11 @@ fit = al.FitInterferometer(
     settings_inversion=al.SettingsInversion(
         use_w_tilde=use_w_tilde, use_w_tilde_numpy=use_w_tilde_numpy
     ),
-    profiling_dict=profiling_dict,
+    run_time_dict=run_time_dict,
 )
 fit.figure_of_merit
 
-profiling_dict = fit.profiling_dict
+run_time_dict = fit.run_time_dict
 
 """
 __Results__
@@ -257,7 +252,7 @@ print(f"Number of sub-pixels = {dataset.grid.sub_shape_slim} \n")
 """
 Print the profiling results of every step of the fit for command line output when running profiling scripts.
 """
-for key, value in profiling_dict.items():
+for key, value in run_time_dict.items():
     print(key, value)
 
 """
@@ -269,7 +264,7 @@ The excess time is the difference of this value from the fit time, and it indici
 has missed expensive steps.
 """
 predicted_time = 0.0
-predicted_time = sum(profiling_dict.values())
+predicted_time = sum(run_time_dict.values())
 excess_time = fit_time - predicted_time
 
 print(f"\nExcess Time = {excess_time} \n")
@@ -286,13 +281,13 @@ This is stored in a folder using the **PyAutoLens** version number so that profi
 if not os.path.exists(file_path):
     os.makedirs(file_path)
 
-filename = f"{instrument}_profiling_dict.json"
+filename = f"{instrument}_run_time_dict.json"
 
 if os.path.exists(path.join(file_path, filename)):
     os.remove(path.join(file_path, filename))
 
 with open(path.join(file_path, filename), "w") as outfile:
-    json.dump(profiling_dict, outfile)
+    json.dump(run_time_dict, outfile)
 
 """
 Output the profiling run time of the entire fit.
@@ -315,9 +310,7 @@ mat_plot_2d = aplt.MatPlot2D(
         format="png",
     )
 )
-fit_plotter = aplt.FitInterferometerPlotter(
-    fit=fit, mat_plot_2d=mat_plot_2d
-)
+fit_plotter = aplt.FitInterferometerPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
 fit_plotter.subplot_fit()
 fit_plotter.subplot_fit_dirty_images()
 fit_plotter.subplot_fit_real_space()

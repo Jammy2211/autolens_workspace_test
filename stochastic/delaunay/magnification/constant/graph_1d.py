@@ -44,7 +44,6 @@ Plots a subplot of the different likelihood samples.
 
 def stochastic_subplot(stochastic_dict, info_dict, file_path, filename):
     def plot_subplot(subplot_index, y, ylabel, flip_y=False, color="b"):
-
         if flip_y:
             y = [-1.0 * yval for yval in y]
 

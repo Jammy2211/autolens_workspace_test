@@ -1,10 +1,11 @@
 """
-Simulator: HST
+Simulator: SIE
 ==============
 
 This script simulates `Imaging` of a strong lens where:
 
- - The resolution, PSF and S/N are representative of Hubble Space Telescope imaging.
+ - The lens galaxy's total mass distribution is an `Isothermal` and `ExternalShear`.
+ - The source galaxy's `LightProfile` is an `Sersic`.
 """
 # %matplotlib inline
 # from pyprojroot import here
@@ -12,7 +13,6 @@ This script simulates `Imaging` of a strong lens where:
 # %cd $workspace_path
 # print(f"Working Directory has been set to `{workspace_path}`")
 
-import numpy as np
 from os import path
 import autolens as al
 import autolens.plot as aplt
@@ -25,13 +25,10 @@ gives it a descriptive name. They define the folder the dataset is output to on 
  - The noise-map will be output to `/autolens_workspace/dataset/dataset_type/dataset_label/dataset_name/noise_map.fits`.
  - The psf will be output to `/autolens_workspace/dataset/dataset_type/dataset_label/dataset_name/psf.fits`.
 """
-dataset_type = "edge_effects"
+dataset_type = "imaging"
+dataset_name = "with_lens_light_search"
 
-"""
-The path where the dataset will be output, which in this case is:
-`/autolens_workspace/dataset/imaging/instruments/hst/mass_sie__source_sersic`
-"""
-dataset_path = path.join("dataset", "imaging", dataset_type)
+dataset_path = path.join("dataset", dataset_type, dataset_name)
 
 """
 For simulating an image of a strong lens, we recommend using a Grid2DIterate object. This represents a grid of (y,x) 
@@ -42,13 +39,16 @@ sub-size of the grid is iteratively increased (in steps of 2, 4, 8, 16, 24) unti
 This ensures that the divergent and bright central regions of the source galaxy are fully resolved when determining the
 total flux emitted within a pixel.
 """
-grid = al.Grid2D.uniform(shape_native=(180, 180), pixel_scales=0.05)
+grid = al.Grid2D.uniform(
+    shape_native=(160, 160),
+    pixel_scales=0.1,
+)
 
 """
 Simulate a simple Gaussian PSF for the image.
 """
 psf = al.Kernel2D.from_gaussian(
-    shape_native=(21, 21), sigma=0.05, pixel_scales=grid.pixel_scales, normalize=True
+    shape_native=(11, 11), sigma=0.1, pixel_scales=grid.pixel_scales
 )
 
 """
@@ -56,64 +56,43 @@ To simulate the `Imaging` dataset we first create a simulator, which defines the
 noise levels and psf of the dataset that is simulated.
 """
 simulator = al.SimulatorImaging(
-    exposure_time=2000.0, psf=psf, background_sky_level=1.0, add_poisson_noise=True
+    exposure_time=300.0, psf=psf, background_sky_level=0.1, add_poisson_noise=True
 )
 
 """
 Setup the lens galaxy's mass (SIE+Shear) and source galaxy light (elliptical Sersic) for this simulated lens.
+
+For lens modeling, defining ellipticity in terms of the `ell_comps` improves the model-fitting procedure.
+
+However, for simulating a strong lens you may find it more intuitive to define the elliptical geometry using the 
+axis-ratio of the profile (axis_ratio = semi-major axis / semi-minor axis = b/a) and position angle, where angle is
+in degrees and defined counter clockwise from the positive x-axis.
+
+We can use the **PyAutoLens** `convert` module to determine the elliptical components from the axis-ratio and angle.
 """
-centre = (0.0, 0.0)
-mask_radius = 3.5
-
-total_gaussians = 30
-
-log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
-intensity = 0.6
-
-bulge_gaussian_list = [
-    al.lp.Gaussian(
-        centre=centre,
-        ell_comps=(0.1, 0.2),
-        intensity=intensity,
-        sigma=10 ** log10_sigma_list[i],
-    )
-    for i in range(total_gaussians)
-]
-
-lens_bulge = al.lp_basis.Basis(light_profile_list=bulge_gaussian_list)
-
-disk_gaussian_list = [
-    al.lp.Gaussian(
-        centre=centre,
-        ell_comps=(-0.3, 0.4),
-        intensity=intensity,
-        sigma=10 ** log10_sigma_list[i],
-    )
-    for i in range(total_gaussians)
-]
-
-lens_disk = al.lp_basis.Basis(light_profile_list=disk_gaussian_list)
-
-
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    bulge=lens_bulge,
-    disk=lens_disk,
+    bulge=al.lp.Sersic(
+        centre=(0.0, 0.0),
+        ell_comps=(0.05, 0.05),
+        intensity=0.1,
+        effective_radius=0.8,
+        sersic_index=4.0,
+    ),
     mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
-        einstein_radius=1.3,
-        ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=45.0),
+        ell_comps=(0.05, 0.05),
+        einstein_radius=1.6,
     ),
 )
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    bulge=al.lp.Sersic(
-        centre=(0.1, 0.1),
-        ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=60.0),
-        intensity=0.9,
-        effective_radius=2.0,
-        sersic_index=1.2,
+    bulge=al.lp.Exponential(
+        centre=(0.0, 0.1),
+        ell_comps=(-0.05, -0.05),
+        intensity=0.3,
+        effective_radius=0.1,
     ),
 )
 
@@ -134,6 +113,12 @@ Pass the simulator a tracer, which creates the image which is simulated as an im
 dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
 
 """
+Plot the simulated `Imaging` dataset before outputting it to fits.
+"""
+dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
+dataset_plotter.subplot_dataset()
+
+"""
 Output the simulated dataset to the dataset path as .fits files.
 """
 dataset.output_to_fits(
@@ -143,20 +128,16 @@ dataset.output_to_fits(
     overwrite=True,
 )
 
-"""
-Plot the simulated `Imaging` dataset before outputting it to fits.
-"""
-dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
-dataset_plotter.subplot_dataset()
+positions = al.Grid2DIrregular(values=[(1.6, 0.0), (0.0, 1.6)])
+positions.output_to_json(
+    file_path=path.join(dataset_path, "positions.json"), overwrite=True
+)
 
 """
 Output a subplot of the simulated dataset, the image and a subplot of the `Tracer`'s quantities to the dataset path 
 as .png files.
 """
-mat_plot_2d = aplt.MatPlot2D(
-    title=aplt.Title(label="Hubble Space Telescope Image"),
-    output=aplt.Output(path=dataset_path, format="png"),
-)
+mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png"))
 
 dataset_plotter = aplt.ImagingPlotter(dataset=dataset, mat_plot_2d=mat_plot_2d)
 dataset_plotter.subplot_dataset()
@@ -174,5 +155,5 @@ This will also be accessible via the `Aggregator` if a model-fit is performed us
 tracer.output_to_json(file_path=path.join(dataset_path, "tracer.json"))
 
 """
-The dataset can be viewed in the folder `autolens_workspace/imaging/instruments/hst`.
+The dataset can be viewed in the folder `autolens_workspace/imaging/no_lens_light/mass_sie__source_sersic`.
 """

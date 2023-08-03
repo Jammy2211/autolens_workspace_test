@@ -2,8 +2,7 @@ import autofit as af
 import autolens as al
 import autolens.plot as aplt
 from autofit.non_linear.grid import sensitivity as s
-from . import slam_util
-from . import extensions
+
 
 import json
 import os
@@ -60,7 +59,7 @@ def detection(
     subhalo, to determine if a subhalo is detected.
     """
 
-    source = slam_util.source__from_result_model_if_parametric(
+    source = al.util.chaining.source_from(
         result=mass_results.last,
     )
 
@@ -68,11 +67,16 @@ def detection(
 
     model = af.Collection(
         galaxies=af.Collection(lens=lens, source=source),
-        clumps=slam_util.clumps_from(result=mass_results.last, mass_as_model=True),
+        clumps=al.util.chaining.clumps_from(
+            result=mass_results.last, mass_as_model=True
+        ),
     )
 
     search_no_subhalo = af.DynestyStatic(
-        name="subhalo[1]_mass[total_refine]", **settings_autofit.search_dict, nlive=200, walks=10
+        name="subhalo[1]_mass[total_refine]",
+        **settings_autofit.search_dict,
+        nlive=200,
+        walks=10,
     )
 
     result_1 = search_no_subhalo.fit(
@@ -120,13 +124,13 @@ def detection(
 
     subhalo.mass.redshift_source = result_1.instance.galaxies.source.redshift
 
-    source = slam_util.source__from_result_model_if_parametric(
+    source = al.util.chaining.source_from(
         result=mass_results.last,
     )
 
     model = af.Collection(
         galaxies=af.Collection(lens=lens, subhalo=subhalo, source=source),
-        clumps=slam_util.clumps_from(result=result_1, mass_as_model=True),
+        clumps=al.util.chaining.clumps_from(result=result_1, mass_as_model=True),
     )
 
     search = af.DynestyStatic(
@@ -190,13 +194,14 @@ def detection(
             subhalo=subhalo,
             source=subhalo_result.model.galaxies.source,
         ),
-        clumps=slam_util.clumps_from(result=subhalo_result, mass_as_model=True),
+        clumps=al.util.chaining.clumps_from(result=subhalo_result, mass_as_model=True),
     )
 
     search = af.DynestyStatic(
         name=f"subhalo[3]_subhalo[{refine_tag}]",
         **settings_autofit.search_dict,
-        nlive=500, walks=10
+        nlive=500,
+        walks=10,
     )
 
     result_3 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
@@ -206,7 +211,6 @@ def detection(
 
 class SimulateImaging:
     def __init__(self, mask, psf):
-
         self.mask = mask
         self.psf = psf
 
@@ -253,14 +257,9 @@ class SimulateImaging:
         return dataset
 
     def output_info(self, simulate_path, dataset, tracer):
+        mat_plot = aplt.MatPlot2D(output=aplt.Output(path=simulate_path, format="png"))
 
-        mat_plot = aplt.MatPlot2D(
-            output = aplt.Output(path=simulate_path, format="png")
-        )
-
-        dataset_plotter = aplt.ImagingPlotter(
-            dataset=dataset, mat_plot_2d=mat_plot
-        )
+        dataset_plotter = aplt.ImagingPlotter(dataset=dataset, mat_plot_2d=mat_plot)
         dataset_plotter.subplot_dataset()
 
         tracer_plotter = aplt.TracerPlotter(
@@ -379,9 +378,15 @@ def sensitivity_mapping_imaging(
 
     fit = mass_results.last.max_log_likelihood_fit
 
-    simulation_instance.galaxies.lens.bulge = fit.model_obj_linear_light_profiles_to_light_profiles.galaxies[0].bulge
-    simulation_instance.galaxies.lens.disk = fit.model_obj_linear_light_profiles_to_light_profiles.galaxies[0].disk
-    simulation_instance.galaxies.source.bulge = fit.model_obj_linear_light_profiles_to_light_profiles.galaxies[-1].bulge
+    simulation_instance.galaxies.lens.bulge = (
+        fit.model_obj_linear_light_profiles_to_light_profiles.galaxies[0].bulge
+    )
+    simulation_instance.galaxies.lens.disk = (
+        fit.model_obj_linear_light_profiles_to_light_profiles.galaxies[0].disk
+    )
+    simulation_instance.galaxies.source.bulge = (
+        fit.model_obj_linear_light_profiles_to_light_profiles.galaxies[-1].bulge
+    )
 
     """
     We now write the `simulate_function`, which takes the `simulation_instance` of our model (defined above) and uses it to 

@@ -20,7 +20,7 @@ import autolens.plot as aplt
 """
 __Paths__
 """
-dataset_name = "mass_power_law__source_sersic"
+dataset_name = "with_lens_light"
 path_prefix = path.join("parallel")
 
 """
@@ -39,7 +39,7 @@ search = af.DynestyStatic(
 """
 __Dataset + Masking__
 """
-dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
+dataset_path = path.join("dataset", "imaging", dataset_name)
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),

@@ -29,8 +29,8 @@ import slam
 """
 __Dataset + Masking__
 """
-dataset_name = "mass_sie__source_sersic"
-dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
+dataset_name = "no_lens_light"
+dataset_path = path.join("dataset", "imaging", dataset_name)
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
@@ -76,10 +76,7 @@ extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter value
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_adapt = al.SetupAdapt(
-    hyper_galaxies_lens=False,
-    hyper_galaxies_source=False,
-    hyper_image_sky=None,
-    hyper_background_noise=None,
+    mesh_pixels_fixed=100
 )
 
 """
@@ -97,7 +94,6 @@ analysis = al.AnalysisImaging(dataset=dataset)
 source_results = slam.source_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    setup_adapt=setup_adapt,
     lens_bulge=None,
     lens_disk=None,
     mass=af.Model(al.mp.Isothermal),
@@ -201,7 +197,6 @@ fit_imaging_gen = fit_imaging_agg.max_log_likelihood_gen_from()
 info_gen = agg_best_fits.values("info")
 
 for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_gen):
-
     grid_search_result = fit_grid["result"]
 
     """

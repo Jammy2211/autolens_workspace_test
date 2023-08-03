@@ -126,7 +126,6 @@ masked_dataset = masked_dataset.apply_settings(
 
 
 def func(coefficient):
-
     source_galaxy.pixelization.regularization.coefficient = coefficient
     tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
     fit = al.FitImaging(

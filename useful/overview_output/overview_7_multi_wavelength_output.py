@@ -67,7 +67,7 @@ We simply use lists of the classes we are now familiar with, for example the `Im
 """
 dataset_type = "multi"
 dataset_label = "imaging"
-dataset_name = "light_sersic__mass_sie__source_sersic"
+dataset_name = "with_lens_light"
 
 dataset_path = path.join("dataset", dataset_type, dataset_label, dataset_name)
 
@@ -90,7 +90,6 @@ The different variation of the colors of the lens and source across wavelength i
 as it helps PyAutoLens deblend the two objects.
 """
 for imaging, color in zip(dataset_list, color_list):
-
     mat_plot_2d = aplt.MatPlot2D(
         title=aplt.Title(label=f"{color}-band Image"),
         output=aplt.Output(
@@ -119,12 +118,10 @@ mask_list = [
 
 
 dataset_list = [
-    dataset.apply_mask(mask=mask)
-    for imaging, mask in zip(dataset_list, mask_list)
+    dataset.apply_mask(mask=mask) for imaging, mask in zip(dataset_list, mask_list)
 ]
 
 for dataset in dataset_list:
-
     mat_plot_2d = aplt.MatPlot2D(
         title=aplt.Title(label=f"{color}-band Image"),
         output=aplt.Output(
@@ -233,7 +230,6 @@ different intensities.
 #
 # stop
 for result, color in zip(result_list, color_list):
-
     mat_plot_2d = aplt.MatPlot2D(
         title=aplt.Title(label=f"Lens and source {color}-band Images"),
         output=aplt.Output(
@@ -248,7 +244,7 @@ for result, color in zip(result_list, color_list):
         tangential_critical_curves=False,
         radial_critical_curves=False,
         tangential_caustics=False,
-radial_caustics=False,
+        radial_caustics=False,
     )
 
     tracer_plotter = aplt.TracerPlotter(
@@ -333,7 +329,7 @@ with the lens model.
 """
 dataset_type = "multi"
 dataset_label = "interferometer"
-dataset_name = "mass_sie__source_sersic"
+dataset_name = "no_lens_light"
 dataset_path = path.join("dataset", dataset_type, dataset_label, dataset_name)
 
 dataset = al.Interferometer.from_fits(
@@ -348,9 +344,7 @@ mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(path=workspace_path, filename=f"dirty_image", format="png"),
 )
 
-dataset_plotter = aplt.InterferometerPlotter(
-    dataset=dataset, mat_plot_2d=mat_plot_2d
-)
+dataset_plotter = aplt.InterferometerPlotter(dataset=dataset, mat_plot_2d=mat_plot_2d)
 dataset_plotter.figures_2d(dirty_image=True)
 
 """
@@ -358,7 +352,7 @@ __Imaging Dataset__
 """
 # dataset_type = "multi"
 # dataset_label = "imaging"
-# dataset_name = "light_sersic__mass_sie__source_sersic"
+# dataset_name = "with_lens_light"
 # dataset_path = path.join("dataset", dataset_type, dataset_label, dataset_name)
 #
 # dataset = al.Imaging.from_fits(

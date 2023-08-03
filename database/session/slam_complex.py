@@ -51,8 +51,8 @@ __Dataset__
 
 Load the `Imaging` data, define the `Mask2D` and plot them.
 """
-dataset_name = "light_sersic__mass_sie__source_sersic"
-dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
+dataset_name = "with_lens_light"
+dataset_path = path.join("dataset", "imaging", dataset_name)
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),

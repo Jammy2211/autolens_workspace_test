@@ -52,8 +52,8 @@ __Dataset__
 
 Load the `Imaging` data, define the `Mask2D` and plot them.
 """
-dataset_name = "light_sersic__mass_sie__source_sersic"
-dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
+dataset_name = "with_lens_light"
+dataset_path = path.join("dataset", "imaging", dataset_name)
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
@@ -179,9 +179,7 @@ model of the LIGHT LP PIPELINE. In this example it:
  
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
-analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_result=source_pix_results.last
-)
+analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_pix_results.last)
 
 mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
@@ -208,9 +206,7 @@ For this runner the SUBHALO PIPELINE customizes:
  - The `number_of_cores` used for the gridsearch, where `number_of_cores > 1` performs the model-fits in paralle using
  the Python multiprocessing module.
 """
-analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_result=source_pix_results.last
-)
+analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_pix_results.last)
 
 subhalo_results = slam.subhalo.detection(
     settings_autofit=settings_autofit,

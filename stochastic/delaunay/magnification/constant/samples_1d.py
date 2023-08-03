@@ -34,7 +34,6 @@ cosma_path = path.join(
 )
 
 if on_cosma:
-
     file_path = path.join(
         cosma_path,
         "output",
@@ -187,7 +186,6 @@ Determine the regularization coefficient using the correct lens model.
 
 
 def func(coefficient):
-
     source_galaxy.pixelization.regularization.coefficient = coefficient
     tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
     fit = al.FitImaging(
@@ -302,7 +300,6 @@ counter = 0
 otf_out = False
 
 for i, slope in enumerate(slope_list):
-
     counter += 1
 
     lens_galaxy.mass.slope = slope
@@ -343,14 +340,12 @@ for i, slope in enumerate(slope_list):
     )
 
     if counter == output_interval:
-
         counter = 0
 
         with open(path.join(file_path, filename), "w") as outfile:
             json.dump(stochastic_dict, outfile, indent=4)
 
     if otf_out:
-
         mat_plot_2d = aplt.MatPlot2D(
             cmap=aplt.Cmap(vmin=-1.0, vmax=1.0),
             output=aplt.Output(

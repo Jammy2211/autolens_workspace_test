@@ -31,9 +31,7 @@ import autolens.plot as aplt
 """
 __Paths__
 """
-dataset_name = "mass_sie__source_sersic"
-# dataset_name = "mass_power_law__source_sersic_compact"
-path_prefix = path.join("searches", "parametric", "initialization")
+dataset_name = "no_lens_light"
 
 """
 __Search__
@@ -41,8 +39,8 @@ __Search__
 number_of_cores = 1
 
 search = af.DynestyStatic(
-    path_prefix=path_prefix,
-    name=f"DynestyStatic_x4",
+    path_prefix=path.join("searches", "parametric", "initialization"),
+    name=f"DynestyStatic_x{number_of_cores}",
     unique_tag=dataset_name,
     nlive=50,
     walks=10,
@@ -54,7 +52,7 @@ search = af.DynestyStatic(
 """
 __Dataset + Masking__
 """
-dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
+dataset_path = path.join("dataset", "imaging", dataset_name)
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),

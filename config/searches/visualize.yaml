@@ -287,7 +287,7 @@ plots:
     plane_images_of_planes: false
     residual_map: false
     signal_to_noise_map: false
-    subplot_fit: false
+    subplot_fit: true
     subplots_of_planes: false
     subtracted_images_of_planes: false
   fit_quantity:

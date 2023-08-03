@@ -26,8 +26,8 @@ __Dataset + Masking__
 
 Load, plot and mask the `Imaging` data.
 """
-dataset_name = "mass_sie__source_sersic"
-dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
+dataset_name = "no_lens_light"
+dataset_path = path.join("dataset", "imaging", dataset_name)
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
@@ -76,10 +76,10 @@ mass = af.Model(al.mp.Isothermal)
 total_gaussians = 30
 gaussian_per_basis = 2
 
-# The sigma values of the Gaussians will be fixed to values spanning 0.01 to the mask radius, 3.0". 
+# The sigma values of the Gaussians will be fixed to values spanning 0.01 to the mask radius, 3.0".
 log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 
-# By defining the centre here, it creates two free parameters that are assigned below to all Gaussians. 
+# By defining the centre here, it creates two free parameters that are assigned below to all Gaussians.
 
 centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
@@ -87,18 +87,23 @@ centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 bulge_gaussian_list = []
 
 for j in range(gaussian_per_basis):
-
     # A list of Gaussian model components whose parameters are customized belows.
 
-    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
 
     # Iterate over every Gaussian and customize its parameters.
 
     for i, gaussian in enumerate(gaussian_list):
         gaussian.centre.centre_0 = centre_0  # All Gaussians have same y centre.
         gaussian.centre.centre_1 = centre_1  # All Gaussians have same x centre.
-        gaussian.ell_comps = gaussian_list[0].ell_comps  # All Gaussians have same elliptical components.
-        gaussian.sigma = 10 ** log10_sigma_list[i]  # All Gaussian sigmas are fixed to values above.
+        gaussian.ell_comps = gaussian_list[
+            0
+        ].ell_comps  # All Gaussians have same elliptical components.
+        gaussian.sigma = (
+            10 ** log10_sigma_list[i]
+        )  # All Gaussian sigmas are fixed to values above.
 
     bulge_gaussian_list += gaussian_list
 
@@ -107,7 +112,9 @@ for j in range(gaussian_per_basis):
 basis = af.Model(
     al.lp_basis.Basis,
     light_profile_list=bulge_gaussian_list,
-    regularization=al.reg.ConstantZeroth(coefficient_neighbor=0.0, coefficient_zeroth=1.0)
+    regularization=al.reg.ConstantZeroth(
+        coefficient_neighbor=0.0, coefficient_zeroth=1.0
+    ),
 )
 
 model_1 = af.Collection(

@@ -2,11 +2,13 @@ import numpy as np
 
 import autoarray as aa
 
-image=aa.Array2D.ones(shape_native=(7, 7), pixel_scales=(1.0, 1.0))
+image = aa.Array2D.ones(shape_native=(7, 7), pixel_scales=(1.0, 1.0))
 
 image[10:40] = 2.0
 
-noise_map=aa.Array2D.full(fill_value=1.0, shape_native=(7, 7), pixel_scales=(1.0, 1.0))
+noise_map = aa.Array2D.full(
+    fill_value=1.0, shape_native=(7, 7), pixel_scales=(1.0, 1.0)
+)
 
 noise_map[23] = 2.0
 noise_map[24] = 3.0
@@ -15,10 +17,7 @@ psf = np.array([[0.1, 0.3, 0.0], [0.1, 0.3, 0.1], [0.1, 0.1, 0.2]])
 
 psf = aa.Kernel2D.no_mask(values=psf, pixel_scales=(1.0, 1.0))
 
-dataset = aa.Imaging(
-        data=image,
-    noise_map=noise_map,
-        psf=psf )
+dataset = aa.Imaging(data=image, noise_map=noise_map, psf=psf)
 
 mask = np.array(
     [
@@ -88,12 +87,12 @@ inversion_w_tilde = aa.Inversion(
 # print(inversion_mapping.curvature_matrix[1,0])
 
 
-
 # For w_tilde we now investigate what goes into this off diagonal term:
 
-operated_mapping_matrix = inversion_w_tilde.linear_func_operated_mapping_matrix_dict[
-        linear_func
-    ]  / dataset.noise_map[:, None] ** 2
+operated_mapping_matrix = (
+    inversion_w_tilde.linear_func_operated_mapping_matrix_dict[linear_func]
+    / dataset.noise_map[:, None] ** 2
+)
 
 data_to_pix_unique = mapper.unique_mappings.data_to_pix_unique
 data_weights = mapper.unique_mappings.data_weights
@@ -109,15 +108,18 @@ magic_matrix = np.zeros(shape=(data_pixels, linear_func_pixels))
 print(operated_mapping_matrix.shape)
 
 for data_0 in range(data_pixels):
-
     for psf_index in range(inversion_w_tilde.convolver.image_frame_1d_lengths[data_0]):
-
-        data_index = inversion_w_tilde.convolver.image_frame_1d_indexes[data_0, psf_index]
-        kernel_value = inversion_w_tilde.convolver.image_frame_1d_kernels[data_0, psf_index]
+        data_index = inversion_w_tilde.convolver.image_frame_1d_indexes[
+            data_0, psf_index
+        ]
+        kernel_value = inversion_w_tilde.convolver.image_frame_1d_kernels[
+            data_0, psf_index
+        ]
 
         for linear_index in range(linear_func_pixels):
-
-            magic_matrix[data_0, linear_index] += kernel_value * operated_mapping_matrix[data_index]
+            magic_matrix[data_0, linear_index] += (
+                kernel_value * operated_mapping_matrix[data_index]
+            )
 
 print(magic_matrix[:, 0])
 
@@ -133,15 +135,14 @@ pix_pixels = mapper.params
 off_diag = np.zeros((pix_pixels, linear_func_pixels))
 
 for data_0 in range(data_pixels):
-
     for pix_0_index in range(pix_lengths[data_0]):
-
         data_0_weight = data_weights[data_0, pix_0_index]
         pix_0 = data_to_pix_unique[data_0, pix_0_index]
 
         for linear_index in range(linear_func_pixels):
-
-            off_diag[pix_0, linear_index] += magic_matrix[data_0, linear_index] * data_0_weight
+            off_diag[pix_0, linear_index] += (
+                magic_matrix[data_0, linear_index] * data_0_weight
+            )
 
 print()
 print(inversion_mapping.curvature_matrix[0, 1:])
@@ -166,7 +167,7 @@ stop
 
 print(inversion_mapping.curvature_matrix)
 
-print(inversion_mapping.curvature_matrix[0, 1: ] - off_diag)
+print(inversion_mapping.curvature_matrix[0, 1:] - off_diag)
 
 print()
 print("RESULT:")

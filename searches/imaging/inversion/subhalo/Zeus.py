@@ -57,7 +57,7 @@ dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
-    pixel_scales=0.05,
+    pixel_scales=0.1,
 )
 
 mask = al.Mask2D.circular(

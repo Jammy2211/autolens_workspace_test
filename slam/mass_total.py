@@ -1,7 +1,6 @@
 import autofit as af
 import autolens as al
-from . import slam_util
-from . import extensions
+
 
 from typing import Union, Optional, Tuple
 
@@ -60,8 +59,10 @@ def run(
     This search aims to accurately estimate the lens mass model, using the improved mass model priors and source model 
     of the SOURCE PIPELINE
     """
-    mass = al.util.chaining.mass__from(
-        mass=mass, mass_result=source_results.last.model.galaxies.lens.mass, unfix_mass_centre=True
+    mass = al.util.chaining.mass_from(
+        mass=mass,
+        mass_result=source_results.last.model.galaxies.lens.mass,
+        unfix_mass_centre=True,
     )
 
     if mass_centre is not None:
@@ -71,13 +72,11 @@ def run(
         smbh.centre = mass.centre
 
     if light_results is None:
-
         bulge = None
         disk = None
         point = None
 
     else:
-
         bulge = light_results.last.instance.galaxies.lens.bulge
         disk = light_results.last.instance.galaxies.lens.disk
         point = light_results.last.instance.galaxies.lens.point
@@ -88,12 +87,11 @@ def run(
         shear = al.mp.ExternalShear
 
     if multipole is not None:
-
         multipole.centre = mass.centre
         multipole.einstein_radius = mass.einstein_radius
         multipole.slope = mass.slope
 
-    source = slam_util.source__from_result_model_if_parametric(
+    source = al.util.chaining.source_from(
         result=source_results.last,
     )
 
@@ -112,7 +110,9 @@ def run(
             ),
             source=source,
         ),
-        clumps=slam_util.clumps_from(result=source_results[0], mass_as_model=True),
+        clumps=al.util.chaining.clumps_from(
+            result=source_results[0], mass_as_model=True
+        ),
     )
 
     search = af.DynestyStatic(
@@ -126,13 +126,12 @@ def run(
     """
     __Hyper Extension__
 
-    The above search may be extended with a hyper-search, if the SetupAdapt has one or more of the following inputs:
+    The above search may be extended with an adapt search, if the SetupAdapt has one or more of the following inputs:
 
      - The source is modeled using a pixelization with a regularization scheme.
     """
 
     if end_with_adapt_extension:
-
         result_1 = extensions.adapt_fit(
             setup_adapt=setup_adapt,
             result=result_1,

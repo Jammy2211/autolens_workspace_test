@@ -31,8 +31,7 @@ import autolens.plot as aplt
 """
 __Paths__
 """
-dataset_name = "mass_power_law__source_sersic"
-# dataset_name = "mass_power_law__source_sersic_compact"
+dataset_name = "with_lens_light_search"
 path_prefix = path.join("searches", "parametric", "initialization")
 
 """
@@ -40,9 +39,9 @@ __Search__
 """
 search = af.DynestyStatic(
     path_prefix=path_prefix,
-    name="DynestyStatic",
+    name="DynestyStatic_linear",
     unique_tag=dataset_name,
-    nlive=50,
+    nlive=200,
     walks=10,
     iterations_per_update=5000,
 )
@@ -50,13 +49,13 @@ search = af.DynestyStatic(
 """
 __Dataset + Masking__
 """
-dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
+dataset_path = path.join("dataset", "imaging", dataset_name)
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
-    psf_path=path.join(dataset_path, "psf_big.fits"),
+    psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    pixel_scales=0.05,
+    pixel_scales=0.1,
 )
 
 dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
@@ -76,9 +75,9 @@ __Model + Search + Analysis + Model-Fit__
 """
 
 lens = af.Model(
-    al.Galaxy, redshift=0.5, mass=al.mp.Isothermal, shear=al.mp.ExternalShear
+    al.Galaxy, redshift=0.5, bulge=al.lp_linear.Sersic, mass=al.mp.Isothermal, shear=al.mp.ExternalShear
 )
-source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.Sersic)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp_linear.Sersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 

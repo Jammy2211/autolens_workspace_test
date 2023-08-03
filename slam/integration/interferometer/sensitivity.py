@@ -55,7 +55,7 @@ __Dataset + Masking__
 
 Load the `Interferometer` data, define the visibility and real-space masks and plot them.
 """
-dataset_name = "mass_sie__source_sersic"
+dataset_name = "no_lens_light"
 dataset_path = path.join("dataset", "interferometer", dataset_name)
 
 dataset = al.Interferometer.from_fits(
@@ -70,9 +70,7 @@ real_space_mask = al.Mask2D.circular(
 
 visibilities_mask = np.full(fill_value=False, shape=dataset.data.shape)
 
-settings_dataset = al.SettingsInterferometer(
-    transformer_class=al.TransformerNUFFT
-)
+settings_dataset = al.SettingsInterferometer(transformer_class=al.TransformerNUFFT)
 
 dataset = al.MaskedInterferometer(
     interferometer=interferometer,
@@ -218,7 +216,6 @@ PyAutoLens `AnalysisInterferometer` class.
 
 class AnalysisInterferometerSensitivity(al.AnalysisInterferometer):
     def __init__(self, dataset):
-
         super().__init__(dataset=dataset)
 
         self.adapt_galaxy_image_path_dict = (

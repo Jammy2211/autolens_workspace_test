@@ -14,12 +14,11 @@
                         "einstein_radius": 1.6
                     },
                     "type": "autogalaxy.galaxy.galaxy.Galaxy",
-                    "redshift": 0.5,
-                    "hyper_galaxy": null
+                    "redshift": 0.5
                 }
             ],
             "redshift": 0.5,
-            "profiling_dict": null
+            "run_time_dict": null
         },
         {
             "type": "autogalaxy.plane.plane.Plane",
@@ -35,14 +34,13 @@
                         "effective_radius": 0.1
                     },
                     "type": "autogalaxy.galaxy.galaxy.Galaxy",
-                    "redshift": 1.0,
-                    "hyper_galaxy": null
+                    "redshift": 1.0
                 }
             ],
             "redshift": 1.0,
-            "profiling_dict": null
+            "run_time_dict": null
         }
     ],
     "cosmology": "Planck15",
-    "profiling_dict": null
+    "run_time_dict": null
 }

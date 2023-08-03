@@ -31,7 +31,7 @@ import autolens.plot as aplt
 """
 __Paths__
 """
-# dataset_name = "mass_power_law__source_sersic"
+# dataset_name = "with_lens_light_search"
 dataset_name = "mass_power_law__source_sersic_compact"
 path_prefix = path.join("searches", "parametric", "sie_to_power_law")
 
@@ -51,13 +51,13 @@ search_2 = af.PySwarmsGlobal(
 """
 __Dataset + Masking__ 
 """
-dataset_path = path.join("dataset", "imaging", "no_lens_light", dataset_name)
+dataset_path = path.join("dataset", "imaging", dataset_name)
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
-    pixel_scales=0.05,
+    pixel_scales=0.1,
 )
 
 mask = al.Mask2D.circular(

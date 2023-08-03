@@ -9,7 +9,7 @@ function shapelets_chi, nm, x1, x2,              $
 
 ;$Id: shapelets_chi.pro, v2$
 ;
-; Copyright © 2005 Richard Massey and Alexandre Refregier.
+; Copyright ï¿½ 2005 Richard Massey and Alexandre Refregier.
 ;
 ; This file is a part of the Shapelets analysis code.
 ; www.astro.caltech.edu/~rjm/shapelets/
@@ -206,7 +206,7 @@ case n_elements(nm) of
     
       endif else begin
 
-        ; Integrate phi_n(x,y) within pixels...
+        ; Integrate phi_n(x,y) within pixels..
         BasisC=shapelets_phi([nm[0],0],x1,x2,BETA=beta,/ARRAY,INTEGRATE=integrate,DEADZONE=deadzone,THETA_ZERO=0,ELLIPTICITY=ellipticity)
         shapelets_make_nvec,nm[0],n,m,n_coeffs,/POLAR
         BasisC=reform(BasisC,n_pix_x*n_pix_y,n_coeffs)

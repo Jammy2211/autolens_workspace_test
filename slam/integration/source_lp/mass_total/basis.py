@@ -50,8 +50,8 @@ __Dataset__
 
 Load the `Imaging` data, define the `Mask2D` and plot them.
 """
-dataset_name = "light_sersic__mass_sie__source_sersic"
-dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
+dataset_name = "with_lens_light"
+dataset_path = path.join("dataset", "imaging", dataset_name)
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
@@ -60,8 +60,10 @@ dataset = al.Imaging.from_fits(
     pixel_scales=0.2,
 )
 
+mask_radius = 3.0
+
 mask = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
 )
 
 dataset = dataset.apply_mask(mask=mask)
@@ -101,9 +103,7 @@ The `SetupAdapt` input `hyper_fixed_after_source` fixes the hyper-parameters to 
 extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter values at this point, model comparison 
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
-setup_adapt = al.SetupAdapt(
-    hyper_galaxies_lens=True,
-)
+setup_adapt = al.SetupAdapt()
 
 """
 __SOURCE LP PIPELINE (with lens light)__
@@ -122,75 +122,89 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=dataset)
 
-total_gaussians = 30
-gaussian_per_basis = 2
-
-# The sigma values of the Gaussians will be fixed to values spanning 0.01 to the mask radius, 3.0".
-mask_radius = 3.0
-log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
-
-# By defining the centre here, it creates two free parameters that are assigned below to all Gaussians.
 
 centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 
+total_gaussians = 20
+gaussian_per_basis = 1
+
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
+
 bulge_gaussian_list = []
 
 for j in range(gaussian_per_basis):
-    # A list of Gaussian model components whose parameters are customized belows.
 
-    gaussian_list = af.Collection(
-        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
-    )
-
-    # Iterate over every Gaussian and customize its parameters.
+    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
 
     for i, gaussian in enumerate(gaussian_list):
-        gaussian.centre.centre_0 = centre_0  # All Gaussians have same y centre.
-        gaussian.centre.centre_1 = centre_1  # All Gaussians have same x centre.
-        gaussian.ell_comps = gaussian_list[
-            0
-        ].ell_comps  # All Gaussians have same elliptical components.
-        gaussian.sigma = (
-            10 ** log10_sigma_list[i]
-        )  # All Gaussian sigmas are fixed to values above.
+
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
 
     bulge_gaussian_list += gaussian_list
-
-# The Basis object groups many light profiles together into a single model component.
 
 lens_bulge = af.Model(
     al.lp_basis.Basis,
     light_profile_list=bulge_gaussian_list,
 )
 
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 
-disk_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-disk_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+disk_gaussian_list = []
 
-gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+for j in range(gaussian_per_basis):
 
-for i, gaussian in enumerate(gaussian_list):
+    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
 
-    gaussian.centre = gaussian_list[0].centre
-    gaussian.ell_comps = gaussian_list[0].ell_comps
-    gaussian.sigma = disk_a + (disk_b * np.log10(i + 1))
+    for i, gaussian in enumerate(gaussian_list):
 
-lens_disk = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
+
+    disk_gaussian_list += gaussian_list
+
+lens_disk = af.Model(
+    al.lp_basis.Basis,
+    light_profile_list=disk_gaussian_list,
+)
 
 
-source_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-source_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
 
-gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
 
-for i, gaussian in enumerate(gaussian_list):
 
-    gaussian.centre = gaussian_list[0].centre
-    gaussian.ell_comps = gaussian_list[0].ell_comps
-    gaussian.sigma = source_a + (source_b * np.log10(i + 1))
 
-source_bulge = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+centre_0 = af.GaussianPrior(mean=0.0, sigma=0.3)
+centre_1 = af.GaussianPrior(mean=0.0, sigma=0.3)
+
+total_gaussians = 20
+gaussian_per_basis = 1
+
+log10_sigma_list = np.linspace(-2, np.log10(1.0), total_gaussians)
+
+bulge_gaussian_list = []
+
+for j in range(gaussian_per_basis):
+
+    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+
+    for i, gaussian in enumerate(gaussian_list):
+
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
+
+    bulge_gaussian_list += gaussian_list
+
+source_bulge = af.Model(
+    al.lp_basis.Basis,
+    light_profile_list=bulge_gaussian_list,
+)
 
 
 source_lp_results = slam.source_lp.run(
@@ -223,47 +237,32 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_result=source_lp_results.last
-)
+analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
 
 
-total_gaussians = 30
-gaussian_per_basis = 2
-
-# The sigma values of the Gaussians will be fixed to values spanning 0.01 to the mask radius, 3.0".
-mask_radius = 3.0
-log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
-
-# By defining the centre here, it creates two free parameters that are assigned below to all Gaussians.
 
 centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 
+total_gaussians = 30
+gaussian_per_basis = 2
+
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
+
 bulge_gaussian_list = []
 
 for j in range(gaussian_per_basis):
-    # A list of Gaussian model components whose parameters are customized belows.
 
-    gaussian_list = af.Collection(
-        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
-    )
-
-    # Iterate over every Gaussian and customize its parameters.
+    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
 
     for i, gaussian in enumerate(gaussian_list):
-        gaussian.centre.centre_0 = centre_0  # All Gaussians have same y centre.
-        gaussian.centre.centre_1 = centre_1  # All Gaussians have same x centre.
-        gaussian.ell_comps = gaussian_list[
-            0
-        ].ell_comps  # All Gaussians have same elliptical components.
-        gaussian.sigma = (
-            10 ** log10_sigma_list[i]
-        )  # All Gaussian sigmas are fixed to values above.
+
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
 
     bulge_gaussian_list += gaussian_list
-
-# The Basis object groups many light profiles together into a single model component.
 
 lens_bulge = af.Model(
     al.lp_basis.Basis,
@@ -271,19 +270,37 @@ lens_bulge = af.Model(
 )
 
 
-disk_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-disk_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
 
-gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
 
-for i, gaussian in enumerate(gaussian_list):
+centre_0 = af.UniformPrior(lower_limit=-0.2, upper_limit=0.2)
+centre_1 = af.UniformPrior(lower_limit=-0.2, upper_limit=0.2)
 
-    gaussian.centre = gaussian_list[0].centre
-    gaussian.ell_comps = gaussian_list[0].ell_comps
-    gaussian.sigma = disk_a + (disk_b * np.log10(i + 1))
+total_gaussians = 10
+gaussian_per_basis = 1
 
-lens_disk = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+pixel_scales = 0.2
 
+log10_sigma_list = np.linspace(-2, np.log10(pixel_scales*2), total_gaussians)
+
+point_gaussian_list = []
+
+for j in range(gaussian_per_basis):
+
+    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+
+    for i, gaussian in enumerate(gaussian_list):
+
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
+
+    point_gaussian_list += gaussian_list
+
+lens_point = af.Model(
+    al.lp_basis.Basis,
+    light_profile_list=point_gaussian_list,
+)
 
 light_results = slam.light_lp.run(
     settings_autofit=settings_autofit,
@@ -312,9 +329,7 @@ model of the LIGHT LP PIPELINE. In this example it:
  
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
-analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_result=source_lp_results.last
-)
+analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
 
 mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,

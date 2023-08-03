@@ -31,7 +31,6 @@ def simple_jit(
 
     for i in range(arr_1d.shape[0]):
         for j in range(i, arr_1d.shape[0]):
-
             arr_2d[i, j] = arr_1d[i] + arr_2d[i, j]
 
     return arr_2d

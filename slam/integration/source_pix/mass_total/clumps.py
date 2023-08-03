@@ -52,8 +52,8 @@ __Dataset__
 
 Load the `Imaging` data, define the `Mask2D` and plot them.
 """
-dataset_name = "light_sersic__mass_sie__source_sersic"
-dataset_path = path.join("dataset", "imaging", "with_lens_light", dataset_name)
+dataset_name = "with_lens_light"
+dataset_path = path.join("dataset", "imaging", dataset_name)
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
@@ -104,7 +104,7 @@ extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter value
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_adapt = al.SetupAdapt(
-    mesh_pixels_fixed=1500,
+    mesh_pixels_fixed=100,
 )
 
 """
@@ -206,9 +206,7 @@ bulge = af.Model(al.lp.Sersic)
 disk = af.Model(al.lp.Exponential)
 bulge.centre = disk.centre
 
-analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_result=source_pix_results.last
-)
+analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_pix_results.last)
 
 light_results = slam.light_lp.run(
     settings_autofit=settings_autofit,
@@ -237,9 +235,7 @@ model of the LIGHT LP PIPELINE. In this example it:
  
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
-analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_result=source_pix_results.last
-)
+analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_pix_results.last)
 
 mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
@@ -266,9 +262,7 @@ For this runner the SUBHALO PIPELINE customizes:
  - The `number_of_cores` used for the gridsearch, where `number_of_cores > 1` performs the model-fits in paralle using
  the Python multiprocessing module.
 """
-analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_result=source_pix_results.last
-)
+analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_pix_results.last)
 
 subhalo_results = slam.subhalo.detection(
     settings_autofit=settings_autofit,
@@ -277,10 +271,6 @@ subhalo_results = slam.subhalo.detection(
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
-)
-
-slam.extensions.stochastic_fit(
-    result=subhalo_results.last, analysis=analysis, **settings_autofit.fit_dict
 )
 
 """

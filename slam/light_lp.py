@@ -1,7 +1,6 @@
 import autofit as af
 import autolens as al
-from . import slam_util
-from . import extensions
+
 
 from typing import Union, Optional
 
@@ -57,7 +56,9 @@ def run(
     SOURCE PIPELINE as the mass and source models were not properly initialized.
     """
 
-    source = slam_util.source__from(result=source_results.last, source_is_model=False)
+    source = al.util.chaining.source_custom_model_from(
+        result=source_results.last, source_is_model=False
+    )
 
     model = af.Collection(
         galaxies=af.Collection(
@@ -72,7 +73,9 @@ def run(
             ),
             source=source,
         ),
-        clumps=slam_util.clumps_from(result=source_results[0], light_as_model=True),
+        clumps=al.util.chaining.clumps_from(
+            result=source_results[0], light_as_model=True
+        ),
     )
 
     search = af.DynestyStatic(
@@ -86,14 +89,13 @@ def run(
     """
     __Hyper Extension__
 
-    The above search is extended with a hyper-search if the SetupAdapt has one or more of the following inputs:
+    The above search is extended with an adapt search if the SetupAdapt has one or more of the following inputs:
 
      - The source is modeled using a pixelization with a regularization scheme.
     """
 
     if end_with_adapt_extension:
-
-        result_1 = extensions.adapt_fit(
+        result_1 = al.util.model.adapt_fit(
             setup_adapt=setup_adapt,
             result=result_1,
             analysis=analysis,

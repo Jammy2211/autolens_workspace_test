@@ -146,9 +146,7 @@ Output a subplot of the simulated dataset, the image and the tracer's quantities
 """
 mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png"))
 
-dataset_plotter = aplt.InterferometerPlotter(
-    dataset=dataset, mat_plot_2d=mat_plot_2d
-)
+dataset_plotter = aplt.InterferometerPlotter(dataset=dataset, mat_plot_2d=mat_plot_2d)
 dataset_plotter.subplot_dataset()
 dataset_plotter.subplot_dirty_images()
 dataset_plotter.figures_2d(data=True)

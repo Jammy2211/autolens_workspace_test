@@ -44,7 +44,7 @@ force_edge_pixels_to_zeros = True
 settings_inversion = al.SettingsInversion(
     use_w_tilde=use_w_tilde,
     use_positive_only_solver=use_positive_only_solver,
-    force_edge_pixels_to_zeros=force_edge_pixels_to_zeros
+    force_edge_pixels_to_zeros=force_edge_pixels_to_zeros,
 )
 
 """
@@ -81,7 +81,6 @@ total_gaussians = 100
 gaussian_list = []
 
 for i, gaussian_index in enumerate(range(total_gaussians)):
-
     gaussian = al.lp_linear.Gaussian(
         centre=(0.0, 0.0),
         ell_comps=(0.0, 0.0),
@@ -97,17 +96,17 @@ for i, gaussian_index in enumerate(range(total_gaussians)):
 #     # ),
 # )
 
-bulge=al.lp_linear.Sersic(
+bulge = al.lp_linear.Sersic(
     centre=(0.0, 0.0),
     ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
-#       intensity=4.0,
+    #       intensity=4.0,
     effective_radius=0.6,
     sersic_index=3.0,
 )
-disk=al.lp_linear.Exponential(
+disk = al.lp_linear.Exponential(
     centre=(0.0, 0.0),
     ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
-#        intensity=2.0,
+    #        intensity=2.0,
     effective_radius=1.6,
 )
 
@@ -225,7 +224,7 @@ for i in range(repeats):
         dataset=masked_dataset,
         tracer=tracer,
         settings_inversion=settings_inversion,
-        preloads=preloads
+        preloads=preloads,
     )
     fit.log_evidence
 fit_time = (time.time() - start) / repeats
@@ -237,10 +236,10 @@ __Profiling Dict__
 
 Apply mask, settings and profiling dict to fit, such that timings of every individiual function are provided.
 """
-profiling_dict = {}
+run_time_dict = {}
 
 tracer = al.Tracer.from_galaxies(
-    galaxies=[lens_galaxy, source_galaxy], profiling_dict=profiling_dict
+    galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time_dict
 )
 
 fit = al.FitImaging(
@@ -248,11 +247,11 @@ fit = al.FitImaging(
     tracer=tracer,
     settings_inversion=settings_inversion,
     preloads=preloads,
-    profiling_dict=profiling_dict,
+    run_time_dict=run_time_dict,
 )
 fit.figure_of_merit
 
-profiling_dict = fit.profiling_dict
+run_time_dict = fit.run_time_dict
 
 """
 __Results__
@@ -267,7 +266,7 @@ print(f"Number of sub-pixels = {masked_dataset.grid.sub_shape_slim} \n")
 """
 Print the profiling results of every step of the fit for command line output when running profiling scripts.
 """
-for key, value in profiling_dict.items():
+for key, value in run_time_dict.items():
     print(key, value)
 
 """
@@ -279,7 +278,7 @@ The excess time is the difference of this value from the fit time, and it indici
 has missed expensive steps.
 """
 predicted_time = 0.0
-predicted_time = sum(profiling_dict.values())
+predicted_time = sum(run_time_dict.values())
 excess_time = fit_time - predicted_time
 
 print(f"\nExcess Time = {excess_time} \n")
@@ -296,13 +295,13 @@ This is stored in a folder using the **PyAutoLens** version number so that profi
 if not os.path.exists(file_path):
     os.makedirs(file_path)
 
-filename = f"{instrument}_profiling_dict.json"
+filename = f"{instrument}_run_time_dict.json"
 
 if os.path.exists(path.join(file_path, filename)):
     os.remove(path.join(file_path, filename))
 
 with open(path.join(file_path, filename), "w") as outfile:
-    json.dump(profiling_dict, outfile)
+    json.dump(run_time_dict, outfile)
 
 """
 Output the profiling run time of the entire fit.
@@ -361,7 +360,11 @@ mapper = fit.inversion.cls_list_from(cls=al.AbstractMapper)[0]
 
 print(f"Chi Squared: {fit.chi_squared}")
 print(f"Regularization Term: {fit.inversion.regularization_term}")
-print(f"Log Det Curvature Reg Matrix Term: {fit.inversion.log_det_curvature_reg_matrix_term}")
-print(f"Log Det Regularization Matrix Term: {fit.inversion.log_det_regularization_matrix_term}")
+print(
+    f"Log Det Curvature Reg Matrix Term: {fit.inversion.log_det_curvature_reg_matrix_term}"
+)
+print(
+    f"Log Det Regularization Matrix Term: {fit.inversion.log_det_regularization_matrix_term}"
+)
 print(f"Noise Normalization: {fit.noise_normalization}")
 print(f"Figure of Merit: {fit.figure_of_merit}")

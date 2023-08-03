@@ -43,13 +43,12 @@ Plots a bar chart of the deflection angle run-times from a deflections profiling
 
 
 def bar_deflection_profiles(
-    profiling_dict, fit_time, info_dict, file_path, filename, color="b"
+    run_time_dict, fit_time, info_dict, file_path, filename, color="b"
 ):
-
     plt.figure(figsize=(18, 14))
 
     barlist = plt.barh(
-        list(profiling_dict.keys()), list(profiling_dict.values()), color=color
+        list(run_time_dict.keys()), list(run_time_dict.values()), color=color
     )
 
     [barlist[index].set_color("yellow") for index in range(0, 3)]
@@ -88,7 +87,7 @@ def bar_deflection_profiles(
 """
 Load the `Inversion` profiling run times of the `VoronoiMagnification` pixelization.
 """
-file_path = path.join(times_path, "hst_profiling_dict.json")
+file_path = path.join(times_path, "hst_run_time_dict.json")
 with open(file_path, "r") as f:
     profiles_dict = json.load(f)
 
@@ -108,7 +107,7 @@ with open(file_path, "r") as f:
     info_dict = json.load(f)
 
 bar_deflection_profiles(
-    profiling_dict=profiles_dict,
+    run_time_dict=profiles_dict,
     fit_time=fit_time,
     info_dict=info_dict,
     file_path=graph_path,

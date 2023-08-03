@@ -61,7 +61,7 @@ function shapelets_psi, nm, x1, x2,              $
 ;      Jun 10 - Written by B. Rowe
 
 
-if keyword_set(integrate) then message,"Sorry, can't integrate exponential shapelets within pixels... maybe I could oversample, though...",/INFO,NOPRINT=silent
+if keyword_set(integrate) then message,"Sorry, can't integrate exponential shapelets within pixels.. maybe I could oversample, though...",/INFO,NOPRINT=silent
 if n_elements(nm) ne 2 then message,"Exponential shapelets currently only exist in 2D form"
 if nm[0] lt 0 then message,"n must be non-negative!"
 if abs(nm[1]) gt nm[0] then message,"|m| must not be greater than n!"
