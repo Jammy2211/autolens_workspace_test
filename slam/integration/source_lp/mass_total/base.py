@@ -79,7 +79,7 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = af.SettingsSearch(
     path_prefix=path.join("slam", "source_lp", "mass_total", "base"),
-    number_of_cores=1,
+    number_of_cores=2,
     session=None,
 )
 

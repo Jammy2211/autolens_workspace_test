@@ -66,7 +66,7 @@ mask = al.Mask2D.circular(
 masked_dataset = dataset.apply_mask(mask=mask)
 
 dataset_plotter = aplt.ImagingPlotter(
-    imaging=masked_dataset, visuals_2d=aplt.Visuals2D(mask=mask)
+    dataset=masked_dataset, visuals_2d=aplt.Visuals2D(mask=mask)
 )
 dataset_plotter.subplot_dataset()
 
@@ -118,10 +118,7 @@ extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter value
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
 setup_adapt = al.SetupAdapt(
-    hyper_galaxies_lens=True,
-    hyper_galaxies_source=True,
-    hyper_image_sky=al.hyper_data.HyperImageSky,
-    hyper_background_noise=al.hyper_data.HyperBackgroundNoise,
+    mesh_pixels_fixed=100
 )
 
 """

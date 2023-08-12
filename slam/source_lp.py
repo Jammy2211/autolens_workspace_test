@@ -10,6 +10,7 @@ def run(
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     lens_bulge: Optional[af.Model] = af.Model(al.lp.Sersic),
     lens_disk: Optional[af.Model] = af.Model(al.lp.Exponential),
+    lens_point: Optional[af.Model] = None,
     mass: af.Model = af.Model(al.mp.Isothermal),
     shear: af.Model(al.mp.ExternalShear) = af.Model(al.mp.ExternalShear),
     source_bulge: Optional[af.Model] = af.Model(al.lp.Sersic),
@@ -29,20 +30,23 @@ def run(
     setup_adapt
         The setup of the adapt fit.
     lens_bulge
-        The `LightProfile` `Model` used to represent the light distribution of the lens galaxy's bulge (set to
+        The model used to represent the light distribution of the lens galaxy's bulge (set to
         None to omit a bulge).
     lens_disk
-        The `LightProfile` `Model` used to represent the light distribution of the lens galaxy's disk (set to
+        The model used to represent the light distribution of the lens galaxy's disk (set to
         None to omit a disk).
+    lens_point
+        The model used to represent the light distribution of the lens galaxy's point-source(s)
+        emission (e.g. a nuclear star burst region) or compact central structures (e.g. an unresolved bulge).
     mass
         The `MassProfile` fitted by this pipeline.
     shear
         The model used to represent the external shear in the mass model (set to None to turn off shear).
     source_bulge
-        The `LightProfile` `Model` used to represent the light distribution of the source galaxy's bulge (set to
+        The model used to represent the light distribution of the source galaxy's bulge (set to
         None to omit a bulge).
     source_disk
-        The `LightProfile` `Model` used to represent the light distribution of the source galaxy's disk (set to
+        The model used to represent the light distribution of the source galaxy's disk (set to
         None to omit a disk).
     redshift_lens
         The redshift of the lens galaxy fitted, used by the pipeline for converting arc-seconds to kpc, masses to
@@ -80,6 +84,7 @@ def run(
                 redshift=redshift_lens,
                 bulge=lens_bulge,
                 disk=lens_disk,
+                point=lens_point,
                 mass=mass,
                 shear=shear,
             ),
@@ -93,11 +98,11 @@ def run(
         clumps=clump_model.clumps,
     )
 
-    search_1 = af.DynestyStatic(
+    search_1 = af.Nautilus(
         name="source_lp[1]_light[lp]_mass[total]_source[lp]",
         **settings_autofit.search_dict,
-        nlive=202,
-        walks=10,
+        n_live=200,
+        n_batch=int(2*settings_autofit.number_of_cores)
     )
 
     result_1 = search_1.fit(

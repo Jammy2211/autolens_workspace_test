@@ -68,7 +68,7 @@ mask = al.Mask2D.circular(
 masked_dataset = dataset.apply_mask(mask=mask)
 
 dataset_plotter = aplt.ImagingPlotter(
-    imaging=masked_dataset, visuals_2d=aplt.Visuals2D(mask=mask)
+    dataset=masked_dataset, visuals_2d=aplt.Visuals2D(mask=mask)
 )
 dataset_plotter.subplot_dataset()
 

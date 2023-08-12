@@ -1,17 +1,36 @@
+"""
+Searches: Nautilus
+=======================
+
+This example illustrates how to use the nested sampling algorithm Nautilus.
+
+Information about Dynesty can be found at the following links:
+
+ - https://github.com/joshspeagle/dynesty
+ - https://dynesty.readthedocs.io/en/latest/
+"""
 import numpy as np
 from os import path
-from pathlib import Path
-import sys
-import json
+import os
+import time
 
+cwd = os.getcwd()
+
+from autoconf import conf
+
+conf.instance.push(new_path=path.join(cwd, "config", "searches"))
+
+conf.instance["general"]["model"]["ignore_prior_limits"] = True
+
+import autofit as af
 from autofit import exc
 
-"""
-__PyAutoFit Stuff__
-"""
-
-
 def prior_transform(cube, model):
+
+    # `vector_from_unit_vector has a bug which is why we return cube, need to fix.
+
+    return cube
+
     return model.vector_from_unit_vector(
         unit_vector=cube,
         ignore_prior_limits=True
@@ -28,6 +47,9 @@ class Fitness:
         self.model = model
 
     def __call__(self, parameters, *kwargs):
+
+        figure_of_merit = self.figure_of_merit_from(parameter_list=parameters)
+
         try:
             figure_of_merit = self.figure_of_merit_from(parameter_list=parameters)
 
@@ -71,7 +93,7 @@ class Fitness:
 
 def fit():
 
-    """ 
+    """
     __AUTOLENS + DATA__
     """
     import autofit as af
@@ -105,16 +127,6 @@ def fit():
         settings=al.SettingsImaging(grid_class=al.Grid2D, sub_size=1)
     )
 
-    """
-    __Settings AutoFit__
-
-    The settings of autofit, which controls the output paths, parallelization, databse use, etc.
-    """
-    number_of_cores = int(sys.argv[1])
-
-    """
-    __PYAUTOLENS STUFF__
-    """
     analysis = al.AnalysisImaging(
         dataset=dataset,
     )
@@ -217,37 +229,49 @@ def fit():
         analysis=analysis,
     )
 
-    """
-    __Nautlius Stuff__
-    """
+    n_live = 8
+    n_dim = model.prior_count
+
+    points = np.zeros((n_live, n_dim))
+
+    for i in range(n_live):
+
+        point = model.random_vector_from_priors_within_limits()
+        points[i, :] = point
+
     from nautilus import Sampler
-    from mpi4py import MPI
-    comm = MPI.COMM_WORLD
 
-#    from mpi4py.futures import MPIPoolExecutor
-#    pool = MPIPoolExecutor(number_of_cores)
+    number_of_cores_list = [2, 4, 8]
 
-    output_path = Path("output")
+    for number_of_cores in number_of_cores_list:
 
-    sampler = Sampler(
-        prior=prior_transform,
-        likelihood=fitness.__call__,
-        n_dim=model.prior_count,
-        prior_kwargs={"model": model},
-        filepath=output_path / "checkpoint.hdf5",
-        pool=number_of_cores,
-        n_live=200,
-    )
+        sampler = Sampler(
+            prior=prior_transform,
+            likelihood=fitness.__call__,
+            n_dim=model.prior_count,
+            prior_kwargs={"model": model},
+            pool=number_of_cores,
+            n_live=n_live,
+        )
 
-    sampler.run(
-        n_eff=500,
-        verbose=True
-    )
+        transform = sampler.prior
 
+        args = list(map(transform, np.copy(points)))
+
+        start = time.time()
+
+        time_lh_x1 = 1.0
+
+        if number_of_cores > 1:
+            list(sampler.pool_l.map(sampler.likelihood, args))
+        else:
+            list(map(sampler.likelihood, args))
+            time_lh_x1 = time.time() - start
+
+        time_lh = time.time() - start
+
+        print(f"N_CPU: {number_of_cores} / LH Time: {time_lh} / Speed up: {time_lh_x1 / time_lh}")
 
 if __name__ == "__main__":
-    fit()
 
-"""
-Finish.
-"""
+    fit()

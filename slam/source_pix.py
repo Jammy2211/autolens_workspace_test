@@ -76,6 +76,7 @@ def run(
                 redshift=source_lp_results.last.instance.galaxies.lens.redshift,
                 bulge=source_lp_results.last.instance.galaxies.lens.bulge,
                 disk=source_lp_results.last.instance.galaxies.lens.disk,
+                point=source_lp_results.last.instance.galaxies.lens.point,
                 mass=mass,
                 shear=source_lp_results.last.model.galaxies.lens.shear,
             ),
@@ -90,10 +91,11 @@ def run(
         clumps=al.util.chaining.clumps_from(result=source_lp_results.last),
     )
 
-    search_1 = af.DynestyStatic(
+    search_1 = af.Nautilus(
         name="source_pix[1]_light[fixed]_mass[init]_source[pix_init_mag]",
         **settings_autofit.search_dict,
-        nlive=100,
+        n_live=100,
+        n_batch=int(2 * settings_autofit.number_of_cores)
     )
 
     result_1 = search_1.fit(
@@ -122,6 +124,7 @@ def run(
                 redshift=source_lp_results.last.instance.galaxies.lens.redshift,
                 bulge=source_lp_results.last.instance.galaxies.lens.bulge,
                 disk=source_lp_results.last.instance.galaxies.lens.disk,
+                point=source_lp_results.last.instance.galaxies.lens.point,
                 mass=result_1.instance.galaxies.lens.mass,
                 shear=result_1.instance.galaxies.lens.shear,
             ),
@@ -142,10 +145,11 @@ def run(
                 setup_adapt.mesh_pixels_fixed
             )
 
-    search_2 = af.DynestyStatic(
+    search_2 = af.Nautilus(
         name="source_pix[2]_light[fixed]_mass[fixed]_source[pix]",
         **settings_autofit.search_dict,
-        nlive=50,
+        n_live=100,
+        n_batch=int(2 * settings_autofit.number_of_cores)
     )
 
     result_2 = search_2.fit(

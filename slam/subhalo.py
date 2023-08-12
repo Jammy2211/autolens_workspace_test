@@ -72,11 +72,11 @@ def detection(
         ),
     )
 
-    search_no_subhalo = af.DynestyStatic(
-        name="subhalo[1]_mass[total_refine]",
-        **settings_autofit.search_dict,
-        nlive=200,
-        walks=10,
+    search_no_subhalo = af.Nautilus(
+        name="subhalo[1]_mass[total_refine]", 
+        **settings_autofit.search_dict, 
+        n_live=200, 
+        n_batch=int(2*settings_autofit.number_of_cores)
     )
 
     result_1 = search_no_subhalo.fit(
@@ -133,19 +133,17 @@ def detection(
         clumps=al.util.chaining.clumps_from(result=result_1, mass_as_model=True),
     )
 
-    search = af.DynestyStatic(
+    search = af.Nautilus(
         name=f"subhalo[2]_mass[total]_source_subhalo[{search_tag}]",
-        **settings_autofit.search_dict_x1_core,
-        nlive=150,
-        walks=5,
-        facc=0.2,
-        force_x1_cpu=True,  # ensures parallelizing over grid search works.
+        **settings_autofit.search_dict,
+        n_live=200,
+        n_batch=int(2 * settings_autofit.number_of_cores)
     )
 
     subhalo_grid_search = af.SearchGridSearch(
         search=search,
         number_of_steps=number_of_steps,
-        number_of_cores=settings_autofit.number_of_cores,
+        number_of_cores=1,
     )
 
     subhalo_result = subhalo_grid_search.fit(
@@ -197,11 +195,11 @@ def detection(
         clumps=al.util.chaining.clumps_from(result=subhalo_result, mass_as_model=True),
     )
 
-    search = af.DynestyStatic(
+    search = af.Nautilus(
         name=f"subhalo[3]_subhalo[{refine_tag}]",
         **settings_autofit.search_dict,
-        nlive=500,
-        walks=10,
+        n_live=500,
+        n_batch=int(2 * settings_autofit.number_of_cores)
     )
 
     result_3 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
@@ -404,9 +402,12 @@ def sensitivity_mapping_imaging(
     """
     We next specify the search used to perform each model fit by the sensitivity mapper.
     """
-    search = af.DynestyStatic(
-        name="subhalo__sensitivity", **settings_autofit.search_dict, nlive=50
+    search = af.Nautilus(
+        name="subhalo__sensitivity", 
+        **settings_autofit.search_dict, n_live=100,         
+        n_batch=int(2*settings_autofit.number_of_cores)
     )
+
 
     """
     We can now combine all of the objects created above and perform sensitivity mapping. The inputs to the `Sensitivity`
@@ -608,8 +609,8 @@ def sensitivity_mapping_interferometer(
         analysis here before we return the simulated data.
         """
         return al.Interferometer(
-            data=simulated_interferometer.visibilities,
-            noise_map=simulated_interferometer.noise_map,
+            data=simulated_dataset.visibilities,
+            noise_map=simulated_dataset.noise_map,
             uv_wavelengths=uv_wavelengths,
             real_space_mask=real_space_mask,
         )
@@ -617,8 +618,11 @@ def sensitivity_mapping_interferometer(
     """
     We next specify the search used to perform each model fit by the sensitivity mapper.
     """
-    search = af.DynestyStatic(
-        name="subhalo__sensitivity", **settings_autofit.search_dict, nlive=50
+    search = af.Nautilus(
+        name="subhalo__sensitivity", 
+        **settings_autofit.search_dict, 
+        n_live=50,         
+        n_batch=int(2*settings_autofit.number_of_cores)
     )
 
     """

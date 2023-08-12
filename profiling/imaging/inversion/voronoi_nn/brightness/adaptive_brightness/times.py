@@ -572,7 +572,7 @@ The calculation is performed by thge method `data_vector_via_blurred_mapping_mat
  https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/util/inversion_util.py
 """
 start = time.time()
-subtracted_image = masked_dataset.image - convolved_image
+subtracted_image = masked_dataset.data - convolved_image
 for i in range(repeats):
     data_vector = al.util.inversion.data_vector_via_blurred_mapping_matrix_from(
         blurred_mapping_matrix=blurred_mapping_matrix,

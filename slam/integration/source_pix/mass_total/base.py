@@ -46,7 +46,7 @@ def fit():
     import autofit as af
     import autolens as al
     import autolens.plot as aplt
-    import slam_nautilus_2
+    import slam
 
     """
     __Dataset__ 
@@ -127,7 +127,7 @@ def fit():
     disk = af.Model(al.lp.Exponential)
     bulge.centre = disk.centre
 
-    source_lp_results = slam_nautilus_2.source_lp.run(
+    source_lp_results = slam.source_lp.run(
         settings_autofit=settings_autofit,
         analysis=analysis,
         lens_bulge=bulge,
@@ -138,7 +138,6 @@ def fit():
         mass_centre=(0.0, 0.0),
         redshift_lens=redshift_lens,
         redshift_source=redshift_source,
-        mpi="futures"
     )
 
     """
@@ -155,14 +154,13 @@ def fit():
     """
     analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
 
-    source_pix_results = slam_nautilus_2.source_pix.run(
+    source_pix_results = slam.source_pix.run(
         settings_autofit=settings_autofit,
         analysis=analysis,
         setup_adapt=setup_adapt,
         source_lp_results=source_lp_results,
         mesh=al.mesh.VoronoiBrightnessImage,
         regularization=al.reg.AdaptiveBrightness,
-        mpi="futures"
     )
 
     """
@@ -188,14 +186,13 @@ def fit():
 
     analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_pix_results.last)
 
-    light_results = slam_nautilus_2.light_lp.run(
+    light_results = slam.light_lp.run(
         settings_autofit=settings_autofit,
         analysis=analysis,
         setup_adapt=setup_adapt,
         source_results=source_pix_results,
         lens_bulge=bulge,
         lens_disk=disk,
-        mpi="futures"
     )
 
     """
@@ -218,14 +215,13 @@ def fit():
     """
     analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_pix_results.last)
 
-    mass_results = slam_nautilus_2.mass_total.run(
+    mass_results = slam.mass_total.run(
         settings_autofit=settings_autofit,
         analysis=analysis,
         setup_adapt=setup_adapt,
         source_results=source_pix_results,
         light_results=light_results,
         mass=af.Model(al.mp.PowerLaw),
-        mpi="futures"
     )
 
     """
@@ -246,7 +242,7 @@ def fit():
     """
     analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_pix_results.last)
 
-    subhalo_results = slam_nautilus_2.subhalo.detection(
+    subhalo_results = slam.subhalo.detection(
         settings_autofit=settings_autofit,
         analysis=analysis,
         mass_results=mass_results,

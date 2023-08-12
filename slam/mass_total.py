@@ -115,10 +115,11 @@ def run(
         ),
     )
 
-    search = af.DynestyStatic(
+    search = af.Nautilus(
         name="mass_total[1]_light[lp]_mass[total]_source",
         **settings_autofit.search_dict,
-        nlive=150,
+        n_live=200,
+        n_batch=int(2 * settings_autofit.number_of_cores)
     )
 
     result_1 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
@@ -132,7 +133,7 @@ def run(
     """
 
     if end_with_adapt_extension:
-        result_1 = extensions.adapt_fit(
+        result_1 = al.util.model.adapt_fit(
             setup_adapt=setup_adapt,
             result=result_1,
             analysis=analysis,
