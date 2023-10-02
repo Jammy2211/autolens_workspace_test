@@ -2,7 +2,7 @@
 Chaining: Subhalo
 =================
 
-This script gives a profile of a `Nautilus` model-fit to an `Imaging` dataset where the lens model is a power-law
+This script gives a profile of a `DynestyStatic` model-fit to an `Imaging` dataset where the lens model is a power-law
 and subhalo, where
 
  - The lens galaxy's light is omitted.
@@ -40,8 +40,8 @@ path_prefix = path.join("searches", "parametric", "subhalo")
 """
 __Search (Search Final)__
 """
-search_3 = af.Nautilus(
-    path_prefix=path_prefix, name="Nautilus", unique_tag=dataset_name, n_live=75
+search_3 = af.DynestyStatic(
+    path_prefix=path_prefix, name="DynestyStatic", unique_tag=dataset_name, nlive=75
 )
 
 """
@@ -80,8 +80,8 @@ source.bulge.centre_1 = af.UniformPrior(lower_limit=-0.05, upper_limit=0.05)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
-search_1 = af.Nautilus(
-    path_prefix=path_prefix, name="search[1]_sie", unique_tag=dataset_name, n_live=150
+search_1 = af.DynestyStatic(
+    path_prefix=path_prefix, name="search[1]_sie", unique_tag=dataset_name, nlive=150
 )
 
 analysis = al.AnalysisImaging(dataset=dataset)
@@ -101,11 +101,11 @@ lens = af.Model(al.Galaxy, redshift=0.5, mass=mass, shear=shear)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
-search_2 = af.Nautilus(
+search_2 = af.DynestyStatic(
     path_prefix=path_prefix,
     name="search[2]_power_law",
     unique_tag=dataset_name,
-    n_live=50,
+    nlive=50,
 )
 
 analysis = al.AnalysisImaging(dataset=dataset)

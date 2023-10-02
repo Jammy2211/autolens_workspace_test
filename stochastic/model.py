@@ -146,10 +146,10 @@ computer. If you know that your processor is a quad-core processor you should be
 users on a Windows Operating system, using `number_of_cores>1` may lead to an error, in which case it should be 
 reduced back to 1 to fix it.
 """
-search = af.Nautilus(
+search = af.DynestyStatic(
     path_prefix=path.join("stochastic", "model"),
     name="mass[sie]_source[bulge]",
-    n_live=50,
+    nlive=50,
     number_of_cores=2,
 )
 

@@ -251,7 +251,7 @@ __Non-linear Search__
 
 We again choose the non-linear search `dynesty` (https://github.com/joshspeagle/dynesty).
 """
-search = af.Nautilus(name="overview_interferometer")
+search = af.DynestyStatic(name="overview_interferometer")
 
 """
 __Analysis__

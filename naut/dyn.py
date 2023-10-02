@@ -61,9 +61,9 @@ def fit():
     )
 
     """
-    __SOURCE LP PIPELINE__
+    __SOURCE LP PIPELINE (with lens light)__
 
-    The SOURCE LP PIPELINE uses one search to initialize a robust model for the 
+    The SOURCE LP PIPELINE (with lens light) uses three searches to initialize a robust model for the 
     source galaxy's light, which in this example:
 
      - Uses a parametric `Sersic` bulge and `Exponential` disk with centres aligned for the lens
@@ -172,10 +172,10 @@ def fit():
         ),
     )
 
-    search_1 = af.Nautilus(
+    search_1 = af.DynestyStatic(
         name="dyn",
         **settings_autofit.search_dict,
-        n_live=200,
+        nlive=200,
         walks=10,
         iterations_per_update=30000
     )

@@ -130,10 +130,10 @@ model_1 = af.Collection(
 
 analysis_1 = al.AnalysisImaging(dataset=dataset)
 
-search_1 = af.Nautilus(
+search_1 = af.DynestyStatic(
     name="source_lp_1",
     **settings_autofit.search_dict,
-    n_live=200,
+    nlive=200,
     walks=10,
     maxcall=250000,
     maxiter=250000
@@ -154,10 +154,10 @@ model_2 = af.Collection(
 
 analysis_2 = al.AnalysisImaging(dataset=dataset)
 
-search_2 = af.Nautilus(
+search_2 = af.DynestyStatic(
     name="source_lp_2",
     **settings_autofit.search_dict,
-    n_live=200,
+    nlive=200,
     walks=10,
     maxcall=250000,
     maxiter=250000

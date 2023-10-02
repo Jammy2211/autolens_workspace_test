@@ -40,7 +40,7 @@ profiling:
   repeats: 1
   should_profile: false
 structures:
-  native_binned_only: false           # If True, data structures are only stored in their native and binned format. This is used to reduce memory usage in autocti.
+  use_dataset_grids: true
 test:
   check_figure_of_merit_sanity: false
   check_preloads: True

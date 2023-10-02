@@ -114,10 +114,10 @@ Dynesty (https://dynesty.readthedocs.io/en/latest/).
 
 A full description of the settings below is given in the beginner modeling scripts, if anything is unclear.
 """
-search = af.Nautilus(
+search = af.DynestyStatic(
     path_prefix=path.join("build", "model_fit", "interferometer"),
     name=dataset_name,
-    n_live=50,
+    nlive=50,
     number_of_cores=2,
 )
 

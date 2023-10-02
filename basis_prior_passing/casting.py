@@ -131,10 +131,10 @@ model_1 = af.Collection(
 
 analysis_1 = al.AnalysisImaging(dataset=dataset)
 
-search_1 = af.Nautilus(
+search_1 = af.DynestyStatic(
     name="source_lp_cast",
     **settings_autofit.search_dict,
-    n_live=200,
+    nlive=200,
     walks=10,
 )
 

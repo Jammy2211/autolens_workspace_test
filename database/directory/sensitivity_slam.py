@@ -104,9 +104,9 @@ source_results = slam.source_lp.run(
 )
 
 """
-__MASS TOTAL PIPELINE__
+__MASS TOTAL PIPELINE (no lens light)__
 
-The MASS TOTAL PIPELINE uses one search to fits a complex lens mass model to a high level of accuracy, 
+The MASS TOTAL PIPELINE (no lens light) uses one search to fits a complex lens mass model to a high level of accuracy, 
 using the lens mass model and source model of the SOURCE PIPELINE to initialize the model priors. In this example it:
 
  - Uses an `PowerLaw` model for the lens's total mass distribution [The centre if unfixed from (0.0, 0.0)].
@@ -200,11 +200,11 @@ Unique Tag Query Does Not Work
 agg_best_fits = agg_grid.best_fits()
 
 fit_imaging_agg = al.agg.FitImagingAgg(aggregator=agg_best_fits)
-fit_gen = fit_imaging_agg.max_log_likelihood_gen_from()
+fit_imaging_gen = fit_imaging_agg.max_log_likelihood_gen_from()
 
 info_gen = agg_best_fits.values("info")
 
-for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_gen, info_gen):
+for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_gen):
     """
     This should return an instance of the `SensitivityResult` object.
     """

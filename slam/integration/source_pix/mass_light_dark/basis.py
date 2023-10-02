@@ -15,7 +15,7 @@ a strong lens system, where in the final model:
  - The lens galaxy's light is a bulge+disk `Sersic` and `Sersic`.
  - The lens galaxy's stellar mass distribution is a bulge+disk tied to the light model above.
  - The lens galaxy's dark matter mass distribution is modeled as a `NFWMCRLudlow`.
- - The source galaxy's light is a `Pixelization`.
+ - The source galaxy's light is a parametric `Inversion`.
 
 This runner uses the SLaM pipelines:
 
@@ -113,9 +113,9 @@ setup_adapt = al.SetupAdapt(
 )
 
 """
-__SOURCE LP PIPELINE__
+__SOURCE LP PIPELINE (with lens light)__
 
-The SOURCE LP PIPELINE uses one search to initialize a robust model for the 
+The SOURCE LP PIPELINE (with lens light) uses three searches to initialize a robust model for the 
 source galaxy's light, which in this example:
 
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens
@@ -212,9 +212,9 @@ source_lp_results = slam.source_lp.run(
 )
 
 """
-__SOURCE PIX PIPELINE__
+__SOURCE PIX PIPELINE (with lens light)__
 
-The SOURCE PIX PIPELINE uses four searches to initialize a robust model for the `Inversion` 
+The SOURCE PIX PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
 that reconstructs the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` 
 regularization, to set up the model and hyper images, and then:
 
@@ -240,7 +240,6 @@ __LIGHT LP PIPELINE__
 
 The LIGHT LP PIPELINE uses one search to fit a complex lens light model to a high level of accuracy, using the
 lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE PIX PIPELINE.
-
 In this example it:
 
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
@@ -248,7 +247,7 @@ In this example it:
 
  - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE LP PIPELINE].
 
- - Uses a `Pixelization` for the source's light [fixed from SOURCE PIX PIPELINE].
+ - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIX PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
@@ -319,13 +318,11 @@ light_results = slam.light_lp.run(
 )
 
 """
-__MASS LIGHT DARK PIPELINE__
+__MASS LIGHT DARK PIPELINE (with lens light)__
 
-The MASS LIGHT DARK PIPELINE uses one search to fits a complex lens mass model to a high level of 
+The MASS LIGHT DARK PIPELINE (with lens light) uses one search to fits a complex lens mass model to a high level of 
 accuracy, using the source model of the SOURCE PIPELINE and the lens light model of the LIGHT LP PIPELINE to 
-initialize the model priors . 
-
-In this example it:
+initialize the model priors . In this example it:
 
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
  light and its stellar mass [12 parameters: fixed from LIGHT LP PIPELINE].
@@ -333,7 +330,7 @@ In this example it:
  - The lens galaxy's dark matter mass distribution is a `NFWMCRLudlow` whose centre is aligned with bulge of 
  the light and stellar mass model above [5 parameters].
 
- - Uses a `Pixelization` for the source's light [fixed from SOURCE PIX PIPELINE].
+ - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIX PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the MASS 
  LIGHT DARK PIPELINE.
