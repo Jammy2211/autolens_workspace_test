@@ -1,0 +1,18 @@
+{
+    "type": "instance",
+    "class_path": "autoarray.inversion.inversion.settings.SettingsInversion",
+    "arguments": {
+        "use_positive_only_solver": true,
+        "image_pixels_source_zero": null,
+        "use_w_tilde": true,
+        "positive_only_uses_p_initial": true,
+        "tolerance": 1e-08,
+        "use_linear_operators": false,
+        "force_edge_image_pixels_to_zeros": false,
+        "maxiter": 250,
+        "no_regularization_add_to_curvature_diag_value": 0.001,
+        "use_w_tilde_numpy": false,
+        "force_edge_pixels_to_zeros": true,
+        "use_source_loop": false
+    }
+}

@@ -1,0 +1,449 @@
+Bayesian Evidence                                                               5703.99200509
+Maximum Log Likelihood                                                          5728.40651009
+Maximum Log Posterior                                                           5733.13789188
+
+model                                                                           Collection (N=12)
+    galaxies                                                                    Collection (N=12)
+        lens                                                                    Galaxy (N=12)
+            bulge                                                               Basis (N=8)
+                light_profile_list                                              Collection (N=8)
+                    0                                                           Gaussian (N=4)
+                    1                                                           Gaussian (N=4)
+                    2                                                           Gaussian (N=4)
+                    3                                                           Gaussian (N=4)
+                    4                                                           Gaussian (N=4)
+                    5                                                           Gaussian (N=4)
+                    6                                                           Gaussian (N=4)
+                    7                                                           Gaussian (N=4)
+                    8                                                           Gaussian (N=4)
+                    9                                                           Gaussian (N=4)
+                    10                                                          Gaussian (N=4)
+                    11                                                          Gaussian (N=4)
+                    12                                                          Gaussian (N=4)
+                    13                                                          Gaussian (N=4)
+                    14                                                          Gaussian (N=4)
+                    15                                                          Gaussian (N=4)
+                    16                                                          Gaussian (N=4)
+                    17                                                          Gaussian (N=4)
+                    18                                                          Gaussian (N=4)
+                    19                                                          Gaussian (N=4)
+                    20                                                          Gaussian (N=4)
+                    21                                                          Gaussian (N=4)
+                    22                                                          Gaussian (N=4)
+                    23                                                          Gaussian (N=4)
+                    24                                                          Gaussian (N=4)
+                    25                                                          Gaussian (N=4)
+                    26                                                          Gaussian (N=4)
+                    27                                                          Gaussian (N=4)
+                    28                                                          Gaussian (N=4)
+                    29                                                          Gaussian (N=4)
+                    30                                                          Gaussian (N=4)
+                    31                                                          Gaussian (N=4)
+                    32                                                          Gaussian (N=4)
+                    33                                                          Gaussian (N=4)
+                    34                                                          Gaussian (N=4)
+                    35                                                          Gaussian (N=4)
+                    36                                                          Gaussian (N=4)
+                    37                                                          Gaussian (N=4)
+                    38                                                          Gaussian (N=4)
+                    39                                                          Gaussian (N=4)
+                    40                                                          Gaussian (N=4)
+                    41                                                          Gaussian (N=4)
+                    42                                                          Gaussian (N=4)
+                    43                                                          Gaussian (N=4)
+                    44                                                          Gaussian (N=4)
+                    45                                                          Gaussian (N=4)
+                    46                                                          Gaussian (N=4)
+                    47                                                          Gaussian (N=4)
+                    48                                                          Gaussian (N=4)
+                    49                                                          Gaussian (N=4)
+                    50                                                          Gaussian (N=4)
+                    51                                                          Gaussian (N=4)
+                    52                                                          Gaussian (N=4)
+                    53                                                          Gaussian (N=4)
+                    54                                                          Gaussian (N=4)
+                    55                                                          Gaussian (N=4)
+                    56                                                          Gaussian (N=4)
+                    57                                                          Gaussian (N=4)
+                    58                                                          Gaussian (N=4)
+                    59                                                          Gaussian (N=4)
+                    60                                                          Gaussian (N=4)
+                    61                                                          Gaussian (N=4)
+                    62                                                          Gaussian (N=4)
+                    63                                                          Gaussian (N=4)
+                    64                                                          Gaussian (N=4)
+                    65                                                          Gaussian (N=4)
+                    66                                                          Gaussian (N=4)
+                    67                                                          Gaussian (N=4)
+                    68                                                          Gaussian (N=4)
+                    69                                                          Gaussian (N=4)
+                    70                                                          Gaussian (N=4)
+                    71                                                          Gaussian (N=4)
+                    72                                                          Gaussian (N=4)
+                    73                                                          Gaussian (N=4)
+                    74                                                          Gaussian (N=4)
+                    75                                                          Gaussian (N=4)
+                    76                                                          Gaussian (N=4)
+                    77                                                          Gaussian (N=4)
+                    78                                                          Gaussian (N=4)
+                    79                                                          Gaussian (N=4)
+                    80                                                          Gaussian (N=4)
+                    81                                                          Gaussian (N=4)
+                    82                                                          Gaussian (N=4)
+                    83                                                          Gaussian (N=4)
+                    84                                                          Gaussian (N=4)
+                    85                                                          Gaussian (N=4)
+                    86                                                          Gaussian (N=4)
+                    87                                                          Gaussian (N=4)
+                    88                                                          Gaussian (N=4)
+                    89                                                          Gaussian (N=4)
+            point                                                               Basis (N=4)
+                light_profile_list                                              Collection (N=4)
+                    0                                                           Gaussian (N=4)
+                    1                                                           Gaussian (N=4)
+                    2                                                           Gaussian (N=4)
+                    3                                                           Gaussian (N=4)
+                    4                                                           Gaussian (N=4)
+                    5                                                           Gaussian (N=4)
+                    6                                                           Gaussian (N=4)
+                    7                                                           Gaussian (N=4)
+                    8                                                           Gaussian (N=4)
+                    9                                                           Gaussian (N=4)
+            mass                                                                Isothermal (N=0)
+            shear                                                               ExternalShear (N=0)
+        source                                                                  Galaxy (N=0)
+            pixelization                                                        Pixelization (N=0)
+                mesh                                                            VoronoiNNBrightnessImage (N=0)
+                regularization                                                  AdaptiveBrightnessSplit (N=0)
+    clumps                                                                      ModelMapper (N=0)
+        clump_0                                                                 Galaxy (N=0)
+            mass                                                                IsothermalSph (N=0)
+
+Maximum Log Likelihood Model:
+
+galaxies
+    lens
+        bulge
+            light_profile_list
+                89
+                    centre
+                        centre_0                                                0.060
+                        centre_1                                                0.055
+                    ell_comps
+                        ell_comps_0                                             0.193
+                        ell_comps_1                                             0.293
+                29
+                    ell_comps
+                        ell_comps_0                                             -0.055
+                        ell_comps_1                                             -0.490
+                59
+                    ell_comps
+                        ell_comps_0                                             -0.341
+                        ell_comps_1                                             0.217
+        point
+            light_profile_list
+                9
+                    centre
+                        centre_0                                                -0.023
+                        centre_1                                                -0.019
+                    ell_comps
+                        ell_comps_0                                             -0.042
+                        ell_comps_1                                             -0.360
+
+
+Summary (3.0 sigma limits):
+
+galaxies
+    lens
+        bulge
+            light_profile_list
+                89
+                    centre
+                        centre_0                                                0.0601 (0.0570, 0.0632)
+                        centre_1                                                0.0545 (0.0507, 0.0582)
+                    ell_comps
+                        ell_comps_0                                             -0.0263 (-0.7524, 0.6310)
+                        ell_comps_1                                             0.0990 (-0.8221, 0.6276)
+                29
+                    ell_comps
+                        ell_comps_0                                             -0.0365 (-0.7479, 0.6206)
+                        ell_comps_1                                             0.0968 (-0.8228, 0.7335)
+                59
+                    ell_comps
+                        ell_comps_0                                             -0.0301 (-0.6265, 0.5303)
+                        ell_comps_1                                             0.1218 (-0.7465, 0.7278)
+        point
+            light_profile_list
+                9
+                    centre
+                        centre_0                                                -0.0153 (-0.1295, 0.1388)
+                        centre_1                                                -0.0124 (-0.0883, 0.0472)
+                    ell_comps
+                        ell_comps_0                                             -0.1375 (-0.6391, 0.3714)
+                        ell_comps_1                                             -0.2389 (-0.6300, 0.3565)
+
+
+Summary (1.0 sigma limits):
+
+galaxies
+    lens
+        bulge
+            light_profile_list
+                89
+                    centre
+                        centre_0                                                0.0601 (0.0591, 0.0611)
+                        centre_1                                                0.0545 (0.0531, 0.0559)
+                    ell_comps
+                        ell_comps_0                                             -0.0263 (-0.2228, 0.1575)
+                        ell_comps_1                                             0.0990 (-0.3333, 0.2715)
+                29
+                    ell_comps
+                        ell_comps_0                                             -0.0365 (-0.2472, 0.1682)
+                        ell_comps_1                                             0.0968 (-0.3475, 0.2821)
+                59
+                    ell_comps
+                        ell_comps_0                                             -0.0301 (-0.2254, 0.1583)
+                        ell_comps_1                                             0.1218 (-0.3036, 0.2833)
+        point
+            light_profile_list
+                9
+                    centre
+                        centre_0                                                -0.0153 (-0.0472, 0.0119)
+                        centre_1                                                -0.0124 (-0.0303, 0.0053)
+                    ell_comps
+                        ell_comps_0                                             -0.1375 (-0.2894, 0.0077)
+                        ell_comps_1                                             -0.2389 (-0.3556, -0.1155)
+
+instances
+
+galaxies
+    lens
+        redshift                                                                2.0
+        bulge
+            light_profile_list
+                0
+                    sigma                                                       0.01
+                1
+                    sigma                                                       0.011886052101589394
+                2
+                    sigma                                                       0.014127823456169772
+                3
+                    sigma                                                       0.016792404568209067
+                4
+                    sigma                                                       0.01995953956087008
+                5
+                    sigma                                                       0.023724012714423648
+                6
+                    sigma                                                       0.02819848511824087
+                7
+                    sigma                                                       0.033516866330130415
+                8
+                    sigma                                                       0.03983832194819376
+                9
+                    sigma                                                       0.04735203703161236
+                10
+                    sigma                                                       0.05628287792741349
+                11
+                    sigma                                                       0.06689812194726324
+                12
+                    sigma                                                       0.07951545629636518
+                13
+                    sigma                                                       0.09451248564202515
+                14
+                    sigma                                                       0.11233803285918305
+                15
+                    sigma                                                       0.13352557115543118
+                16
+                    sigma                                                       0.15870918956479368
+                17
+                    sigma                                                       0.18864256961681655
+                18
+                    sigma                                                       0.22422154110431872
+                19
+                    sigma                                                       0.26651089198646
+                20
+                    sigma                                                       0.31677623477921285
+                21
+                    sigma                                                       0.37652188311310386
+                22
+                    sigma                                                       0.4475358720070904
+                23
+                    sigma                                                       0.5319434692006522
+                24
+                    sigma                                                       0.6322707790019165
+                25
+                    sigma                                                       0.7515203421529293
+                26
+                    sigma                                                       0.893260994223401
+                27
+                    sigma                                                       1.0617346717656888
+                28
+                    sigma                                                       1.261983362667089
+                29
+                    sigma                                                       1.5
+                30
+                    sigma                                                       0.01
+                31
+                    sigma                                                       0.011886052101589394
+                32
+                    sigma                                                       0.014127823456169772
+                33
+                    sigma                                                       0.016792404568209067
+                34
+                    sigma                                                       0.01995953956087008
+                35
+                    sigma                                                       0.023724012714423648
+                36
+                    sigma                                                       0.02819848511824087
+                37
+                    sigma                                                       0.033516866330130415
+                38
+                    sigma                                                       0.03983832194819376
+                39
+                    sigma                                                       0.04735203703161236
+                40
+                    sigma                                                       0.05628287792741349
+                41
+                    sigma                                                       0.06689812194726324
+                42
+                    sigma                                                       0.07951545629636518
+                43
+                    sigma                                                       0.09451248564202515
+                44
+                    sigma                                                       0.11233803285918305
+                45
+                    sigma                                                       0.13352557115543118
+                46
+                    sigma                                                       0.15870918956479368
+                47
+                    sigma                                                       0.18864256961681655
+                48
+                    sigma                                                       0.22422154110431872
+                49
+                    sigma                                                       0.26651089198646
+                50
+                    sigma                                                       0.31677623477921285
+                51
+                    sigma                                                       0.37652188311310386
+                52
+                    sigma                                                       0.4475358720070904
+                53
+                    sigma                                                       0.5319434692006522
+                54
+                    sigma                                                       0.6322707790019165
+                55
+                    sigma                                                       0.7515203421529293
+                56
+                    sigma                                                       0.893260994223401
+                57
+                    sigma                                                       1.0617346717656888
+                58
+                    sigma                                                       1.261983362667089
+                59
+                    sigma                                                       1.5
+                60
+                    sigma                                                       0.01
+                61
+                    sigma                                                       0.011886052101589394
+                62
+                    sigma                                                       0.014127823456169772
+                63
+                    sigma                                                       0.016792404568209067
+                64
+                    sigma                                                       0.01995953956087008
+                65
+                    sigma                                                       0.023724012714423648
+                66
+                    sigma                                                       0.02819848511824087
+                67
+                    sigma                                                       0.033516866330130415
+                68
+                    sigma                                                       0.03983832194819376
+                69
+                    sigma                                                       0.04735203703161236
+                70
+                    sigma                                                       0.05628287792741349
+                71
+                    sigma                                                       0.06689812194726324
+                72
+                    sigma                                                       0.07951545629636518
+                73
+                    sigma                                                       0.09451248564202515
+                74
+                    sigma                                                       0.11233803285918305
+                75
+                    sigma                                                       0.13352557115543118
+                76
+                    sigma                                                       0.15870918956479368
+                77
+                    sigma                                                       0.18864256961681655
+                78
+                    sigma                                                       0.22422154110431872
+                79
+                    sigma                                                       0.26651089198646
+                80
+                    sigma                                                       0.31677623477921285
+                81
+                    sigma                                                       0.37652188311310386
+                82
+                    sigma                                                       0.4475358720070904
+                83
+                    sigma                                                       0.5319434692006522
+                84
+                    sigma                                                       0.6322707790019165
+                85
+                    sigma                                                       0.7515203421529293
+                86
+                    sigma                                                       0.893260994223401
+                87
+                    sigma                                                       1.0617346717656888
+                88
+                    sigma                                                       1.261983362667089
+                89
+                    sigma                                                       1.5
+        point
+            light_profile_list
+                0
+                    sigma                                                       0.01
+                1
+                    sigma                                                       0.012202849358728108
+                2
+                    sigma                                                       0.01489095324718109
+                3
+                    sigma                                                       0.018171205928321398
+                4
+                    sigma                                                       0.022174048860973305
+                5
+                    sigma                                                       0.027058657792353384
+                6
+                    sigma                                                       0.03301927248894628
+                7
+                    sigma                                                       0.04029292081174065
+                8
+                    sigma                                                       0.04916884428888316
+                9
+                    sigma                                                       0.06
+        mass
+            einstein_radius                                                     0.762830613564826
+            slope                                                               2.0
+            core_radius                                                         0.0
+        shear
+            gamma_1                                                             0.021207373790395105
+            gamma_2                                                             -0.00233203018264544
+    source
+        redshift                                                                5.0
+        pixelization
+            mesh
+                weight_floor                                                    0.39697286811494
+                weight_power                                                    18.74406229430449
+            regularization
+                inner_coefficient                                               1.5865250079873698e-05
+                outer_coefficient                                               135.36533868659882
+                signal_scale                                                    0.02829718799731
+clumps
+    clump_0
+        redshift                                                                2.0
+        mass
+            einstein_radius                                                     0.07186553599748
+            slope                                                               2.0
+            core_radius                                                         0.0

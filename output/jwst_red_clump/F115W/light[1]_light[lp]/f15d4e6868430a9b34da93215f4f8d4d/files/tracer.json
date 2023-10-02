@@ -1,0 +1,1722 @@
+{
+    "type": "instance",
+    "class_path": "autolens.lens.ray_tracing.Tracer",
+    "arguments": {
+        "run_time_dict": null,
+        "planes": {
+            "type": "list",
+            "values": [
+                {
+                    "type": "instance",
+                    "class_path": "autogalaxy.plane.plane.Plane",
+                    "arguments": {
+                        "run_time_dict": null,
+                        "galaxies": {
+                            "type": "list",
+                            "values": [
+                                {
+                                    "type": "instance",
+                                    "class_path": "autogalaxy.galaxy.galaxy.Galaxy",
+                                    "arguments": {
+                                        "redshift": 2.0,
+                                        "bulge": {
+                                            "type": "instance",
+                                            "class_path": "autogalaxy.profiles.light.basis.Basis",
+                                            "arguments": {
+                                                "regularization": null,
+                                                "light_profile_list": {
+                                                    "type": "list",
+                                                    "values": [
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.01,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.011886052101589394,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 1.0862500466518397,
+                                                                "sigma": 0.014127823456169772,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.016792404568209067,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.01995953956087008,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.023724012714423648,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.02819848511824087,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.033516866330130415,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.03983832194819376,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.09040461984141504,
+                                                                "sigma": 0.04735203703161236,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.009092672817260368,
+                                                                "sigma": 0.05628287792741349,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.06689812194726324,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.07951545629636518,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.09451248564202515,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.11233803285918305,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.13352557115543118,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.15870918956479368,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.01473540039543731,
+                                                                "sigma": 0.18864256961681655,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.22422154110431872,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.26651089198646,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.31677623477921285,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.37652188311310386,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.4475358720070904,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.5319434692006522,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.6322707790019165,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.7515203421529293,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.893260994223401,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 1.0617346717656888,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 1.261983362667089,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 1.5,
+                                                                "ell_comps": [
+                                                                    -0.055136727252042994,
+                                                                    -0.490349859905786
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 2.807129771320392,
+                                                                "sigma": 0.01,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.011886052101589394,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.014127823456169772,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.016792404568209067,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.01995953956087008,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.023724012714423648,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.02819848511824087,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.033516866330130415,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.02877000779681248,
+                                                                "sigma": 0.03983832194819376,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.09611341592541435,
+                                                                "sigma": 0.04735203703161236,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.05628287792741349,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.06689812194726324,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.058464419066905714,
+                                                                "sigma": 0.07951545629636518,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.09451248564202515,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.11233803285918305,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.13352557115543118,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.15870918956479368,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.18864256961681655,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.22422154110431872,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.26651089198646,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.31677623477921285,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.37652188311310386,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.4475358720070904,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.5319434692006522,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.6322707790019165,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.7515203421529293,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.893260994223401,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 1.0617346717656888,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 1.261983362667089,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 1.5,
+                                                                "ell_comps": [
+                                                                    -0.341179162413059,
+                                                                    0.21706026113464225
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 3.3918619318450687,
+                                                                "sigma": 0.01,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.011886052101589394,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.014127823456169772,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.016792404568209067,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.01995953956087008,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.023724012714423648,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.02819848511824087,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.033516866330130415,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.03983832194819376,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.15470431031362653,
+                                                                "sigma": 0.04735203703161236,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.05628287792741349,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.06689812194726324,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.07951545629636518,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.09451248564202515,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.11233803285918305,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.052354577113209795,
+                                                                "sigma": 0.13352557115543118,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.15870918956479368,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.18864256961681655,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.22422154110431872,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.26651089198646,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.31677623477921285,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.37652188311310386,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.4475358720070904,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.5319434692006522,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.6322707790019165,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.7515203421529293,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.893260994223401,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 1.0617346717656888,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 1.261983362667089,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    0.060201230974857876,
+                                                                    0.054718567829128005
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 1.5,
+                                                                "ell_comps": [
+                                                                    0.1932727940457364,
+                                                                    0.2934131667938163
+                                                                ]
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "point": {
+                                            "type": "instance",
+                                            "class_path": "autogalaxy.profiles.light.basis.Basis",
+                                            "arguments": {
+                                                "regularization": null,
+                                                "light_profile_list": {
+                                                    "type": "list",
+                                                    "values": [
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    -0.02325491408723808,
+                                                                    -0.01909781872434846
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.01,
+                                                                "ell_comps": [
+                                                                    -0.04187597273865739,
+                                                                    -0.3595755935846422
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    -0.02325491408723808,
+                                                                    -0.01909781872434846
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.012202849358728108,
+                                                                "ell_comps": [
+                                                                    -0.04187597273865739,
+                                                                    -0.3595755935846422
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    -0.02325491408723808,
+                                                                    -0.01909781872434846
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.01489095324718109,
+                                                                "ell_comps": [
+                                                                    -0.04187597273865739,
+                                                                    -0.3595755935846422
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    -0.02325491408723808,
+                                                                    -0.01909781872434846
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.018171205928321398,
+                                                                "ell_comps": [
+                                                                    -0.04187597273865739,
+                                                                    -0.3595755935846422
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    -0.02325491408723808,
+                                                                    -0.01909781872434846
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.022174048860973305,
+                                                                "ell_comps": [
+                                                                    -0.04187597273865739,
+                                                                    -0.3595755935846422
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    -0.02325491408723808,
+                                                                    -0.01909781872434846
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.027058657792353384,
+                                                                "ell_comps": [
+                                                                    -0.04187597273865739,
+                                                                    -0.3595755935846422
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    -0.02325491408723808,
+                                                                    -0.01909781872434846
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.03301927248894628,
+                                                                "ell_comps": [
+                                                                    -0.04187597273865739,
+                                                                    -0.3595755935846422
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    -0.02325491408723808,
+                                                                    -0.01909781872434846
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.04029292081174065,
+                                                                "ell_comps": [
+                                                                    -0.04187597273865739,
+                                                                    -0.3595755935846422
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    -0.02325491408723808,
+                                                                    -0.01909781872434846
+                                                                ],
+                                                                "intensity": 0.11760204099402742,
+                                                                "sigma": 0.04916884428888316,
+                                                                "ell_comps": [
+                                                                    -0.04187597273865739,
+                                                                    -0.3595755935846422
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "instance",
+                                                            "class_path": "autogalaxy.profiles.light.standard.gaussian.Gaussian",
+                                                            "arguments": {
+                                                                "centre": [
+                                                                    -0.02325491408723808,
+                                                                    -0.01909781872434846
+                                                                ],
+                                                                "intensity": 0.0,
+                                                                "sigma": 0.06,
+                                                                "ell_comps": [
+                                                                    -0.04187597273865739,
+                                                                    -0.3595755935846422
+                                                                ]
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "mass": {
+                                            "type": "instance",
+                                            "class_path": "autogalaxy.profiles.mass.total.isothermal.Isothermal",
+                                            "arguments": {
+                                                "centre": [
+                                                    0.037074001111139496,
+                                                    0.05775921472510323
+                                                ],
+                                                "einstein_radius": 0.762830613564826,
+                                                "ell_comps": [
+                                                    0.017542415078046894,
+                                                    0.03853423646531226
+                                                ]
+                                            }
+                                        },
+                                        "shear": {
+                                            "type": "instance",
+                                            "class_path": "autogalaxy.profiles.mass.sheets.external_shear.ExternalShear",
+                                            "arguments": {
+                                                "gamma_2": -0.00233203018264544,
+                                                "gamma_1": 0.021207373790395105
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "instance",
+                                    "class_path": "autogalaxy.galaxy.galaxy.Galaxy",
+                                    "arguments": {
+                                        "redshift": 2.0,
+                                        "mass": {
+                                            "type": "instance",
+                                            "class_path": "autogalaxy.profiles.mass.total.isothermal.IsothermalSph",
+                                            "arguments": {
+                                                "centre": [
+                                                    -1.125,
+                                                    0.5549999999999999
+                                                ],
+                                                "einstein_radius": 0.07186553599748
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "redshift": 2.0
+                    }
+                },
+                {
+                    "type": "instance",
+                    "class_path": "autogalaxy.plane.plane.Plane",
+                    "arguments": {
+                        "run_time_dict": null,
+                        "galaxies": {
+                            "type": "list",
+                            "values": [
+                                {
+                                    "type": "instance",
+                                    "class_path": "autogalaxy.galaxy.galaxy.Galaxy",
+                                    "arguments": {
+                                        "redshift": 5.0
+                                    }
+                                }
+                            ]
+                        },
+                        "redshift": 5.0
+                    }
+                }
+            ]
+        },
+        "cosmology": {
+            "type": "instance",
+            "class_path": "autogalaxy.cosmology.wrap.Planck15",
+            "arguments": {}
+        }
+    }
+}

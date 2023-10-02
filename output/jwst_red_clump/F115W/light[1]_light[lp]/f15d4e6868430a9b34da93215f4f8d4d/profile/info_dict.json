@@ -1,0 +1,16 @@
+{
+    "repeats": 1,
+    "image_pixels": 7860,
+    "sub_size_light_profiles": 1,
+    "use_w_tilde": true,
+    "sub_size_pixelization": 4,
+    "use_positive_only_solver": true,
+    "force_edge_pixels_to_zeros": true,
+    "use_w_tilde_numpy": false,
+    "source_pixels": 2100,
+    "w_tilde_curvature_preload_size": 15853592,
+    "psf_shape_2d": [
+        41,
+        41
+    ]
+}

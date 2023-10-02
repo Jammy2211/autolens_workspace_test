@@ -1,0 +1,9 @@
+{
+    "type": "instance",
+    "class_path": "autoarray.inversion.pixelization.settings.SettingsPixelization",
+    "arguments": {
+        "kmeans_seed": 0,
+        "use_border": true,
+        "is_stochastic": false
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "type": "instance",
+    "class_path": "autoarray.dataset.imaging.settings.SettingsImaging",
+    "arguments": {
+        "fractional_accuracy": 0.9999,
+        "grid_pixelization_class": null,
+        "sub_size_pixelization": 4,
+        "sub_steps": null,
+        "use_normalized_psf": true,
+        "sub_size": 1,
+        "relative_accuracy": null,
+        "grid_class": {
+            "type": "type",
+            "class_path": "autoarray.structures.grids.uniform_2d.Grid2D"
+        }
+    }
+}
