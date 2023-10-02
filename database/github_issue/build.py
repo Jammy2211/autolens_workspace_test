@@ -25,7 +25,7 @@ ___Database__
 The name of the database, which corresponds to the output results folder.
 """
 database_name_list = [
-    "F606W_tania_test",
+    "jwst_red_clump",
 ]
 
 for database_name in database_name_list:
