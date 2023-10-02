@@ -79,8 +79,8 @@ source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.Sersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
-search_1 = af.DynestyStatic(
-    path_prefix=path_prefix, name="search[1]_sie", unique_tag=dataset_name, nlive=50
+search_1 = af.Nautilus(
+    path_prefix=path_prefix, name="search[1]_sie", unique_tag=dataset_name, n_live=50
 )
 
 analysis = al.AnalysisImaging(dataset=dataset)

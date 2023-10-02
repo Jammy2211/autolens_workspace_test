@@ -2,7 +2,7 @@
 Modeling: Mass Total + Source Parametric
 ========================================
 
-This script gives a profile of a `DynestyStatic` model-fit to an `Imaging` dataset where the lens model is initialized,
+This script gives a profile of a `Nautilus` model-fit to an `Imaging` dataset where the lens model is initialized,
 where:
 
  - The lens galaxy's light is omitted (and is not present in the simulated data).
@@ -37,11 +37,11 @@ path_prefix = path.join("searches", "parametric", "initialization")
 """
 __Search__
 """
-search = af.DynestyStatic(
+search = af.Nautilus(
     path_prefix=path_prefix,
-    name="DynestyStatic_linear",
+    name="Nautilus_linear",
     unique_tag=dataset_name,
-    nlive=200,
+    n_live=200,
     walks=10,
     iterations_per_update=5000,
 )

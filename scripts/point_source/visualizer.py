@@ -67,11 +67,11 @@ point_solver = al.PointSolver(grid=grid_2d, pixel_scale_precision=0.025)
 """
 __Search__
 """
-search = af.DynestyStatic(
+search = af.Nautilus(
     path_prefix=path.join("build", "visualizer", "point_source"),
     name="test",
     unique_tag="test",
-    nlive=50,
+    n_live=50,
     number_of_cores=1,
 )
 

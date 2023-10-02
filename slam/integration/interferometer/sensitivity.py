@@ -177,9 +177,9 @@ source_pix_results = slam.source_pix.run(
 )
 
 """
-__MASS TOTAL PIPELINE (no lens light)__
+__MASS TOTAL PIPELINE__
 
-The MASS TOTAL PIPELINE (no lens light) uses one search to fits a complex lens mass model to a high level of accuracy, 
+The MASS TOTAL PIPELINE uses one search to fits a complex lens mass model to a high level of accuracy, 
 using the lens mass model and source model of the SOURCE PIPELINE to initialize the model priors. In this example it:
 
  - Uses an `PowerLaw` model for the lens's total mass distribution [The centre if unfixed from (0.0, 0.0)].

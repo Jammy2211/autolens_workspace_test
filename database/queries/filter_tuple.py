@@ -26,11 +26,11 @@ path_prefix = path.join("parallel")
 """
 __Search__
 """
-search = af.DynestyStatic(
+search = af.Nautilus(
     path_prefix=path_prefix,
-    name="DynestyStatic_x1",
+    name="Nautilus_x1",
     unique_tag=dataset_name,
-    nlive=50,
+    n_live=50,
     walks=10,
     iterations_per_update=10000,
     number_of_cores=1,

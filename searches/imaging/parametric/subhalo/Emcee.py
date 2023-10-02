@@ -78,8 +78,8 @@ source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.Sersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
-search_1 = af.DynestyStatic(
-    path_prefix=path_prefix, name="search[1]_sie", unique_tag=dataset_name, nlive=50
+search_1 = af.Nautilus(
+    path_prefix=path_prefix, name="search[1]_sie", unique_tag=dataset_name, n_live=50
 )
 
 analysis = al.AnalysisImaging(dataset=dataset)
@@ -99,11 +99,11 @@ lens = af.Model(al.Galaxy, redshift=0.5, mass=mass, shear=shear)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
-search_2 = af.DynestyStatic(
+search_2 = af.Nautilus(
     path_prefix=path_prefix,
     name="search[2]_power_law",
     unique_tag=dataset_name,
-    nlive=50,
+    n_live=50,
 )
 
 analysis = al.AnalysisImaging(dataset=dataset)

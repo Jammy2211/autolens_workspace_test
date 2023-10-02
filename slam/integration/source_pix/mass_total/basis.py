@@ -110,9 +110,9 @@ of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed con
 setup_adapt = al.SetupAdapt(mesh_pixels_fixed=25)
 
 """
-__SOURCE LP PIPELINE (with lens light)__
+__SOURCE LP PIPELINE__
 
-The SOURCE LP PIPELINE (with lens light) uses three searches to initialize a robust model for the 
+The SOURCE LP PIPELINE uses one search to initialize a robust model for the 
 source galaxy's light, which in this example:
  
  - Uses a parametric `Sersic` bulge and `Exponential` disk with centres aligned for the lens
@@ -230,9 +230,9 @@ source_lp_results = slam.source_lp.run(
 )
 
 """
-__SOURCE PIX PIPELINE (with lens light)__
+__SOURCE PIX PIPELINE__
 
-The SOURCE PIX PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
+The SOURCE PIX PIPELINE uses four searches to initialize a robust model for the `Inversion` 
 that reconstructs the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` 
 regularization, to set up the model and hyper images, and then:
 
@@ -258,6 +258,7 @@ __LIGHT LP PIPELINE__
 
 The LIGHT LP PIPELINE uses one search to fit a complex lens light model to a high level of accuracy, using the
 lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE PIX PIPELINE.
+
 In this example it:
 
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
@@ -265,7 +266,7 @@ In this example it:
 
  - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE PIX PIPELINE].
 
- - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIX PIPELINE].
+ - Uses a `Pixelization` for the source's light [fixed from SOURCE PIX PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
@@ -340,11 +341,13 @@ light_results = slam.light_lp.run(
 )
 
 """
-__MASS TOTAL PIPELINE (with lens light)__
+__MASS TOTAL PIPELINE__
 
-The MASS TOTAL PIPELINE (with lens light) uses one search to fits a complex lens mass model to a high level of accuracy, 
+The MASS TOTAL PIPELINE uses one search to fits a complex lens mass model to a high level of accuracy, 
 using the lens mass model and source model of the SOURCE PIPELINE to initialize the model priors and the lens light
-model of the LIGHT LP PIPELINE. In this example it:
+model of the LIGHT LP PIPELINE. 
+
+In this example it:
 
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
  light [fixed from LIGHT LP PIPELINE].

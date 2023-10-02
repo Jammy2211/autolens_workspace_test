@@ -49,11 +49,11 @@ model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 """
 __Search + Analysis + Model-Fit__
 """
-search = af.DynestyStatic(
+search = af.Nautilus(
     name="mass[sie]_source[bulge]",
     path_prefix=path.join("database", "directory", "general"),
     unique_tag=dataset_name,
-    nlive=50,
+    n_live=50,
 )
 
 analysis = al.AnalysisImaging(dataset=masked_dataset)
@@ -140,16 +140,16 @@ fit_agg = al.agg.FitImagingAgg(
     settings_dataset=al.SettingsImaging(sub_size=4),
     settings_pixelization=al.SettingsPixelization(use_border=False),
 )
-fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
+fit_gen = fit_agg.max_log_likelihood_gen_from()
 
-for fit in fit_imaging_gen:
+for fit in fit_gen:
     fit_plotter = aplt.FitImagingPlotter(fit=fit)
     fit_plotter.subplot_fit()
 
 fit_agg = al.agg.FitImagingAgg(aggregator=agg)
-fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
+fit_gen = fit_agg.max_log_likelihood_gen_from()
 
-for fit in fit_imaging_gen:
+for fit in fit_gen:
     mat_plot_2d = aplt.MatPlot2D(
         figure=aplt.Figure(figsize=(12, 12)),
         title=aplt.Title(label="Custom Image", fontsize=24),

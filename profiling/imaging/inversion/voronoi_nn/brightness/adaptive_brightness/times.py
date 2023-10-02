@@ -131,7 +131,7 @@ masked_dataset = masked_dataset.apply_settings(
 )
 
 """
-Generate the hyper-images used to adapt the source pixelization and regularization.
+Generate the hyper-images used to adapt the source mesh and regularization.
 """
 source_galaxy = al.Galaxy(
     redshift=1.0,

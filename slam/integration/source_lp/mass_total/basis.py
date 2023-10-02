@@ -18,9 +18,9 @@ lens system, where in the final model:
 
 This runner uses the SLaM pipelines:
 
- `source_lp/source_lp__with_lens_light`
+ `source_lp`
  `light_lp`
- `mass_total/mass_total__with_lens_light`
+ `mass_total`
 
 Check them out for a detailed description of the analysis!
 """
@@ -106,9 +106,9 @@ of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed con
 setup_adapt = al.SetupAdapt()
 
 """
-__SOURCE LP PIPELINE (with lens light)__
+__SOURCE LP PIPELINE__
 
-The SOURCE LP PIPELINE (with lens light) uses three searches to initialize a robust model for the 
+The SOURCE LP PIPELINE uses one search to initialize a robust model for the 
 source galaxy's light, which in this example:
  
  - Uses a parametric `Sersic` bulge and `Exponential` disk with centres aligned for the lens
@@ -312,11 +312,13 @@ light_results = slam.light_lp.run(
 )
 
 """
-__MASS TOTAL PIPELINE (with lens light)__
+__MASS TOTAL PIPELINE__
 
-The MASS TOTAL PIPELINE (with lens light) uses one search to fits a complex lens mass model to a high level of accuracy, 
+The MASS TOTAL PIPELINE uses one search to fits a complex lens mass model to a high level of accuracy, 
 using the lens mass model and source model of the SOURCE PIPELINE to initialize the model priors and the lens light
-model of the LIGHT LP PIPELINE. In this example it:
+model of the LIGHT LP PIPELINE. 
+
+In this example it:
 
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
  light [fixed from LIGHT LP PIPELINE].

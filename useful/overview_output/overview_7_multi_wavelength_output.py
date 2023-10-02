@@ -207,8 +207,8 @@ __Search + Model Fit__
 
 Fitting the model uses the same API we introduced in previous overviews.
 """
-search = af.DynestyStatic(
-    name="overview_example_multiwavelength_3", nlive=200, walks=10
+search = af.Nautilus(
+    name="overview_example_multiwavelength_3", n_live=200, walks=10
 )
 
 """

@@ -2,7 +2,7 @@
 Chaining: SIE to Power-law
 ==========================
 
-This script gives a profile of a `DynestyStatic` model-fit to an `Imaging` dataset where the lens model is a power-law
+This script gives a profile of a `Nautilus` model-fit to an `Imaging` dataset where the lens model is a power-law
 that is initialized from an SIE, where:
 
  - The lens galaxy's light is omitted.
@@ -39,11 +39,11 @@ path_prefix = path.join("searches", "inversion", "sie_to_power_law")
 """
 __Search (Search Final)__
 """
-search_3 = af.DynestyStatic(
+search_3 = af.Nautilus(
     path_prefix=path_prefix,
-    name="DynestyStatic",
+    name="Nautilus",
     unique_tag=dataset_name,
-    nlive=50,
+    n_live=50,
     iterations_per_update=500,
 )
 
@@ -79,8 +79,8 @@ source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.Sersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
-search_1 = af.DynestyStatic(
-    path_prefix=path_prefix, name="search[1]_sie", unique_tag=dataset_name, nlive=50
+search_1 = af.Nautilus(
+    path_prefix=path_prefix, name="search[1]_sie", unique_tag=dataset_name, n_live=50
 )
 
 analysis = al.AnalysisImaging(dataset=dataset)
@@ -106,11 +106,11 @@ source = af.Model(
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
-search_2 = af.DynestyStatic(
+search_2 = af.Nautilus(
     path_prefix=path_prefix,
     name="search[2]_inversion",
     unique_tag=dataset_name,
-    nlive=50,
+    n_live=50,
 )
 
 analysis = al.AnalysisImaging(dataset=dataset)
