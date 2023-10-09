@@ -10,7 +10,6 @@ def run(
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     lens_bulge: Optional[af.Model] = af.Model(al.lp.Sersic),
     lens_disk: Optional[af.Model] = af.Model(al.lp.Exponential),
-    lens_point: Optional[af.Model] = None,
     mass: af.Model = af.Model(al.mp.Isothermal),
     shear: af.Model(al.mp.ExternalShear) = af.Model(al.mp.ExternalShear),
     source_bulge: Optional[af.Model] = af.Model(al.lp.Sersic),
@@ -21,7 +20,8 @@ def run(
     clump_model: Union[al.ClumpModel, al.ClumpModelDisabled] = al.ClumpModelDisabled(),
 ) -> af.ResultsCollection:
     """
-    The SlaM SOURCE LP PIPELINE for fitting imaging data with a lens light component.
+    The SlaM SOURCE LP PIPELINE, which provides an initial model for the lens's light, mass and source using a
+    parametric source model (e.g. Sersics, an MGE).
 
     Parameters
     ----------
@@ -35,9 +35,6 @@ def run(
     lens_disk
         The model used to represent the light distribution of the lens galaxy's disk (set to
         None to omit a disk).
-    lens_point
-        The model used to represent the light distribution of the lens galaxy's point-source(s)
-        emission (e.g. a nuclear star burst region) or compact central structures (e.g. an unresolved bulge).
     mass
         The `MassProfile` fitted by this pipeline.
     shear
@@ -65,11 +62,11 @@ def run(
     """
     __Model + Search + Analysis + Model-Fit (Search 1)__
 
-    In search 1 of the SOURCE LP PIPELINE we fit a lens model where:
+    Search 1 of the SOURCE LP PIPELINE fits a lens model where:
 
-     - The lens galaxy light is modeled using a parametric / basis bulge + disk [no prior initialization].
+     - The lens galaxy light is modeled using a light profiles [no prior initialization].
      - The lens galaxy mass is modeled using a total mass distribution [no prior initialization].
-     - The source galaxy's light is a parametric / basis bulge + disk [no prior initialization].
+     - The source galaxy's light is a light profiles [no prior initialization].
 
     This search aims to accurately estimate an initial lens light model, mass model and source model.
     """
@@ -84,7 +81,6 @@ def run(
                 redshift=redshift_lens,
                 bulge=lens_bulge,
                 disk=lens_disk,
-                point=lens_point,
                 mass=mass,
                 shear=shear,
             ),
@@ -101,8 +97,7 @@ def run(
     search_1 = af.Nautilus(
         name="source_lp[1]_light[lp]_mass[total]_source[lp]",
         **settings_autofit.search_dict,
-        n_live=200,
-        n_batch=int(2*settings_autofit.number_of_cores)
+        n_live=200
     )
 
     result_1 = search_1.fit(

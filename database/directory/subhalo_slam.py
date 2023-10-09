@@ -20,7 +20,6 @@ from autoconf import conf
 
 conf.instance.push(new_path=path.join(cwd, "config", "fit"))
 
-
 import autofit as af
 import autolens as al
 import autolens.plot as aplt
@@ -29,7 +28,7 @@ import slam
 """
 __Dataset + Masking__
 """
-dataset_name = "no_lens_light"
+dataset_name = "with_lens_light"
 dataset_path = path.join("dataset", "imaging", dataset_name)
 
 dataset = al.Imaging.from_fits(
@@ -80,66 +79,120 @@ setup_adapt = al.SetupAdapt(
 )
 
 """
-__SOURCE LP PIPELINE (no lens light)__
+__SOURCE LP PIPELINE (with lens light)__
 
-The SOURCE LP PIPELINE (no lens light) uses one search to initialize a robust model for the source galaxy's 
-light, which in this example:
-
- - Uses a parametric `Sersic` bulge for the source's light (omitting a disk / envelope).
+The SOURCE LP PIPELINE (with lens light) uses three searches to initialize a robust model for the 
+source galaxy's light, which in this example:
+ 
+ - Uses a parametric `Sersic` bulge and `Exponential` disk with centres aligned for the lens
+ galaxy's light.
+ 
  - Uses an `Isothermal` model for the lens's total mass distribution with an `ExternalShear`.
- - Fixes the mass profile centre to (0.0, 0.0) (this assumption will be relaxed in the MASS PIPELINE).
+
+ Settings:
+
+ - Mass Centre: Fix the mass profile centre to (0.0, 0.0) (this assumption will be relaxed in the MASS PIPELINE).
 """
 analysis = al.AnalysisImaging(dataset=dataset)
 
-source_results = slam.source_lp.run(
+bulge = af.Model(al.lp.Sersic)
+disk = af.Model(al.lp.Exponential)
+# disk = af.Model(al.lp.Sersic)
+bulge.centre = disk.centre
+
+source_lp_results = slam.source_lp.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
-    lens_bulge=None,
-    lens_disk=None,
+    lens_bulge=bulge,
+    lens_disk=disk,
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
     source_bulge=af.Model(al.lp.Sersic),
-    redshift_lens=0.5,
-    redshift_source=1.0,
+    redshift_lens=redshift_lens,
+    redshift_source=redshift_source,
 )
 
 """
-__MASS TOTAL PIPELINE (no lens light)__
+__LIGHT LP PIPELINE__
 
-The MASS TOTAL PIPELINE (no lens light) uses one search to fits a complex lens mass model to a high level of accuracy, 
-using the lens mass model and source model of the SOURCE PIPELINE to initialize the model priors. In this example it:
+The LIGHT LP PIPELINE uses one search to fit a complex lens light model to a high level of accuracy, using the
+lens mass model and source light model fixed to the maximum log likelihood result of the SOURCE LP PIPELINE.
+In this example it:
 
- - Uses an `PowerLaw` model for the lens's total mass distribution [The centre if unfixed from (0.0, 0.0)].
+ - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
+ light [Do not use the results of the SOURCE LP PIPELINE to initialize priors].
+
+ - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE LP PIPELINE].
+
+ - Uses the `Sersic` model representing a bulge for the source's light [fixed from SOURCE LP PIPELINE].
+
+ - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
+ PIPELINE [fixed values].
+"""
+bulge = af.Model(al.lp.Sersic)
+disk = af.Model(al.lp.Exponential)
+bulge.centre = disk.centre
+
+light_results = slam.light_lp.run(
+    settings_autofit=settings_autofit,
+    analysis=analysis,
+    setup_adapt=setup_adapt,
+    source_results=source_lp_results,
+    lens_bulge=bulge,
+    lens_disk=disk,
+)
+
+"""
+__MASS TOTAL PIPELINE (with lens light)__
+
+The MASS TOTAL PIPELINE (with lens light) uses one search to fits a complex lens mass model to a high level of accuracy, 
+using the lens mass model and source model of the SOURCE PIPELINE to initialize the model priors and the lens light
+model of the LIGHT LP PIPELINE. In this example it:
+
+ - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
+ light [fixed from LIGHT LP PIPELINE].
+
+ - Uses an `PowerLaw` model for the lens's total mass distribution [priors initialized from SOURCE 
+ PARAMETRIC PIPELINE + centre unfixed from (0.0, 0.0)].
+ 
+ - Uses the `Sersic` model representing a bulge for the source's light [priors initialized from SOURCE 
+ PARAMETRIC PIPELINE].
+ 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=dataset)
+analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
+
+multipole = af.Model(al.mp.PowerLawMultipole)
+multipole.m = 4
 
 mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     setup_adapt=setup_adapt,
-    source_results=source_results,
-    light_results=None,
+    source_results=source_lp_results,
+    light_results=light_results,
     mass=af.Model(al.mp.PowerLaw),
+    multipole=multipole,
+    reset_shear_prior=True,
 )
 
 """
 __SUBHALO PIPELINE (single plane detection)__
 
 The SUBHALO PIPELINE (single plane detection) consists of the following searches:
-
+ 
  1) Refit the lens and source model, to refine the model evidence for comparing to the models fitted which include a 
  subhalo. This uses the same model as fitted in the MASS PIPELINE. 
  2) Performs a grid-search of non-linear searches to attempt to detect a dark matter subhalo. 
  3) If there is a successful detection a final search is performed to refine its parameters.
+ 
+For this runner the SUBHALO PIPELINE customizes:
 
-For this runner the `SetupSubhalo` customizes:
-
- - If the parameteric source galaxy is treated as a model (all free parameters) or instance (all fixed) during the 
-   subhalo detection grid search.
- - The NxN size of the grid-search.
+ - The [number_of_steps x number_of_steps] size of the grid-search, as well as the dimensions it spans in arc-seconds.
+ - The `number_of_cores` used for the gridsearch, where `number_of_cores > 1` performs the model-fits in paralle using
+ the Python multiprocessing module.
 """
-analysis = al.AnalysisImaging(dataset=dataset)
+analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
 
 subhalo_results = slam.subhalo.detection(
     settings_autofit=settings_autofit,

@@ -20,7 +20,8 @@ def run(
     ),
 ) -> af.ResultsCollection:
     """
-    The SLaM SOURCE PIX PIPELINE for fitting imaging data with a lens light component.
+    The SLaM SOURCE PIX PIPELINE, which initializes a lens model which uses a pixelized source for the source
+    analysis.
 
     Parameters
     ----------
@@ -45,18 +46,18 @@ def run(
     """
 
     """
-    __Model + Search + Analysis + Model-Fit (Search 3)__
+    __Model + Search + Analysis + Model-Fit (Search 1)__
 
-    In search 3 of the SOURCE PIX PIPELINE we fit a lens model where:
+    Search 1 of the SOURCE PIX PIPELINE fits a lens model where:
 
-    - The lens galaxy light is modeled using a parametric / basis bulge + disk [parameters fixed to result of 
-    SOURCE LP PIPELINE].
+    - The lens galaxy light is modeled using a light profiles [parameters fixed to result of SOURCE LP PIPELINE].
      - The lens galaxy mass is modeled using a total mass distribution [parameters initialized from the results of the 
      SOURCE LP PIPELINE].
-     - The source galaxy's light is the input initialization pixelization and regularization scheme [parameters of 
+     - The source galaxy's light is the input initialization mesh and regularization scheme [parameters of 
      regularization free to vary].
 
-    This search aims to improve the lens mass model using the input `Inversion`.
+    This search improves the lens mass model by modeling the source using a `Pixelization` and computes the adapt
+    images that are used in search 2.
     """
 
     analysis.set_adapt_dataset(result=source_lp_results.last)
@@ -76,7 +77,6 @@ def run(
                 redshift=source_lp_results.last.instance.galaxies.lens.redshift,
                 bulge=source_lp_results.last.instance.galaxies.lens.bulge,
                 disk=source_lp_results.last.instance.galaxies.lens.disk,
-                point=source_lp_results.last.instance.galaxies.lens.point,
                 mass=mass,
                 shear=source_lp_results.last.model.galaxies.lens.shear,
             ),
@@ -94,8 +94,7 @@ def run(
     search_1 = af.Nautilus(
         name="source_pix[1]_light[fixed]_mass[init]_source[pix_init_mag]",
         **settings_autofit.search_dict,
-        n_live=100,
-        n_batch=int(2 * settings_autofit.number_of_cores)
+        n_live=150,
     )
 
     result_1 = search_1.fit(
@@ -105,12 +104,11 @@ def run(
     """
     __Model + Search + Analysis + Model-Fit (Search 2)__
 
-    In search 2 of the SOURCE PIX PIPELINE we fit a lens model where:
+    Search 2 of the SOURCE PIX PIPELINE fits a lens model where:
 
-    - The lens galaxy light is modeled using a parametric / basis bulge + disk [parameters fixed to result 
-    of SOURCE LP PIPELINE].
-     - The lens galaxy mass is modeled using a total mass distribution [parameters fixed to result of search 2].
-     - The source galaxy's light is the input pixelization and regularization.
+    - The lens galaxy light is modeled using a light profiles [parameters fixed to result of SOURCE LP PIPELINE].
+    - The lens galaxy mass is modeled using a total mass distribution [parameters fixed to result of search 2].
+    - The source galaxy's light is the input final mesh and regularization.
 
     This search initializes the pixelization's mesh and regularization.
     """
@@ -124,7 +122,6 @@ def run(
                 redshift=source_lp_results.last.instance.galaxies.lens.redshift,
                 bulge=source_lp_results.last.instance.galaxies.lens.bulge,
                 disk=source_lp_results.last.instance.galaxies.lens.disk,
-                point=source_lp_results.last.instance.galaxies.lens.point,
                 mass=result_1.instance.galaxies.lens.mass,
                 shear=result_1.instance.galaxies.lens.shear,
             ),
@@ -149,7 +146,6 @@ def run(
         name="source_pix[2]_light[fixed]_mass[fixed]_source[pix]",
         **settings_autofit.search_dict,
         n_live=100,
-        n_batch=int(2 * settings_autofit.number_of_cores)
     )
 
     result_2 = search_2.fit(
