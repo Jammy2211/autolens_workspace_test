@@ -248,8 +248,8 @@ __Files__
 Check that all other files stored in database (e.g. model, search) can be loaded and used.
 """
 
-# for model in agg.values("model"):
-#     print(model.info)
+for model in agg.values("model"):
+    print(model.info)
 
 for search in agg.values("search"):
     print(search)
