@@ -162,7 +162,10 @@ tracer_gen = tracer_agg.max_log_likelihood_gen_from()
 
 grid = al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.1)
 
-for tracer in tracer_gen:
+for tracer_list in tracer_gen:
+
+    # Only one `Analysis` so take first and only tracer.
+    tracer = tracer_list[0]
 
     tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
     tracer_plotter.figures_2d(convergence=True, potential=True)
@@ -173,7 +176,9 @@ for tracer in tracer_gen:
 imaging_agg = al.agg.ImagingAgg(aggregator=agg)
 imaging_gen = imaging_agg.dataset_gen_from()
 
-for dataset in imaging_gen:
+for dataset_list in imaging_gen:
+
+    dataset = dataset_list[0]
 
     dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
     dataset_plotter.subplot_dataset()
@@ -187,7 +192,9 @@ fit_agg = al.agg.FitImagingAgg(
 )
 fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
 
-for fit in fit_imaging_gen:
+for fit_list in fit_imaging_gen:
+
+    fit = fit_list[0]
 
     fit_plotter = aplt.FitImagingPlotter(fit=fit)
     fit_plotter.subplot_fit()
