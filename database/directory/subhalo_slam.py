@@ -74,9 +74,7 @@ The `SetupAdapt` input `hyper_fixed_after_source` fixes the hyper-parameters to 
 extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter values at this point, model comparison 
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
-setup_adapt = al.SetupAdapt(
-    mesh_pixels_fixed=100
-)
+setup_adapt = al.SetupAdapt(mesh_pixels_fixed=100)
 
 """
 __SOURCE LP PIPELINE (with lens light)__

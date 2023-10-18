@@ -80,7 +80,9 @@ def fit():
     The settings of autofit, which controls the output paths, parallelization, database use, etc.
     """
     settings_autofit = af.SettingsSearch(
-        path_prefix=path.join("slam_nautilus", "source_pix", "mass_total", "base_future"),
+        path_prefix=path.join(
+            "slam_nautilus", "source_pix", "mass_total", "base_future"
+        ),
         number_of_cores=4,
         session=None,
     )
@@ -255,8 +257,8 @@ def fit():
     Finish.
     """
 
+
 if __name__ == "__main__":
     import schwimmbad
 
     fit()
-

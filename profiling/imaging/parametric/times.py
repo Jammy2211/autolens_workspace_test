@@ -183,9 +183,7 @@ tracer = al.Tracer.from_galaxies(
     galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time_dict
 )
 
-fit = al.FitImaging(
-    dataset=masked_dataset, tracer=tracer, run_time_dict=run_time_dict
-)
+fit = al.FitImaging(dataset=masked_dataset, tracer=tracer, run_time_dict=run_time_dict)
 fit.figure_of_merit
 
 run_time_dict = fit.run_time_dict

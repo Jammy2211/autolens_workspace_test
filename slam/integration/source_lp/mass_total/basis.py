@@ -63,7 +63,9 @@ dataset = al.Imaging.from_fits(
 mask_radius = 3.0
 
 mask = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
+    shape_native=dataset.shape_native,
+    pixel_scales=dataset.pixel_scales,
+    radius=mask_radius,
 )
 
 dataset = dataset.apply_mask(mask=mask)
@@ -134,11 +136,11 @@ log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 bulge_gaussian_list = []
 
 for j in range(gaussian_per_basis):
-
-    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
 
     for i, gaussian in enumerate(gaussian_list):
-
         gaussian.centre.centre_0 = centre_0
         gaussian.centre.centre_1 = centre_1
         gaussian.ell_comps = gaussian_list[0].ell_comps
@@ -156,11 +158,11 @@ log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 disk_gaussian_list = []
 
 for j in range(gaussian_per_basis):
-
-    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
 
     for i, gaussian in enumerate(gaussian_list):
-
         gaussian.centre.centre_0 = centre_0
         gaussian.centre.centre_1 = centre_1
         gaussian.ell_comps = gaussian_list[0].ell_comps
@@ -174,10 +176,6 @@ lens_disk = af.Model(
 )
 
 
-
-
-
-
 centre_0 = af.GaussianPrior(mean=0.0, sigma=0.3)
 centre_1 = af.GaussianPrior(mean=0.0, sigma=0.3)
 
@@ -189,11 +187,11 @@ log10_sigma_list = np.linspace(-2, np.log10(1.0), total_gaussians)
 bulge_gaussian_list = []
 
 for j in range(gaussian_per_basis):
-
-    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
 
     for i, gaussian in enumerate(gaussian_list):
-
         gaussian.centre.centre_0 = centre_0
         gaussian.centre.centre_1 = centre_1
         gaussian.ell_comps = gaussian_list[0].ell_comps
@@ -240,7 +238,6 @@ In this example it:
 analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
 
 
-
 centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 
@@ -252,11 +249,11 @@ log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 bulge_gaussian_list = []
 
 for j in range(gaussian_per_basis):
-
-    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
 
     for i, gaussian in enumerate(gaussian_list):
-
         gaussian.centre.centre_0 = centre_0
         gaussian.centre.centre_1 = centre_1
         gaussian.ell_comps = gaussian_list[0].ell_comps
@@ -270,8 +267,6 @@ lens_bulge = af.Model(
 )
 
 
-
-
 centre_0 = af.UniformPrior(lower_limit=-0.2, upper_limit=0.2)
 centre_1 = af.UniformPrior(lower_limit=-0.2, upper_limit=0.2)
 
@@ -280,16 +275,16 @@ gaussian_per_basis = 1
 
 pixel_scales = 0.2
 
-log10_sigma_list = np.linspace(-2, np.log10(pixel_scales*2), total_gaussians)
+log10_sigma_list = np.linspace(-2, np.log10(pixel_scales * 2), total_gaussians)
 
 point_gaussian_list = []
 
 for j in range(gaussian_per_basis):
-
-    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
 
     for i, gaussian in enumerate(gaussian_list):
-
         gaussian.centre.centre_0 = centre_0
         gaussian.centre.centre_1 = centre_1
         gaussian.ell_comps = gaussian_list[0].ell_comps

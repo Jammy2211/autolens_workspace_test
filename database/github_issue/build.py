@@ -29,9 +29,8 @@ database_name_list = [
 ]
 
 for database_name in database_name_list:
-
     """
-    Remove database is making a new build (you could delete manually via your mouse). Building the database is slow, so 
+    Remove database is making a new build (you could delete manually via your mouse). Building the database is slow, so
     only do this when you redownload results. Things are fast working from an already built database.
     """
     try:

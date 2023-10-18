@@ -53,7 +53,7 @@ settings_autofit = af.SettingsSearch(
     path_prefix=path.join("database", "directory", "slam_general"),
     number_of_cores=1,
     session=None,
-    info={"hi" : "there"},
+    info={"hi": "there"},
 )
 
 """
@@ -75,9 +75,7 @@ The `SetupAdapt` input `hyper_fixed_after_source` fixes the hyper-parameters to 
 extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter values at this point, model comparison 
 of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
 """
-setup_adapt = al.SetupAdapt(
-    mesh_pixels_fixed=100
-)
+setup_adapt = al.SetupAdapt(mesh_pixels_fixed=100)
 
 """
 __SOURCE LP PIPELINE (with lens light)__
@@ -279,7 +277,6 @@ tracer_gen = tracer_agg.max_log_likelihood_gen_from()
 grid = al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.1)
 
 for tracer_list in tracer_gen:
-
     # Only one `Analysis` so take first and only tracer.
     tracer = tracer_list[0]
 
@@ -293,7 +290,6 @@ imaging_agg = al.agg.ImagingAgg(aggregator=agg)
 imaging_gen = imaging_agg.dataset_gen_from()
 
 for dataset_list in imaging_gen:
-
     dataset = dataset_list[0]
 
     dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
@@ -309,7 +305,6 @@ fit_agg = al.agg.FitImagingAgg(
 fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
 
 for fit_list in fit_imaging_gen:
-
     fit = fit_list[0]
 
     fit_plotter = aplt.FitImagingPlotter(fit=fit)
