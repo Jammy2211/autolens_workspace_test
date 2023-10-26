@@ -32,7 +32,7 @@ output:
   remove_files: false
   samples_to_csv: true
 pixelization:
-  voronoi_nn_max_interpolation_neighbors: 100
+  voronoi_nn_max_interpolation_neighbors: 300
 profiling:
   parallel_profile: false
   repeats: 1

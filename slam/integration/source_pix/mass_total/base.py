@@ -161,7 +161,7 @@ def fit():
         analysis=analysis,
         setup_adapt=setup_adapt,
         source_lp_results=source_lp_results,
-        mesh=al.mesh.VoronoiBrightnessImage,
+        mesh=al.mesh.VoronoiNNSNRImage,
         regularization=al.reg.AdaptiveBrightness,
     )
 

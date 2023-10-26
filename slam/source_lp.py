@@ -97,7 +97,7 @@ def run(
     search_1 = af.Nautilus(
         name="source_lp[1]_light[lp]_mass[total]_source[lp]",
         **settings_autofit.search_dict,
-        n_live=200
+        n_live=200,
     )
 
     result_1 = search_1.fit(
