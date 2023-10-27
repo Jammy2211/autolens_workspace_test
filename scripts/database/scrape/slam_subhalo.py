@@ -50,7 +50,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_autofit = af.SettingsSearch(
-    path_prefix=path.join("database", "directory", "slam_subhalo"),
+    path_prefix=path.join("database", "scrape", "slam_subhalo"),
     number_of_cores=1,
     session=None,
 )
@@ -227,41 +227,75 @@ agg = af.Aggregator.from_database(filename=database_file, completed_only=False)
 Add all results in the directory "output/slacs" to the database, which we manipulate below via the agg.
 Avoid rerunning this once the file `slacs.sqlite` has been built.
 """
-agg.add_directory(
-    directory=path.join("output", "database", "directory", "slam_subhalo")
+agg.add_directory(directory=path.join("output", "database", "scrape", "slam_subhalo"))
+print("\n\n***********************")
+print("**GRID RESULTS TESTING**")
+print("***********************\n\n")
+
+print(
+    "\n****Total aggregator via `grid_searches` query = ",
+    len(agg.grid_searches()),
+    "****\n",
+)
+unique_tag = agg.grid_searches().search.unique_tag
+
+
+"""
+The `GridSearchResult` is accessible via the database.
+"""
+grid_search_result = list(agg.grid_searches())[0]["result"]
+print(
+    f"****Best result (grid_search_result.best_result)****\n\n {grid_search_result.best_result}\n"
+)
+print(
+    f"****Grid Log Evidences (grid_search_result.log_evidences_native)****\n\n {grid_search_result.log_evidences_native}\n"
 )
 
 """
-__Query__
+From the GridSearch, get an aggregator which contains only the maximum log likelihood model. E.g. if the 10th out of the 
+16 cells was the best fit:
 """
+print("\n\n****MAX LH AGGREGATOR VIA GRID****\n\n")
 
-agg_grid = agg.grid_searches()
+agg_best_fit = agg.grid_searches().best_fits()
+print(
+    f"Max LH Gaussian sigma (agg_best_fit.values('instance')[0].gaussian.sigma) {agg_best_fit.values('instance')[0]}\n"
+)
+print(
+    f"Max LH samples (agg_best_fit.values('samples')[0]) {agg_best_fit.values('samples')[0]}"
+)
 
-"""
-Unique Tag Query Does Not Work
-"""
-agg_best_fits = agg_grid.best_fits()
+print("\n\n***********************")
+print("**AGG SUBHALO TESTS**")
+print("***********************\n\n")
+
+agg_best_fits = agg.grid_searches().best_fits()
 
 fit_imaging_agg = al.agg.FitImagingAgg(aggregator=agg_best_fits)
 fit_imaging_gen = fit_imaging_agg.max_log_likelihood_gen_from()
 
 info_gen = agg_best_fits.values("info")
 
-for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_gen):
+for fit_grid, fit_imaging_detect, info in zip(
+    agg.grid_searches(), fit_imaging_gen, info_gen
+):
+    print(f"Grid Search Result (fit_grid['result']) {fit_grid['result']}")
     grid_search_result = fit_grid["result"]
 
-    """
-    The log likelihoods of the grid search result, on a native 2D grid.
-    """
-    print(grid_search_result.log_likelihoods_native)
+    print(
+        f"Grid Search Log Likelihoods (fit_grid['result'].log_likelihoods_native) {grid_search_result.log_likelihoods_native}"
+    )
 
     subhalo_search_result = al.subhalo.SubhaloResult(
-        grid_search_result=grid_search_result, result_no_subhalo=fit_grid.parent
+        grid_search_result=grid_search_result,
+        result_no_subhalo=fit_grid.parent
     )
 
     plot_path = path.join("database", "plot", "slam_subhalo", "likelihood")
 
     mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=plot_path, format="png"))
+
+    print(f"\n\n**** SUBHALO VISUALIZATION ****\n\n")
 
     subhalo_plotter = al.subhalo.SubhaloPlotter(
         subhalo_result=subhalo_search_result,

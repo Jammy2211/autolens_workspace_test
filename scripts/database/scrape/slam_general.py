@@ -191,9 +191,7 @@ except FileNotFoundError:
     pass
 
 agg = Aggregator.from_database(database_file)
-agg.add_directory(
-    directory=path.join("output", "database", "scrape", "slam_general")
-)
+agg.add_directory(directory=path.join("output", "database", "scrape", "slam_general"))
 
 assert len(agg) > 0
 
@@ -299,7 +297,6 @@ tracer_gen = tracer_agg.max_log_likelihood_gen_from()
 grid = al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.1)
 
 for tracer_list in tracer_gen:
-
     # Only one `Analysis` so take first and only tracer.
     tracer = tracer_list[0]
 
