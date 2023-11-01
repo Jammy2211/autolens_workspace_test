@@ -51,7 +51,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_autofit = af.SettingsSearch(
-    path_prefix=path.join("database", "directory", "sensitivity_slam"),
+    path_prefix=path.join("database", "scrape", "slam_sensitivity"),
     number_of_cores=2,
     session=None,
 )
@@ -134,6 +134,8 @@ PyAutoLens `AnalysisImaging` class.
 """
 
 
+# TODO : PRELOADS, need to make sure w_tilde isnt repeated over and over.
+
 class AnalysisImagingSensitivity(al.AnalysisImaging):
     def __init__(self, dataset):
         super().__init__(dataset=dataset)
@@ -160,7 +162,7 @@ ___Database__
 
 The name of the database, which corresponds to the output results folder.
 """
-database_file = "database_directory_sensitivity_slam.sqlite"
+database_file = "database_directory_slam_sensitivity.sqlite"
 
 """
 Remove database is making a new build (you could delete manually via your mouse). Building the database is slow, so 
@@ -182,7 +184,7 @@ Add all results in the directory "output/slacs" to the database, which we manipu
 Avoid rerunning this once the file `slacs.sqlite` has been built.
 """
 agg.add_directory(
-    directory=path.join("output", "database", "directory", "sensitivity_slam")
+    directory=path.join("output", "database", "scrape", "slam_sensitivity")
 )
 
 """

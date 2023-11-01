@@ -157,6 +157,21 @@ def detection(
         parent=search_no_subhalo,
     )
 
+    # subhalo_search_result = al.subhalo.SubhaloResult(
+    #     grid_search_result_with_subhalo=subhalo_result,
+    #     fit_imaging_no_subhalo=result_1.max_log_likelihood_fit,
+    #     samples_no_subhalo=result_1.samples,
+    # )
+
+    # fit_imaging_detect = analysis.fit_imaging_via_instance_from(
+    #     instance=subhalo_result.best_samples.max_log_likelihood_sample,
+    # )
+    #
+    # subhalo_plotter = al.subhalo.SubhaloPlotter(
+    #     subhalo_result=subhalo_result,
+    #     fit_imaging_detect=fit_imaging_detect
+    # )
+
     """
     __Model + Search + Analysis + Model-Fit (Search 3)__
 

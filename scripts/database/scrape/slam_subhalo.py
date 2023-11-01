@@ -202,6 +202,14 @@ subhalo_results = slam.subhalo.detection(
 )
 
 """
+THIS IS FOR RICH:
+"""
+grid_search_result = subhalo_results[1]
+
+print(grid_search_result.attribute_grid("mass_at_200"))
+ddd
+
+"""
 ___Database__
 
 The name of the database, which corresponds to the output results folder.
@@ -245,7 +253,7 @@ The `GridSearchResult` is accessible via the database.
 """
 grid_search_result = list(agg.grid_searches())[0]["result"]
 print(
-    f"****Best result (grid_search_result.best_result)****\n\n {grid_search_result.best_result}\n"
+    f"****Best result (grid_search_result.best_samples)****\n\n {grid_search_result.best_samples}\n"
 )
 print(
     f"****Grid Log Evidences (grid_search_result.log_evidences_native)****\n\n {grid_search_result.log_evidences_native}\n"
@@ -265,19 +273,32 @@ print(
     f"Max LH samples (agg_best_fit.values('samples')[0]) {agg_best_fit.values('samples')[0]}"
 )
 
+assert (
+    agg.grid_searches().best_fits().values("samples")[0].log_likelihood_list[-1] > -1e88
+)
+
+"""
+__Parent__
+"""
+for fit in agg.grid_searches().best_fits():
+
+    print(f"Grid Search Parent (fit.parent): {fit.parent}")
+
+    assert fit.parent is not None
+
 print("\n\n***********************")
 print("**AGG SUBHALO TESTS**")
 print("***********************\n\n")
 
 agg_best_fits = agg.grid_searches().best_fits()
 
-fit_imaging_agg = al.agg.FitImagingAgg(aggregator=agg_best_fits)
-fit_imaging_gen = fit_imaging_agg.max_log_likelihood_gen_from()
+fit_agg = al.agg.FitImagingAgg(aggregator=agg_best_fits)
+fit_gen = fit_agg.max_log_likelihood_gen_from()
 
 info_gen = agg_best_fits.values("info")
 
-for fit_grid, fit_imaging_detect, info in zip(
-    agg.grid_searches(), fit_imaging_gen, info_gen
+for fit_grid, fit_imaging_detect, agg_best, info in zip(
+    agg.grid_searches(), fit_gen, agg.grid_searches().best_fits(), info_gen
 ):
     print(f"Grid Search Result (fit_grid['result']) {fit_grid['result']}")
     grid_search_result = fit_grid["result"]
@@ -287,9 +308,14 @@ for fit_grid, fit_imaging_detect, info in zip(
     )
 
     subhalo_search_result = al.subhalo.SubhaloResult(
-        grid_search_result=grid_search_result,
-        result_no_subhalo=fit_grid.parent
+        grid_search_result_with_subhalo=grid_search_result,
+        fit_agg_no_subhalo=agg_best.parent
     )
+
+    print(f"Subhalo Search Result Fit Imaging Before (subhalo_seatch_result.fit_imaging_before) {subhalo_search_result.fit_imaging_before}.")
+
+    assert isinstance(subhalo_search_result.fit_imaging_before, al.FitImaging)
+    ddd
 
     plot_path = path.join("database", "plot", "slam_subhalo", "likelihood")
 
