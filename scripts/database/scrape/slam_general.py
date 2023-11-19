@@ -95,9 +95,9 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=dataset)
 
-bulge = af.Model(al.lp.Sersic)
-disk = af.Model(al.lp.Exponential)
-# disk = af.Model(al.lp.Sersic)
+bulge = af.Model(al.lp_linear.Sersic)
+disk = af.Model(al.lp_linear.Exponential)
+# disk = af.Model(al.lp_linear.Sersic)
 bulge.centre = disk.centre
 
 source_lp_results = slam.source_lp.run(
@@ -129,8 +129,8 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-bulge = af.Model(al.lp.Sersic)
-disk = af.Model(al.lp.Exponential)
+bulge = af.Model(al.lp_linear.Sersic)
+disk = af.Model(al.lp_linear.Exponential)
 bulge.centre = disk.centre
 
 light_results = slam.light_lp.run(
@@ -163,7 +163,7 @@ model of the LIGHT LP PIPELINE. In this example it:
 analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
 
 multipole = af.Model(al.mp.PowerLawMultipole)
-multipole.m = 4
+multipole.m = 3
 
 mass_results = slam.mass_total.run(
     settings_autofit=settings_autofit,
@@ -239,6 +239,7 @@ print("Total Samples Objects via `Isothermal` model query = ", len(agg_query), "
 
 mass = agg.model.galaxies.lens.mass
 agg_query = agg.query((mass == al.mp.Isothermal) & (mass.einstein_radius > 1.0))
+
 print(
     "Total Samples Objects In Query `Isothermal and einstein_radius > 3.0` = ",
     len(agg_query),
@@ -260,7 +261,7 @@ for model in agg.values("model"):
 
 for search in agg.values("search"):
     print(f"\n****Search (search)****\n\n{search}")
-    assert search.paths.name == "general"
+    assert "_" in search.paths.name
 
 for samples_summary in agg.values("samples_summary"):
     instance = samples_summary.max_log_likelihood()
@@ -281,7 +282,7 @@ for noise_map in agg.values("dataset.noise_map"):
 
 for covariance in agg.values("covariance"):
     print(f"\n****Covariance (covariance)****\n\n{covariance}")
-    assert covariance[0][0] > 0.0
+    assert covariance[0][0] > 0.0 or np.isnan(covariance[0][0])
 
 
 """

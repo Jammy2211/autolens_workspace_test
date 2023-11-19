@@ -4,14 +4,15 @@ automated lens modeling:
 Files (Advanced)
 ----------------
 
-- ``source_lp.py``: The source pipeline which fits a parametric source model which starts a SLaM pipeline run.
-- ``source_pixelization.py``: The source pipeline which fits a pixelized source reconstruction which follows the SOURCE LP PIPELINE.
+- ``source_lp.py``: The source pipeline which fits a light-profile source model and starts a SLaM pipeline run.
+- ``source_pix.py``: The source pipeline which fits a pixelized source following the he SOURCE LP PIPELINE.
 
-- ``light_parametric.py``: The light pipeline which fits a model to the lens galaxy's light, which follows the source pipeline.
+- ``light_parametric.py``: The (lens) light pipeline which fits a model to the lens galaxy's light, following the SOURCE PIPELINE.
 
-- ``mass_light_dark.py``: The mass pipeline which fits a ``light_dark`` mass model (e.g. separate mass profile for the stellar and dark matter) which follows the Light pipeline.
-- ``mass_total.py``: The mass pipeline which fits a ``total`` mass model (e.g. a single mass profile for the stellar and dark matter) which follows the source or light pipeline.
+- ``mass_total.py``: The mass pipeline which fits a total mass model (e.g. a single mass profile for the stellar and dark matter) following the source or LIGHT PIPELINE.
+- ``mass_light_dark.py``: The mass pipeline which fits a light plus dark mass model (e.g. separate mass profile for the stellar and dark matter) following the LIGHT PIPELINE.
 
-- ``subhalo.py``: The subhalo pipeline which fits a dark matter substructure and follows a mass pipeline.
+Folders (Advanced)
+------------------
 
-- ``slum_util.py``: Utilities used in the SLaM pipelines.
+- ``subhalo``: Extensions to the SLaM pipelines which perform dark matter substructure detection and sensitivity mapping following the MASS PIPELINE.

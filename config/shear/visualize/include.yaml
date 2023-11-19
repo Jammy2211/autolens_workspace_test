@@ -1,0 +1,21 @@
+include_1d:
+  mask: false
+  origin: false
+  einstein_radius: true
+  half_light_radius: true
+include_2d:
+  mask: true
+  origin: false
+  border: true
+  grid: false
+  positions: true
+  tangential_critical_curves: false
+  tangential_caustics: false
+  radial_critical_curves: false
+  radial_caustics: false
+  light_profile_centres: true
+  mass_profile_centres: true
+  multiple_images: true
+  mapper_image_plane_mesh_grid: true
+  mapper_source_plane_data_grid: false
+  mapper_source_plane_mesh_grid: false

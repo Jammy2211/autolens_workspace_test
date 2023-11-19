@@ -192,7 +192,7 @@ For this runner the SUBHALO PIPELINE customizes:
 """
 analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
 
-subhalo_results = slam.subhalo.detection(
+subhalo_results = slam.subhalo.detection.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     mass_results=mass_results,
@@ -255,7 +255,7 @@ for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_ge
     """
     print(grid_search_result.log_likelihoods_native)
 
-    # subhalo_search_result = al.subhalo.SubhaloResult(
+    # subhalo_search_result = al.subhalo.SubhaloGridSearchResult(
     #     grid_search_result=grid_search_result, result_no_subhalo=fit_grid.parent
     # )
     #
@@ -273,9 +273,9 @@ for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_ge
     # subhalo_plotter.subplot_detection_imaging(remove_zeros=True)
     # subhalo_plotter.subplot_detection_fits()
     # subhalo_plotter.set_filename(filename="image_2d")
-    # subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=False)
+    # subhalo_plotter.figure_figures_of_merit_grid(image=True, remove_zeros=False)
     # subhalo_plotter.set_filename(filename="image_2d")
-    # subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=True)
+    # subhalo_plotter.figure_figures_of_merit_grid(image=True, remove_zeros=True)
     #
     # plot_path = path.join("database", "plot", "slam_subhalo", "evidence")
     #
@@ -291,9 +291,9 @@ for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_ge
     # subhalo_plotter.subplot_detection_imaging(remove_zeros=True)
     # subhalo_plotter.subplot_detection_fits()
     # subhalo_plotter.set_filename(filename="image_2d")
-    # subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=False)
+    # subhalo_plotter.figure_figures_of_merit_grid(image=True, remove_zeros=False)
     # subhalo_plotter.set_filename(filename="image_2d")
-    # subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=True)
+    # subhalo_plotter.figure_figures_of_merit_grid(image=True, remove_zeros=True)
     #
     # try:
     #
@@ -311,9 +311,9 @@ for fit_grid, fit_imaging_detect, info in zip(agg_grid, fit_imaging_gen, info_ge
     #     subhalo_plotter.subplot_detection_imaging(remove_zeros=True)
     #     subhalo_plotter.subplot_detection_fits()
     #     subhalo_plotter.set_filename(filename="image_2d")
-    #     subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=False)
+    #     subhalo_plotter.figure_figures_of_merit_grid(image=True, remove_zeros=False)
     #     subhalo_plotter.set_filename(filename="image_2d")
-    #     subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=True)
+    #     subhalo_plotter.figure_figures_of_merit_grid(image=True, remove_zeros=True)
     #
     # except ValueError:
     #

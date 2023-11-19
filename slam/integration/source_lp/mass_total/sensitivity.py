@@ -249,29 +249,14 @@ __SUBHALO PIPELINE (sensitivity mapping)__
 
 The SUBHALO PIPELINE (sensitivity mapping) performs sensitivity mapping of the data using the lens model
 fitted above, so as to determine where subhalos of what mass could be detected in the data. A full description of
-sensitivty mapping if given in the script `sensitivity_mapping.py`.
+Sensitivity mapping if given in the SLaM pipeline script `slam/subhalo/sensitivity_imaging.py`.
 
 Each model-fit performed by sensitivity mapping creates a new instance of an `Analysis` class, which contains the
-data simulated by the `simulate_function` for that model. This requires us to write a wrapper around the 
+data simulated by the `simulate_cls` for that model. This requires us to write a wrapper around the 
 PyAutoLens `AnalysisImaging` class.
 """
-
-
-class AnalysisImagingSensitivity(al.AnalysisImaging):
-    def __init__(self, dataset):
-        # TODO : PRELOADS, need to make sure w_tilde isnt repeated over and over.
-
-        super().__init__(dataset=dataset)
-
-        self.adapt_galaxy_image_path_dict = (
-            mass_results.last.adapt_galaxy_image_path_dict
-        )
-        self.adapt_model_image = mass_results.last.adapt_model_image
-
-
-subhalo_results = slam.subhalo.sensitivity_mapping_imaging(
+subhalo_results = slam.subhalo.sensitivity_imaging.run(
     settings_autofit=settings_autofit,
-    analysis_cls=AnalysisImagingSensitivity,
     mask=mask,
     psf=dataset.psf,
     mass_results=mass_results,

@@ -218,21 +218,8 @@ For this runner the SUBHALO PIPELINE customizes:
  - The `number_of_cores` used for the gridsearch, where `number_of_cores > 1` performs the model-fits in paralle using
  the Python multiprocessing module.
 """
-
-
-class AnalysisImagingSensitivity(al.AnalysisImaging):
-    def __init__(self, dataset):
-        super().__init__(dataset=dataset)
-
-        self.adapt_galaxy_image_path_dict = (
-            mass_results.last.adapt_galaxy_image_path_dict
-        )
-        self.adapt_model_image = mass_results.last.adapt_model_image
-
-
 subhalo_results = slam.subhalo.sensitivity_mapping(
-    path_prefix=path_prefix,
-    analysis_cls=AnalysisImagingSensitivity,
+    path_prefix=path_prefix,subhalo.sensitivity_imaging.run(
     mask=mask,
     psf=dataset.psf,
     mass_results=mass_results,

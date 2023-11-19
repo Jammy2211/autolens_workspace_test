@@ -51,6 +51,7 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_autofit = af.SettingsSearch(
     path_prefix=path.join("database", "scrape", "slam_subhalo"),
+    unique_tag=dataset_name,
     number_of_cores=1,
     session=None,
 )
@@ -192,7 +193,7 @@ For this runner the SUBHALO PIPELINE customizes:
 """
 analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
 
-subhalo_results = slam.subhalo.detection(
+subhalo_results = slam.subhalo.detection.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     mass_results=mass_results,
@@ -200,14 +201,6 @@ subhalo_results = slam.subhalo.detection(
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
 )
-
-"""
-THIS IS FOR RICH:
-"""
-grid_search_result = subhalo_results[1]
-
-print(grid_search_result.attribute_grid("mass_at_200"))
-ddd
 
 """
 ___Database__
@@ -236,6 +229,7 @@ Add all results in the directory "output/slacs" to the database, which we manipu
 Avoid rerunning this once the file `slacs.sqlite` has been built.
 """
 agg.add_directory(directory=path.join("output", "database", "scrape", "slam_subhalo"))
+
 print("\n\n***********************")
 print("**GRID RESULTS TESTING**")
 print("***********************\n\n")
@@ -256,7 +250,7 @@ print(
     f"****Best result (grid_search_result.best_samples)****\n\n {grid_search_result.best_samples}\n"
 )
 print(
-    f"****Grid Log Evidences (grid_search_result.log_evidences_native)****\n\n {grid_search_result.log_evidences_native}\n"
+    f"****Grid Log Evidences (grid_search_result.log_evidences().native)****\n\n {grid_search_result.log_evidences().native}\n"
 )
 
 """
@@ -265,12 +259,11 @@ From the GridSearch, get an aggregator which contains only the maximum log likel
 """
 print("\n\n****MAX LH AGGREGATOR VIA GRID****\n\n")
 
-agg_best_fit = agg.grid_searches().best_fits()
 print(
-    f"Max LH Gaussian sigma (agg_best_fit.values('instance')[0].gaussian.sigma) {agg_best_fit.values('instance')[0]}\n"
+    f"Max LH Instance (agg_best_fit.values('instance')[0]) {agg.grid_searches().best_fits().values('instance')[0]}\n"
 )
 print(
-    f"Max LH samples (agg_best_fit.values('samples')[0]) {agg_best_fit.values('samples')[0]}"
+    f"Max LH samples (agg_best_fit.values('samples')[0]) {agg.grid_searches().best_fits().values('samples')[0]}"
 )
 
 assert (
@@ -278,77 +271,73 @@ assert (
 )
 
 """
-__Parent__
+__Subhalo__
 """
-for fit in agg.grid_searches().best_fits():
+agg_subhalo = agg.query(agg.search.unique_tag == dataset_name)
 
-    print(f"Grid Search Parent (fit.parent): {fit.parent}")
+agg_no_subhalo = agg.query(agg_subhalo.search.name == "subhalo[1]_mass[total_refine]")
+agg_subhalo_grid = agg.grid_searches()
+agg_subhalo_grid_best_fit = agg_subhalo_grid.best_fits()
+agg_with_subhalo = agg.query(
+    agg_subhalo.search.name == "subhalo[3]_subhalo[single_plane_refine]"
+)
 
-    assert fit.parent is not None
 
 print("\n\n***********************")
 print("**AGG SUBHALO TESTS**")
 print("***********************\n\n")
 
-agg_best_fits = agg.grid_searches().best_fits()
+fit_no_subhalo_agg = al.agg.FitImagingAgg(aggregator=agg_no_subhalo)
+fit_no_subhalo_gen = fit_no_subhalo_agg.max_log_likelihood_gen_from()
+fit_no_subhalo = list(fit_no_subhalo_gen)[0]
 
-fit_agg = al.agg.FitImagingAgg(aggregator=agg_best_fits)
-fit_gen = fit_agg.max_log_likelihood_gen_from()
+fit_subhalo_grid_best_fit_agg = al.agg.FitImagingAgg(
+    aggregator=agg_subhalo_grid_best_fit
+)
+fit_subhalo_grid_best_fit_gen = (
+    fit_subhalo_grid_best_fit_agg.max_log_likelihood_gen_from()
+)
+fit_subhalo_grid_best_fit = list(fit_subhalo_grid_best_fit_gen)[0]
 
-info_gen = agg_best_fits.values("info")
+fit_with_subhalo_agg = al.agg.FitImagingAgg(aggregator=agg_with_subhalo)
+fit_with_subhalo_gen = fit_with_subhalo_agg.max_log_likelihood_gen_from()
+fit_with_subhalo = list(fit_with_subhalo_gen)[0]
 
-for fit_grid, fit_imaging_detect, agg_best, info in zip(
-    agg.grid_searches(), fit_gen, agg.grid_searches().best_fits(), info_gen
-):
-    print(f"Grid Search Result (fit_grid['result']) {fit_grid['result']}")
-    grid_search_result = fit_grid["result"]
+info = list(agg_subhalo_grid_best_fit.values("info"))[0]
 
-    print(
-        f"Grid Search Log Likelihoods (fit_grid['result'].log_likelihoods_native) {grid_search_result.log_likelihoods_native}"
-    )
+grid_search_result = list(agg_subhalo_grid)[0]["result"]
 
-    subhalo_search_result = al.subhalo.SubhaloResult(
-        grid_search_result_with_subhalo=grid_search_result,
-        fit_agg_no_subhalo=agg_best.parent
-    )
+result_subhalo_grid_search = al.subhalo.SubhaloGridSearchResult(
+    result_subhalo_grid_search=grid_search_result,
+)
 
-    print(f"Subhalo Search Result Fit Imaging Before (subhalo_seatch_result.fit_imaging_before) {subhalo_search_result.fit_imaging_before}.")
+fit_imaging_with_subhalo = analysis.fit_imaging_via_instance_from(
+    instance=result_subhalo_grid_search.best_samples.max_log_likelihood(),
+)
 
-    assert isinstance(subhalo_search_result.fit_imaging_before, al.FitImaging)
-    ddd
+output = aplt.Output(
+    path=result_subhalo_grid_search.search.paths.output_path, format="png"
+)
 
-    plot_path = path.join("database", "plot", "slam_subhalo", "likelihood")
+mat_plot = aplt.MatPlot2D(
+    output=output,
+)
 
-    mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=plot_path, format="png"))
+subhalo_plotter = al.subhalo.SubhaloPlotter(
+    result_subhalo_grid_search=result_subhalo_grid_search,
+    fit_imaging_no_subhalo=fit_no_subhalo,
+    fit_imaging_with_subhalo=fit_imaging_with_subhalo,
+    mat_plot_2d=mat_plot,
+)
 
-    print(f"\n\n**** SUBHALO VISUALIZATION ****\n\n")
+samples_no_subhalo = list(agg_no_subhalo.values("samples"))[0]
 
-    subhalo_plotter = al.subhalo.SubhaloPlotter(
-        subhalo_result=subhalo_search_result,
-        fit_imaging_detect=fit_imaging_detect[0],
-        use_log_evidences=False,
-        mat_plot_2d=mat_plot_2d,
-    )
-    subhalo_plotter.subplot_detection_imaging(remove_zeros=True)
-    subhalo_plotter.subplot_detection_fits()
-    subhalo_plotter.set_filename(filename="image_2d")
-    subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=False)
-    subhalo_plotter.set_filename(filename="image_2d")
-    subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=True)
+subhalo_plotter.figure_figures_of_merit_grid(
+    use_log_evidences=True,
+    relative_to_value=samples_no_subhalo.log_evidence,
+    remove_zeros=True,
+)
 
-    plot_path = path.join("database", "plot", "slam_subhalo", "evidence")
-
-    mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=plot_path, format="png"))
-
-    subhalo_plotter = al.subhalo.SubhaloPlotter(
-        subhalo_result=subhalo_search_result,
-        fit_imaging_detect=fit_imaging_detect[0],
-        use_log_evidences=True,
-        mat_plot_2d=mat_plot_2d,
-    )
-    subhalo_plotter.subplot_detection_imaging(remove_zeros=True)
-    subhalo_plotter.subplot_detection_fits()
-    subhalo_plotter.set_filename(filename="image_2d")
-    subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=False)
-    subhalo_plotter.set_filename(filename="image_2d")
-    subhalo_plotter.figure_with_detection_overlay(image=True, remove_zeros=True)
+subhalo_plotter.figure_mass_grid()
+subhalo_plotter.subplot_detection_imaging()
+subhalo_plotter.subplot_detection_fits()

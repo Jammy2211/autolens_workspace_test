@@ -180,7 +180,7 @@ For this runner the SUBHALO PIPELINE customizes:
 """
 analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
 
-subhalo_results = slam.subhalo.detection(
+subhalo_results = slam.subhalo.detection.run(
     settings_autofit=settings_autofit,
     analysis=analysis,
     mass_results=mass_results,
