@@ -145,10 +145,10 @@ source_lp_results = slam.source_lp.run(
 __SOURCE PIX PIPELINE (no lens light)__
 
 The SOURCE PIX PIPELINE (no lens light) uses four searches to initialize a robust model for the `Inversion` that
-reconstructs the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` 
+reconstructs the source galaxy's light. It begins by fitting a `Voronoi` pixelization with `Constant` 
 regularization, to set up the model and hyper images, and then:
 
- - Uses a `VoronoiBrightnessImage` pixelization.
+ - Uses a `Voronoi` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
@@ -168,11 +168,12 @@ analysis = al.AnalysisInterferometer(
 )
 
 source_pix_results = slam.source_pix.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     setup_adapt=setup_adapt,
     source_lp_results=source_lp_results,
-    mesh=al.mesh.VoronoiBrightnessImage,
+    image_mesh=al.image_mesh.Hilbert,
+    mesh=al.mesh.Voronoi,
     regularization=al.reg.AdaptiveBrightness,
 )
 
@@ -194,7 +195,7 @@ analysis = al.AnalysisInterferometer(
 )
 
 mass_results = slam.mass_total.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     setup_adapt=setup_adapt,
     source_results=source_pix_results,
@@ -218,8 +219,8 @@ class AnalysisInterferometerSensitivity(al.AnalysisInterferometer):
     def __init__(self, dataset):
         super().__init__(dataset=dataset)
 
-        self.adapt_galaxy_image_path_dict = (
-            mass_results.last.adapt_galaxy_image_path_dict
+        self.adapt_galaxy_name_image_dict = (
+            mass_results.last.adapt_galaxy_name_image_dict
         )
         self.adapt_model_image = mass_results.last.adapt_model_image
 

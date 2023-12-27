@@ -6,7 +6,7 @@ from typing import Callable, Union, Optional, Tuple
 
 
 def run(
-    settings_autofit: af.SettingsSearch,
+    settings_search: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     lens_bulge: Optional[af.Model] = af.Model(al.lp.Sersic),
     lens_disk: Optional[af.Model] = af.Model(al.lp.Exponential),
@@ -96,12 +96,12 @@ def run(
 
     search_1 = af.Nautilus(
         name="source_lp[1]_light[lp]_mass[total]_source[lp]",
-        **settings_autofit.search_dict,
+        **settings_search.search_dict,
         n_live=200,
     )
 
     result_1 = search_1.fit(
-        model=model_1, analysis=analysis, **settings_autofit.fit_dict
+        model=model_1, analysis=analysis, **settings_search.fit_dict
     )
 
     return af.ResultsCollection([result_1])

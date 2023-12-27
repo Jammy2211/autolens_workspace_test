@@ -1,7 +1,7 @@
 """
-__PROFILING: Inversion VoronoiMagnification__
+__PROFILING: Inversion Voronoi__
 
-This profiling script times how long it takes to fit `Imaging` data with a `VoronoiMagnification` pixelization for
+This profiling script times how long it takes to fit `Imaging` data with a `Voronoi` pixelization for
 datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.
@@ -89,14 +89,16 @@ lens_galaxy = al.Galaxy(
 )
 
 """
-The source galaxy whose `VoronoiMagnification` `Pixelization` fits the data.
+The source galaxy whose `Voronoi` `Pixelization` fits the data.
 """
-mesh = al.mesh.VoronoiMagnification(shape=mesh_shape_2d)
+image_mesh = al.image_mesh.Overlay(shape=mesh_shape_2d)
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
     pixelization=al.Pixelization(
-        mesh=mesh, regularization=al.reg.Constant(coefficient=1.0)
+        image_mesh=image_mesh,
+        mesh=al.mesh.Voronoi,
+        regularization=al.reg.Constant(coefficient=1.0),
     ),
 )
 

@@ -1,7 +1,7 @@
 """
-__PROFILING: Inversion VoronoiNNBrightnessImage__
+__PROFILING: Inversion VoronoiNN__
 
-This profiling script times how long it takes to fit `Imaging` data with a `VoronoiNNBrightnessImage` pixelization for
+This profiling script times how long it takes to fit `Imaging` data with a `VoronoiNN` pixelization for
 datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.
@@ -155,9 +155,10 @@ The source galaxy whose `VoronoiNNBrightness` `Pixelization` fits the data.
 
 
 pixelization = al.Pixelization(
-    mesh=al.mesh.VoronoiNNBrightnessImage(
+    image_mesh=al.image_mesh.Hilbert(
         pixels=pixels, weight_floor=0.3, weight_power=15.0
     ),
+    mesh=al.mesh.VoronoiNN(),
     regularization=al.reg.AdaptiveBrightnessSplit(
         inner_coefficient=0.001, outer_coefficient=100.0, signal_scale=0.05
     ),
@@ -243,7 +244,7 @@ run_time_dict = {}
 
 """
 We now start of the profiling timer and iterate through every step of the fitting strong lens data with 
-a `VoronoiNNBrightnessImage` pixelization. We provide a description of every step to give an overview of what is the reason
+a `VoronoiNN` pixelization. We provide a description of every step to give an overview of what is the reason
 for its run time.
 """
 start_overall = time.time()
@@ -332,13 +333,13 @@ the profiling time below.
 weight_map = source_galaxy.pixelization.mesh.weight_map_from(
     hyper_data=source_galaxy.adapt_galaxy_image
 )
-sparse_image_plane_grid = al.Grid2DSparse.from_total_pixels_grid_and_weight_map(
+image_plane_mesh_grid = al.Grid2DSparse.from_total_pixels_grid_and_weight_map(
     total_pixels=pixels, grid=masked_dataset.grid, weight_map=weight_map
 )
 
 start = time.time()
 for i in range(repeats):
-    tracer.deflections_yx_2d_from(grid=sparse_image_plane_grid)
+    tracer.deflections_yx_2d_from(grid=image_plane_mesh_grid)
     traced_grid = tracer.traced_grid_2d_list_from(grid=masked_dataset.grid)[-1]
 
 run_time_dict["Ray Tracing (SIE)"] = (time.time() - start) / repeats
@@ -350,7 +351,7 @@ Compute the deflection angles again, but now using the more expensive `PowerLaw`
 """
 start = time.time()
 for i in range(repeats):
-    tracer.deflections_yx_2d_from(grid=sparse_image_plane_grid)
+    tracer.deflections_yx_2d_from(grid=image_plane_mesh_grid)
     traced_grid_power_law = tracer_power_law.traced_grid_2d_list_from(
         grid=masked_dataset.grid
     )[-1]
@@ -365,7 +366,7 @@ two `Sersic`'s and an `NFW`.
 """
 start = time.time()
 for i in range(repeats):
-    tracer.deflections_yx_2d_from(grid=sparse_image_plane_grid)
+    tracer.deflections_yx_2d_from(grid=image_plane_mesh_grid)
     traced_grid_decomposed = tracer_decomposed.traced_grid_2d_list_from(
         grid=masked_dataset.grid
     )[-1]
@@ -378,7 +379,7 @@ __Image-Plane Weight Map__
 To determine the image-plane pixelization a weight KMeans algorithm will be called. This requires a weight map, 
 which the code computes below using the adapt_galaxy_image of the source galaxy.
 
-Checkout the functions `VoronoiNNBrightnessImage.weight_map_from`
+Checkout the functions `VoronoiNN.weight_map_from`
 
 https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/pixelizations.py
 """
@@ -393,7 +394,7 @@ run_time_dict["Image-plane Weight-Map"] = (time.time() - start) / repeats
 """
 __Image-plane Pixelization (KMeans)__
 
-The `VoronoiNNBrightnessImage` begins by determining what will become its the source-pixel centres by calculating them 
+The `VoronoiNN` begins by determining what will become its the source-pixel centres by calculating them 
 in the image-plane. 
 
 This calculation is performed by using a weight KMeans clustering algorithm:
@@ -406,13 +407,13 @@ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/structures/grids/gr
 """
 start = time.time()
 for i in range(repeats):
-    sparse_image_plane_grid = al.Grid2DSparse.from_total_pixels_grid_and_weight_map(
+    image_plane_mesh_grid = al.Grid2DSparse.from_total_pixels_grid_and_weight_map(
         total_pixels=pixels, grid=masked_dataset.grid, weight_map=weight_map
     )
 
 run_time_dict["Image-plane Pixelization (KMeans)"] = (time.time() - start) / repeats
 
-traced_sparse_grid = tracer.traced_sparse_grid_pg_list(grid=masked_dataset.grid)[-1]
+traced_mesh_grid = tracer.traced_mesh_grid_pg_list(grid=masked_dataset.grid)[-1]
 
 """
 __Border Relocation__
@@ -442,7 +443,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/structures/grids/tw
 start = time.time()
 for i in range(repeats):
     relocated_pixelization_grid = traced_grid.relocated_mesh_grid_from(
-        pixelization_grid=traced_sparse_grid
+        pixelization_grid=traced_mesh_grid
     )
 run_time_dict["Border Relocation Pixelization"] = (time.time() - start) / repeats
 
@@ -463,7 +464,7 @@ start = time.time()
 for i in range(repeats):
     grid_VoronoiNN = al.Mesh2DVoronoiNN(
         grid=relocated_pixelization_grid,
-        nearest_pixelization_index_for_slim_index=sparse_image_plane_grid.sparse_index_for_slim_index,
+        nearest_pixelization_index_for_slim_index=image_plane_mesh_grid.sparse_index_for_slim_index,
     )
 run_time_dict["VoronoiNN Mesh"] = (time.time() - start) / repeats
 
@@ -482,7 +483,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/util/mapper_util.py
 mapper = mappers.MapperVoronoi(
     source_plane_data_grid=relocated_grid,
     source_plane_mesh_grid=grid_VoronoiNN,
-    data_pixelization_grid=sparse_image_plane_grid,
+    data_pixelization_grid=image_plane_mesh_grid,
     hyper_data=source_galaxy.adapt_galaxy_image,
 )
 

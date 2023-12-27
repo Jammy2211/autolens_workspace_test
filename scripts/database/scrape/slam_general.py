@@ -5,6 +5,8 @@ Database: Model-Fit
 This is a simple example of a model-fit which we wish to write to the database. This should simply output the
 results to the `.sqlite` database file.
 """
+import pytest
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())
@@ -50,7 +52,7 @@ __Settings AutoFit__
 
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
-settings_autofit = af.SettingsSearch(
+settings_search = af.SettingsSearch(
     path_prefix=path.join("database", "scrape", "slam_general"),
     number_of_cores=1,
     session=None,
@@ -101,7 +103,7 @@ disk = af.Model(al.lp_linear.Exponential)
 bulge.centre = disk.centre
 
 source_lp_results = slam.source_lp.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     lens_bulge=bulge,
     lens_disk=disk,
@@ -129,17 +131,55 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-bulge = af.Model(al.lp_linear.Sersic)
-disk = af.Model(al.lp_linear.Exponential)
-bulge.centre = disk.centre
+total_gaussians = 30
+gaussian_per_basis = 2
+
+# The sigma values of the Gaussians will be fixed to values spanning 0.01 to the mask radius, 3.0".
+mask_radius = 3.0
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
+
+# By defining the centre here, it creates two free parameters that are assigned below to all Gaussians.
+
+centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+
+bulge_gaussian_list = []
+
+for j in range(gaussian_per_basis):
+    # A list of Gaussian model components whose parameters are customized belows.
+
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
+
+    # Iterate over every Gaussian and customize its parameters.
+
+    for i, gaussian in enumerate(gaussian_list):
+        gaussian.centre.centre_0 = centre_0  # All Gaussians have same y centre.
+        gaussian.centre.centre_1 = centre_1  # All Gaussians have same x centre.
+        gaussian.ell_comps = gaussian_list[
+            0
+        ].ell_comps  # All Gaussians have same elliptical components.
+        gaussian.sigma = (
+            10 ** log10_sigma_list[i]
+        )  # All Gaussian sigmas are fixed to values above.
+
+    bulge_gaussian_list += gaussian_list
+
+# The Basis object groups many light profiles together into a single model component.
+
+bulge = af.Model(
+    al.lp_basis.Basis,
+    light_profile_list=bulge_gaussian_list,
+)
 
 light_results = slam.light_lp.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     setup_adapt=setup_adapt,
     source_results=source_lp_results,
     lens_bulge=bulge,
-    lens_disk=disk,
+    lens_disk=None,
 )
 
 """
@@ -160,13 +200,15 @@ model of the LIGHT LP PIPELINE. In this example it:
  
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
+analysis = al.AnalysisImaging(
+    dataset=dataset, adapt_images=source_lp_results.last.adapt_images
+)
 
 multipole = af.Model(al.mp.PowerLawMultipole)
 multipole.m = 3
 
 mass_results = slam.mass_total.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     setup_adapt=setup_adapt,
     source_results=source_lp_results,
@@ -292,6 +334,8 @@ print("\n\n***********************")
 print("***AGG MODULE TESTING***")
 print("***********************\n\n")
 
+agg = agg.query(agg.search.name == "mass_total[1]_light[lp]_mass[total]_source")
+
 tracer_agg = al.agg.TracerAgg(aggregator=agg)
 tracer_gen = tracer_agg.max_log_likelihood_gen_from()
 
@@ -301,8 +345,12 @@ for tracer_list in tracer_gen:
     # Only one `Analysis` so take first and only tracer.
     tracer = tracer_list[0]
 
-    tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
-    tracer_plotter.figures_2d(convergence=True, potential=True)
+    try:
+        tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
+        tracer_plotter.figures_2d(convergence=True, potential=True)
+
+    except al.exc.ProfileException:
+        print("TracerAgg with linear light profiles raises correct ProfileException")
 
     assert tracer.galaxies[0].mass.einstein_radius > 0.0
 
@@ -324,7 +372,7 @@ for dataset_list in imaging_gen:
 fit_agg = al.agg.FitImagingAgg(
     aggregator=agg,
     settings_dataset=al.SettingsImaging(sub_size=4),
-    settings_pixelization=al.SettingsPixelization(use_border=False),
+    settings_inversion=al.SettingsInversion(relocate_pix_border=False),
 )
 fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
 
@@ -337,3 +385,12 @@ for fit_list in fit_imaging_gen:
     assert fit.tracer.galaxies[0].mass.einstein_radius > 0.0
 
     print("FitImagingAgg Checked")
+
+fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
+
+for fit_list in fit_imaging_gen:
+    fit = fit_list[0]
+
+    assert fit.adapt_images.model_image is not None
+
+    print("FitImagingAgg Adapt Images Checked")

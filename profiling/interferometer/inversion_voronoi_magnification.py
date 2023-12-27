@@ -1,5 +1,5 @@
 """
-__PROFILING: Interferometer Voronoi Magnification Fit__
+__PROFILING: Interferometer Voronoi Fit__
 
 This profiling script times how long an `Inversion` takes to fit `Interferometer` data.
 """
@@ -77,14 +77,16 @@ lens_galaxy = al.Galaxy(
 )
 
 """
-The source galaxy whose `VoronoiMagnification` `Pixelization` fits the data.
+The source galaxy whose `Voronoi` `Pixelization` fits the data.
 """
-mesh = al.mesh.VoronoiMagnification(shape=mesh_shape_2d)
+image_mesh = al.image_mesh.Overlay(shape=mesh_shape_2d)
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
     pixelization=al.Pixelization(
-        mesh=mesh, regularization=al.reg.Constant(coefficient=1.0)
+        image_mesh=image_mesh,
+        mesh=al.mesh.Voronoi,
+        regularization=al.reg.Constant(coefficient=1.0),
     ),
 )
 

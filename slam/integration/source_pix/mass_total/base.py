@@ -79,11 +79,9 @@ def fit():
     
     The settings of autofit, which controls the output paths, parallelization, database use, etc.
     """
-    settings_autofit = af.SettingsSearch(
-        path_prefix=path.join(
-            "slam_nautilus", "source_pix", "mass_total", "base_future"
-        ),
-        number_of_cores=4,
+    settings_search = af.SettingsSearch(
+        path_prefix=path.join("slam_nautilus", "source_pix", "mass_total", "base"),
+        number_of_cores=1,
         session=None,
     )
 
@@ -130,7 +128,7 @@ def fit():
     bulge.centre = disk.centre
 
     source_lp_results = slam.source_lp.run(
-        settings_autofit=settings_autofit,
+        settings_search=settings_search,
         analysis=analysis,
         lens_bulge=bulge,
         lens_disk=disk,
@@ -146,22 +144,26 @@ def fit():
     __SOURCE PIX PIPELINE (with lens light)__
     
     The SOURCE PIX PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
-    that reconstructs the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` 
+    that reconstructs the source galaxy's light. It begins by fitting a `Voronoi` pixelization with `Constant` 
     regularization, to set up the model and hyper images, and then:
     
-     - Uses a `VoronoiBrightnessImage` pixelization.
+     - Uses a `Voronoi` pixelization.
      - Uses an `AdaptiveBrightness` regularization.
      - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
      SOURCE PIX PIPELINE.
     """
-    analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
+    analysis = al.AnalysisImaging(
+        dataset=dataset, adapt_images=source_lp_results.last.adapt_images
+    )
 
     source_pix_results = slam.source_pix.run(
-        settings_autofit=settings_autofit,
+        settings_search=settings_search,
         analysis=analysis,
         setup_adapt=setup_adapt,
         source_lp_results=source_lp_results,
-        mesh=al.mesh.VoronoiNNSNRImage,
+        image_mesh=al.image_mesh.Hilbert,
+        mesh_init=al.mesh.VoronoiNN,
+        mesh=al.mesh.VoronoiNN,
         regularization=al.reg.AdaptiveBrightness,
     )
 
@@ -186,10 +188,12 @@ def fit():
     disk = af.Model(al.lp.Exponential)
     bulge.centre = disk.centre
 
-    analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_pix_results.last)
+    analysis = al.AnalysisImaging(
+        dataset=dataset, adapt_images=source_pix_results.last.adapt_images
+    )
 
     light_results = slam.light_lp.run(
-        settings_autofit=settings_autofit,
+        settings_search=settings_search,
         analysis=analysis,
         setup_adapt=setup_adapt,
         source_results=source_pix_results,
@@ -215,10 +219,12 @@ def fit():
      
      - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
     """
-    analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_pix_results.last)
+    analysis = al.AnalysisImaging(
+        dataset=dataset, adapt_images=source_pix_results.last.adapt_images
+    )
 
     mass_results = slam.mass_total.run(
-        settings_autofit=settings_autofit,
+        settings_search=settings_search,
         analysis=analysis,
         setup_adapt=setup_adapt,
         source_results=source_pix_results,
@@ -242,10 +248,12 @@ def fit():
      - The `number_of_cores` used for the gridsearch, where `number_of_cores > 1` performs the model-fits in paralle using
      the Python multiprocessing module.
     """
-    analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_pix_results.last)
+    analysis = al.AnalysisImaging(
+        dataset=dataset, adapt_images=source_pix_results.last.adapt_images
+    )
 
     subhalo_results = slam.subhalo.detection.run(
-        settings_autofit=settings_autofit,
+        settings_search=settings_search,
         analysis=analysis,
         mass_results=mass_results,
         subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),

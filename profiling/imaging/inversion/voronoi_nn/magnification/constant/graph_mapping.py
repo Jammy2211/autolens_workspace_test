@@ -67,7 +67,9 @@ def bar_deflection_profiles(
     plt.legend(handles, labels, fontsize=20)
 
     if "hst" in filename:
-        title = f"VoronoiNN Magnification Inversion Mapping HST (total time = {np.round(fit_time, 2)})"
+        title = (
+            f"VoronoiNN Inversion Mapping HST (total time = {np.round(fit_time, 2)})"
+        )
 
     plt.yticks(fontsize=16)
     plt.xticks([0.0, 1.0, 2.0, 3.0], fontsize=20)
@@ -85,14 +87,14 @@ def bar_deflection_profiles(
 
 
 """
-Load the `Inversion` profiling run times of the `VoronoiNNMagnification` pixelization.
+Load the `Inversion` profiling run times of the `VoronoiNN` pixelization.
 """
 file_path = path.join(times_path, "hst_run_time_dict.json")
 with open(file_path, "r") as f:
     profiles_dict = json.load(f)
 
 """
-Load the total run time of the `VoronoiNNMagnification` pixelization.
+Load the total run time of the `VoronoiNN` pixelization.
 """
 file_path = path.join(times_path, "hst_fit_time.json")
 with open(file_path, "r") as f:
@@ -100,7 +102,7 @@ with open(file_path, "r") as f:
 
 
 """
-Load the `info_dict` of the `VoronoiNNMagnification` pixelization run.
+Load the `info_dict` of the `VoronoiNN` pixelization run.
 """
 file_path = path.join(times_path, "hst_info.json")
 with open(file_path, "r") as f:

@@ -6,7 +6,7 @@ from typing import Union, Optional
 
 
 def run(
-    settings_autofit: af.SettingsSearch,
+    settings_search: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_adapt: al.SetupAdapt,
     source_results: af.ResultsCollection,
@@ -21,7 +21,7 @@ def run(
 
     Parameters
     ----------
-    settings_autofit
+    settings_search
         A collection of settings that control the behaviour of PyAutoFit thoughout the pipeline (e.g. paths, database,
         parallelization, etc.).
     analysis
@@ -57,9 +57,13 @@ def run(
     SOURCE PIPELINE as the mass and source models were not properly initialized.
     """
 
-    source = al.util.chaining.source_custom_model_from(
-        result=source_results.last, source_is_model=False
-    )
+    # source = al.util.chaining.source_custom_model_from(
+    #     result=source_results.last, source_is_model=False
+    # )
+
+    fit = source_results.last.max_log_likelihood_fit
+
+    source = fit.model_obj_linear_light_profiles_to_light_profiles.galaxies[-1]
 
     model = af.Collection(
         galaxies=af.Collection(
@@ -81,11 +85,11 @@ def run(
 
     search = af.Nautilus(
         name="light[1]_light[lp]",
-        **settings_autofit.search_dict,
+        **settings_search.search_dict,
         n_live=150,
     )
 
-    result_1 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
+    result_1 = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
 
     """
     __Adapt Extension__

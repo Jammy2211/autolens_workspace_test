@@ -9,7 +9,7 @@ import numpy as np
 
 
 def run(
-    settings_autofit: af.SettingsSearch,
+    settings_search: af.SettingsSearch,
     uv_wavelengths: np.ndarray,
     real_space_mask: al.Mask2D,
     mass_results: af.ResultsCollection,
@@ -174,7 +174,7 @@ def run(
     We next specify the search used to perform each model fit by the sensitivity mapper.
     """
     search = af.Nautilus(
-        name="subhalo__sensitivity", **settings_autofit.search_dict, n_live=100
+        name="subhalo__sensitivity", **settings_search.search_dict, n_live=100
     )
 
     """
@@ -213,7 +213,7 @@ def run(
         simulate_cls=simulate_cls,
         analysis_class=analysis_cls,
         number_of_steps=number_of_steps,
-        number_of_cores=settings_autofit.number_of_cores,
+        number_of_cores=settings_search.number_of_cores,
     )
 
     return sensitivity_mapper.run()

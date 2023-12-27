@@ -6,7 +6,7 @@ from typing import Optional, Union
 
 
 def run(
-    settings_autofit: af.SettingsSearch,
+    settings_search: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_adapt: al.SetupAdapt,
     source_results: af.ResultsCollection,
@@ -119,11 +119,11 @@ def run(
 
     search = af.Nautilus(
         name="mass_light_dark[1]_light[lp]_mass[light_dark]_source",
-        **settings_autofit.search_dict,
+        **settings_search.search_dict,
         n_live=150,
     )
 
-    result_1 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
+    result_1 = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
 
     """
     __Adapt Extension__

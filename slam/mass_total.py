@@ -6,7 +6,7 @@ from typing import Union, Optional, Tuple
 
 
 def run(
-    settings_autofit: af.SettingsSearch,
+    settings_search: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     setup_adapt: al.SetupAdapt,
     source_results: af.ResultsCollection,
@@ -61,7 +61,7 @@ def run(
     """
     mass = al.util.chaining.mass_from(
         mass=mass,
-        mass_result=source_results.last.model.galaxies.lens.mass,
+        mass_result=source_results[0].model.galaxies.lens.mass,
         unfix_mass_centre=True,
     )
 
@@ -117,11 +117,11 @@ def run(
 
     search = af.Nautilus(
         name="mass_total[1]_light[lp]_mass[total]_source",
-        **settings_autofit.search_dict,
+        **settings_search.search_dict,
         n_live=150,
     )
 
-    result_1 = search.fit(model=model, analysis=analysis, **settings_autofit.fit_dict)
+    result_1 = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
 
     """
     __Adapt Extension__

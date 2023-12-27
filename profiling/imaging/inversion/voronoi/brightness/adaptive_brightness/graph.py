@@ -88,14 +88,14 @@ def bar_deflection_profiles(
 
 
 """
-Load the `Inversion` profiling run times of the `VoronoiBrightnessImage` pixelization.
+Load the `Inversion` profiling run times of the `Voronoi` pixelization.
 """
 file_path = path.join(times_path, "hst_run_time_dict.json")
 with open(file_path, "r") as f:
     profiles_dict = json.load(f)
 
 """
-Load the total run time of the `VoronoiBrightnessImage` pixelization.
+Load the total run time of the `Voronoi` pixelization.
 """
 file_path = path.join(times_path, "hst_fit_time.json")
 with open(file_path, "r") as f:
@@ -103,7 +103,7 @@ with open(file_path, "r") as f:
 
 
 """
-Load the `info_dict` of the `VoronoiBrightnessImage` pixelization run.
+Load the `info_dict` of the `Voronoi` pixelization run.
 """
 file_path = path.join(times_path, "hst_info.json")
 with open(file_path, "r") as f:

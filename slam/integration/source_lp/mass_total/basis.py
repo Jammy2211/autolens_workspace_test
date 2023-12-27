@@ -80,7 +80,7 @@ __Settings AutoFit__
 
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
-settings_autofit = af.SettingsSearch(
+settings_search = af.SettingsSearch(
     path_prefix=path.join("slam", "source_lp", "mass_total", "basis"),
     number_of_cores=1,
     session=None,
@@ -206,7 +206,7 @@ source_bulge = af.Model(
 
 
 source_lp_results = slam.source_lp.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     lens_bulge=lens_bulge,
     lens_disk=lens_disk,
@@ -235,7 +235,9 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
+analysis = al.AnalysisImaging(
+    dataset=dataset, adapt_images=source_lp_results.last.adapt_images
+)
 
 
 centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
@@ -298,7 +300,7 @@ lens_point = af.Model(
 )
 
 light_results = slam.light_lp.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     setup_adapt=setup_adapt,
     source_results=source_lp_results,
@@ -324,10 +326,12 @@ model of the LIGHT LP PIPELINE. In this example it:
  
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
+analysis = al.AnalysisImaging(
+    dataset=dataset, adapt_images=source_lp_results.last.adapt_images
+)
 
 mass_results = slam.mass_total.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     setup_adapt=setup_adapt,
     source_results=source_lp_results,

@@ -1,7 +1,7 @@
 """
-__PROFILING: Inversion DelaunayMagnification__
+__PROFILING: Inversion Delaunay__
 
-This profiling script times how long it takes to fit `Imaging` data with a `DelaunayMagnification` mesh for
+This profiling script times how long it takes to fit `Imaging` data with a `Delaunay` mesh for
 datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.

@@ -1,7 +1,7 @@
 """
-__PROFILING: Inversion DelaunayMagnification__
+__PROFILING: Inversion Delaunay__
 
-This profiling script times how long it takes to fit `Imaging` data with a `DelaunayMagnification` mesh for
+This profiling script times how long it takes to fit `Imaging` data with a `Delaunay` mesh for
 datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.
@@ -126,16 +126,15 @@ lens_galaxy = al.Galaxy(
 )
 
 """
-The source galaxy whose `DelaunayMagnification` `Pixelization` fits the data.
+The source galaxy whose `Delaunay` `Pixelization` fits the data.
 """
-# mesh = al.mesh.DelaunayMagnification(shape=mesh_shape_2d)
-mesh = al.mesh.VoronoiNNMagnification(shape=mesh_shape_2d)
-
+image_mesh = al.image_mesh.Overlay(shape=mesh_shape_2d)
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
     pixelization=al.Pixelization(
-        mesh=mesh, regularization=al.reg.ConstantSplit(coefficient=1.0)
+        image_mesh=image_mesh,
+        mesh=al.mesh.VoronoiNN(),
     ),
 )
 

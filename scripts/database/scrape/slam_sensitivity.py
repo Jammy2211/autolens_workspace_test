@@ -50,7 +50,7 @@ __Settings AutoFit__
 
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
-settings_autofit = af.SettingsSearch(
+settings_search = af.SettingsSearch(
     path_prefix=path.join("database", "scrape", "slam_sensitivity"),
     number_of_cores=2,
     session=None,
@@ -90,7 +90,7 @@ light, which in this example:
 analysis = al.AnalysisImaging(dataset=dataset)
 
 source_results = slam.source_lp.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     lens_bulge=None,
     lens_disk=None,
@@ -113,7 +113,7 @@ using the lens mass model and source model of the SOURCE PIPELINE to initialize 
 analysis = al.AnalysisImaging(dataset=dataset)
 
 mass_results = slam.mass_total.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     setup_adapt=setup_adapt,
     source_results=source_results,
@@ -133,7 +133,7 @@ data simulated by the `simulate_cls` for that model. This requires us to write a
 PyAutoLens `AnalysisImaging` class.
 """
 subhalo_results = slam.subhalo.sensitivity_imaging.run(
-    settings_autofit=settings_autofit,subhalo.sensitivity_imaging.run(
+    settings_search=settings_search,subhalo.sensitivity_imaging.run(
     mask=mask,
     psf=dataset.psf,
     mass_results=mass_results,

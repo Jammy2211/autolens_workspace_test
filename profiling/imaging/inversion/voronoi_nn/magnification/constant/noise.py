@@ -1,7 +1,7 @@
 """
-__PROFILING: Inversion VoronoiNNMagnification__
+__PROFILING: Inversion VoronoiNN__
 
-This profiling script times how long it takes to fit `Imaging` data with a `VoronoiNNMagnification` pixelization for
+This profiling script times how long it takes to fit `Imaging` data with a `VoronoiNN` pixelization for
 datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.
@@ -68,14 +68,16 @@ lens_galaxy = al.Galaxy(
 )
 
 """
-The source galaxy whose `VoronoiNNMagnification` `Pixelization` fits the data.
+The source galaxy whose `VoronoiNN` `Pixelization` fits the data.
 """
-mesh = al.mesh.VoronoiNNMagnification(shape=mesh_shape_2d)
+image_mesh = al.image_mesh.Overlay(shape=mesh_shape_2d)
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
     pixelization=al.Pixelization(
-        mesh=mesh, regularization=al.reg.Constant(coefficient=1.0)
+        image_mesh=image_mesh,
+        mesh=al.mesh.VoronoiNN(),
+        regularization=al.reg.Constant(coefficient=1.0),
     ),
 )
 
@@ -131,7 +133,7 @@ def func(coefficient):
     fit = al.FitImaging(
         dataset=masked_dataset,
         tracer=tracer,
-        settings_pixelization=al.SettingsPixelization(use_border=True),
+        settings_inversion=al.SettingsInversion(relocate_pix_border=True),
     )
 
     fom = fit.figure_of_merit

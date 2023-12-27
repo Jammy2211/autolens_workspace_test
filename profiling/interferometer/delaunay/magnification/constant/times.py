@@ -1,5 +1,5 @@
 """
-__PROFILING: Interferometer Delaunay Magnification Fit__
+__PROFILING: Interferometer Delaunay Fit__
 
 This profiling script times how long an `Inversion` takes to fit `Interferometer` data.
 """
@@ -72,9 +72,9 @@ lens_galaxy = al.Galaxy(
 )
 
 """
-The source galaxy whose `DelaunayMagnification` `Pixelization` fits the data.
+The source galaxy whose `Delaunay` `Pixelization` fits the data.
 """
-mesh = al.mesh.DelaunayMagnification(shape=mesh_shape_2d)
+mesh = al.mesh.Delaunay(shape=mesh_shape_2d)
 
 pixelization = al.Pixelization(
     mesh=mesh,

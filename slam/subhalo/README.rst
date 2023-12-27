@@ -9,5 +9,6 @@ Files (Advanced)
 
 - ``detection.py``: A subhalo pipeline which performs dark matter subhalo detection via Bayesian model comparison.
 
-- ``sensitivity_imaging.py``: Extends a SLaM pipeline with subhalo sensitivity mapping for imaging data.
+- ``sensitivity_imaging_lp.py``: Extends a SLaM pipeline with subhalo sensitivity mapping for imaging data and light profile source modeling.
+- ``sensitivity_imaging_pix.py``: Extends a SLaM pipeline with subhalo sensitivity mapping for imaging data and pixelized source modeling.
 - ``sensitivity_interferometer.py``: Extends a SLaM pipeline with subhalo sensitivity mapping for interferometer data.

@@ -77,7 +77,7 @@ __Settings AutoFit__
 
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
-settings_autofit = af.SettingsSearch(
+settings_search = af.SettingsSearch(
     path_prefix=path.join(
         "slam",
         "source_pix",
@@ -134,7 +134,7 @@ disk = af.Model(al.lp_linear.Sersic)
 bulge.centre = disk.centre
 
 source_lp_results = slam.source_lp.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     lens_bulge=bulge,
     lens_disk=disk,
@@ -150,10 +150,10 @@ source_lp_results = slam.source_lp.run(
 __SOURCE PIX PIPELINE (with lens light)__
 
 The SOURCE PIX PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
-that reconstructs the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` 
+that reconstructs the source galaxy's light. It begins by fitting a `Voronoi` pixelization with `Constant` 
 regularization, to set up the model and hyper images, and then:
 
- - Uses a `VoronoiBrightnessImage` pixelization.
+ - Uses a `Voronoi` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
@@ -161,11 +161,12 @@ regularization, to set up the model and hyper images, and then:
 analysis = al.AnalysisImaging(dataset=dataset)
 
 source_pix_results = slam.source_pix.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     setup_adapt=setup_adapt,
     source_lp_results=source_lp_results,
-    mesh=al.mesh.VoronoiBrightnessImage,
+    image_mesh=al.image_mesh.Hilbert,
+    mesh=al.mesh.Voronoi,
     regularization=al.reg.AdaptiveBrightness,
 )
 
@@ -192,7 +193,7 @@ disk = af.Model(al.lp_linear.Sersic)
 bulge.centre = disk.centre
 
 light_results = slam.light_lp.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     setup_adapt=setup_adapt,
     source_results=source_pix_results,
@@ -218,7 +219,9 @@ initialize the model priors . In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the MASS 
  LIGHT DARK PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_pix_results.last)
+analysis = al.AnalysisImaging(
+    dataset=dataset, adapt_images=source_pix_results.last.adapt_images
+)
 
 lens_bulge = af.Model(al.lmp.Sersic)
 dark = af.Model(al.mp.NFWMCRLudlow)
@@ -226,7 +229,7 @@ dark = af.Model(al.mp.NFWMCRLudlow)
 dark.centre = lens_bulge.centre
 
 mass_results = slam.mass_light_dark.run__from_light_linear(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     setup_adapt=setup_adapt,
     source_results=source_pix_results,

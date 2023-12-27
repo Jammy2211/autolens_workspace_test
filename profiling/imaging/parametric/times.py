@@ -76,7 +76,7 @@ lens_galaxy = al.Galaxy(
 )
 
 """
-The source galaxy whose `VoronoiMagnification` `Pixelization` fits the data.
+The source galaxy whose `Voronoi` `Pixelization` fits the data.
 """
 source_galaxy = al.Galaxy(
     redshift=1.0,

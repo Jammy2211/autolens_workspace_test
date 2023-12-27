@@ -98,7 +98,8 @@ lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass)
 
 pixelization = af.Model(
     al.Pixelization,
-    mesh=al.mesh.DelaunayMagnification(shape=(30, 30)),
+    image_mesh=al.image_mesh.Overlay(shape=(30, 30)),
+    mesh=al.mesh.Delaunay,
     regularization=al.reg.ConstantSplit,
 )
 
@@ -156,8 +157,7 @@ __Result__
 The `Result` object also contains:
 
  - The model corresponding to the maximum log likelihood solution in parameter space.
- - The corresponding maximum log likelihood `Plane` and `FitImaging` objects.
- - Information on the posterior as estimated by the `Dynesty` non-linear search. 
+ - The corresponding maximum log likelihood `Plane` and `FitImaging` objects.Information on the posterior as estimated by the `Dynesty` non-linear search. 
 """
 print(result.max_log_likelihood_instance)
 

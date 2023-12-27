@@ -75,7 +75,7 @@ __Settings AutoFit__
 
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
-settings_autofit = af.SettingsSearch(
+settings_search = af.SettingsSearch(
     path_prefix=path.join(
         "slam",
         "light_sersic__mass_light_dark__source_lp",
@@ -129,7 +129,7 @@ disk = af.Model(al.lp.Sersic)
 bulge.centre = disk.centre
 
 source_lp_results = slam.source_lp.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     lens_bulge=bulge,
     lens_disk=disk,
@@ -162,7 +162,7 @@ disk = af.Model(al.lp.Sersic)
 bulge.centre = disk.centre
 
 light_results = slam.light_lp.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     setup_adapt=setup_adapt,
     source_results=source_lp_results,
@@ -189,10 +189,10 @@ initialize the model priors . In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the MASS 
  LIGHT DARK PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=dataset, adapt_result=source_lp_results.last)
+analysis = al.AnalysisImaging(dataset=dataset, adapt_images=source_lp_results.last.adapt_images)
 
 mass_results = slam.mass_light_dark.run(
-    settings_autofit=settings_autofit,
+    settings_search=settings_search,
     analysis=analysis,
     setup_adapt=setup_adapt,
     source_results=source_lp_results,
@@ -219,7 +219,7 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 subhalo_results = slam.subhalo.sensitivity_mapping(
-    path_prefix=path_prefix,subhalo.sensitivity_imaging.run(
+    path_prefix=path_prefix,subhalo.sensitivity_imaging_lp.run(
     mask=mask,
     psf=dataset.psf,
     mass_results=mass_results,

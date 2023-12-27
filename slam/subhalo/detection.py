@@ -5,7 +5,7 @@ from typing import Union, Tuple
 
 
 def run(
-    settings_autofit: af.SettingsSearch,
+    settings_search: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     mass_results: af.ResultsCollection,
     subhalo_mass: af.Model = af.Model(al.mp.NFWMCRLudlowSph),
@@ -44,6 +44,7 @@ def run(
     Search 1 of the SUBHALO PIPELINE fits a lens model where:
 
      - The lens galaxy mass is modeled using MASS PIPELINE's mass distribution [Priors initialized from MASS PIPELINE].
+     
      - The source galaxy's light is parametric or a pixelization depending on the previous MASS PIPELINE [Model and 
      priors initialized from MASS PIPELINE].
 
@@ -69,12 +70,12 @@ def run(
 
     search_no_subhalo = af.Nautilus(
         name="subhalo[1]_mass[total_refine]",
-        **settings_autofit.search_dict,
+        **settings_search.search_dict,
         n_live=200,
     )
 
     result_no_subhalo = search_no_subhalo.fit(
-        model=model, analysis=analysis, **settings_autofit.fit_dict
+        model=model, analysis=analysis, **settings_search.fit_dict
     )
 
     """
@@ -84,10 +85,14 @@ def run(
     searches where:
 
      - The lens galaxy mass is modeled using MASS PIPELINE's mass distribution [Priors initialized from MASS PIPELINE].
+     
      - The source galaxy's light is parametric or a pixelization depending on the previous MASS PIPELINE [Model and 
      priors initialized from MASS PIPELINE].
+
      - The subhalo redshift is fixed to that of the lens galaxy.
+
      - Each grid search varies the subhalo (y,x) coordinates and mass as free parameters.
+
      - The priors on these (y,x) coordinates are UniformPriors, with limits corresponding to the grid-cells.
 
     This search aims to detect a dark matter subhalo.
@@ -132,7 +137,7 @@ def run(
 
     search_subhalo_grid = af.Nautilus(
         name=f"subhalo[2]_mass[total]_source_subhalo[{search_tag}]",
-        **settings_autofit.search_dict_x1_core,
+        **settings_search.search_dict_x1_core,
         n_live=150,
         force_x1_cpu=True,  # ensures parallelizing over grid search works.
     )
@@ -140,7 +145,7 @@ def run(
     subhalo_grid_search = af.SearchGridSearch(
         search=search_subhalo_grid,
         number_of_steps=number_of_steps,
-        number_of_cores=settings_autofit.number_of_cores,
+        number_of_cores=settings_search.number_of_cores,
     )
 
     result_subhalo_grid_search = subhalo_grid_search.fit(
@@ -150,8 +155,7 @@ def run(
             model.galaxies.subhalo.mass.centre_1,
             model.galaxies.subhalo.mass.centre_0,
         ],
-        info=settings_autofit.info,
-        parent=search_no_subhalo,
+        info=settings_search.info,
     )
 
     """
@@ -161,10 +165,14 @@ def run(
     the subhalo model is initialized from the highest evidence model of the subhalo grid search.
 
      - The lens galaxy mass is modeled using MASS PIPELINE's mass distribution [Priors initialized from MASS PIPELINE].
+     
      - The source galaxy's light is parametric or a pixelization depending on the previous MASS PIPELINE [Model and 
      priors initialized from MASS PIPELINE].
+
      - The subhalo redshift is fixed to that of the lens galaxy.
+
      - Each grid search varies the subhalo (y,x) coordinates and mass as free parameters.
+
      - The priors on these (y,x) coordinates are UniformPriors, with limits corresponding to the grid-cells.
 
     This search aims to refine the parameter estimates and errors of a dark matter subhalo detected in the grid search
@@ -198,12 +206,12 @@ def run(
 
     search_final_subhalo = af.Nautilus(
         name=f"subhalo[3]_subhalo[{refine_tag}]",
-        **settings_autofit.search_dict,
+        **settings_search.search_dict,
         n_live=1000,
     )
 
     result_with_subhalo = search_final_subhalo.fit(
-        model=model, analysis=analysis, **settings_autofit.fit_dict
+        model=model, analysis=analysis, **settings_search.fit_dict
     )
 
     return af.ResultsCollection(

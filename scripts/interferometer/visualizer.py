@@ -74,7 +74,8 @@ lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass)
 
 pixelization = af.Model(
     al.Pixelization,
-    mesh=al.mesh.DelaunayMagnification(shape=(30, 30)),
+    image_mesh=al.image_mesh.Overlay(shape=(30, 30)),
+    mesh=al.mesh.Delaunay,
     regularization=al.reg.ConstantSplit,
 )
 
