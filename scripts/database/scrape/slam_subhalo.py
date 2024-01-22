@@ -65,17 +65,6 @@ from arc-seconds to kiloparsecs, masses to solar masses, etc.).
 redshift_lens = 0.5
 redshift_source = 1.0
 
-"""
-__Adapt Setup__
-
-The `SetupAdapt` determines which hyper-mode features are used during the model-fit as is used identically to the
-hyper pipeline examples.
-
-The `SetupAdapt` input `hyper_fixed_after_source` fixes the hyper-parameters to the values computed by the hyper 
-extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter values at this point, model comparison 
-of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
-"""
-setup_adapt = al.SetupAdapt(mesh_pixels_fixed=100)
 
 """
 __SOURCE LP PIPELINE (with lens light)__
@@ -94,9 +83,9 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=dataset)
 
-bulge = af.Model(al.lp.Sersic)
-disk = af.Model(al.lp.Exponential)
-# disk = af.Model(al.lp.Sersic)
+bulge = af.Model(al.lp_linear.Sersic)
+disk = af.Model(al.lp_linear.Exponential)
+# disk = af.Model(al.lp_linear.Sersic)
 bulge.centre = disk.centre
 
 source_lp_results = slam.source_lp.run(
@@ -106,7 +95,7 @@ source_lp_results = slam.source_lp.run(
     lens_disk=disk,
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
-    source_bulge=af.Model(al.lp.Sersic),
+    source_bulge=af.Model(al.lp_linear.Sersic),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
 )
@@ -128,14 +117,13 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-bulge = af.Model(al.lp.Sersic)
-disk = af.Model(al.lp.Exponential)
+bulge = af.Model(al.lp_linear.Sersic)
+disk = af.Model(al.lp_linear.Exponential)
 bulge.centre = disk.centre
 
 light_results = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    setup_adapt=setup_adapt,
     source_results=source_lp_results,
     lens_bulge=bulge,
     lens_disk=disk,
@@ -169,7 +157,6 @@ multipole.m = 4
 mass_results = slam.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
-    setup_adapt=setup_adapt,
     source_results=source_lp_results,
     light_results=light_results,
     mass=af.Model(al.mp.PowerLaw),

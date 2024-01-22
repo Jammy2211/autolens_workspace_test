@@ -44,7 +44,7 @@ __Model__
 lens = af.Model(
     al.Galaxy, redshift=0.5, mass=al.mp.Isothermal, shear=al.mp.ExternalShear
 )
-source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.Sersic)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp_linear.Sersic)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 

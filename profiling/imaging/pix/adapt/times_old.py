@@ -27,7 +27,7 @@ The path all profiling results are output.
 """
 profiling_path = path.dirname(path.realpath(__file__))
 
-file_path = os.path.join(profiling_path, "times", al.__version__)
+file_path = os.path.join(profiling_path, "times_mag_const", al.__version__)
 
 """
 Whether w_tilde is used dictates the output folder.
@@ -131,7 +131,7 @@ masked_dataset = masked_dataset.apply_settings(
 )
 
 """
-Generate the hyper-images used to adapt the source pixelization and regularization.
+Generate the adapt-images used to adapt the source pixelization and regularization.
 """
 source_galaxy = al.Galaxy(
     redshift=1.0,
@@ -143,17 +143,12 @@ source_galaxy = al.Galaxy(
         sersic_index=2.5,
     ),
 )
-lens_hyper_data = lens_galaxy.image_2d_from(grid=masked_dataset.grid).binned
-source_hyper_data = source_galaxy.image_2d_from(grid=masked_dataset.grid).binned
-adapt_model_image = lens_hyper_data + source_hyper_data
-lens_galaxy.adapt_galaxy_image = lens_hyper_data
-lens_galaxy.adapt_model_image = adapt_model_image
+lens_adapt_data = lens_galaxy.image_2d_from(grid=masked_dataset.grid).binned
+source_adapt_data = source_galaxy.image_2d_from(grid=masked_dataset.grid).binned
 
 """
 The source galaxy whose `VoronoiNNBrightness` `Pixelization` fits the data.
 """
-
-
 pixelization = al.Pixelization(
     image_mesh=al.image_mesh.Hilbert(
         pixels=pixels, weight_floor=0.3, weight_power=15.0
@@ -167,8 +162,13 @@ pixelization = al.Pixelization(
 source_galaxy = al.Galaxy(
     redshift=1.0,
     pixelization=pixelization,
-    adapt_galaxy_image=source_hyper_data,
-    adapt_model_image=adapt_model_image,
+)
+
+adapt_images = al.AdaptImages(
+    galaxy_image_dict={
+        lens_galaxy: lens_adapt_data,
+        source_galaxy: source_adapt_data,
+    }
 )
 
 """
@@ -228,12 +228,14 @@ https://github.com/Jammy2211/PyAutoLens/blob/main/autolens/fit/fit.py
 """
 tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 
-fit = al.FitImaging(dataset=masked_dataset, tracer=tracer)
+fit = al.FitImaging(dataset=masked_dataset, tracer=tracer, adapt_images=adapt_images)
 fit.log_evidence
 
 start = time.time()
 for i in range(repeats):
-    fit = al.FitImaging(dataset=masked_dataset, tracer=tracer)
+    fit = al.FitImaging(
+        dataset=masked_dataset, tracer=tracer, adapt_images=adapt_images
+    )
     fit.log_evidence
 fit_time = (time.time() - start) / repeats
 
@@ -331,7 +333,7 @@ The image-plane pixelization computed below must be ray-traced just like the ima
 the profiling time below.
 """
 weight_map = source_galaxy.pixelization.mesh.weight_map_from(
-    hyper_data=source_galaxy.adapt_galaxy_image
+    adapt_data=source_galaxy.adapt_galaxy_image
 )
 image_plane_mesh_grid = al.Grid2DSparse.from_total_pixels_grid_and_weight_map(
     total_pixels=pixels, grid=masked_dataset.grid, weight_map=weight_map
@@ -386,7 +388,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/pixelizat
 start = time.time()
 for i in range(repeats):
     weight_map = source_galaxy.pixelization.mesh.weight_map_from(
-        hyper_data=source_galaxy.adapt_galaxy_image
+        adapt_data=source_galaxy.adapt_galaxy_image
     )
 
 run_time_dict["Image-plane Weight-Map"] = (time.time() - start) / repeats
@@ -484,7 +486,7 @@ mapper = mappers.MapperVoronoi(
     source_plane_data_grid=relocated_grid,
     source_plane_mesh_grid=grid_VoronoiNN,
     data_pixelization_grid=image_plane_mesh_grid,
-    hyper_data=source_galaxy.adapt_galaxy_image,
+    adapt_data=source_galaxy.adapt_galaxy_image,
 )
 
 """

@@ -94,20 +94,6 @@ redshift_lens = 0.5
 redshift_source = 1.0
 
 """
-__Adapt Setup__
-
-The `SetupAdapt` determines which hyper-mode features are used during the model-fit as is used identically to the
-hyper pipeline examples.
-
-The `SetupAdapt` input `hyper_fixed_after_source` fixes the hyper-parameters to the values computed by the hyper 
-extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter values at this point, model comparison 
-of different models in the LIGHT PIPELINE and MASS PIPELINE can be performed consistently.
-"""
-setup_adapt = al.SetupAdapt(
-    mesh_pixels_fixed=100,
-)
-
-"""
 __SOURCE LP PIPELINE (with lens light)__
 
 The SOURCE LP PIPELINE (with lens light) uses three searches to initialize a robust model for the 
@@ -161,7 +147,6 @@ analysis = al.AnalysisImaging(
 source_pix_results = slam.source_pix.run(
     settings_search=settings_search,
     analysis=analysis,
-    setup_adapt=setup_adapt,
     source_lp_results=source_lp_results,
     image_mesh=al.image_mesh.Hilbert,
     mesh=al.mesh.VoronoiNN,
@@ -192,7 +177,6 @@ bulge.centre = disk.centre
 light_results = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    setup_adapt=setup_adapt,
     source_results=source_pix_results,
     lens_bulge=bulge,
     lens_disk=disk,
@@ -217,13 +201,12 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_pix_results.last.adapt_images
+    dataset=dataset, adapt_images=source_pix_results[0].adapt_images
 )
 
 mass_results = slam.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
-    setup_adapt=setup_adapt,
     source_results=source_pix_results,
     light_results=light_results,
     mass=af.Model(al.mp.PowerLaw),

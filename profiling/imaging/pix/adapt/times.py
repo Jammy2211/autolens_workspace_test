@@ -1,7 +1,7 @@
 """
-__PROFILING: Inversion Voronoi__
+__PROFILING: Inversion VoronoiNN__
 
-This profiling script times how long it takes to fit `Imaging` data with a `Voronoi` pixelization for
+This profiling script times how long it takes to fit `Imaging` data with a `VoronoiNN` pixelization for
 datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.
@@ -16,11 +16,11 @@ from autoconf import conf
 conf.instance.push(new_path=path.join(cwd, "config", "profiling"))
 
 import time
+import numpy as np
 import json
-
+from autoarray.inversion.pixelization import mappers
 import autolens as al
 import autolens.plot as aplt
-
 
 """
 The path all profiling results are output.
@@ -48,16 +48,18 @@ print()
 """
 These settings control various aspects of how long a fit takes. The values below are default PyAutoLens values.
 """
-sub_size = 4
-mask_radius = 3.5
+sub_size = 1
+mask_radius = 0.5
 psf_shape_2d = (21, 21)
-mesh_shape_2d = (60, 60)
+pixels = 1000
 
+use_positive_only_solver = True
+maxiter = 5000
 
 print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
 print(f"psf shape = {psf_shape_2d}")
-print(f"pixelization shape = {mesh_shape_2d}")
+print(f"pixels = {pixels}")
 
 """
 The lens galaxy used to fit the data, which is identical to the lens galaxy used to simulate the data. 
@@ -85,19 +87,6 @@ lens_galaxy = al.Galaxy(
     shear=al.mp.ExternalShear(gamma_1=0.001, gamma_2=0.001),
 )
 
-"""
-The source galaxy whose `Voronoi` `Pixelization` fits the data.
-"""
-image_mesh = al.image_mesh.Overlay(shape=mesh_shape_2d)
-
-source_galaxy = al.Galaxy(
-    redshift=1.0,
-    pixelization=al.Pixelization(
-        image_mesh=image_mesh,
-        mesh=al.mesh.Voronoi,
-        regularization=al.reg.Constant(coefficient=1.0),
-    ),
-)
 
 """
 The simulated data comes at five resolution corresponding to five telescopes:
@@ -139,19 +128,62 @@ mask = al.Mask2D.circular(
     radius=mask_radius,
 )
 
-# mask = al.Mask2D.circular_annular(
-#     shape_native=dataset.shape_native,
-#     pixel_scales=dataset.pixel_scales,
-#     sub_size=sub_size,
-#     inner_radius=1.5,
-#     outer_radius=2.5,
-# )
-
 masked_dataset = dataset.apply_mask(mask=mask)
-
 masked_dataset = masked_dataset.apply_settings(
     settings=al.SettingsImaging(sub_size=sub_size)
 )
+
+"""
+Generate the adapt-images used to adapt the source pixelization and regularization.
+"""
+source_galaxy = al.Galaxy(
+    redshift=1.0,
+    bulge=al.lp.Sersic(
+        centre=(0.1, 0.1),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=60.0),
+        intensity=0.3,
+        effective_radius=1.0,
+        sersic_index=2.5,
+    ),
+)
+lens_adapt_data = lens_galaxy.image_2d_from(grid=masked_dataset.grid).binned
+tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
+traced_grid = tracer.traced_grid_2d_list_from(grid=masked_dataset.grid)[1]
+source_adapt_data = source_galaxy.image_2d_from(grid=traced_grid).binned
+
+"""
+The source galaxy whose `VoronoiNNBrightness` `Pixelization` fits the data.
+"""
+pixelization = al.Pixelization(
+    #    image_mesh = al.image_mesh.Overlay(shape=(40, 40)),
+    #     image_mesh=al.image_mesh.KMeans(
+    #         pixels=pixels*200, weight_floor=0.0, weight_power=10.0
+    #     ),
+    image_mesh=al.image_mesh.Hilbert(pixels=pixels, weight_floor=0.2, weight_power=3.0),
+    # image_mesh=al.image_mesh.HilbertBalanced(
+    #     pixels=pixels,
+    #     weight_floor=0.2,
+    #     weight_power=5.0,
+    # ),
+    mesh=al.mesh.VoronoiNN(),
+    regularization=al.reg.ConstantSplit(coefficient=0.1),
+    # regularization=al.reg.AdaptiveBrightnessSplit(
+    #     inner_coefficient=0.01, outer_coefficient=100.0, signal_scale=0.05
+    # ),
+)
+
+source_galaxy = al.Galaxy(
+    redshift=1.0,
+    pixelization=pixelization,
+)
+
+adapt_images = al.AdaptImages(
+    galaxy_image_dict={
+        lens_galaxy: lens_adapt_data,
+        source_galaxy: source_adapt_data,
+    }
+)
+
 
 """
 __Numba Caching__
@@ -163,7 +195,12 @@ tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
 fit = al.FitImaging(
     dataset=masked_dataset,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
+    adapt_images=adapt_images,
+    settings_inversion=al.SettingsInversion(
+        use_w_tilde=use_w_tilde,
+        use_positive_only_solver=use_positive_only_solver,
+        maxiter=maxiter,
+    ),
 )
 print(fit.figure_of_merit)
 
@@ -177,7 +214,12 @@ for i in range(repeats):
     fit = al.FitImaging(
         dataset=masked_dataset,
         tracer=tracer,
-        settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
+        adapt_images=adapt_images,
+        settings_inversion=al.SettingsInversion(
+            use_w_tilde=use_w_tilde,
+            use_positive_only_solver=use_positive_only_solver,
+            maxiter=maxiter,
+        ),
     )
     fit.log_evidence
 fit_time = (time.time() - start) / repeats
@@ -198,7 +240,12 @@ tracer = al.Tracer.from_galaxies(
 fit = al.FitImaging(
     dataset=masked_dataset,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
+    adapt_images=adapt_images,
+    settings_inversion=al.SettingsInversion(
+        use_w_tilde=use_w_tilde,
+        use_positive_only_solver=use_positive_only_solver,
+        maxiter=maxiter,
+    ),
     run_time_dict=run_time_dict,
 )
 fit.figure_of_merit

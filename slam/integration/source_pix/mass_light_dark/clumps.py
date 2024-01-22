@@ -94,19 +94,6 @@ from arc-seconds to kiloparsecs, masses to solar masses, etc.).
 redshift_lens = 0.5
 redshift_source = 1.0
 
-"""
-__Adapt Setup__
-
-The `SetupAdapt` determines which hyper-mode features are used during the model-fit as is used identically to the
-hyper pipeline examples.
-
-The `SetupAdapt` input `hyper_fixed_after_source` fixes the hyper-parameters to the values computed by the hyper 
-extension at the end of the SOURCE PIPELINE. By fixing the hyper-parameter values at this point, model comparison 
-of different models in the LIGHT PIPELINE and MASS LIGHT DARK PIPELINE can be performed consistently.
-"""
-setup_adapt = al.SetupAdapt(
-    mesh_pixels_fixed=1500,
-)
 
 """
 __Clump Model__ 
@@ -181,7 +168,6 @@ analysis = al.AnalysisImaging(dataset=dataset)
 source_pix_results = slam.source_pix.run(
     settings_search=settings_search,
     analysis=analysis,
-    setup_adapt=setup_adapt,
     source_lp_results=source_lp_results,
     image_mesh=al.image_mesh.Hilbert,
     mesh=al.mesh.Voronoi,
@@ -213,7 +199,6 @@ bulge.centre = disk.centre
 light_results = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    setup_adapt=setup_adapt,
     source_results=source_pix_results,
     lens_bulge=bulge,
     lens_disk=disk,
@@ -238,7 +223,7 @@ initialize the model priors . In this example it:
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_pix_results.last.adapt_images.hyper
+    dataset=dataset, adapt_images=source_pix_results[0].adapt_images.hyper
 )
 
 lens_bulge = af.Model(al.lmp.Sersic)
@@ -249,7 +234,6 @@ dark.centre = lens_bulge.centre
 mass_results = slam.mass_light_dark.run(
     settings_search=settings_search,
     analysis=analysis,
-    setup_adapt=setup_adapt,
     source_results=source_pix_results,
     light_results=light_results,
     lens_bulge=lens_bulge,
@@ -274,7 +258,7 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_pix_results.last.adapt_images
+    dataset=dataset, adapt_images=source_pix_results[0].adapt_images
 )
 
 subhalo_results = slam.subhalo.detection.run(

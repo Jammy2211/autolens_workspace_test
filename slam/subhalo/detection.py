@@ -20,8 +20,6 @@ def run(
     ----------
     analysis
         The analysis class which includes the `log_likelihood_function` and can be customized for the SLaM model-fit.
-    setup_adapt
-        The setup of the adapt fit.
     mass_results
         The results of the SLaM MASS PIPELINE which ran before this pipeline.
     subhalo_mass
@@ -137,15 +135,14 @@ def run(
 
     search_subhalo_grid = af.Nautilus(
         name=f"subhalo[2]_mass[total]_source_subhalo[{search_tag}]",
-        **settings_search.search_dict_x1_core,
-        n_live=150,
-        force_x1_cpu=True,  # ensures parallelizing over grid search works.
+        **settings_search.search_dict,
+        n_live=200,
     )
 
     subhalo_grid_search = af.SearchGridSearch(
         search=search_subhalo_grid,
         number_of_steps=number_of_steps,
-        number_of_cores=settings_search.number_of_cores,
+        number_of_cores=1,
     )
 
     result_subhalo_grid_search = subhalo_grid_search.fit(
@@ -207,7 +204,7 @@ def run(
     search_final_subhalo = af.Nautilus(
         name=f"subhalo[3]_subhalo[{refine_tag}]",
         **settings_search.search_dict,
-        n_live=1000,
+        n_live=600,
     )
 
     result_with_subhalo = search_final_subhalo.fit(

@@ -14,8 +14,8 @@ include:
     radial_critical_curves: true
     grid: false
     light_profile_centres: false
-    mapper_image_plane_mesh_grid: true
-    mapper_source_plane_data_grid: true
+    mapper_image_plane_mesh_grid: false
+    mapper_source_plane_data_grid: false
     mapper_source_plane_mesh_grid: false
     mask: false
     mass_profile_centres: false
@@ -342,7 +342,7 @@ plots:
     potential: false
     source_plane_image: false
     subplot_plane_images: false
-    subplot_ray_tracing: false
+    subplot_ray_tracing: true
 plots_search:
   dynesty:
     cornerplot: false

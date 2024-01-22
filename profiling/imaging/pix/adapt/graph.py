@@ -26,7 +26,7 @@ profiling_path = path.dirname(path.realpath(__file__))
 """
 The path containing all profiling results to be plotted is in a folder with the PyAutoLens version number.
 """
-times_path = os.path.join(profiling_path, "times", al.__version__)
+times_path = os.path.join(profiling_path, "times_mag_const", al.__version__)
 
 """
 The path where the profiling graphs created by this script are output, which is again a folder with the PyAutoLens 
@@ -69,7 +69,7 @@ def bar_deflection_profiles(
 
     if "hst" in filename:
         title = (
-            f"Voronoi Brightness Inversion HST (total time = {np.round(fit_time, 2)})"
+            f"VoronoiNN Brightness Inversion HST (total time = {np.round(fit_time, 2)})"
         )
 
     plt.yticks(fontsize=16)
@@ -88,14 +88,14 @@ def bar_deflection_profiles(
 
 
 """
-Load the `Inversion` profiling run times of the `Voronoi` pixelization.
+Load the `Inversion` profiling run times of the `VoronoiNN` pixelization.
 """
 file_path = path.join(times_path, "hst_run_time_dict.json")
 with open(file_path, "r") as f:
     profiles_dict = json.load(f)
 
 """
-Load the total run time of the `Voronoi` pixelization.
+Load the total run time of the `VoronoiNN` pixelization.
 """
 file_path = path.join(times_path, "hst_fit_time.json")
 with open(file_path, "r") as f:
@@ -103,7 +103,7 @@ with open(file_path, "r") as f:
 
 
 """
-Load the `info_dict` of the `Voronoi` pixelization run.
+Load the `info_dict` of the `VoronoiNN` pixelization run.
 """
 file_path = path.join(times_path, "hst_info.json")
 with open(file_path, "r") as f:

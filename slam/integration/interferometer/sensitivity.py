@@ -105,15 +105,6 @@ redshift_lens = 0.5
 redshift_source = 1.0
 
 """
-__Adapt Setup__
-
-The `SetupAdapt` determines which hyper-mode features are used during the model-fit.
-"""
-setup_adapt = al.SetupAdapt(
-    mesh_pixels_fixed=1500,
-)
-
-"""
 __SOURCE LP PIPELINE (no lens light)__
 
 The SOURCE LP PIPELINE (no lens light) uses one search to initialize a robust model for the source galaxy's 
@@ -132,7 +123,6 @@ analysis = al.AnalysisInterferometer(dataset=dataset)
 source_lp_results = slam.source_lp.run(
     path_prefix=path_prefix,
     analysis=analysis,
-    setup_adapt=setup_adapt,
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
     source_bulge=af.Model(al.lp.Sersic),
@@ -170,7 +160,6 @@ analysis = al.AnalysisInterferometer(
 source_pix_results = slam.source_pix.run(
     settings_search=settings_search,
     analysis=analysis,
-    setup_adapt=setup_adapt,
     source_lp_results=source_lp_results,
     image_mesh=al.image_mesh.Hilbert,
     mesh=al.mesh.Voronoi,
@@ -197,7 +186,6 @@ analysis = al.AnalysisInterferometer(
 mass_results = slam.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
-    setup_adapt=setup_adapt,
     source_results=source_pix_results,
     mass=af.Model(al.mp.PowerLaw),
 )
