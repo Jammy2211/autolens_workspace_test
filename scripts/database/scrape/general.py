@@ -192,8 +192,13 @@ for tracer_list in tracer_gen:
     # Only one `Analysis` so take first and only tracer.
     tracer = tracer_list[0]
 
-    tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
-    tracer_plotter.figures_2d(convergence=True, potential=True)
+    try:
+        tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
+        tracer_plotter.figures_2d(convergence=True, potential=True)
+
+    except al.exc.ProfileException:
+        print("TracerAgg with linear light profiles raises correct ProfileException")
+
 
     assert tracer.galaxies[0].mass.einstein_radius > 0.0
 
