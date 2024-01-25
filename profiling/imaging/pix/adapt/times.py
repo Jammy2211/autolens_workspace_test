@@ -49,7 +49,7 @@ print()
 These settings control various aspects of how long a fit takes. The values below are default PyAutoLens values.
 """
 sub_size = 1
-mask_radius = 0.5
+mask_radius = 4.0
 psf_shape_2d = (21, 21)
 pixels = 1000
 
@@ -59,7 +59,7 @@ maxiter = 5000
 print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
 print(f"psf shape = {psf_shape_2d}")
-print(f"pixels = {pixels}")
+# print(f"pixels = {pixels}")
 
 """
 The lens galaxy used to fit the data, which is identical to the lens galaxy used to simulate the data. 
@@ -155,21 +155,12 @@ source_adapt_data = source_galaxy.image_2d_from(grid=traced_grid).binned
 The source galaxy whose `VoronoiNNBrightness` `Pixelization` fits the data.
 """
 pixelization = al.Pixelization(
-    #    image_mesh = al.image_mesh.Overlay(shape=(40, 40)),
-    #     image_mesh=al.image_mesh.KMeans(
-    #         pixels=pixels*200, weight_floor=0.0, weight_power=10.0
-    #     ),
     image_mesh=al.image_mesh.Hilbert(pixels=pixels, weight_floor=0.2, weight_power=3.0),
-    # image_mesh=al.image_mesh.HilbertBalanced(
-    #     pixels=pixels,
-    #     weight_floor=0.2,
-    #     weight_power=5.0,
-    # ),
+
     mesh=al.mesh.VoronoiNN(),
-    regularization=al.reg.ConstantSplit(coefficient=0.1),
-    # regularization=al.reg.AdaptiveBrightnessSplit(
-    #     inner_coefficient=0.01, outer_coefficient=100.0, signal_scale=0.05
-    # ),
+    regularization=al.reg.AdaptiveBrightnessSplit(
+        inner_coefficient=0.01, outer_coefficient=100.0, signal_scale=0.05
+    ),
 )
 
 source_galaxy = al.Galaxy(
