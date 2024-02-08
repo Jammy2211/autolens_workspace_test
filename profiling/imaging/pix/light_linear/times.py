@@ -53,7 +53,8 @@ file_path = os.path.join(file_path, "lens_light_linear")
 """
 The number of repeats used to estimate the run time.
 """
-repeats = conf.instance["general"]["profiling"]["repeats"]
+# repeats = conf.instance["general"]["profiling"]["repeats"]
+repeats = 5
 print("Number of repeats = " + str(repeats))
 print()
 
@@ -181,7 +182,7 @@ fit = al.FitImaging(
     tracer=tracer,
     settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
 )
-print(fit.figure_of_merit)
+print(f"Figure of Merit = {fit.figure_of_merit}")
 
 """
 __Fit Time__

@@ -158,8 +158,11 @@ pixelization = al.Pixelization(
     image_mesh=al.image_mesh.Hilbert(pixels=pixels, weight_floor=0.2, weight_power=3.0),
 
     mesh=al.mesh.VoronoiNN(),
-    regularization=al.reg.AdaptiveBrightnessSplit(
-        inner_coefficient=0.01, outer_coefficient=100.0, signal_scale=0.05
+    # regularization=al.reg.AdaptiveBrightnessSplit(
+    #     inner_coefficient=0.01, outer_coefficient=100.0, signal_scale=0.05
+    # ),
+    regularization=al.reg.MaternKernel(
+        coefficient=1.0, scale=0.5, nu=2.0
     ),
 )
 
@@ -193,7 +196,7 @@ fit = al.FitImaging(
         maxiter=maxiter,
     ),
 )
-print(fit.figure_of_merit)
+print(f"Figure of Merit = {fit.figure_of_merit}")
 
 """
 __Fit Time__

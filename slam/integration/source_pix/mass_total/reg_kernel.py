@@ -80,7 +80,7 @@ def fit():
     The settings of autofit, which controls the output paths, parallelization, database use, etc.
     """
     settings_search = af.SettingsSearch(
-        path_prefix=path.join("slam_nautilus", "source_pix", "mass_total", "base"),
+        path_prefix=path.join("slam_nautilus", "source_pix", "mass_total", "reg_kernel"),
         number_of_cores=1,
         session=None,
     )
@@ -141,7 +141,7 @@ def fit():
      SOURCE PIX PIPELINE.
     """
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_images=source_lp_results.last.adapt_images
+        dataset=dataset, adapt_images=source_lp_results.last.adapt_images_from()
     )
 
     source_pix_results = slam.source_pix.run(
@@ -151,7 +151,7 @@ def fit():
         image_mesh=al.image_mesh.Hilbert,
         mesh_init=al.mesh.VoronoiNN,
         mesh=al.mesh.VoronoiNN,
-        regularization=al.reg.AdaptiveBrightness,
+        regularization=al.reg.MaternKernel,
     )
 
     """
@@ -176,7 +176,7 @@ def fit():
     bulge.centre = disk.centre
 
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_images=source_pix_results[0].adapt_images
+        dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
     )
 
     light_results = slam.light_lp.run(
@@ -206,7 +206,7 @@ def fit():
      - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
     """
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_images=source_pix_results[0].adapt_images
+        dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
     )
 
     mass_results = slam.mass_total.run(
@@ -234,7 +234,7 @@ def fit():
      the Python multiprocessing module.
     """
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_images=source_pix_results[0].adapt_images
+        dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
     )
 
     subhalo_results = slam.subhalo.detection.run(

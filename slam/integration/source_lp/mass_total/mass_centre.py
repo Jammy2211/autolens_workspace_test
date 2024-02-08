@@ -143,7 +143,7 @@ In this example it:
  PIPELINE [fixed values].
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_lp_results.last.adapt_images
+    dataset=dataset, adapt_images=source_lp_results.last.adapt_images_from()
 )
 
 bulge = af.Model(al.lp.Sersic)
@@ -177,7 +177,7 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_lp_results.last.adapt_images
+    dataset=dataset, adapt_images=source_lp_results.last.adapt_images_from()
 )
 
 mass_results = slam.mass_total.run(

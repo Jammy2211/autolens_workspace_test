@@ -148,7 +148,7 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_lp_results.last.adapt_images
+    dataset=dataset, adapt_images=source_lp_results.last.adapt_images_from()
 )
 
 multipole = af.Model(al.mp.PowerLawMultipole)

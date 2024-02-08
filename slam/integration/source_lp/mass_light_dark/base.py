@@ -178,7 +178,7 @@ initialize the model priors . In this example it:
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_lp_results.last.adapt_images
+    dataset=dataset, adapt_images=source_lp_results.last.adapt_images_from()
 )
 
 mass_results = slam.mass_light_dark.run(
@@ -208,7 +208,7 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_lp_results.last.adapt_images
+    dataset=dataset, adapt_images=source_lp_results.last.adapt_images_from()
 )
 
 subhalo_results = slam.subhalo.detection.run(

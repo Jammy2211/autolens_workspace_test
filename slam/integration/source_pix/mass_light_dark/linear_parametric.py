@@ -205,7 +205,7 @@ initialize the model priors . In this example it:
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_pix_results[0].adapt_images
+    dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
 )
 
 lens_bulge = af.Model(al.lmp.Sersic)

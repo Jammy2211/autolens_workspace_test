@@ -611,7 +611,7 @@ visualize:
       all_at_end_png: false
       chi_squared_map: false
       image: false
-      model_image: false
+      model_image: true
       noise_map: false
       normalized_residual_map: false
       residual_map: false

@@ -295,15 +295,15 @@ plots:
     all_at_end_png: false
     chi_squared_map: false
     image: false
-    model_image: false
+    model_image: true
     noise_map: false
     normalized_residual_map: false
     residual_map: false
     subplot_fit: true
   adapt:
-    contribution_map_list: falseadapt-
+    contribution_map_list: false
     images_of_galaxies: false
-    model_image: false
+    model_image: true
   inversion:
     all_at_end_png: false
     chi_squared_map: false

@@ -166,7 +166,7 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_pix_results[0].adapt_images
+    dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
 )
 
 mass_results = slam.mass_total.run(
@@ -194,7 +194,7 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_pix_results[0].adapt_images
+    dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
 )
 
 subhalo_results = slam.subhalo.detection.run(

@@ -141,7 +141,7 @@ def fit():
      SOURCE PIX PIPELINE.
     """
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_images=source_lp_results.last.adapt_images
+        dataset=dataset, adapt_images=source_lp_results.last.adapt_images_from()
     )
 
     source_pix_results = slam.source_pix.run(
@@ -176,7 +176,7 @@ def fit():
     bulge.centre = disk.centre
 
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_images=source_pix_results[0].adapt_images
+        dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
     )
 
     light_results = slam.light_lp.run(
@@ -206,7 +206,7 @@ def fit():
      - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
     """
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_images=source_pix_results[0].adapt_images
+        dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
     )
 
     mass_results = slam.mass_total.run(
@@ -234,7 +234,7 @@ def fit():
      the Python multiprocessing module.
     """
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_images=source_pix_results[0].adapt_images
+        dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
     )
 
     subhalo_results = slam.subhalo.detection.run(
