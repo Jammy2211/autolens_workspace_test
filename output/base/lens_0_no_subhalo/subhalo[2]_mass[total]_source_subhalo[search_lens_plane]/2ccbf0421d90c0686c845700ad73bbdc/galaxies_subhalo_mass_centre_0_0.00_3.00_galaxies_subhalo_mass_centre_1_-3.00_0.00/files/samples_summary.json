@@ -1,0 +1,367 @@
+{
+    "type": "instance",
+    "class_path": "autofit.non_linear.samples.summary.SamplesSummary",
+    "arguments": {
+        "covariance_matrix": {
+            "type": "ndarray",
+            "array": [
+                [
+                    1.0295758157756875e-06,
+                    -6.930704930654143e-08,
+                    2.224364074338221e-07,
+                    3.6602518287659707e-08,
+                    3.846167083346547e-08,
+                    5.39432537640563e-06,
+                    3.3699411220865014e-07,
+                    5.821326761695548e-07,
+                    10272.664243844667,
+                    -1.9710751535117473e-05,
+                    2.037672804314962e-05
+                ],
+                [
+                    -6.930704930654141e-08,
+                    2.606184459229708e-06,
+                    -1.0569939815481291e-07,
+                    5.525159051353726e-08,
+                    1.8134909225599883e-07,
+                    5.293577167714872e-06,
+                    1.2649627437332335e-06,
+                    -4.857312011885501e-08,
+                    367.5610011231527,
+                    8.304108523521608e-05,
+                    -7.670098000402878e-05
+                ],
+                [
+                    2.224364074338221e-07,
+                    -1.056993981548129e-07,
+                    8.831874944529947e-07,
+                    2.479485350928994e-08,
+                    5.241033220575929e-08,
+                    2.8477378813157402e-05,
+                    1.7390139198358127e-06,
+                    -1.7229872863038658e-07,
+                    2759.0665318342367,
+                    8.009284771386421e-05,
+                    -0.00010821090726908674
+                ],
+                [
+                    3.6602518287659707e-08,
+                    5.525159051353726e-08,
+                    2.4794853509289952e-08,
+                    1.874964782216789e-07,
+                    -9.320331964956859e-09,
+                    4.241949023971977e-07,
+                    2.7096398911179157e-08,
+                    2.8476073191143317e-08,
+                    -5350.895055652349,
+                    9.302589745532169e-06,
+                    -1.8182945422269114e-05
+                ],
+                [
+                    3.846167083346546e-08,
+                    1.8134909225599883e-07,
+                    5.241033220575929e-08,
+                    -9.320331964956859e-09,
+                    1.9358192767619905e-07,
+                    3.174267742878974e-06,
+                    2.6916780177787846e-07,
+                    -1.2666112103307521e-08,
+                    14003.359967686612,
+                    1.3383709869252529e-05,
+                    7.916057173246425e-07
+                ],
+                [
+                    5.39432537640563e-06,
+                    5.293577167714872e-06,
+                    2.8477378813157392e-05,
+                    4.241949023971975e-07,
+                    3.1742677428789736e-06,
+                    0.001027933084624235,
+                    6.595415762965516e-05,
+                    -7.77280251505267e-06,
+                    443622.6622375741,
+                    0.0023712023576362893,
+                    -0.003272344806091141
+                ],
+                [
+                    3.369941122086502e-07,
+                    1.2649627437332335e-06,
+                    1.7390139198358127e-06,
+                    2.709639891117916e-08,
+                    2.6916780177787846e-07,
+                    6.595415762965516e-05,
+                    4.5884696818473665e-06,
+                    -4.889327410500832e-07,
+                    22320.535670355337,
+                    0.00016139187521865882,
+                    -0.000244929544327755
+                ],
+                [
+                    5.821326761695548e-07,
+                    -4.8573120118855014e-08,
+                    -1.7229872863038658e-07,
+                    2.847607319114332e-08,
+                    -1.2666112103307521e-08,
+                    -7.77280251505267e-06,
+                    -4.889327410500831e-07,
+                    4.573721030442326e-07,
+                    -6364.861929567995,
+                    -4.2988537510910865e-05,
+                    5.0454927075818344e-05
+                ],
+                [
+                    10272.664243844667,
+                    367.5610011231552,
+                    2759.0665318342376,
+                    -5350.895055652349,
+                    14003.359967686612,
+                    443622.6622375742,
+                    22320.535670355337,
+                    -6364.861929567996,
+                    4.783830918338869e+16,
+                    25324446.073512945,
+                    -763362.0965928016
+                ],
+                [
+                    -1.9710751535117483e-05,
+                    8.30410852352161e-05,
+                    8.009284771386421e-05,
+                    9.302589745532167e-06,
+                    1.3383709869252527e-05,
+                    0.0023712023576362893,
+                    0.00016139187521865882,
+                    -4.2988537510910865e-05,
+                    25324446.07351295,
+                    0.776471640680515,
+                    0.011340879535665378
+                ],
+                [
+                    2.0376728043149614e-05,
+                    -7.670098000402878e-05,
+                    -0.00010821090726908674,
+                    -1.8182945422269114e-05,
+                    7.916057173246439e-07,
+                    -0.003272344806091141,
+                    -0.000244929544327755,
+                    5.0454927075818344e-05,
+                    -763362.0965928038,
+                    0.01134087953566538,
+                    0.6897669376057891
+                ]
+            ],
+            "dtype": "float64"
+        },
+        "log_evidence": 20451.395913866498,
+        "max_log_likelihood_sample": {
+            "type": "instance",
+            "class_path": "autofit.non_linear.samples.sample.Sample",
+            "arguments": {
+                "log_likelihood": 20496.88215017959,
+                "log_prior": 0.008224312887385302,
+                "weight": 6.294906895755838e-05,
+                "kwargs": {
+                    "type": "dict",
+                    "arguments": {
+                        "galaxies.lens.mass.ell_comps.ell_comps_0": 0.009940359436050492,
+                        "galaxies.lens.mass.ell_comps.ell_comps_1": -0.016570591625274887,
+                        "galaxies.lens.mass.einstein_radius": 1.924119157244357,
+                        "galaxies.lens.mass.centre.centre_0": -0.0004037318582485422,
+                        "galaxies.lens.mass.centre.centre_1": 0.0011802112313410015,
+                        "galaxies.lens.mass.slope": 2.049207860622787,
+                        "galaxies.lens.shear.gamma_1": 0.05088568194391545,
+                        "galaxies.lens.shear.gamma_2": -0.0006586885283719843,
+                        "galaxies.subhalo.mass.mass_at_200": 85883582.00731692,
+                        "galaxies.subhalo.mass.centre.centre_0": 0.63783826223612,
+                        "galaxies.subhalo.mass.centre.centre_1": -2.93539785637242
+                    }
+                }
+            }
+        },
+        "model": {
+            "type": "collection",
+            "arguments": {
+                "galaxies": {
+                    "type": "collection",
+                    "arguments": {
+                        "lens": {
+                            "class_path": "autogalaxy.galaxy.galaxy.Galaxy",
+                            "type": "model",
+                            "arguments": {
+                                "redshift": 0.5,
+                                "bulge": null,
+                                "disk": null,
+                                "point": null,
+                                "mass": {
+                                    "class_path": "autogalaxy.profiles.mass.total.power_law.PowerLaw",
+                                    "type": "model",
+                                    "arguments": {
+                                        "centre": {
+                                            "type": "tuple_prior",
+                                            "arguments": {
+                                                "centre_0": {
+                                                    "lower_limit": -Infinity,
+                                                    "upper_limit": Infinity,
+                                                    "type": "Gaussian",
+                                                    "id": 209,
+                                                    "mean": -0.0003151569846750357,
+                                                    "sigma": 0.05
+                                                },
+                                                "centre_1": {
+                                                    "lower_limit": -Infinity,
+                                                    "upper_limit": Infinity,
+                                                    "type": "Gaussian",
+                                                    "id": 210,
+                                                    "mean": 0.0012141832961552065,
+                                                    "sigma": 0.05
+                                                }
+                                            }
+                                        },
+                                        "ell_comps": {
+                                            "type": "tuple_prior",
+                                            "arguments": {
+                                                "ell_comps_0": {
+                                                    "lower_limit": -1.0,
+                                                    "upper_limit": 1.0,
+                                                    "type": "Gaussian",
+                                                    "id": 190,
+                                                    "mean": 0.010329999577238727,
+                                                    "sigma": 0.2
+                                                },
+                                                "ell_comps_1": {
+                                                    "lower_limit": -1.0,
+                                                    "upper_limit": 1.0,
+                                                    "type": "Gaussian",
+                                                    "id": 191,
+                                                    "mean": -0.01679909289556377,
+                                                    "sigma": 0.2
+                                                }
+                                            }
+                                        },
+                                        "einstein_radius": {
+                                            "lower_limit": 0.0,
+                                            "upper_limit": Infinity,
+                                            "type": "Gaussian",
+                                            "id": 192,
+                                            "mean": 1.9236002496948017,
+                                            "sigma": 0.4809000624237004
+                                        },
+                                        "slope": {
+                                            "lower_limit": 1.0,
+                                            "upper_limit": 3.0,
+                                            "type": "Gaussian",
+                                            "id": 222,
+                                            "mean": 2.024621210753971,
+                                            "sigma": 0.2
+                                        }
+                                    }
+                                },
+                                "multipole": null,
+                                "shear": {
+                                    "class_path": "autogalaxy.profiles.mass.sheets.external_shear.ExternalShear",
+                                    "type": "model",
+                                    "arguments": {
+                                        "gamma_1": {
+                                            "lower_limit": -Infinity,
+                                            "upper_limit": Infinity,
+                                            "type": "Gaussian",
+                                            "id": 233,
+                                            "mean": 0.04914893216075194,
+                                            "sigma": 0.05
+                                        },
+                                        "gamma_2": {
+                                            "lower_limit": -Infinity,
+                                            "upper_limit": Infinity,
+                                            "type": "Gaussian",
+                                            "id": 234,
+                                            "mean": -0.00011180233276896004,
+                                            "sigma": 0.05
+                                        }
+                                    }
+                                },
+                                "smbh": null
+                            }
+                        },
+                        "subhalo": {
+                            "class_path": "autogalaxy.galaxy.galaxy.Galaxy",
+                            "type": "model",
+                            "arguments": {
+                                "redshift": 0.5,
+                                "mass": {
+                                    "class_path": "autogalaxy.profiles.mass.dark.nfw_mcr.NFWMCRLudlowSph",
+                                    "type": "model",
+                                    "arguments": {
+                                        "centre": {
+                                            "type": "tuple_prior",
+                                            "arguments": {
+                                                "centre_0": {
+                                                    "lower_limit": 0.0,
+                                                    "upper_limit": 3.0,
+                                                    "type": "Uniform",
+                                                    "id": 255
+                                                },
+                                                "centre_1": {
+                                                    "lower_limit": -3.0,
+                                                    "upper_limit": 0.0,
+                                                    "type": "Uniform",
+                                                    "id": 256
+                                                }
+                                            }
+                                        },
+                                        "mass_at_200": {
+                                            "lower_limit": 1000000.0,
+                                            "upper_limit": 100000000000.0,
+                                            "type": "LogUniform",
+                                            "id": 248
+                                        },
+                                        "redshift_object": 0.5,
+                                        "redshift_source": 1.0
+                                    }
+                                }
+                            }
+                        },
+                        "source": {
+                            "class_path": "autogalaxy.galaxy.galaxy.Galaxy",
+                            "type": "instance",
+                            "arguments": {
+                                "redshift": 1.0,
+                                "pixelization": {
+                                    "class_path": "autoarray.inversion.pixelization.pixelization.Pixelization",
+                                    "type": "instance",
+                                    "arguments": {
+                                        "mesh": {
+                                            "type": "instance",
+                                            "class_path": "autoarray.inversion.pixelization.mesh.voronoi_nn.VoronoiNN",
+                                            "arguments": {}
+                                        },
+                                        "regularization": {
+                                            "type": "instance",
+                                            "class_path": "autoarray.inversion.regularization.adaptive_brightness.AdaptiveBrightness",
+                                            "arguments": {
+                                                "inner_coefficient": 0.0002064457204140242,
+                                                "signal_scale": 0.16169943266827,
+                                                "outer_coefficient": 5.5440931969706035
+                                            }
+                                        },
+                                        "image_mesh": {
+                                            "type": "instance",
+                                            "class_path": "autoarray.inversion.pixelization.image_mesh.hilbert.Hilbert",
+                                            "arguments": {
+                                                "weight_power": 1.69062959657033,
+                                                "pixels": 1000,
+                                                "weight_floor": 0.002857614695732794
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "clumps": {
+                    "type": "collection",
+                    "arguments": {}
+                }
+            }
+        }
+    }
+}
