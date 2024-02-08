@@ -197,7 +197,7 @@ light_results = slam.light_lp.run(
     analysis=analysis,
     source_results=source_pix_results,
     lens_bulge=bulge,
-    lens_disk=None,
+    lens_disk=None, 
 )
 
 """
