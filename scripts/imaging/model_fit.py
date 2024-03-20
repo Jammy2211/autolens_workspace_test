@@ -169,8 +169,8 @@ tracer_plotter.subplot_tracer()
 fit_plotter = aplt.FitImagingPlotter(fit=result.max_log_likelihood_fit)
 fit_plotter.subplot_fit()
 
-search_plotter = aplt.DynestyPlotter(samples=result.samples)
-search_plotter.cornerplot()
+plotter = aplt.NestPlotter(samples=result.samples)
+plotter.corner_cornerpy()
 
 """
 Checkout `autolens_workspace/*/results` for a full description of analysing results in **PyAutoLens**.

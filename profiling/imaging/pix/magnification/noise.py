@@ -84,7 +84,7 @@ source_galaxy = al.Galaxy(
 """
 Use these galaxies to setup a tracer, which will generate the image for the simulated `Imaging` dataset.
 """
-tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
 """
 The simulated data comes at five resolution corresponding to five telescopes:
@@ -129,7 +129,7 @@ masked_dataset = masked_dataset.apply_settings(
 
 def func(coefficient):
     source_galaxy.pixelization.regularization.coefficient = coefficient
-    tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
+    tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
     fit = al.FitImaging(
         dataset=masked_dataset,
         tracer=tracer,

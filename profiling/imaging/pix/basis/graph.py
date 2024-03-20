@@ -33,13 +33,13 @@ profiling_path = path.dirname(path.realpath(__file__))
 """
 The path containing all profiling results to be plotted is in a folder with the PyAutoLens version number.
 """
-times_path = os.path.join(profiling_path, "times", al.__version__, "w_tilde")
+times_path = os.path.join(profiling_path, "times", al.__version__)
 
 """
 The path where the profiling graphs created by this script are output, which is again a folder with the PyAutoLens 
 version number.
 """
-graph_path = os.path.join(profiling_path, "graphs", al.__version__, "w_tilde")
+graph_path = os.path.join(profiling_path, "graphs", al.__version__)
 
 
 if not os.path.exists(graph_path):
@@ -59,23 +59,29 @@ def bar_deflection_profiles(
         list(run_time_dict.keys()), list(run_time_dict.values()), color=color
     )
 
-    [barlist[index].set_color("yellow") for index in range(0, 1)]
-    [barlist[index].set_color("m") for index in range(1, 2)]
-    [barlist[index].set_color("r") for index in range(2, 3)]
+    [barlist[index].set_color("red") for index in range(0, 1)]
+    [barlist[index].set_color("yellow") for index in range(1, 2)]
+    [barlist[index].set_color("green") for index in range(2, 3)]
+    [barlist[index].set_color("m") for index in range(3, 4)]
 
     colors = {
         "Ray Tracing": "yellow",
-        "Source Image (Voronoi)": "magenta",
-        "2D Convolution": "red",
+        "Source (Gaussian)": "green",
+        "2D Convolution": "magenta",
         "Linear Algebra": "blue",
+        "Source (Voronoi)": "red",
     }
 
     labels = list(colors.keys())
     handles = [plt.Rectangle((0, 0), 1, 1, color=colors[label]) for label in labels]
-    plt.legend(handles, labels, fontsize=20)
+    plt.legend(handles, labels, fontsize=24)
 
     if instrument in filename:
-        title = f"Voronoi Source (total time = {np.round(fit_time, 2)})"
+        title = f"""
+            PyAutoLens Analsyis Profiling 
+            Simple Source Time = {np.round(fit_time, 3)} s
+            Complex Source Time = {np.round(1.6530975843904, 3)} s
+            """
 
     plt.yticks(fontsize=22)
     plt.xticks(fontsize=26)

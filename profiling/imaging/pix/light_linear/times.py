@@ -32,8 +32,8 @@ file_path = os.path.join(profiling_path, "times", al.__version__)
 """
 Whether w_tilde is used dictates the output folder.
 """
-use_w_tilde = True
-# use_w_tilde = False
+# use_w_tilde = True
+use_w_tilde = False
 
 if use_w_tilde:
     file_path = os.path.join(file_path, "w_tilde")
@@ -64,7 +64,7 @@ These settings control various aspects of how long a fit takes. The values below
 sub_size = 4
 mask_radius = 3.5
 psf_shape_2d = (21, 21)
-mesh_shape_2d = (60, 60)
+mesh_shape_2d = (30, 30)
 
 
 print(f"sub grid size = {sub_size}")
@@ -96,6 +96,7 @@ basis = al.lp_basis.Basis(
 lens_galaxy = al.Galaxy(
     redshift=0.5,
     bulge=basis,
+    sky=al.lp_linear.Sky(),
     mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
@@ -107,12 +108,14 @@ lens_galaxy = al.Galaxy(
 """
 The source galaxy whose `Delaunay` `Pixelization` fits the data.
 """
-mesh = al.mesh.Delaunay(shape=mesh_shape_2d)
+
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
     pixelization=al.Pixelization(
-        mesh=mesh, regularization=al.reg.ConstantSplit(coefficient=1.0)
+        image_mesh=al.image_mesh.Overlay(shape=mesh_shape_2d),
+        mesh=al.mesh.Delaunay(),
+        regularization=al.reg.ConstantSplit(coefficient=1.0),
     ),
 )
 
@@ -175,7 +178,7 @@ __Numba Caching__
 
 Call FitImaging once to get all numba functions initialized.
 """
-tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
 fit = al.FitImaging(
     dataset=masked_dataset,
@@ -208,9 +211,7 @@ Apply mask, settings and profiling dict to fit, such that timings of every indiv
 """
 run_time_dict = {}
 
-tracer = al.Tracer.from_galaxies(
-    galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time_dict
-)
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time_dict)
 
 fit = al.FitImaging(
     dataset=masked_dataset,

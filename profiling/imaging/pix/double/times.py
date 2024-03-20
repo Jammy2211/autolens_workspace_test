@@ -159,9 +159,7 @@ __Numba Caching__
 
 Call FitImaging once to get all numba functions initialized.
 """
-tracer = al.Tracer.from_galaxies(
-    galaxies=[lens_galaxy, source_galaxy_0, source_galaxy_1]
-)
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy_0, source_galaxy_1])
 
 fit = al.FitImaging(
     dataset=masked_dataset,
@@ -194,7 +192,7 @@ Apply mask, settings and profiling dict to fit, such that timings of every indiv
 """
 run_time_dict = {}
 
-tracer = al.Tracer.from_galaxies(
+tracer = al.Tracer(
     galaxies=[lens_galaxy, source_galaxy_0, source_galaxy_1],
     run_time_dict=run_time_dict,
 )

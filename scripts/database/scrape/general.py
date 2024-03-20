@@ -199,7 +199,6 @@ for tracer_list in tracer_gen:
     except al.exc.ProfileException:
         print("TracerAgg with linear light profiles raises correct ProfileException")
 
-
     assert tracer.galaxies[0].mass.einstein_radius > 0.0
 
     print("TracerAgg Checked")

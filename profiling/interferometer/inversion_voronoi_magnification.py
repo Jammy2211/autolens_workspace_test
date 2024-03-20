@@ -90,7 +90,7 @@ source_galaxy = al.Galaxy(
     ),
 )
 
-tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
 """
 Set up the `Interferometer` dataset we fit. This includes the `real_space_mask` that the source galaxy's 
@@ -165,9 +165,7 @@ Apply mask, settings and profiling dict to fit, such that timings of every indiv
 """
 run_time_dict = {}
 
-tracer = al.Tracer.from_galaxies(
-    galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time_dict
-)
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time_dict)
 
 fit = al.FitInterferometer(
     dataset=dataset,

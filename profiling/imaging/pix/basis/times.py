@@ -111,9 +111,9 @@ hst_up: pixel_scale = 0.03", slow run times.
 ao: pixel_scale = 0.01", very slow :(
 """
 # instrument = "vro"
-# instrument = "euclid"
+instrument = "euclid"
 # instrument = "hst"
-instrument = "hst_up"
+# instrument = "hst_up"
 # instrument = "ao"
 
 pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
@@ -162,7 +162,7 @@ __Numba Caching__
 
 Call FitImaging once to get all numba functions initialized.
 """
-tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
 fit = al.FitImaging(
     dataset=masked_dataset,
@@ -194,9 +194,7 @@ Apply mask, settings and profiling dict to fit, such that timings of every indiv
 """
 run_time_dict = {}
 
-tracer = al.Tracer.from_galaxies(
-    galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time_dict
-)
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time_dict)
 
 fit = al.FitImaging(
     dataset=masked_dataset,

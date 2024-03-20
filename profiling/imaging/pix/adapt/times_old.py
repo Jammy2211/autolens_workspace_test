@@ -183,9 +183,7 @@ lens_galaxy_power_law = al.Galaxy(
     ),
     shear=al.mp.ExternalShear(gamma_1=0.001, gamma_2=0.001),
 )
-tracer_power_law = al.Tracer.from_galaxies(
-    galaxies=[lens_galaxy_power_law, source_galaxy]
-)
+tracer_power_law = al.Tracer(galaxies=[lens_galaxy_power_law, source_galaxy])
 
 lens_galaxy_decomposed = al.Galaxy(
     redshift=0.5,
@@ -212,9 +210,7 @@ lens_galaxy_decomposed = al.Galaxy(
     ),
     shear=al.mp.ExternalShear(gamma_1=0.001, gamma_2=0.001),
 )
-tracer_decomposed = al.Tracer.from_galaxies(
-    galaxies=[lens_galaxy_decomposed, source_galaxy]
-)
+tracer_decomposed = al.Tracer(galaxies=[lens_galaxy_decomposed, source_galaxy])
 
 """
 __Fit__
@@ -226,7 +222,7 @@ is not factored into the project run times.
 
 https://github.com/Jammy2211/PyAutoLens/blob/main/autolens/fit/fit.py
 """
-tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
 fit = al.FitImaging(dataset=masked_dataset, tracer=tracer, adapt_images=adapt_images)
 fit.log_evidence
@@ -327,7 +323,7 @@ https://github.com/Jammy2211/PyAutoGalaxy/blob/main/autogalaxy/profiles/mass_pro
 
 Ray tracing is handled in the following module:
 
-https://github.com/Jammy2211/PyAutoLens/blob/main/autolens/lens/ray_tracing.py
+https://github.com/Jammy2211/PyAutoLens/blob/main/autolens/lens/tracer.py
 
 The image-plane pixelization computed below must be ray-traced just like the image-grid and is therefore included in
 the profiling time below.

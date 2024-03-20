@@ -318,7 +318,7 @@ plots:
     stochastic_histogram: false
   positions:
     image_with_positions: false
-  ray_tracing:
+  tracer:
     all_at_end_fits: false
     all_at_end_png: false
     convergence: false
@@ -327,14 +327,14 @@ plots:
     magnification: false
     potential: false
     source_plane_image: false
-    subplot_plane_images: false
-    subplot_ray_tracing: false
+    subplot_galaxies_images: false
+    subplot_tracer: false
   samples:
     corner: false
     progress: false
 plots_search:
   dynesty:
-    cornerplot: false
+    corner: false
     cornerpoints: false
     runplot: false
     traceplot: false
@@ -349,7 +349,7 @@ plots_search:
     time_series: false
     trajectories: false
   ultranest:
-    cornerplot: false
+    corner: false
     runplot: false
     traceplot: false
   zeus:

@@ -80,7 +80,9 @@ def fit():
     The settings of autofit, which controls the output paths, parallelization, database use, etc.
     """
     settings_search = af.SettingsSearch(
-        path_prefix=path.join("slam_nautilus", "source_pix", "mass_total", "reg_kernel"),
+        path_prefix=path.join(
+            "slam_nautilus", "source_pix", "mass_total", "reg_kernel"
+        ),
         number_of_cores=1,
         session=None,
     )

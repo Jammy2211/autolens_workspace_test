@@ -637,7 +637,7 @@ visualize:
       stochastic_histogram: false
     positions:
       image_with_positions: true
-    ray_tracing:
+    tracer:
       all_at_end_fits: false
       all_at_end_png: false
       convergence: false
@@ -646,14 +646,14 @@ visualize:
       magnification: false
       potential: false
       source_plane_image: false
-      subplot_plane_images: false
-      subplot_ray_tracing: true
+      subplot_galaxies_images: false
+      subplot_tracer: true
     samples:
       corner: true
       progress: false
   plots_search:
     dynesty:
-      cornerplot: true
+      corner: true
       cornerpoints: false
       runplot: true
       traceplot: true
@@ -668,7 +668,7 @@ visualize:
       time_series: true
       trajectories: true
     ultranest:
-      cornerplot: true
+      corner: true
       runplot: true
       traceplot: true
     zeus:

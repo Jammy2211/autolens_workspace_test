@@ -98,8 +98,8 @@ hst_up: pixel_scale = 0.03", slow run times.
 ao: pixel_scale = 0.01", very slow :(
 """
 # instrument = "vro"
-# instrument = "euclid"
-instrument = "hst"
+instrument = "euclid"
+# instrument = "hst"
 # instrument = "hst_up"
 # instrument = "ao"
 
@@ -147,7 +147,7 @@ source_galaxy = al.Galaxy(
     ),
 )
 lens_adapt_data = lens_galaxy.image_2d_from(grid=masked_dataset.grid).binned
-tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 traced_grid = tracer.traced_grid_2d_list_from(grid=masked_dataset.grid)[1]
 source_adapt_data = source_galaxy.image_2d_from(grid=traced_grid).binned
 
@@ -156,14 +156,11 @@ The source galaxy whose `VoronoiNNBrightness` `Pixelization` fits the data.
 """
 pixelization = al.Pixelization(
     image_mesh=al.image_mesh.Hilbert(pixels=pixels, weight_floor=0.2, weight_power=3.0),
-
     mesh=al.mesh.VoronoiNN(),
     # regularization=al.reg.AdaptiveBrightnessSplit(
     #     inner_coefficient=0.01, outer_coefficient=100.0, signal_scale=0.05
     # ),
-    regularization=al.reg.MaternKernel(
-        coefficient=1.0, scale=0.5, nu=2.0
-    ),
+    regularization=al.reg.MaternKernel(coefficient=1.0, scale=0.5, nu=2.0),
 )
 
 source_galaxy = al.Galaxy(
@@ -184,7 +181,7 @@ __Numba Caching__
 
 Call FitImaging once to get all numba functions initialized.
 """
-tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
 fit = al.FitImaging(
     dataset=masked_dataset,
@@ -227,9 +224,7 @@ Apply mask, settings and profiling dict to fit, such that timings of every indiv
 """
 run_time_dict = {}
 
-tracer = al.Tracer.from_galaxies(
-    galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time_dict
-)
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time_dict)
 
 fit = al.FitImaging(
     dataset=masked_dataset,

@@ -108,6 +108,7 @@ def run(
             ),
             source=source,
         ),
+        sky=al.util.chaining.sky_from(result=result_source),
         clumps=al.util.chaining.clumps_from(
             result=source_results[0], mass_as_model=True
         ),

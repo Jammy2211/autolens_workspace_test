@@ -66,7 +66,7 @@ source_galaxy = al.Galaxy(
 """
 Use these galaxies to setup a tracer, which will compute the multiple image positions of the simulated dataset.
 """
-tracer = al.Tracer.from_galaxies(galaxies=[lens_galaxy, source_galaxy])
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
 """
 We will use a `PositionSolver` to locate the multiple images. 
@@ -129,7 +129,7 @@ tracer_plotter = aplt.TracerPlotter(
     tracer=tracer, grid=grid_2d, mat_plot_2d=mat_plot_2d
 )
 tracer_plotter.subplot_tracer()
-tracer_plotter.subplot_plane_images()
+tracer_plotter.subplot_galaxies_images()
 
 """
 Create a point-source dictionary data object and output this to a `.json` file, which is the format used to load and
@@ -166,7 +166,7 @@ tracer_plotter = aplt.TracerPlotter(
     tracer=tracer, grid=grid_2d, mat_plot_2d=mat_plot_2d
 )
 tracer_plotter.subplot_tracer()
-tracer_plotter.subplot_plane_images()
+tracer_plotter.subplot_galaxies_images()
 
 """
 __Tracer json__

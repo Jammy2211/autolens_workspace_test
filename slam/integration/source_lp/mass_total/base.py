@@ -122,6 +122,7 @@ source_lp_results = slam.source_lp.run(
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
     source_bulge=af.Model(al.lp.Sersic),
+    sky=af.Model(al.lp.Sky),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
 )

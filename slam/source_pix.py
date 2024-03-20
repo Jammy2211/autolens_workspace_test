@@ -105,6 +105,7 @@ def run(
                 ),
             ),
         ),
+        sky=al.util.chaining.sky_from(result=source_lp_results.last),
         clumps=al.util.chaining.clumps_from(result=source_lp_results.last),
     )
 
@@ -137,7 +138,7 @@ def run(
             image_mesh_min_mesh_number=5,
             image_mesh_adapt_background_percent_threshold=0.1,
             image_mesh_adapt_background_percent_check=0.8,
-        )
+        ),
     )
 
     model_2 = af.Collection(
@@ -161,6 +162,7 @@ def run(
                 ),
             ),
         ),
+        sky=al.util.chaining.sky_from(result=result_1),
         clumps=al.util.chaining.clumps_from(result=source_lp_results.last),
     )
 
@@ -170,6 +172,24 @@ def run(
                 image_mesh_pixels_fixed
             )
 
+    """
+    __Search (Search 2)__
+
+    This search uses the nested sampling algorithm Dynesty, in contrast to nearly every other search throughout the
+    autolens workspace which use `Nautilus`.
+
+    The reason is quite technical, but in a nutshell it is because the likelihood function sampled in `source_pix[2]`
+    is often not smooth. This leads to behaviour where the `Nautilus` search gets stuck sampling small regions of
+    parameter space indefinitely, and does not converge and terminate.
+
+    Dynesty has proven more robust to these issues, because it uses a random walk nested sampling algorithm which
+    is less susceptible to a noisy likelihood function.
+
+    The reason this likelihood function is noisy is because it has parameters which change the distribution of source
+    pixels. For example, the parameters may mean more or less source pixels cluster over the brightest regions of the
+    image. In all other searches, the source pixelization parameters are fixed, ensuring that the likelihood function
+    is smooth.
+    """
     search_2 = af.DynestyStatic(
         name="source_pix[2]_light[fixed]_mass[fixed]_source[pix]",
         **settings_search.search_dict,

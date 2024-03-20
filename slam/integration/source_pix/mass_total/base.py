@@ -124,6 +124,7 @@ def fit():
         shear=af.Model(al.mp.ExternalShear),
         source_bulge=af.Model(al.lp.Sersic),
         mass_centre=(0.0, 0.0),
+        #  sky=af.Model(al.lp.Sky),
         redshift_lens=redshift_lens,
         redshift_source=redshift_source,
     )
