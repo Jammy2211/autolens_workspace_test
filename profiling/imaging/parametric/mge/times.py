@@ -15,9 +15,11 @@ from autoconf import conf
 
 conf.instance.push(new_path=path.join(cwd, "config", "profiling"))
 
+import numpy as np
 import time
 import json
 
+import autofit as af
 import autolens as al
 import autolens.plot as aplt
 
@@ -25,7 +27,9 @@ import autolens.plot as aplt
 """
 The path all profiling results are output.
 """
-file_path = os.path.join("imaging", "profiling", "times", al.__version__, "parametric")
+profiling_path = path.dirname(path.realpath(__file__))
+
+file_path = os.path.join(profiling_path, "times", al.__version__)
 
 """
 The number of repeats used to estimate the run time.
@@ -38,10 +42,7 @@ print()
 These settings control various aspects of how long a fit takes. The values below are default PyAutoLens values.
 """
 grid_class = al.Grid2D
-fractional_accuracy = None
-relative_accuracy = 5.0e-3
-sub_steps = [3, 7, 11, 21, 31, 51, 101, 151, 251, 351]
-sub_size = 4
+sub_size = 1
 mask_radius = 3.5
 psf_shape_2d = (21, 21)
 
@@ -54,19 +55,19 @@ The lens galaxy used to fit the data, which is identical to the lens galaxy used
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    bulge=al.lp_linear.Sersic(
+    bulge=al.lp.Sersic(
         centre=(0.0, 0.0),
         ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
-        #      intensity=4.0,
+        intensity=4.0,
         effective_radius=0.6,
         sersic_index=3.0,
     ),
-    # disk=al.lp.Exponential(
-    #     centre=(0.0, 0.0),
-    #     ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
-    #     intensity=2.0,
-    #     effective_radius=1.6,
-    # ),
+    disk=al.lp.Exponential(
+        centre=(0.0, 0.0),
+        ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
+        intensity=2.0,
+        effective_radius=1.6,
+    ),
     mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
@@ -78,15 +79,27 @@ lens_galaxy = al.Galaxy(
 """
 The source galaxy whose `Voronoi` `Pixelization` fits the data.
 """
-source_galaxy = al.Galaxy(
-    redshift=1.0,
-    bulge=al.lp_linear.Sersic(
+total_gaussians = 20
+
+log10_sigma_list = np.linspace(-2, np.log10(1.0), total_gaussians)
+
+bulge_gaussian_list = []
+
+for i in range(total_gaussians):
+
+    gaussian = al.lp_linear.Gaussian(
         centre=(0.1, 0.1),
         ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=60.0),
-        #   intensity=0.3,
-        effective_radius=0.01,
-        sersic_index=4.0,
-    ),
+        sigma=10 ** log10_sigma_list[i],
+    )
+
+    bulge_gaussian_list.append(gaussian)
+
+bulge = al.lp_basis.Basis(light_profile_list=bulge_gaussian_list)
+
+source = al.Galaxy(
+    redshift=1.0,
+    bulge=bulge,
 )
 
 """
@@ -128,24 +141,12 @@ mask = al.Mask2D.circular(
     sub_size=sub_size,
     radius=mask_radius,
 )
-
-# mask = al.Mask2D.circular_annular(
-#     shape_native=dataset.shape_native,
-#     pixel_scales=dataset.pixel_scales,
-#     sub_size=sub_size,
-#     inner_radius=1.5,
-#     outer_radius=2.5,
-# )
-
 masked_dataset = dataset.apply_mask(mask=mask)
 
 masked_dataset = masked_dataset.apply_settings(
     settings=al.SettingsImaging(
         grid_class=grid_class,
         sub_size=sub_size,
-        fractional_accuracy=fractional_accuracy,
-        relative_accuracy=relative_accuracy,
-        sub_steps=sub_steps,
     )
 )
 
@@ -154,7 +155,7 @@ __Numba Caching__
 
 Call FitImaging once to get all numba functions initialized.
 """
-tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
+tracer = al.Tracer(galaxies=[lens_galaxy, source])
 
 fit = al.FitImaging(dataset=masked_dataset, tracer=tracer)
 print(fit.figure_of_merit)
@@ -179,7 +180,7 @@ Apply mask, settings and profiling dict to fit, such that timings of every indiv
 """
 run_time_dict = {}
 
-tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time_dict)
+tracer = al.Tracer(galaxies=[lens_galaxy, source], run_time_dict=run_time_dict)
 
 fit = al.FitImaging(dataset=masked_dataset, tracer=tracer, run_time_dict=run_time_dict)
 fit.figure_of_merit
@@ -274,8 +275,6 @@ info_dict["repeats"] = repeats
 info_dict["image_pixels"] = masked_dataset.grid.sub_shape_slim
 info_dict["grid_class"] = str(grid_class)
 info_dict["sub_size"] = sub_size
-info_dict["sub_steps"] = sub_steps
-info_dict["fractional_accuracy"] = fractional_accuracy
 info_dict["mask_radius"] = mask_radius
 info_dict["psf_shape_2d"] = psf_shape_2d
 info_dict["excess_time"] = excess_time

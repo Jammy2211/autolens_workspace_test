@@ -146,7 +146,7 @@ regularization, to set up the model and hyper images, and then:
 """
 
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_lp_results.last.adapt_images_from()
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_results.last)
 )
 
 source_pix_results = slam.source_pix.run(
@@ -207,7 +207,7 @@ initialize the model priors . In this example it:
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0])
 )
 
 lens_bulge = af.Model(al.lmp.Sersic)

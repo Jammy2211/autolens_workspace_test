@@ -78,8 +78,8 @@ __Positions__
 This fit also uses the arc-second positions of the multiply imaged lensed source galaxy, which were drawn onto the
 image via the GUI described in the file `autolens_workspace/*/imaging/preprocess/gui/positions.py`.
 """
-positions = al.Grid2DIrregular.from_json(
-    file_path=path.join(dataset_path, "positions.json")
+positions = al.Grid2DIrregular(
+    al.from_json(file_path=path.join(dataset_path, "positions.json"))
 )
 
 """

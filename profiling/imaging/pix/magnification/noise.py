@@ -133,7 +133,7 @@ def func(coefficient):
     fit = al.FitImaging(
         dataset=masked_dataset,
         tracer=tracer,
-        settings_inversion=al.SettingsInversion(relocate_pix_border=True),
+        settings_inversion=al.SettingsInversion(use_border_relocator=True),
     )
 
     fom = fit.figure_of_merit

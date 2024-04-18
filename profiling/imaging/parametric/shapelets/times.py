@@ -50,6 +50,8 @@ print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
 print(f"psf shape = {psf_shape_2d}")
 
+settings_inversion = al.SettingsInversion(use_positive_only_solver=False)
+
 """
 The lens galaxy used to fit the data, which is identical to the lens galaxy used to simulate the data. 
 """
@@ -79,23 +81,49 @@ lens_galaxy = al.Galaxy(
 """
 The source galaxy whose `Voronoi` `Pixelization` fits the data.
 """
-total_gaussians = 20
+# total_xy = 10
+#
+# shapelets_bulge_list = []
+#
+# for x in range(total_xy):
+#     for y in range(total_xy):
+#
+#         shapelet = al.lp_linear.ShapeletCartesianSph(
+#             n_y=y, n_x=x, centre=(0.1, 0.1), beta=0.1
+#         )
+#
+#         shapelets_bulge_list.append(shapelet)
+#
+# bulge = al.lp_basis.Basis(light_profile_list=shapelets_bulge_list)
 
-log10_sigma_list = np.linspace(-2, np.log10(1.0), total_gaussians)
+total_n = 10
+total_m = sum(range(2, total_n + 1)) + 1
 
-bulge_gaussian_list = []
+shapelets_bulge_list = []
 
-for i in range(total_gaussians):
+n_count = 1
+m_count = -1
 
-    gaussian = al.lp_linear.Gaussian(
+for i in range(total_n + total_m):
+
+    shapelet = al.lp_linear.ShapeletPolar(
+        n=n_count,
+        m=m_count,
         centre=(0.1, 0.1),
         ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=60.0),
-        sigma=10 ** log10_sigma_list[i],
+        beta=1.0
     )
 
-    bulge_gaussian_list.append(gaussian)
+    shapelets_bulge_list.append(shapelet)
 
-bulge = al.lp_basis.Basis(light_profile_list=bulge_gaussian_list)
+    m_count += 2
+
+    if m_count > n_count:
+        n_count += 1
+        m_count = -n_count
+
+
+bulge = al.lp_basis.Basis(light_profile_list=shapelets_bulge_list)
 
 source = al.Galaxy(
     redshift=1.0,
@@ -157,7 +185,7 @@ Call FitImaging once to get all numba functions initialized.
 """
 tracer = al.Tracer(galaxies=[lens_galaxy, source])
 
-fit = al.FitImaging(dataset=masked_dataset, tracer=tracer)
+fit = al.FitImaging(dataset=masked_dataset, tracer=tracer, settings_inversion=settings_inversion)
 print(fit.figure_of_merit)
 
 """
@@ -168,7 +196,7 @@ Time FitImaging by itself, to compare to profiling dict call.
 print()
 start = time.time()
 for i in range(repeats):
-    fit = al.FitImaging(dataset=masked_dataset, tracer=tracer)
+    fit = al.FitImaging(dataset=masked_dataset, tracer=tracer, settings_inversion=settings_inversion)
     fit.log_evidence
 fit_time = (time.time() - start) / repeats
 print(f"Fit Time = {fit_time} \n")
@@ -182,7 +210,7 @@ run_time_dict = {}
 
 tracer = al.Tracer(galaxies=[lens_galaxy, source], run_time_dict=run_time_dict)
 
-fit = al.FitImaging(dataset=masked_dataset, tracer=tracer, run_time_dict=run_time_dict)
+fit = al.FitImaging(dataset=masked_dataset, tracer=tracer, settings_inversion=settings_inversion, run_time_dict=run_time_dict)
 fit.figure_of_merit
 
 run_time_dict = fit.run_time_dict

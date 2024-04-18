@@ -16,9 +16,7 @@ from autoconf import conf
 conf.instance.push(new_path=path.join(cwd, "config", "profiling"))
 
 import time
-import numpy as np
 import json
-from autoarray.inversion.pixelization import mappers
 import autolens as al
 import autolens.plot as aplt
 
@@ -98,8 +96,8 @@ hst_up: pixel_scale = 0.03", slow run times.
 ao: pixel_scale = 0.01", very slow :(
 """
 # instrument = "vro"
-instrument = "euclid"
-# instrument = "hst"
+# instrument = "euclid"
+instrument = "hst"
 # instrument = "hst_up"
 # instrument = "ao"
 
@@ -116,6 +114,7 @@ dataset = al.Imaging.from_fits(
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
+    over_sampling_pixelization=al.OverSamplingUniform(sub_size=4)
 )
 
 """
@@ -124,14 +123,10 @@ Apply the 2D mask, which for the settings above is representative of the masks w
 mask = al.Mask2D.circular(
     shape_native=dataset.shape_native,
     pixel_scales=dataset.pixel_scales,
-    sub_size=sub_size,
     radius=mask_radius,
 )
 
 masked_dataset = dataset.apply_mask(mask=mask)
-masked_dataset = masked_dataset.apply_settings(
-    settings=al.SettingsImaging(sub_size=sub_size)
-)
 
 """
 Generate the adapt-images used to adapt the source pixelization and regularization.
@@ -146,10 +141,32 @@ source_galaxy = al.Galaxy(
         sersic_index=2.5,
     ),
 )
-lens_adapt_data = lens_galaxy.image_2d_from(grid=masked_dataset.grid).binned
+lens_adapt_data = lens_galaxy.image_2d_from(grid=masked_dataset.grid)
 tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 traced_grid = tracer.traced_grid_2d_list_from(grid=masked_dataset.grid)[1]
-source_adapt_data = source_galaxy.image_2d_from(grid=traced_grid).binned
+source_adapt_data = source_galaxy.image_2d_from(grid=traced_grid)
+
+print(source_adapt_data.shape)
+print(masked_dataset.noise_map.shape)
+
+import numpy as np
+
+sub_size = np.where((source_adapt_data / masked_dataset.noise_map) > 25, 4, 2)
+
+print(np.max(sub_size))
+
+dataset = al.Imaging(
+    data=dataset.data,
+    noise_map=dataset.noise_map,
+    psf=dataset.psf,
+    over_sampling_pixelization=al.OverSamplingUniform(sub_size=sub_size),
+)
+
+print(masked_dataset.grid_pixelization.over_sampler.sub_total)
+
+masked_dataset = dataset.apply_mask(mask=mask)
+
+print(masked_dataset.grid_pixelization.over_sampler.sub_total)
 
 """
 The source galaxy whose `VoronoiNNBrightness` `Pixelization` fits the data.
@@ -157,10 +174,10 @@ The source galaxy whose `VoronoiNNBrightness` `Pixelization` fits the data.
 pixelization = al.Pixelization(
     image_mesh=al.image_mesh.Hilbert(pixels=pixels, weight_floor=0.2, weight_power=3.0),
     mesh=al.mesh.VoronoiNN(),
-    # regularization=al.reg.AdaptiveBrightnessSplit(
-    #     inner_coefficient=0.01, outer_coefficient=100.0, signal_scale=0.05
-    # ),
-    regularization=al.reg.MaternKernel(coefficient=1.0, scale=0.5, nu=2.0),
+    regularization=al.reg.AdaptiveBrightnessSplit(
+        inner_coefficient=0.01, outer_coefficient=100.0, signal_scale=0.05
+    ),
+    # regularization=al.reg.MaternKernel(coefficient=1.0, scale=0.5, nu=2.0),
 )
 
 source_galaxy = al.Galaxy(
@@ -249,7 +266,7 @@ These two numbers are the primary driver of run time. More pixels = longer run t
 
 print(f"Inversion fit run times for image type {instrument} \n")
 print(f"Number of pixels = {masked_dataset.grid.shape_slim} \n")
-print(f"Number of sub-pixels = {masked_dataset.grid.sub_shape_slim} \n")
+print(f"Number of sub-pixels = {masked_dataset.grid_pixelization.over_sampler.sub_total} \n")
 
 """
 Print the profiling results of every step of the fit for command line output when running profiling scripts.
@@ -321,13 +338,21 @@ mat_plot_2d = aplt.MatPlot2D(
 fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
 fit_plotter.subplot_of_planes(plane_index=1)
 
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_inversion_0", format="png"
+    )
+)
+fit_plotter = aplt.InversionPlotter(inversion=fit.inversion, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_of_mapper(mapper_index=0)
+
 """
 The `info_dict` contains all the key information of the analysis which describes its run times.
 """
 info_dict = {}
 info_dict["repeats"] = repeats
-info_dict["image_pixels"] = masked_dataset.grid.sub_shape_slim
-info_dict["sub_size"] = sub_size
+info_dict["image_pixels"] = masked_dataset.grid.shape_slim
+info_dict["sub_total"] = masked_dataset.grid_pixelization.over_sampler.sub_total
 info_dict["mask_radius"] = mask_radius
 info_dict["psf_shape_2d"] = psf_shape_2d
 try:

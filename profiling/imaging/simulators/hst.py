@@ -92,7 +92,7 @@ source_galaxy = al.Galaxy(
         ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=60.0),
         intensity=0.3,
         effective_radius=1.0,
-        sersic_index=2.5,
+        sersic_index=1.0,
     ),
 )
 

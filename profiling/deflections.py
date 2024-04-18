@@ -4,63 +4,56 @@ from skimage import measure
 
 cwd = os.getcwd()
 
-from autoconf import conf
-
-conf.instance.push(new_path=path.join(cwd, "config", "shear"))
-
 import autolens as al
 import autolens.plot as aplt
 
 import time
 
-grid = al.Grid2D.uniform(shape_native=(20000, 20000), pixel_scales=1.0)
+mask = al.Mask2D.circular(
+    shape_native=(200, 200),
+    pixel_scales=0.05,
+    radius=3.0
+)
 
+grid = al.Grid2D.from_mask(mask=mask)
+
+"""
+__SIS__
+"""
 mass = al.mp.IsothermalSph(
     centre=(0.0, 0.0),
-    einstein_radius=26.0,
+    einstein_radius=2.0,
 )
+deflections = mass.deflections_yx_2d_from(grid=grid)
+
+
+start = time.time()
+deflections = mass.deflections_yx_2d_from(grid=grid)
+print(f"SIS {time.time() - start}")
+
 
 """
-__Jacobian__
+__NFWSph__
 """
-start = time.time()
-jacobian = mass.jacobian_from(grid=grid)
-print(f"jacobian_from {time.time() - start}")
-
-"""
-__Convergence__
-"""
-start = time.time()
-convergence = mass.convergence_2d_via_jacobian_from(grid=grid, jacobian=jacobian)
-print(f"convergence_2d_via_jacobian_from {time.time() - start}")
-
-"""
-__Shear__
-"""
-start = time.time()
-shear_yx = mass.shear_yx_2d_via_jacobian_from(grid=grid, jacobian=jacobian)
-print(f"shear_yx_2d_via_jacobian_from {time.time() - start}")
-
-"""
-__Tangential Eigen Values__
-"""
-start = time.time()
-tangential_eigen_values = al.Array2D(
-    values=1 - convergence - shear_yx.magnitudes, mask=grid.mask
+mass = al.mp.NFWSph(
+    centre=(0.0, 0.0),
 )
-print(f"tangential_eigen_values {time.time() - start}")
+deflections = mass.deflections_yx_2d_from(grid=grid)
 
-"""
-__Find Contours__
-"""
 start = time.time()
-tangential_critical_curve_indices_list = measure.find_contours(
-    tangential_eigen_values.native, 0
+deflections = mass.deflections_yx_2d_from(grid=grid)
+print(f"NFWSph {time.time() - start}")
+
+
+
+"""
+__gNFWSph__
+"""
+mass = al.mp.gNFWSph(
+    centre=(0.0, 0.0),
 )
-print(f"find_contours {time.time() - start}")
+deflections = mass.deflections_yx_2d_from(grid=grid)
 
-
-# mass.shear_yx_2d_via_hessian_from(grid=grid)
-
-# end = time.time()
-# print(end - start)
+start = time.time()
+deflections = mass.deflections_yx_2d_from(grid=grid)
+print(f"gNFWSph {time.time() - start}")

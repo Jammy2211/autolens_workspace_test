@@ -225,7 +225,7 @@ In this example it:
  PIPELINE [fixed values].
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_lp_results.last.adapt_images_from()
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_results.last)
 )
 
 
@@ -315,7 +315,7 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_lp_results.last.adapt_images_from()
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_results.last)
 )
 
 mass_results = slam.mass_total.run(

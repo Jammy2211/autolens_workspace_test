@@ -296,7 +296,7 @@ initialize the model priors . In this example it:
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_lp_results.last.adapt_images_from()
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_results.last)
 )
 
 mass_results = slam.mass_light_dark.run__from_light_linear(

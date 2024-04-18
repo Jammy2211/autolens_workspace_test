@@ -52,8 +52,8 @@ dataset = al.Interferometer.from_fits(
 """
 __Positions__
 """
-positions = al.Grid2DIrregular.from_json(
-    file_path=path.join(dataset_path, "positions.json")
+positions = al.Grid2DIrregular(
+    al.from_json(file_path=path.join(dataset_path, "positions.json"))
 )
 
 

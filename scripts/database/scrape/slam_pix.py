@@ -116,7 +116,7 @@ regularization, to set up the model and hyper images, and then:
  SOURCE PIX PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_lp_results.last.adapt_images_from()
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_results.last)
 )
 
 source_pix_results = slam.source_pix.run(
@@ -189,7 +189,7 @@ bulge = af.Model(
 )
 
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0])
 )
 
 light_results = slam.light_lp.run(
@@ -219,7 +219,7 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0])
 )
 
 multipole = af.Model(al.mp.PowerLawMultipole)
@@ -389,7 +389,7 @@ for dataset_list in imaging_gen:
 fit_agg = al.agg.FitImagingAgg(
     aggregator=agg,
     settings_dataset=al.SettingsImaging(sub_size=4),
-    settings_inversion=al.SettingsInversion(relocate_pix_border=False),
+    settings_inversion=al.SettingsInversion(use_border_relocator=False),
 )
 fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
 

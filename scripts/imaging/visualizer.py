@@ -65,8 +65,8 @@ dataset_plotter.subplot_dataset()
 """
 __Positions__
 """
-positions = al.Grid2DIrregular.from_json(
-    file_path=path.join(dataset_path, "positions.json")
+positions = al.Grid2DIrregular(
+    al.from_json(file_path=path.join(dataset_path, "positions.json"))
 )
 
 """

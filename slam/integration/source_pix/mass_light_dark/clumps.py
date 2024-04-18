@@ -223,7 +223,7 @@ initialize the model priors . In this example it:
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from().hyper
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0]).hyper
 )
 
 lens_bulge = af.Model(al.lmp.Sersic)
@@ -258,7 +258,7 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0])
 )
 
 subhalo_results = slam.subhalo.detection.run(

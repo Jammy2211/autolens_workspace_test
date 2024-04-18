@@ -177,7 +177,7 @@ initialize the model priors . In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the MASS 
  LIGHT DARK PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=dataset, adapt_images=source_lp_results.last.adapt_images_from())
+analysis = al.AnalysisImaging(dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_results.last))
 
 mass_results = slam.mass_light_dark.run(
     settings_search=settings_search,
@@ -205,8 +205,7 @@ For this runner the SUBHALO PIPELINE customizes:
  - The `number_of_cores` used for the gridsearch, where `number_of_cores > 1` performs the model-fits in paralle using
  the Python multiprocessing module.
 """
-subhalo_results = slam.subhalo.sensitivity_mapping(
-    path_prefix=path_prefix,subhalo.sensitivity_imaging_lp.run(
+subhalo_results = slam.subhalo.sensitivity_imaging_lp.run(
     mask=mask,
     psf=dataset.psf,
     mass_results=mass_results,

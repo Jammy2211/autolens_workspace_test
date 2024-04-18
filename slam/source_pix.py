@@ -74,8 +74,6 @@ def run(
     images that are used in search 2.
     """
 
-    analysis.adapt_images = source_lp_results.last.adapt_images_from()
-
     mass = al.util.chaining.mass_from(
         mass=source_lp_results.last.model.galaxies.lens.mass,
         mass_result=source_lp_results.last.model.galaxies.lens.mass,
@@ -132,7 +130,7 @@ def run(
     """
     analysis = al.AnalysisImaging(
         dataset=analysis.dataset,
-        adapt_images=result_1.adapt_images_from(use_model_images=False),
+        adapt_image_maker=al.AdaptImageMaker(result=result_1),
         settings_inversion=al.SettingsInversion(
             image_mesh_min_mesh_pixels_per_pixel=3,
             image_mesh_min_mesh_number=5,

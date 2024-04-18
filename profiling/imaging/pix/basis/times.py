@@ -111,8 +111,8 @@ hst_up: pixel_scale = 0.03", slow run times.
 ao: pixel_scale = 0.01", very slow :(
 """
 # instrument = "vro"
-instrument = "euclid"
-# instrument = "hst"
+# instrument = "euclid"
+instrument = "hst"
 # instrument = "hst_up"
 # instrument = "ao"
 
@@ -129,6 +129,7 @@ dataset = al.Imaging.from_fits(
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
+    over_sampling_pixelization=al.OverSamplingUniform(sub_size=4)
 )
 
 dataset.psf = dataset.psf.resized_from(new_shape=psf_shape_2d)
@@ -139,7 +140,6 @@ Apply the 2D mask, which for the settings above is representative of the masks w
 mask = al.Mask2D.circular(
     shape_native=dataset.shape_native,
     pixel_scales=dataset.pixel_scales,
-    sub_size=sub_size,
     radius=mask_radius,
 )
 
@@ -152,10 +152,6 @@ mask = al.Mask2D.circular(
 # )
 
 masked_dataset = dataset.apply_mask(mask=mask)
-
-masked_dataset = masked_dataset.apply_settings(
-    settings=al.SettingsImaging(sub_size_pixelization=sub_size)
-)
 
 """
 __Numba Caching__
@@ -213,7 +209,7 @@ These two numbers are the primary driver of run time. More pixels = longer run t
 
 print(f"Inversion fit run times for image type {instrument} \n")
 print(f"Number of pixels = {masked_dataset.grid.shape_slim} \n")
-print(f"Number of sub-pixels = {masked_dataset.grid.sub_shape_slim} \n")
+print(f"Number of sub-pixels = {masked_dataset.grid.sub_total} \n")
 
 """
 Print the profiling results of every step of the fit for command line output when running profiling scripts.

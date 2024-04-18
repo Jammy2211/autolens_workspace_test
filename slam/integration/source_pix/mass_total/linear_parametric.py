@@ -138,7 +138,7 @@ regularization, to set up the model and hyper images, and then:
 """
 
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_lp_results.last.adapt_images_from()
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_results.last)
 )
 
 source_pix_results = slam.source_pix.run(
@@ -168,7 +168,7 @@ In this example it:
  PIPELINE [fixed values].
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0])
 )
 
 light_results = slam.light_lp.run(
@@ -198,7 +198,7 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0])
 )
 
 mass_results = slam.mass_total.run(
@@ -226,7 +226,7 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_images=source_pix_results[0].adapt_images_from()
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0])
 )
 
 subhalo_results = slam.subhalo.detection.run(
