@@ -14,12 +14,11 @@ def run(
     shear: af.Model(al.mp.ExternalShear) = af.Model(al.mp.ExternalShear),
     source_bulge: Optional[af.Model] = af.Model(al.lp.Sersic),
     source_disk: Optional[af.Model] = None,
-    sky: Optional[af.Model] = None,
     redshift_lens: float = 0.5,
     redshift_source: float = 1.0,
     mass_centre: Optional[Tuple[float, float]] = None,
     clump_model: Union[al.ClumpModel, al.ClumpModelDisabled] = al.ClumpModelDisabled(),
-) -> af.ResultsCollection:
+) -> af.Result:
     """
     The SlaM SOURCE LP PIPELINE, which provides an initial model for the lens's light, mass and source using a
     parametric source model (e.g. Sersics, an MGE).
@@ -44,9 +43,6 @@ def run(
     source_disk
         The model used to represent the light distribution of the source galaxy's disk (set to
         None to omit a disk).
-    sky
-        The model used to represent the sky background. Even if  the sky is already been subtracted from the image,
-        this can model any residual background signal.
     redshift_lens
         The redshift of the lens galaxy fitted, used by the pipeline for converting arc-seconds to kpc, masses to
         solMass, etc.
@@ -76,7 +72,7 @@ def run(
     if mass_centre is not None:
         mass.centre = mass_centre
 
-    model_1 = af.Collection(
+    model = af.Collection(
         galaxies=af.Collection(
             lens=af.Model(
                 al.Galaxy,
@@ -93,18 +89,15 @@ def run(
                 disk=source_disk,
             ),
         ),
-        sky=sky,
         clumps=clump_model.clumps,
     )
 
-    search_1 = af.Nautilus(
+    search = af.Nautilus(
         name="source_lp[1]_light[lp]_mass[total]_source[lp]",
         **settings_search.search_dict,
         n_live=200,
     )
 
-    result_1 = search_1.fit(
-        model=model_1, analysis=analysis, **settings_search.fit_dict
-    )
+    result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
 
-    return af.ResultsCollection([result_1])
+    return result

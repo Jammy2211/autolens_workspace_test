@@ -118,7 +118,7 @@ bulge = af.Model(al.lp_linear.Sersic)
 disk = af.Model(al.lp_linear.Sersic)
 bulge.centre = disk.centre
 
-source_lp_results = slam.source_lp.run(
+source_lp_result = slam.source_lp.run(
     settings_search=settings_search,
     analysis=analysis,
     lens_bulge=bulge,
@@ -154,7 +154,7 @@ bulge.centre = disk.centre
 light_results = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_lp_results,
+    source_result=source_lp_result,
     lens_bulge=bulge,
     lens_disk=disk,
 )
@@ -179,13 +179,13 @@ initialize the model priors . In this example it:
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_results.last)
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
 )
 
 mass_results = slam.mass_light_dark.run__from_light_linear(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_lp_results,
+    source_results=source_lp_result,
     light_results=light_results,
     dark=af.Model(al.mp.NFWMCRLudlow),
 )

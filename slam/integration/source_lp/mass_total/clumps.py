@@ -133,7 +133,7 @@ bulge = af.Model(al.lp.Sersic)
 disk = af.Model(al.lp.Exponential)
 bulge.centre = disk.centre
 
-source_lp_results = slam.source_lp.run(
+source_lp_result = slam.source_lp.run(
     settings_search=settings_search,
     analysis=analysis,
     lens_bulge=bulge,
@@ -171,7 +171,7 @@ bulge.centre = disk.centre
 light_results = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_lp_results,
+    source_result=source_lp_result,
     lens_bulge=bulge,
     lens_disk=disk,
 )
@@ -195,14 +195,14 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_results.last)
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
 )
 
 mass_results = slam.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_lp_results,
-    light_results=light_results,
+    source_results=source_lp_result,
+    light_result=light_results,
     mass=af.Model(al.mp.PowerLaw),
 )
 
@@ -223,7 +223,7 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_results.last)
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
 )
 
 subhalo_results = slam.subhalo.detection.run(

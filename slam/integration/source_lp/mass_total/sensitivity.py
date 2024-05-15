@@ -30,8 +30,9 @@ This uses the SLaM pipelines:
 
 Check them out for a full description of the analysis!
 """
-def fit():
 
+
+def fit():
     # %matplotlib inline
     # from pyprojroot import here
     # workspace_path = str(here())
@@ -99,7 +100,6 @@ def fit():
     redshift_lens = 0.5
     redshift_source = 1.0
 
-
     """
     __SOURCE LP PIPELINE (with lens light)__
     
@@ -121,7 +121,7 @@ def fit():
     disk = af.Model(al.lp_linear.Exponential)
     bulge.centre = disk.centre
 
-    source_lp_results = slam.source_lp.run(
+    source_lp_result = slam.source_lp.run(
         settings_search=settings_search,
         analysis=analysis,
         lens_bulge=bulge,
@@ -200,7 +200,7 @@ def fit():
     light_results = slam.light_lp.run(
         settings_search=settings_search,
         analysis=analysis,
-        source_results=source_lp_results,
+        source_result=source_lp_result,
         lens_bulge=bulge,
         lens_disk=disk,
     )
@@ -224,14 +224,15 @@ def fit():
      - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
     """
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_results.last)
+        dataset=dataset,
+        adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
     )
 
     mass_results = slam.mass_total.run(
         settings_search=settings_search,
         analysis=analysis,
-        source_results=source_lp_results,
-        light_results=light_results,
+        source_results=source_lp_result,
+        light_result=light_results,
         mass=af.Model(al.mp.PowerLaw),
     )
 
@@ -250,12 +251,13 @@ def fit():
         settings_search=settings_search,
         mask=mask,
         psf=dataset.psf,
-        adapt_images=al.AdaptImages.from_result(result=source_lp_results.last),
+        adapt_images=al.AdaptImages.from_result(result=source_lp_result),
         mass_results=mass_results,
         subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
         grid_dimension_arcsec=3.0,
         number_of_steps=2,
     )
+
 
 if __name__ == "__main__":
     fit()

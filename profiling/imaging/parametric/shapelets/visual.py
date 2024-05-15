@@ -61,10 +61,7 @@ shapelets_dict = {}
 
 for x in range(total_xy):
     for y in range(total_xy):
-
-        shapelet = al.lp.ShapeletCartesianSph(
-            n_y=y, n_x=x, centre=(0., 0.), beta=1.0
-        )
+        shapelet = al.lp.ShapeletCartesianSph(n_y=y, n_x=x, centre=(0.0, 0.0), beta=1.0)
 
         shapelets_dict[f"shapelet_{x}_{y}"] = shapelet
 
@@ -124,7 +121,6 @@ n_count = 1
 m_count = -1
 
 for i, lpp in enumerate(light_profile_plotters):
-
     lpp.set_title(f"shapelet_{n_count}_{m_count}")
 
     print(f"n = {n_count}, m = {m_count}")
@@ -135,6 +131,4 @@ for i, lpp in enumerate(light_profile_plotters):
         n_count += 1
         m_count = -n_count
 
-plotter.subplot_of_plotters_figure(
-    plotter_list=light_profile_plotters, name="image"
-)
+plotter.subplot_of_plotters_figure(plotter_list=light_profile_plotters, name="image")

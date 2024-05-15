@@ -105,7 +105,7 @@ mass_results = slam.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
     source_results=source_results,
-    light_results=None,
+    light_result=None,
     mass=af.Model(al.mp.PowerLaw),
 )
 

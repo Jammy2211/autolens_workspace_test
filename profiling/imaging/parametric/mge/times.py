@@ -86,7 +86,6 @@ log10_sigma_list = np.linspace(-2, np.log10(1.0), total_gaussians)
 bulge_gaussian_list = []
 
 for i in range(total_gaussians):
-
     gaussian = al.lp_linear.Gaussian(
         centre=(0.1, 0.1),
         ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=60.0),
@@ -142,13 +141,6 @@ mask = al.Mask2D.circular(
     radius=mask_radius,
 )
 masked_dataset = dataset.apply_mask(mask=mask)
-
-masked_dataset = masked_dataset.apply_settings(
-    settings=al.SettingsImaging(
-        grid_class=grid_class,
-        sub_size=sub_size,
-    )
-)
 
 """
 __Numba Caching__

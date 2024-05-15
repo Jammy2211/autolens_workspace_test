@@ -120,7 +120,7 @@ bulge = af.Model(al.lp_linear.Sersic)
 disk = af.Model(al.lp_linear.Sersic)
 bulge.centre = disk.centre
 
-source_lp_results = slam.source_lp.run(
+source_lp_result = slam.source_lp.run(
     settings_search=settings_search,
     analysis=analysis,
     lens_bulge=bulge,
@@ -136,7 +136,7 @@ source_lp_results = slam.source_lp.run(
 """
 __SOURCE PIX PIPELINE (with lens light)__
 
-The SOURCE PIX PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
+The SOURCE PIX PIPELINE (with lens light) uses two searches to initialize a robust model for the pixelization
 that reconstructs the source galaxy's light. It begins by fitting a `Voronoi` pixelization with `Constant` 
 regularization, to set up the model and hyper images, and then:
 
@@ -150,10 +150,10 @@ analysis = al.AnalysisImaging(dataset=dataset)
 source_pix_results = slam.source_pix.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_lp_results=source_lp_results,
+    source_lp_result=source_lp_result,
     image_mesh=al.image_mesh.Hilbert,
     mesh=al.mesh.Voronoi,
-    regularization=al.reg.AdaptiveBrightness,
+    regularization=al.reg.AdaptiveBrightnessSplit,
 )
 
 
@@ -181,7 +181,7 @@ bulge.centre = disk.centre
 light_results = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_pix_results,
+    source_result=source_pix_results,
     lens_bulge=bulge,
     lens_disk=disk,
 )
@@ -205,7 +205,7 @@ initialize the model priors . In this example it:
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0])
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
 )
 
 lens_bulge = af.Model(al.lmp.Sersic)

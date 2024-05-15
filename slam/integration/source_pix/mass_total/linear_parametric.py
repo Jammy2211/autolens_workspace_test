@@ -111,7 +111,7 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=dataset)
 
-source_lp_results = slam.source_lp.run(
+source_lp_result = slam.source_lp.run(
     settings_search=settings_search,
     analysis=analysis,
     lens_bulge=af.Model(al.lp_linear.Sersic),
@@ -127,7 +127,7 @@ source_lp_results = slam.source_lp.run(
 """
 __SOURCE PIX PIPELINE (with lens light)__
 
-The SOURCE PIX PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
+The SOURCE PIX PIPELINE (with lens light) uses two searches to initialize a robust model for the pixelization
 that reconstructs the source galaxy's light. It begins by fitting a `Voronoi` pixelization with `Constant` 
 regularization, to set up the model and hyper images, and then:
 
@@ -138,16 +138,16 @@ regularization, to set up the model and hyper images, and then:
 """
 
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_results.last)
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
 )
 
 source_pix_results = slam.source_pix.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_lp_results=source_lp_results,
+    source_lp_result=source_lp_result,
     image_mesh=al.image_mesh.Hilbert,
     mesh=al.mesh.Voronoi,
-    regularization=al.reg.AdaptiveBrightness,
+    regularization=al.reg.AdaptiveBrightnessSplit,
 )
 
 """
@@ -168,13 +168,13 @@ In this example it:
  PIPELINE [fixed values].
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0])
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
 )
 
 light_results = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_pix_results,
+    source_result=source_pix_results,
     lens_bulge=af.Model(al.lp_linear.Sersic),
     lens_disk=af.Model(al.lp_linear.Sersic),
 )
@@ -198,14 +198,14 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0])
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
 )
 
 mass_results = slam.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
     source_results=source_pix_results,
-    light_results=light_results,
+    light_result=light_results,
     mass=af.Model(al.mp.PowerLaw),
 )
 
@@ -226,7 +226,7 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0])
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
 )
 
 subhalo_results = slam.subhalo.detection.run(

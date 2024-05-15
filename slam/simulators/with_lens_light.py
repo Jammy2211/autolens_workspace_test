@@ -52,7 +52,7 @@ total flux emitted within a pixel.
 #     shape_native=(100, 100),
 #     pixel_scales=0.1,
 #     fractional_accuracy=0.9999,
-#     sub_steps=[2, 4, 8, 16, 24],
+#     sub_steps=[2, 4, 8, 16],
 # )
 
 grid_2d = al.Grid2D.uniform(

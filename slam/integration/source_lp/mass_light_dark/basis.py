@@ -182,7 +182,7 @@ for i, gaussian in enumerate(gaussian_list):
 
 source_bulge = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
 
-source_lp_results = slam.source_lp.run(
+source_lp_result = slam.source_lp.run(
     settings_search=settings_search,
     analysis=analysis,
     lens_bulge=lens_bulge,
@@ -271,7 +271,7 @@ lens_disk = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
 light_results = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_lp_results,
+    source_result=source_lp_result,
     lens_bulge=lens_bulge,
     lens_disk=lens_disk,
 )
@@ -296,13 +296,13 @@ initialize the model priors . In this example it:
  LIGHT DARK PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_results.last)
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
 )
 
 mass_results = slam.mass_light_dark.run__from_light_linear(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_lp_results,
+    source_results=source_lp_result,
     light_results=light_results,
     dark=af.Model(al.mp.NFWMCRLudlow),
 )

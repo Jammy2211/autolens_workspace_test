@@ -80,7 +80,7 @@ def fit():
     The settings of autofit, which controls the output paths, parallelization, database use, etc.
     """
     settings_search = af.SettingsSearch(
-        path_prefix=path.join("slam_nautilus", "source_pix", "mass_total", "base"),
+        path_prefix=path.join("slam", "source_pix", "mass_total", "base"),
         number_of_cores=1,
         session=None,
     )
@@ -115,7 +115,7 @@ def fit():
     disk = af.Model(al.lp.Exponential)
     bulge.centre = disk.centre
 
-    source_lp_results = slam.source_lp.run(
+    source_lp_result = slam.source_lp.run(
         settings_search=settings_search,
         analysis=analysis,
         lens_bulge=bulge,
@@ -124,17 +124,25 @@ def fit():
         shear=af.Model(al.mp.ExternalShear),
         source_bulge=af.Model(al.lp.Sersic),
         mass_centre=(0.0, 0.0),
-        #  sky=af.Model(al.lp.Sky),
         redshift_lens=redshift_lens,
         redshift_source=redshift_source,
     )
 
     """
-    __SOURCE PIX PIPELINE (with lens light)__
+    __SOURCE PIX PIPELINE 1 (with lens light)__
     
-    The SOURCE PIX PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
-    that reconstructs the source galaxy's light. It begins by fitting a `Voronoi` pixelization with `Constant` 
-    regularization, to set up the model and hyper images, and then:
+    The SOURCE PIX PIPELINE (with lens light) uses two searches to initialize a robust model for the pixelization
+    that reconstructs the source galaxy's light. 
+    
+    This pixelization adapts its source pixels to the morphology of the source, placing more pixels in its 
+    brightest regions. To do this, an "adapt image" is required, which is the lens light subtracted image meaning
+    only the lensed source emission is present.
+    
+    The SOURCE LP Pipeline result is not good enough quality to set up this adapt image (e.g. the source
+    may be more complex than a light profile). The first step of the SOURCE PIX PIPELINE therefore fits a new
+    model using a pixelization to create this adapt image.
+        
+    It fits a `Voronoi` pixelization, `Constant` regularization, to set up the model and hyper images, and then:
     
      - Uses a `Voronoi` pixelization.
      - Uses an `AdaptiveBrightness` regularization.
@@ -142,17 +150,53 @@ def fit():
      SOURCE PIX PIPELINE.
     """
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_results.last)
+        dataset=dataset,
+        adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
     )
 
-    source_pix_results = slam.source_pix.run(
+    source_pix_result_1 = slam.source_pix.run_1(
         settings_search=settings_search,
         analysis=analysis,
-        source_lp_results=source_lp_results,
-        image_mesh=al.image_mesh.Hilbert,
+        source_lp_result=source_lp_result,
         mesh_init=al.mesh.VoronoiNN,
+    )
+
+    """
+    __SOURCE PIX PIPELINE 2 (with lens light)__
+    """
+    adapt_image_maker = al.AdaptImageMaker(result=source_pix_result_1)
+    adapt_image = adapt_image_maker.adapt_images.galaxy_name_image_dict[
+        "('galaxies', 'source')"
+    ]
+
+    over_sampling = al.OverSamplingUniform.from_adapt(
+        data=adapt_image,
+        noise_map=dataset.noise_map,
+    )
+
+    dataset = dataset.apply_over_sampling(
+        over_sampling_pixelization=over_sampling
+    )
+
+    analysis = al.AnalysisImaging(
+        dataset=dataset,
+        adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
+        settings_inversion=al.SettingsInversion(
+            image_mesh_min_mesh_pixels_per_pixel=3,
+            image_mesh_min_mesh_number=5,
+            image_mesh_adapt_background_percent_threshold=0.1,
+            image_mesh_adapt_background_percent_check=0.8,
+        ),
+    )
+
+    source_pix_result_2 = slam.source_pix.run_2(
+        settings_search=settings_search,
+        analysis=analysis,
+        source_lp_result=source_lp_result,
+        source_pix_result_1=source_pix_result_1,
+        image_mesh=al.image_mesh.Hilbert,
         mesh=al.mesh.VoronoiNN,
-        regularization=al.reg.AdaptiveBrightness,
+        regularization=al.reg.AdaptiveBrightnessSplit,
     )
 
     """
@@ -177,13 +221,15 @@ def fit():
     bulge.centre = disk.centre
 
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0])
+        dataset=dataset,
+        adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
     )
 
-    light_results = slam.light_lp.run(
+    light_result = slam.light_lp.run(
         settings_search=settings_search,
         analysis=analysis,
-        source_results=source_pix_results,
+        source_result_for_lens=source_pix_result_1,
+        source_result_for_source=source_pix_result_2,
         lens_bulge=bulge,
         lens_disk=disk,
     )
@@ -207,14 +253,16 @@ def fit():
      - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
     """
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0])
+        dataset=dataset,
+        adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
     )
 
-    mass_results = slam.mass_total.run(
+    mass_result = slam.mass_total.run(
         settings_search=settings_search,
         analysis=analysis,
-        source_results=source_pix_results,
-        light_results=light_results,
+        source_result_for_lens=source_pix_result_1,
+        source_result_for_source=source_pix_result_2,
+        light_result=light_result,
         mass=af.Model(al.mp.PowerLaw),
     )
 
@@ -235,16 +283,32 @@ def fit():
      the Python multiprocessing module.
     """
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_results[0])
+        dataset=dataset,
+        adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
     )
 
-    subhalo_results = slam.subhalo.detection.run(
+    subhalo_result_1 = slam.subhalo.detection.run_1_no_subhalo(
         settings_search=settings_search,
         analysis=analysis,
-        mass_results=mass_results,
+        mass_result=mass_result,
+    )
+
+    subhalo_grid_search_result_2 = slam.subhalo.detection.run_2_grid_search(
+        settings_search=settings_search,
+        analysis=analysis,
+        mass_result=mass_result,
+        subhalo_result_1=subhalo_result_1,
         subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
         grid_dimension_arcsec=3.0,
         number_of_steps=2,
+    )
+
+    subhalo_result_3 = slam.subhalo.detection.run_3_subhalo(
+        settings_search=settings_search,
+        analysis=analysis,
+        subhalo_result_1=subhalo_result_1,
+        subhalo_grid_search_result_2=subhalo_grid_search_result_2,
+        subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     )
 
     """

@@ -105,13 +105,12 @@ n_count = 1
 m_count = -1
 
 for i in range(total_n + total_m):
-
     shapelet = al.lp_linear.ShapeletPolar(
         n=n_count,
         m=m_count,
         centre=(0.1, 0.1),
         ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=60.0),
-        beta=1.0
+        beta=1.0,
     )
 
     shapelets_bulge_list.append(shapelet)
@@ -166,7 +165,6 @@ Apply the 2D mask, which for the settings above is representative of the masks w
 mask = al.Mask2D.circular(
     shape_native=dataset.shape_native,
     pixel_scales=dataset.pixel_scales,
-    sub_size=sub_size,
     radius=mask_radius,
 )
 masked_dataset = dataset.apply_mask(mask=mask)
@@ -185,7 +183,9 @@ Call FitImaging once to get all numba functions initialized.
 """
 tracer = al.Tracer(galaxies=[lens_galaxy, source])
 
-fit = al.FitImaging(dataset=masked_dataset, tracer=tracer, settings_inversion=settings_inversion)
+fit = al.FitImaging(
+    dataset=masked_dataset, tracer=tracer, settings_inversion=settings_inversion
+)
 print(fit.figure_of_merit)
 
 """
@@ -196,7 +196,9 @@ Time FitImaging by itself, to compare to profiling dict call.
 print()
 start = time.time()
 for i in range(repeats):
-    fit = al.FitImaging(dataset=masked_dataset, tracer=tracer, settings_inversion=settings_inversion)
+    fit = al.FitImaging(
+        dataset=masked_dataset, tracer=tracer, settings_inversion=settings_inversion
+    )
     fit.log_evidence
 fit_time = (time.time() - start) / repeats
 print(f"Fit Time = {fit_time} \n")
@@ -210,7 +212,12 @@ run_time_dict = {}
 
 tracer = al.Tracer(galaxies=[lens_galaxy, source], run_time_dict=run_time_dict)
 
-fit = al.FitImaging(dataset=masked_dataset, tracer=tracer, settings_inversion=settings_inversion, run_time_dict=run_time_dict)
+fit = al.FitImaging(
+    dataset=masked_dataset,
+    tracer=tracer,
+    settings_inversion=settings_inversion,
+    run_time_dict=run_time_dict,
+)
 fit.figure_of_merit
 
 run_time_dict = fit.run_time_dict

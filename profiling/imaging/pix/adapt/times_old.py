@@ -250,7 +250,7 @@ start_overall = time.time()
 """
 __Lens Light (Grid2D)__
 
-Compute the light profile of the foreground lens galaxy, which for this script uses an `EllpiticalSersic` bulge and
+Compute the light profile of the foreground lens galaxy, which for this script uses an `Sersic` bulge and
 `Exponential` disk. This computes the `image` of each `LightProfile` and adds them together. 
 
 It also includes a `blurring_image` which represents all flux values not within the mask, but which will blur into the

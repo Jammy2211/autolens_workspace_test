@@ -114,7 +114,7 @@ dataset = al.Imaging.from_fits(
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
-    over_sampling_pixelization=al.OverSamplingUniform(sub_size=4)
+    over_sampling_pixelization=al.OverSamplingUniform(sub_size=1),
 )
 
 """
@@ -146,27 +146,19 @@ tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 traced_grid = tracer.traced_grid_2d_list_from(grid=masked_dataset.grid)[1]
 source_adapt_data = source_galaxy.image_2d_from(grid=traced_grid)
 
-print(source_adapt_data.shape)
-print(masked_dataset.noise_map.shape)
-
-import numpy as np
-
-sub_size = np.where((source_adapt_data / masked_dataset.noise_map) > 25, 4, 2)
-
-print(np.max(sub_size))
+over_sampling = al.OverSamplingUniform.from_adapt(
+    data=source_adapt_data,
+    noise_map=masked_dataset.noise_map,
+)
 
 dataset = al.Imaging(
     data=dataset.data,
     noise_map=dataset.noise_map,
     psf=dataset.psf,
-    over_sampling_pixelization=al.OverSamplingUniform(sub_size=sub_size),
+    over_sampling_pixelization=over_sampling,
 )
 
-print(masked_dataset.grid_pixelization.over_sampler.sub_total)
-
 masked_dataset = dataset.apply_mask(mask=mask)
-
-print(masked_dataset.grid_pixelization.over_sampler.sub_total)
 
 """
 The source galaxy whose `VoronoiNNBrightness` `Pixelization` fits the data.
@@ -266,7 +258,9 @@ These two numbers are the primary driver of run time. More pixels = longer run t
 
 print(f"Inversion fit run times for image type {instrument} \n")
 print(f"Number of pixels = {masked_dataset.grid.shape_slim} \n")
-print(f"Number of sub-pixels = {masked_dataset.grid_pixelization.over_sampler.sub_total} \n")
+print(
+    f"Number of sub-pixels = {masked_dataset.grid_pixelization.over_sampler.sub_total} \n"
+)
 
 """
 Print the profiling results of every step of the fit for command line output when running profiling scripts.

@@ -37,7 +37,7 @@ __Simulate__
 For simulating interferometer data of a strong lens, we recommend using a Grid2D object with a `sub_size` of 1. This
 simplifies the generation of the strong lens image in real space before it is transformed to Fourier space.
 """
-grid_2d = al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.2, sub_size=1)
+grid_2d = al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.2)
 
 """
 To perform the Fourier transform we need the wavelengths of the baselines, which we'll load from the fits file below.

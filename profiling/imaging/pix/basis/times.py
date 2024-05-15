@@ -129,7 +129,7 @@ dataset = al.Imaging.from_fits(
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
-    over_sampling_pixelization=al.OverSamplingUniform(sub_size=4)
+    over_sampling_pixelization=al.OverSamplingUniform(sub_size=4),
 )
 
 dataset.psf = dataset.psf.resized_from(new_shape=psf_shape_2d)

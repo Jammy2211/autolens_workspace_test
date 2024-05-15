@@ -34,7 +34,7 @@ __Mask__
 We define the ‘real_space_mask’ which defines the grid the image the strong lens is evaluated using.
 """
 real_space_mask = al.Mask2D.circular(
-    shape_native=(100, 100), pixel_scales=0.2, radius=3.0, sub_size=1
+    shape_native=(100, 100), pixel_scales=0.2, radius=3.0,
 )
 
 """
@@ -159,7 +159,7 @@ print(result.max_log_likelihood_instance)
 
 tracer_plotter = aplt.TracerPlotter(
     tracer=result.max_log_likelihood_tracer,
-    grid=real_space_mask.derive_grid.all_false_sub_1,
+    grid=real_space_mask.derive_grid.all_false,
 )
 tracer_plotter.subplot_tracer()
 

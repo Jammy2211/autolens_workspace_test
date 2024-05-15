@@ -125,29 +125,17 @@ Apply the 2D mask, which for the settings above is representative of the masks w
 mask = al.Mask2D.circular(
     shape_native=dataset.shape_native,
     pixel_scales=dataset.pixel_scales,
-    sub_size=sub_size,
     radius=mask_radius,
 )
 
 # mask = al.Mask2D.circular_annular(
 #     shape_native=dataset.shape_native,
 #     pixel_scales=dataset.pixel_scales,
-#     sub_size=sub_size,
 #     inner_radius=1.5,
 #     outer_radius=2.5,
 # )
 
 masked_dataset = dataset.apply_mask(mask=mask)
-
-masked_dataset = masked_dataset.apply_settings(
-    settings=al.SettingsImaging(
-        grid_class=grid_class,
-        sub_size=sub_size,
-        fractional_accuracy=fractional_accuracy,
-        relative_accuracy=relative_accuracy,
-        sub_steps=sub_steps,
-    )
-)
 
 """
 __Numba Caching__
