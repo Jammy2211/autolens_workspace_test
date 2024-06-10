@@ -1,5 +1,7 @@
 import json
 
+from pathlib import Path
+
 import autolens as al
 from autoconf.dictable import to_dict
 from autolens.point.triangles.triangle_solver import TriangleSolver
@@ -74,7 +76,14 @@ model = af.Collection(
     lens_galaxy=lens_galaxy,
 )
 
-for i in range(100):
+output_path = Path("examples")
+output_path.mkdir(exist_ok=True)
+
+TOTAL = 100
+
+for i in range(TOTAL):
+    print(f"Generating {i + 1}/{TOTAL}")
+
     instance = model.random_instance()
 
     tracer = al.Tracer(galaxies=[instance.lens_galaxy, instance.source_galaxy])
@@ -83,7 +92,6 @@ for i in range(100):
         grid=grid,
         lensing_obj=tracer,
         pixel_scale_precision=0.001,
-        buffer=0.1,
     )
 
     triangle_positions = solver.solve(
@@ -93,7 +101,9 @@ for i in range(100):
     visuals = aplt.Visuals2D(multiple_images=triangle_positions)
 
     output = aplt.Output(
-        path="../../../scratch/examples", filename=f"{i}", format="png"
+        path=str(output_path),
+        filename=f"{i}",
+        format="png",
     )
     mat_plot = aplt.MatPlot2D(output=output)
 
@@ -105,5 +115,5 @@ for i in range(100):
     )
     tracer_plotter.figures_2d(image=True)
 
-    with open(f"examples/{i}.json", "w") as f:
+    with open(output_path / f"{i}.json", "w") as f:
         json.dump(to_dict(instance), f, indent=4)
