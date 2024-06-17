@@ -24,7 +24,7 @@ centre = af.TuplePrior(
 )
 
 point_source = af.Model(
-    al.ps.PointSourceChi,
+    al.ps.Point,
     centre=centre,
 )
 
@@ -36,7 +36,10 @@ model = af.Collection(
 
 analysis = AnalysisAllToAllPointSource(
     coordinates=[
-        (0.0, 0.0),
+        (-1.29, -0.98),
+        (1.02, 1.11),
+        (0.43, -1.58),
+        (-1.61, 0.27),
     ],
     error=0.1,
     grid=grid,
