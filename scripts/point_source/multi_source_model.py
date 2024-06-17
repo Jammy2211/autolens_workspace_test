@@ -51,7 +51,7 @@ analysis = sum(
 )
 
 if __name__ == "__main__":
-    search = af.DynestyStatic("point_source")
+    search = af.DynestyStatic("multi_point_source")
 
     result = search.fit(model=None, analysis=analysis)
 
