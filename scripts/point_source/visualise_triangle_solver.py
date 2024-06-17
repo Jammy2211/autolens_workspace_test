@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 import autolens as al
+from autoarray import Grid2DIrregular
 from autoconf.dictable import to_dict
 from autolens.point.triangles.triangle_solver import TriangleSolver
 import autolens.plot as aplt
@@ -73,7 +74,7 @@ for i in range(TOTAL):
         source_plane_coordinate=instance.source_galaxy.point_0.centre
     )
 
-    visuals = aplt.Visuals2D(multiple_images=triangle_positions)
+    visuals = aplt.Visuals2D(multiple_images=Grid2DIrregular(triangle_positions))
 
     output = aplt.Output(
         path=str(output_path),
