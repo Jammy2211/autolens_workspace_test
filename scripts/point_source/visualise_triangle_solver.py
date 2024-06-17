@@ -13,31 +13,6 @@ grid = al.Grid2D.uniform(
     pixel_scales=0.05,  # <- The pixel-scale describes the conversion from pixel units to arc-seconds.
 )
 
-mass = af.Model(al.mp.PowerLaw)
-
-mass.centre = (0.0, 0.0)
-mass.ell_comps.ell_comps_0 = af.GaussianPrior(
-    mean=0.0, sigma=0.2, lower_limit=-1.0, upper_limit=1.0
-)
-mass.ell_comps.ell_comps_1 = af.GaussianPrior(
-    mean=0.0, sigma=0.2, lower_limit=-1.0, upper_limit=1.0
-)
-mass.einstein_radius = af.UniformPrior(lower_limit=0.4, upper_limit=1.8)
-# mass.slope = af.GaussianPrior(mean=2.0, sigma=0.1)
-mass.slope = 2.0
-
-shear = af.Model(al.mp.ExternalShear)
-
-shear.gamma_1 = af.GaussianPrior(mean=0.0, sigma=0.05)
-shear.gamma_2 = af.GaussianPrior(mean=0.0, sigma=0.05)
-
-lens = af.Model(
-    al.Galaxy,
-    redshift=0.5,
-    mass=mass,
-    # shear=shear,
-)
-
 isothermal_mass_profile = al.mp.Isothermal(
     centre=(0.0, 0.0),
     einstein_radius=1.6,
