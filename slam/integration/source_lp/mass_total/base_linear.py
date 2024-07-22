@@ -1,6 +1,6 @@
 """
-SLaM (Source, Light and Mass): Light Parametric + Mass Total + Source Parametric
-================================================================================
+SLaM (Source, Light and Mass): Source Light Pixelized + Light Profile + Mass Total + Subhalo NFW
+================================================================================================
 
 SLaM pipelines break the analysis down into multiple pipelines which focus on modeling a specific aspect of the strong
 lens, first the Source, then the (lens) Light and finally the Mass. Each of these pipelines has it own inputs which
@@ -9,20 +9,22 @@ which customize the model and analysis in that pipeline.
 The models fitted in earlier pipelines determine the model used in later pipelines. For example, if the SOURCE PIPELINE
 uses a parametric `Sersic` profile for the bulge, this will be used in the subsequent MASS PIPELINE.
 
-Using a SOURCE LP PIPELINE, LIGHT PIPELINE and a MASS PIPELINE this SLaM script fits `Imaging` of a strong
-lens system, where in the final model:
+Using a SOURCE LP PIPELINE, LIGHT LP PIPELINE, MASS PIPELINE and SUBHALO PIPELINE this SLaM script
+fits `Imaging` of a strong lens system, where in the final model:
 
  - The lens galaxy's light is a bulge+disk `Sersic` and `Exponential`.
- - The lens galaxy's total mass distribution is an `PowerLaw`.
- - The source galaxy's light is a parametric `Sersic`.
+ - The lens galaxy's total mass distribution is an `Isothermal`.
+ - A dark matter subhalo near The lens galaxy mass is included as a`NFWMCRLudlowSph`.
+ - The source galaxy is an `Sersic`.
 
-This runner uses the SLaM pipelines:
+This uses the SLaM pipelines:
 
- `source_lp/source_lp__with_lens_light`
+ `source_lp`
  `light_lp`
- `mass_total/mass_total__with_lens_light`
+ `mass_total`
+ `subhalo/detection`
 
-Check them out for a detailed description of the analysis!
+Check them out for a full description of the analysis!
 """
 # %matplotlib inline
 # from pyprojroot import here
@@ -76,7 +78,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_search = af.SettingsSearch(
-    path_prefix=path.join("slam", "source_lp", "mass_total", "mass_centre"),
+    path_prefix=path.join("slam", "source_lp", "mass_total", "base_linear"),
     number_of_cores=1,
     session=None,
 )
@@ -108,8 +110,8 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=dataset)
 
-bulge = af.Model(al.lp.Sersic)
-disk = af.Model(al.lp.Exponential)
+bulge = af.Model(al.lp_linear.Sersic)
+disk = af.Model(al.lp_linear.Exponential)
 bulge.centre = disk.centre
 
 source_lp_result = slam.source_lp.run(
@@ -119,7 +121,7 @@ source_lp_result = slam.source_lp.run(
     lens_disk=disk,
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
-    source_bulge=af.Model(al.lp.Sersic),
+    source_bulge=af.Model(al.lp_linear.Sersic),
     mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
@@ -134,26 +136,23 @@ In this example it:
 
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
  light [Do not use the results of the SOURCE LP PIPELINE to initialize priors].
- 
+
  - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE LP PIPELINE].
- 
+
  - Uses the `Sersic` model representing a bulge for the source's light [fixed from SOURCE LP PIPELINE].
- 
+
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
-)
-
-bulge = af.Model(al.lp.Sersic)
-disk = af.Model(al.lp.Exponential)
+bulge = af.Model(al.lp_linear.Sersic)
+disk = af.Model(al.lp_linear.Exponential)
 bulge.centre = disk.centre
 
-light_results = slam.light_lp.run(
+light_result = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_result=source_lp_result,
+    source_result_for_lens=source_lp_result,
+    source_result_for_source=source_lp_result,
     lens_bulge=bulge,
     lens_disk=disk,
 )
@@ -180,14 +179,60 @@ analysis = al.AnalysisImaging(
     dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
 )
 
-mass_results = slam.mass_total.run(
+mass_result = slam.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_lp_result,
-    light_result=light_results,
+    source_result_for_lens=source_lp_result,
+    source_result_for_source=source_lp_result,
+    light_result=light_result,
     mass=af.Model(al.mp.PowerLaw),
+    multipole_4=af.Model(al.mp.PowerLawMultipole),
+    reset_shear_prior=True,
 )
 
+"""
+__SUBHALO PIPELINE (single plane detection)__
+
+The SUBHALO PIPELINE (single plane detection) consists of the following searches:
+ 
+ 1) Refit the lens and source model, to refine the model evidence for comparing to the models fitted which include a 
+ subhalo. This uses the same model as fitted in the MASS PIPELINE. 
+ 2) Performs a grid-search of non-linear searches to attempt to detect a dark matter subhalo. 
+ 3) If there is a successful detection a final search is performed to refine its parameters.
+ 
+For this runner the SUBHALO PIPELINE customizes:
+
+ - The [number_of_steps x number_of_steps] size of the grid-search, as well as the dimensions it spans in arc-seconds.
+ - The `number_of_cores` used for the gridsearch, where `number_of_cores > 1` performs the model-fits in paralle using
+ the Python multiprocessing module.
+"""
+analysis = al.AnalysisImaging(
+    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
+)
+
+subhalo_result_1 = slam.subhalo.detection.run_1_no_subhalo(
+    settings_search=settings_search,
+    analysis=analysis,
+    mass_result=mass_result,
+)
+
+subhalo_grid_search_result_2 = slam.subhalo.detection.run_2_grid_search(
+    settings_search=settings_search,
+    analysis=analysis,
+    mass_result=mass_result,
+    subhalo_result_1=subhalo_result_1,
+    subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
+    grid_dimension_arcsec=3.0,
+    number_of_steps=2,
+)
+
+subhalo_result_3 = slam.subhalo.detection.run_3_subhalo(
+    settings_search=settings_search,
+    analysis=analysis,
+    subhalo_result_1=subhalo_result_1,
+    subhalo_grid_search_result_2=subhalo_grid_search_result_2,
+    subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
+)
 """
 Finish.
 """

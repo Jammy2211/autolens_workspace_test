@@ -160,7 +160,7 @@ def fit():
         settings_search=settings_search,
         analysis=analysis,
         source_lp_result=source_lp_result,
-        mesh_init=al.mesh.VoronoiNN,
+        mesh_init=al.mesh.Voronoi,
     )
 
     analysis = sum([analysis, analysis])
@@ -187,7 +187,7 @@ def fit():
         source_lp_result=source_lp_result,
         source_pix_result_1=source_pix_result_1,
         image_mesh=al.image_mesh.Hilbert,
-        mesh=al.mesh.VoronoiNN,
+        mesh=al.mesh.Voronoi,
         regularization=al.reg.AdaptiveBrightnessSplit,
     )
 

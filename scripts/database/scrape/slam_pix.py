@@ -124,8 +124,8 @@ source_pix_results = slam.source_pix.run(
     analysis=analysis,
     source_lp_result=source_lp_result,
     image_mesh=al.image_mesh.Hilbert,
-    mesh_init=al.mesh.VoronoiNN,
-    mesh=al.mesh.VoronoiNN,
+    mesh_init=al.mesh.Voronoi,
+    mesh=al.mesh.Voronoi,
     regularization=al.reg.AdaptiveBrightness,
 )
 
@@ -185,7 +185,7 @@ for j in range(gaussian_per_basis):
 
 bulge = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=bulge_gaussian_list,
+    profile_list=bulge_gaussian_list,
 )
 
 analysis = al.AnalysisImaging(
@@ -320,7 +320,7 @@ for model in agg.values("model"):
 
 for search in agg.values("search"):
     print(f"\n****Search (search)****\n\n{search}")
-    assert "_" in search.paths.name
+    assert "[" in search.paths.name
 
 for samples_summary in agg.values("samples_summary"):
     instance = samples_summary.max_log_likelihood()

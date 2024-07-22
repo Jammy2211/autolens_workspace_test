@@ -138,7 +138,9 @@ analyse the dataset.
 point_dataset = al.PointDataset(
     name="point_0",
     positions=positions,
-    positions_noise_map=al.ArrayIrregular(values=len(positions)*[grid_2d.pixel_scale]),
+    positions_noise_map=al.ArrayIrregular(
+        values=len(positions) * [grid_2d.pixel_scale]
+    ),
     fluxes=fluxes,
     fluxes_noise_map=al.ArrayIrregular(values=[1.0, 1.0]),
 )

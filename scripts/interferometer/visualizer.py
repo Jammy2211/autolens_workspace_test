@@ -29,7 +29,9 @@ import autolens as al
 __Mask__
 """
 real_space_mask = al.Mask2D.circular(
-    shape_native=(400, 400), pixel_scales=0.2, radius=3.0,
+    shape_native=(400, 400),
+    pixel_scales=0.2,
+    radius=3.0,
 )
 
 """

@@ -139,7 +139,7 @@ for j in range(gaussian_per_basis):
 
 lens_bulge = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=bulge_gaussian_list,
+    profile_list=bulge_gaussian_list,
 )
 
 log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
@@ -161,7 +161,7 @@ for j in range(gaussian_per_basis):
 
 lens_disk = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=disk_gaussian_list,
+    profile_list=disk_gaussian_list,
 )
 
 
@@ -190,7 +190,7 @@ for j in range(gaussian_per_basis):
 
 source_bulge = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=bulge_gaussian_list,
+    profile_list=bulge_gaussian_list,
 )
 
 
@@ -224,16 +224,11 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
-)
-
-
 centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 
 total_gaussians = 30
-gaussian_per_basis = 2
+gaussian_per_basis = 1
 
 log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 
@@ -254,21 +249,12 @@ for j in range(gaussian_per_basis):
 
 lens_bulge = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=bulge_gaussian_list,
+    profile_list=bulge_gaussian_list,
 )
 
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 
-centre_0 = af.UniformPrior(lower_limit=-0.2, upper_limit=0.2)
-centre_1 = af.UniformPrior(lower_limit=-0.2, upper_limit=0.2)
-
-total_gaussians = 10
-gaussian_per_basis = 1
-
-pixel_scales = 0.2
-
-log10_sigma_list = np.linspace(-2, np.log10(pixel_scales * 2), total_gaussians)
-
-point_gaussian_list = []
+disk_gaussian_list = []
 
 for j in range(gaussian_per_basis):
     gaussian_list = af.Collection(
@@ -281,17 +267,23 @@ for j in range(gaussian_per_basis):
         gaussian.ell_comps = gaussian_list[0].ell_comps
         gaussian.sigma = 10 ** log10_sigma_list[i]
 
-    point_gaussian_list += gaussian_list
+    disk_gaussian_list += gaussian_list
 
-lens_point = af.Model(
+lens_disk = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=point_gaussian_list,
+    profile_list=disk_gaussian_list,
 )
 
-light_results = slam.light_lp.run(
+analysis = al.AnalysisImaging(
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
+)
+
+light_result = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_result=source_lp_result,
+    source_result_for_lens=source_lp_result,
+    source_result_for_source=source_lp_result,
     lens_bulge=lens_bulge,
     lens_disk=lens_disk,
 )
@@ -321,8 +313,9 @@ analysis = al.AnalysisImaging(
 mass_results = slam.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_lp_result,
-    light_result=light_results,
+    source_result_for_lens=source_lp_result,
+    source_result_for_source=source_lp_result,
+    light_result=light_result,
     mass=af.Model(al.mp.PowerLaw),
 )
 

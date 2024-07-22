@@ -80,7 +80,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_search = af.SettingsSearch(
-    path_prefix=path.join("slam", "source_pix", "mass_total", "linear_parametric_21"),
+    path_prefix=path.join("slam", "source_pix", "mass_total", "base_linear"),
     number_of_cores=1,
     session=None,
 )
@@ -136,15 +136,37 @@ regularization, to set up the model and hyper images, and then:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
 """
-
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
 )
 
-source_pix_results = slam.source_pix.run(
+source_pix_result_1 = slam.source_pix.run_1(
     settings_search=settings_search,
     analysis=analysis,
     source_lp_result=source_lp_result,
+    mesh_init=al.mesh.Voronoi,
+)
+
+"""
+__SOURCE PIX PIPELINE 2 (with lens light)__
+"""
+analysis = al.AnalysisImaging(
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
+    settings_inversion=al.SettingsInversion(
+        image_mesh_min_mesh_pixels_per_pixel=3,
+        image_mesh_min_mesh_number=5,
+        image_mesh_adapt_background_percent_threshold=0.1,
+        image_mesh_adapt_background_percent_check=0.8,
+    ),
+)
+
+source_pix_result_2 = slam.source_pix.run_2(
+    settings_search=settings_search,
+    analysis=analysis,
+    source_lp_result=source_lp_result,
+    source_pix_result_1=source_pix_result_1,
     image_mesh=al.image_mesh.Hilbert,
     mesh=al.mesh.Voronoi,
     regularization=al.reg.AdaptiveBrightnessSplit,
@@ -167,16 +189,22 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
+bulge = af.Model(al.lp_linear.Sersic)
+disk = af.Model(al.lp_linear.Exponential)
+bulge.centre = disk.centre
+
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
 )
 
-light_results = slam.light_lp.run(
+light_result = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_result=source_pix_results,
-    lens_bulge=af.Model(al.lp_linear.Sersic),
-    lens_disk=af.Model(al.lp_linear.Sersic),
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
+    lens_bulge=bulge,
+    lens_disk=disk,
 )
 
 """
@@ -198,14 +226,16 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
 )
 
-mass_results = slam.mass_total.run(
+mass_result = slam.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_pix_results,
-    light_result=light_results,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
+    light_result=light_result,
     mass=af.Model(al.mp.PowerLaw),
 )
 
@@ -226,16 +256,32 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
 )
 
-subhalo_results = slam.subhalo.detection.run(
+subhalo_result_1 = slam.subhalo.detection.run_1_no_subhalo(
     settings_search=settings_search,
     analysis=analysis,
-    mass_results=mass_results,
+    mass_result=mass_result,
+)
+
+subhalo_grid_search_result_2 = slam.subhalo.detection.run_2_grid_search(
+    settings_search=settings_search,
+    analysis=analysis,
+    mass_result=mass_result,
+    subhalo_result_1=subhalo_result_1,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
+)
+
+subhalo_result_3 = slam.subhalo.detection.run_3_subhalo(
+    settings_search=settings_search,
+    analysis=analysis,
+    subhalo_result_1=subhalo_result_1,
+    subhalo_grid_search_result_2=subhalo_grid_search_result_2,
+    subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
 )
 
 """

@@ -62,8 +62,12 @@ dataset = al.Imaging.from_fits(
     pixel_scales=0.2,
 )
 
+mask_radius = 3.0
+
 mask = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
+    shape_native=dataset.shape_native,
+    pixel_scales=dataset.pixel_scales,
+    radius=mask_radius,
 )
 
 dataset = dataset.apply_mask(mask=mask)
@@ -98,7 +102,6 @@ from arc-seconds to kiloparsecs, masses to solar masses, etc.).
 redshift_lens = 0.5
 redshift_source = 1.0
 
-
 """
 __SOURCE LP PIPELINE (with lens light)__
 
@@ -117,73 +120,55 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=dataset)
 
-total_gaussians = 30
-gaussian_per_basis = 2
-
-# The sigma values of the Gaussians will be fixed to values spanning 0.01 to the mask radius, 3.0".
-mask_radius = 3.0
-log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
-
-# By defining the centre here, it creates two free parameters that are assigned below to all Gaussians.
-
 centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+
+total_gaussians = 3
+gaussian_per_basis = 1
+
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 
 bulge_gaussian_list = []
 
 for j in range(gaussian_per_basis):
-    # A list of Gaussian model components whose parameters are customized belows.
-
     gaussian_list = af.Collection(
         af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
     )
 
-    # Iterate over every Gaussian and customize its parameters.
-
     for i, gaussian in enumerate(gaussian_list):
-        gaussian.centre.centre_0 = centre_0  # All Gaussians have same y centre.
-        gaussian.centre.centre_1 = centre_1  # All Gaussians have same x centre.
-        gaussian.ell_comps = gaussian_list[
-            0
-        ].ell_comps  # All Gaussians have same elliptical components.
-        gaussian.sigma = (
-            10 ** log10_sigma_list[i]
-        )  # All Gaussian sigmas are fixed to values above.
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
 
     bulge_gaussian_list += gaussian_list
 
-# The Basis object groups many light profiles together into a single model component.
-
 lens_bulge = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=bulge_gaussian_list,
+    profile_list=bulge_gaussian_list,
 )
 
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 
-disk_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-disk_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+disk_gaussian_list = []
 
-gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+for j in range(gaussian_per_basis):
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
 
-for i, gaussian in enumerate(gaussian_list):
-    gaussian.centre = gaussian_list[0].centre
-    gaussian.ell_comps = gaussian_list[0].ell_comps
-    gaussian.sigma = disk_a + (disk_b * np.log10(i + 1))
+    for i, gaussian in enumerate(gaussian_list):
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
 
-lens_disk = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+    disk_gaussian_list += gaussian_list
 
-
-source_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-source_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
-
-gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
-
-for i, gaussian in enumerate(gaussian_list):
-    gaussian.centre = gaussian_list[0].centre
-    gaussian.ell_comps = gaussian_list[0].ell_comps
-    gaussian.sigma = source_a + (source_b * np.log10(i + 1))
-
-source_bulge = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+lens_disk = af.Model(
+    al.lp_basis.Basis,
+    profile_list=disk_gaussian_list,
+)
 
 source_lp_result = slam.source_lp.run(
     settings_search=settings_search,
@@ -192,7 +177,7 @@ source_lp_result = slam.source_lp.run(
     lens_disk=lens_disk,
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
-    source_bulge=source_bulge,
+    source_bulge=af.Model(al.lp.Sersic),
     mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
@@ -210,17 +195,41 @@ regularization, to set up the model and hyper images, and then:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=dataset)
+analysis = al.AnalysisImaging(
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
+)
 
-source_pix_results = slam.source_pix.run(
+source_pix_result_1 = slam.source_pix.run_1(
     settings_search=settings_search,
     analysis=analysis,
     source_lp_result=source_lp_result,
+    mesh_init=al.mesh.Voronoi,
+)
+
+"""
+__SOURCE PIX PIPELINE 2 (with lens light)__
+"""
+analysis = al.AnalysisImaging(
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
+    settings_inversion=al.SettingsInversion(
+        image_mesh_min_mesh_pixels_per_pixel=3,
+        image_mesh_min_mesh_number=5,
+        image_mesh_adapt_background_percent_threshold=0.1,
+        image_mesh_adapt_background_percent_check=0.8,
+    ),
+)
+
+source_pix_result_2 = slam.source_pix.run_2(
+    settings_search=settings_search,
+    analysis=analysis,
+    source_lp_result=source_lp_result,
+    source_pix_result_1=source_pix_result_1,
     image_mesh=al.image_mesh.Hilbert,
     mesh=al.mesh.Voronoi,
     regularization=al.reg.AdaptiveBrightnessSplit,
 )
-
 
 """
 __LIGHT LP PIPELINE__
@@ -239,66 +248,66 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-total_gaussians = 30
-gaussian_per_basis = 2
-
-# The sigma values of the Gaussians will be fixed to values spanning 0.01 to the mask radius, 3.0".
-mask_radius = 3.0
-log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
-
-# By defining the centre here, it creates two free parameters that are assigned below to all Gaussians.
-
 centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+
+total_gaussians = 3
+gaussian_per_basis = 1
+
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 
 bulge_gaussian_list = []
 
 for j in range(gaussian_per_basis):
-    # A list of Gaussian model components whose parameters are customized belows.
-
     gaussian_list = af.Collection(
         af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
     )
 
-    # Iterate over every Gaussian and customize its parameters.
-
     for i, gaussian in enumerate(gaussian_list):
-        gaussian.centre.centre_0 = centre_0  # All Gaussians have same y centre.
-        gaussian.centre.centre_1 = centre_1  # All Gaussians have same x centre.
-        gaussian.ell_comps = gaussian_list[
-            0
-        ].ell_comps  # All Gaussians have same elliptical components.
-        gaussian.sigma = (
-            10 ** log10_sigma_list[i]
-        )  # All Gaussian sigmas are fixed to values above.
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
 
     bulge_gaussian_list += gaussian_list
 
-# The Basis object groups many light profiles together into a single model component.
-
 lens_bulge = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=bulge_gaussian_list,
+    profile_list=bulge_gaussian_list,
 )
 
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
 
-disk_a = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-disk_b = af.UniformPrior(lower_limit=0.0, upper_limit=10.0)
+disk_gaussian_list = []
 
-gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(10))
+for j in range(gaussian_per_basis):
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
 
-for i, gaussian in enumerate(gaussian_list):
-    gaussian.centre = gaussian_list[0].centre
-    gaussian.ell_comps = gaussian_list[0].ell_comps
-    gaussian.sigma = disk_a + (disk_b * np.log10(i + 1))
+    for i, gaussian in enumerate(gaussian_list):
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
 
-lens_disk = af.Model(al.lp_basis.Basis, light_profile_list=gaussian_list)
+    disk_gaussian_list += gaussian_list
 
+lens_disk = af.Model(
+    al.lp_basis.Basis,
+    profile_list=disk_gaussian_list,
+)
 
-light_results = slam.light_lp.run(
+analysis = al.AnalysisImaging(
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
+)
+
+light_result = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_result=source_pix_results,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
     lens_bulge=lens_bulge,
     lens_disk=lens_disk,
 )
@@ -325,18 +334,130 @@ analysis = al.AnalysisImaging(
     dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
 )
 
-lens_bulge = af.Model(al.lmp.Sersic)
+"""
+When linear light profiles are used in the LIGHT PIPELINE, their intensities are solved for via linear algebra
+when setting up their corresponding light and mass profiles for the MASS LIGHT DARK PIPELINE.
+
+This calculation is not numerically accuracy to a small amount (of order 1e-8) in the `intensity` values that
+are solved for. This lack of accuracy will not impact the lens modeling in a noticeable way.
+
+However, it does mean that when a pipeine is rerun the `intensity` values that are solved for may change by a small
+amount, changing the unique identifier created for the fit where results are stored, meaning a run does not
+resume correctly.
+
+The code below therefore outputs the chaining tracer used to pass the `intensity` values to a .json file, or loads
+it from this file if it is already there. This ensures that when a pipeline is rerun, the same `intensity`
+values are always used.
+"""
+lp_chain_tracer = al.util.chaining.lp_chain_tracer_from(
+    light_result=light_result,
+    settings_search=settings_search
+)
+
+
 dark = af.Model(al.mp.NFWMCRLudlow)
 
-dark.centre = lens_bulge.centre
-
-mass_results = slam.mass_light_dark.run__from_light_linear(
+mass_result = slam.mass_light_dark.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_pix_results,
-    light_results=light_results,
+    lp_chain_tracer=lp_chain_tracer,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
+    light_result=light_result,
+    dark=dark,
+    link_mass_to_light_ratios=True
+)
+
+mass_result = slam.mass_light_dark.run(
+    settings_search=settings_search,
+    analysis=analysis,
+    lp_chain_tracer=lp_chain_tracer,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
+    light_result=light_result,
+    use_gradient=True,
+    dark=dark,
+    link_mass_to_light_ratios=True
+)
+
+dark = af.Model(al.mp.NFWMCRLudlowSph)
+
+mass_result = slam.mass_light_dark.run(
+    settings_search=settings_search,
+    analysis=analysis,
+    lp_chain_tracer=lp_chain_tracer,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
+    light_result=light_result,
+    dark=dark,
+    link_mass_to_light_ratios=True
+)
+
+mass_result = slam.mass_light_dark.run(
+    settings_search=settings_search,
+    analysis=analysis,
+    lp_chain_tracer=lp_chain_tracer,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
+    light_result=light_result,
+    use_gradient=True,
+    dark=dark,
+    link_mass_to_light_ratios=True
+)
+
+
+dark = af.Model(al.mp.NFWMCRLudlowSph)
+
+dark = None
+
+mass_result = slam.mass_light_dark.run(
+    settings_search=settings_search,
+    analysis=analysis,
+    lp_chain_tracer=lp_chain_tracer,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
+    light_result=source_pix_result_2,
+    use_gradient=True,
     dark=dark,
 )
+
+mass_result = slam.mass_light_dark.run(
+    settings_search=settings_search,
+    analysis=analysis,
+    lp_chain_tracer=lp_chain_tracer,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
+    light_result=source_pix_result_2,
+    use_gradient=False,
+    dark=dark,
+)
+
+dark = af.Model(al.mp.NFWMCRLudlow)
+
+dark = None
+
+mass_result = slam.mass_light_dark.run(
+    settings_search=settings_search,
+    analysis=analysis,
+    lp_chain_tracer=lp_chain_tracer,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
+    light_result=source_pix_result_2,
+    use_gradient=True,
+    dark=dark,
+)
+
+mass_result = slam.mass_light_dark.run(
+    settings_search=settings_search,
+    analysis=analysis,
+    lp_chain_tracer=lp_chain_tracer,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
+    light_result=source_pix_result_2,
+    use_gradient=False,
+    dark=dark,
+)
+
 
 """
 Finish.

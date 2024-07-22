@@ -140,7 +140,7 @@ for j in range(gaussian_per_basis):
 
 lens_bulge = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=bulge_gaussian_list,
+    profile_list=bulge_gaussian_list,
     regularization=al.reg.ConstantZeroth(
         coefficient_neighbor=0.0, coefficient_zeroth=1.0
     ),
@@ -165,7 +165,7 @@ for j in range(gaussian_per_basis):
 
 lens_disk = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=disk_gaussian_list,
+    profile_list=disk_gaussian_list,
     regularization=al.reg.ConstantZeroth(
         coefficient_neighbor=0.0, coefficient_zeroth=1.0
     ),
@@ -197,7 +197,7 @@ for j in range(gaussian_per_basis):
 
 source_bulge = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=bulge_gaussian_list,
+    profile_list=bulge_gaussian_list,
     regularization=al.reg.ConstantZeroth(
         coefficient_neighbor=0.0, coefficient_zeroth=1.0
     ),
@@ -229,14 +229,38 @@ regularization, to set up the model and hyper images, and then:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
 """
-analysis = al.AnalysisImaging(dataset=dataset)
+analysis = al.AnalysisImaging(
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
+)
 
-source_pix_results = slam.source_pix.run(
+source_pix_result_1 = slam.source_pix.run_1(
     settings_search=settings_search,
     analysis=analysis,
     source_lp_result=source_lp_result,
+    mesh_init=al.mesh.Voronoi,
+)
+
+"""
+__SOURCE PIX PIPELINE 2 (with lens light)__
+"""
+analysis = al.AnalysisImaging(
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
+    settings_inversion=al.SettingsInversion(
+        image_mesh_min_mesh_pixels_per_pixel=3,
+        image_mesh_min_mesh_number=5,
+        image_mesh_adapt_background_percent_threshold=0.1,
+        image_mesh_adapt_background_percent_check=0.8,
+    ),
+)
+
+source_pix_result_2 = slam.source_pix.run_2(
+    settings_search=settings_search,
+    analysis=analysis,
+    source_lp_result=source_lp_result,
+    source_pix_result_1=source_pix_result_1,
     image_mesh=al.image_mesh.Hilbert,
-    image_mesh_init_shape=(5, 5),
     mesh=al.mesh.Voronoi,
     regularization=al.reg.AdaptiveBrightnessSplit,
 )
@@ -251,15 +275,13 @@ In this example it:
  - Uses a parametric `Sersic` bulge and `Sersic` disk with centres aligned for the lens galaxy's 
  light [Do not use the results of the SOURCE LP PIPELINE to initialize priors].
 
- - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE PIX PIPELINE].
+ - Uses an `Isothermal` model for the lens's total mass distribution [fixed from SOURCE LP PIPELINE].
 
  - Uses an `Inversion` for the source's light [priors fixed from SOURCE PIX PIPELINE].
 
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-
-
 centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 
@@ -285,10 +307,7 @@ for j in range(gaussian_per_basis):
 
 lens_bulge = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=bulge_gaussian_list,
-    regularization=al.reg.ConstantZeroth(
-        coefficient_neighbor=0.0, coefficient_zeroth=1.0
-    ),
+    profile_list=bulge_gaussian_list,
 )
 
 log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
@@ -310,20 +329,19 @@ for j in range(gaussian_per_basis):
 
 lens_disk = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=disk_gaussian_list,
-    regularization=al.reg.ConstantZeroth(
-        coefficient_neighbor=0.0, coefficient_zeroth=1.0
-    ),
+    profile_list=disk_gaussian_list,
 )
 
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
 )
 
-light_results = slam.light_lp.run(
+light_result = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_result=source_pix_results,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
     lens_bulge=lens_bulge,
     lens_disk=lens_disk,
 )
@@ -347,14 +365,16 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
 )
 
-mass_results = slam.mass_total.run(
+mass_result = slam.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_pix_results,
-    light_result=light_results,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
+    light_result=light_result,
     mass=af.Model(al.mp.PowerLaw),
 )
 
@@ -362,12 +382,12 @@ mass_results = slam.mass_total.run(
 __SUBHALO PIPELINE (single plane detection)__
 
 The SUBHALO PIPELINE (single plane detection) consists of the following searches:
- 
+
  1) Refit the lens and source model, to refine the model evidence for comparing to the models fitted which include a 
  subhalo. This uses the same model as fitted in the MASS PIPELINE. 
  2) Performs a grid-search of non-linear searches to attempt to detect a dark matter subhalo. 
  3) If there is a successful detection a final search is performed to refine its parameters.
- 
+
 For this runner the SUBHALO PIPELINE customizes:
 
  - The [number_of_steps x number_of_steps] size of the grid-search, as well as the dimensions it spans in arc-seconds.
@@ -375,17 +395,37 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
 )
 
-subhalo_results = slam.subhalo.detection.run(
+subhalo_result_1 = slam.subhalo.detection.run_1_no_subhalo(
     settings_search=settings_search,
     analysis=analysis,
-    mass_results=mass_results,
+    mass_result=mass_result,
+)
+
+subhalo_grid_search_result_2 = slam.subhalo.detection.run_2_grid_search(
+    settings_search=settings_search,
+    analysis=analysis,
+    mass_result=mass_result,
+    subhalo_result_1=subhalo_result_1,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
 )
+
+subhalo_result_3 = slam.subhalo.detection.run_3_subhalo(
+    settings_search=settings_search,
+    analysis=analysis,
+    subhalo_result_1=subhalo_result_1,
+    subhalo_grid_search_result_2=subhalo_grid_search_result_2,
+    subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
+)
+
+"""
+Finish.
+"""
 
 """
 Finish.

@@ -835,7 +835,7 @@ sersic_core.SersicCoreSph:
     gaussian_limits:
       lower: 0.8
       upper: 5.0
-sersic_radial_gradient.SersicRadialGradient:
+sersic_gradient.SersicGradient:
   centre_0:
     type: Gaussian
     mean: 0.0
@@ -930,7 +930,7 @@ sersic_radial_gradient.SersicRadialGradient:
     gaussian_limits:
       lower: 0.8
       upper: 5.0
-sersic_radial_gradient.SersicRadialGradientSph:
+sersic_gradient.SersicGradientSph:
   centre_0:
     type: Gaussian
     mean: 0.0

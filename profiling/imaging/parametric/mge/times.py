@@ -94,7 +94,7 @@ for i in range(total_gaussians):
 
     bulge_gaussian_list.append(gaussian)
 
-bulge = al.lp_basis.Basis(light_profile_list=bulge_gaussian_list)
+bulge = al.lp_basis.Basis(profile_list=bulge_gaussian_list)
 
 source = al.Galaxy(
     redshift=1.0,

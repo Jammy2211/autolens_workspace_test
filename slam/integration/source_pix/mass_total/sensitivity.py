@@ -148,7 +148,7 @@ source_pix_result_1 = slam.source_pix.run_1(
     settings_search=settings_search,
     analysis=analysis,
     source_lp_result=source_lp_result,
-    mesh_init=al.mesh.VoronoiNN,
+    mesh_init=al.mesh.Voronoi,
 )
 
 """
@@ -164,9 +164,7 @@ over_sampling = al.OverSamplingUniform.from_adapt(
     noise_map=dataset.noise_map,
 )
 
-dataset = dataset.apply_over_sampling(
-    over_sampling_pixelization=over_sampling
-)
+dataset = dataset.apply_over_sampling(over_sampling=al.OverSamplingDataset(pixelization=over_sampling))
 
 analysis = al.AnalysisImaging(
     dataset=dataset,
@@ -185,7 +183,7 @@ source_pix_result_2 = slam.source_pix.run_2(
     source_lp_result=source_lp_result,
     source_pix_result_1=source_pix_result_1,
     image_mesh=al.image_mesh.Hilbert,
-    mesh=al.mesh.VoronoiNN,
+    mesh=al.mesh.Voronoi,
     regularization=al.reg.AdaptiveBrightnessSplit,
 )
 

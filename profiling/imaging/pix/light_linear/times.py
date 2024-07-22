@@ -87,7 +87,7 @@ for i, gaussian_index in enumerate(range(total_gaussians)):
     gaussian_list.append(gaussian)
 
 basis = al.lp_basis.Basis(
-    light_profile_list=gaussian_list,
+    profile_list=gaussian_list,
     regularization=al.reg.ConstantZeroth(
         coefficient_neighbor=0.0, coefficient_zeroth=1.0
     ),

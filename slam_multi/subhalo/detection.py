@@ -53,7 +53,7 @@ def run_1_no_subhalo(
     )
 
     search = af.Nautilus(
-        name="subhalo[1]_mass[total_refine]",
+        name="subhalo[1]",
         **settings_search.search_dict,
         n_live=200,
     )

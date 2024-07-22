@@ -2,16 +2,16 @@ general:
   general:
     backend: default
     imshow_origin: upper
-    zoom_around_mask: true
+    zoom_around_mask: false
   units:
     in_kpc: false
 include:
   include_2d:
     border: false
-    tangential_caustics: true
-    radial_caustics: true
-    tangential_critical_curves: true
-    radial_critical_curves: true
+    tangential_caustics: false
+    radial_caustics: false
+    tangential_critical_curves: false
+    radial_critical_curves: false
     grid: false
     light_profile_centres: false
     mapper_image_plane_mesh_grid: false
@@ -264,12 +264,12 @@ plots:
     noise_map: false
     potential_chi_squared_map: false
     signal_to_noise_map: false
-    subplot_dataset: true
+    subplot_dataset: false
   fit:
-    all_at_end_fits: true
+    all_at_end_fits: false
     all_at_end_png: false
-    chi_squared_map: true
-    data: true
+    chi_squared_map: false
+    data: false
     model_data: false
     model_images_of_planes: false
     noise_map: false
@@ -278,7 +278,7 @@ plots:
     residual_map: false
     signal_to_noise_map: false
     subplot_fit: true
-    subplots_of_planes: true
+    subplots_of_planes: false
     subtracted_images_of_planes: false
   fit_imaging: {}
   fit_interferometer:
@@ -296,7 +296,7 @@ plots:
     all_at_end_png: false
     chi_squared_map: false
     image: false
-    model_image: true
+    model_image: false
     noise_map: false
     normalized_residual_map: false
     residual_map: false
@@ -307,8 +307,8 @@ plots:
     potential: false
   adapt:
     contribution_map_list: false
-    images_of_galaxies: true
-    model_image: true
+    images_of_galaxies: false
+    model_image: false
   imaging:
     psf: false
   interferometer:
@@ -342,7 +342,7 @@ plots:
     potential: false
     source_plane_image: false
     subplot_galaxies_images: false
-    subplot_tracer: true
+    subplot_tracer: false
 plots_search:
   dynesty:
     corner: false

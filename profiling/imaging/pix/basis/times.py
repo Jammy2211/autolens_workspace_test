@@ -78,11 +78,11 @@ for i, gaussian_index in enumerate(range(total_gaussians)):
     source_gaussian_list.append(gaussian)
 
 lens_basis = al.lp_basis.Basis(
-    light_profile_list=lens_gaussian_list,
+    profile_list=lens_gaussian_list,
 )
 
 source_basis = al.lp_basis.Basis(
-    light_profile_list=source_gaussian_list,
+    profile_list=source_gaussian_list,
 )
 
 lens_galaxy = al.Galaxy(

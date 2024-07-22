@@ -168,10 +168,11 @@ bulge = af.Model(al.lp.Sersic)
 disk = af.Model(al.lp.Exponential)
 bulge.centre = disk.centre
 
-light_results = slam.light_lp.run(
+light_result = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_result=source_lp_result,
+    source_result_for_lens=source_lp_result,
+    source_result_for_source=source_lp_result,
     lens_bulge=bulge,
     lens_disk=disk,
 )
@@ -198,12 +199,15 @@ analysis = al.AnalysisImaging(
     dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
 )
 
-mass_results = slam.mass_total.run(
+mass_result = slam.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_lp_result,
-    light_result=light_results,
+    source_result_for_lens=source_lp_result,
+    source_result_for_source=source_lp_result,
+    light_result=light_result,
     mass=af.Model(al.mp.PowerLaw),
+    multipole_4=af.Model(al.mp.PowerLawMultipole),
+    reset_shear_prior=True,
 )
 
 """
@@ -226,13 +230,28 @@ analysis = al.AnalysisImaging(
     dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
 )
 
-subhalo_results = slam.subhalo.detection.run(
+subhalo_result_1 = slam.subhalo.detection.run_1_no_subhalo(
     settings_search=settings_search,
     analysis=analysis,
-    mass_results=mass_results,
+    mass_result=mass_result,
+)
+
+subhalo_grid_search_result_2 = slam.subhalo.detection.run_2_grid_search(
+    settings_search=settings_search,
+    analysis=analysis,
+    mass_result=mass_result,
+    subhalo_result_1=subhalo_result_1,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
+)
+
+subhalo_result_3 = slam.subhalo.detection.run_3_subhalo(
+    settings_search=settings_search,
+    analysis=analysis,
+    subhalo_result_1=subhalo_result_1,
+    subhalo_grid_search_result_2=subhalo_grid_search_result_2,
+    subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
 )
 
 """

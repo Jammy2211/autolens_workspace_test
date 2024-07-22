@@ -1,7 +1,7 @@
 """
-__PROFILING: Inversion VoronoiNN__
+__PROFILING: Inversion Voronoi__
 
-This profiling script times how long it takes to fit `Imaging` data with a `VoronoiNN` pixelization for
+This profiling script times how long it takes to fit `Imaging` data with a `Voronoi` pixelization for
 datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.
@@ -147,13 +147,13 @@ lens_adapt_data = lens_galaxy.image_2d_from(grid=masked_dataset.grid).binned
 source_adapt_data = source_galaxy.image_2d_from(grid=masked_dataset.grid).binned
 
 """
-The source galaxy whose `VoronoiNNBrightness` `Pixelization` fits the data.
+The source galaxy whose `VoronoiBrightness` `Pixelization` fits the data.
 """
 pixelization = al.Pixelization(
     image_mesh=al.image_mesh.Hilbert(
         pixels=pixels, weight_floor=0.3, weight_power=15.0
     ),
-    mesh=al.mesh.VoronoiNN(),
+    mesh=al.mesh.Voronoi(),
     regularization=al.reg.AdaptiveBrightnessSplit(
         inner_coefficient=0.001, outer_coefficient=100.0, signal_scale=0.05
     ),
@@ -242,7 +242,7 @@ run_time_dict = {}
 
 """
 We now start of the profiling timer and iterate through every step of the fitting strong lens data with 
-a `VoronoiNN` pixelization. We provide a description of every step to give an overview of what is the reason
+a `Voronoi` pixelization. We provide a description of every step to give an overview of what is the reason
 for its run time.
 """
 start_overall = time.time()
@@ -377,7 +377,7 @@ __Image-Plane Weight Map__
 To determine the image-plane pixelization a weight KMeans algorithm will be called. This requires a weight map, 
 which the code computes below using the adapt_galaxy_image of the source galaxy.
 
-Checkout the functions `VoronoiNN.weight_map_from`
+Checkout the functions `Voronoi.weight_map_from`
 
 https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/pixelizations.py
 """
@@ -392,7 +392,7 @@ run_time_dict["Image-plane Weight-Map"] = (time.time() - start) / repeats
 """
 __Image-plane Pixelization (KMeans)__
 
-The `VoronoiNN` begins by determining what will become its the source-pixel centres by calculating them 
+The `Voronoi` begins by determining what will become its the source-pixel centres by calculating them 
 in the image-plane. 
 
 This calculation is performed by using a weight KMeans clustering algorithm:
@@ -446,29 +446,29 @@ for i in range(repeats):
 run_time_dict["Border Relocation Pixelization"] = (time.time() - start) / repeats
 
 """
-__VoronoiNN Mesh__
+__Voronoi Mesh__
 
-The relocated pixelization grid is now used to create the `Pixelization`'s VoronoiNN grid using the scipy.spatial library.
+The relocated pixelization grid is now used to create the `Pixelization`'s Voronoi grid using the scipy.spatial library.
 
 The array `sparse_index_for_slim_index` encodes the closest source pixel of every pixel on the (full resolution)
 sub image-plane grid. This is used for efficiently pairing every image-plane pixel to its corresponding source-plane
 pixel.
 
-Checkout `Mesh2DVoronoiNN.__init__` for a full description:
+Checkout `Mesh2DVoronoi.__init__` for a full description:
 
 https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/structures/grids/two_d/grid_2d_pixelization.py
 """
 start = time.time()
 for i in range(repeats):
-    grid_VoronoiNN = al.Mesh2DVoronoiNN(
+    grid_Voronoi = al.Mesh2DVoronoi(
         grid=relocated_pixelization_grid,
         nearest_pixelization_index_for_slim_index=image_plane_mesh_grid.sparse_index_for_slim_index,
     )
-run_time_dict["VoronoiNN Mesh"] = (time.time() - start) / repeats
+run_time_dict["Voronoi Mesh"] = (time.time() - start) / repeats
 
 """
 We now combine grids computed above to create a `Mapper`, which describes how every image-plane (sub-)pixel maps to
-every source-plane VoronoiNN pixel. 
+every source-plane Voronoi pixel. 
 
 There are two computationally steps in this calculation, which we profile individually below. Therefore, we do not
 time the calculation below, but will use the `mapper` that comes out later in the profiling script.
@@ -480,7 +480,7 @@ https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/util/mapper_util.py
 """
 mapper = mappers.MapperVoronoi(
     source_plane_data_grid=relocated_grid,
-    source_plane_mesh_grid=grid_VoronoiNN,
+    source_plane_mesh_grid=grid_Voronoi,
     data_pixelization_grid=image_plane_mesh_grid,
     adapt_data=source_galaxy.adapt_galaxy_image,
 )
@@ -503,7 +503,7 @@ MapperVoronoi.pix_index_for_sub_slim_index:
 
  https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/inversion/mappers.py
  
-pixelization_index_for_VoronoiNN_sub_slim_index_from:
+pixelization_index_for_Voronoi_sub_slim_index_from:
  
  https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/util/mapper_util.py 
 """

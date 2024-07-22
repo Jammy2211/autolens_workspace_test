@@ -31,7 +31,7 @@ for j in range(gaussian_per_basis):
 
 lens_bulge = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=bulge_gaussian_list,
+    profile_list=bulge_gaussian_list,
 )
 
 log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
@@ -53,7 +53,7 @@ for j in range(gaussian_per_basis):
 
 lens_disk = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=disk_gaussian_list,
+    profile_list=disk_gaussian_list,
 )
 
 
@@ -82,7 +82,7 @@ for j in range(gaussian_per_basis):
 
 source_bulge = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=bulge_gaussian_list,
+    profile_list=bulge_gaussian_list,
 )
 
 model = af.Collection(

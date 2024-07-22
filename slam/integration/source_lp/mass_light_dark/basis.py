@@ -153,7 +153,7 @@ for j in range(gaussian_per_basis):
 
 lens_bulge = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=bulge_gaussian_list,
+    profile_list=bulge_gaussian_list,
 )
 
 
@@ -251,7 +251,7 @@ for j in range(gaussian_per_basis):
 
 lens_bulge = af.Model(
     al.lp_basis.Basis,
-    light_profile_list=bulge_gaussian_list,
+    profile_list=bulge_gaussian_list,
 )
 
 

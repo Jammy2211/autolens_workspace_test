@@ -122,7 +122,7 @@ for i in range(total_n + total_m):
         m_count = -n_count
 
 
-bulge = al.lp_basis.Basis(light_profile_list=shapelets_bulge_list)
+bulge = al.lp_basis.Basis(profile_list=shapelets_bulge_list)
 
 source = al.Galaxy(
     redshift=1.0,

@@ -1,7 +1,7 @@
 """
-__PROFILING: Inversion VoronoiNN__
+__PROFILING: Inversion Voronoi__
 
-This profiling script times how long it takes to fit `Imaging` data with a `VoronoiNN` pixelization for
+This profiling script times how long it takes to fit `Imaging` data with a `Voronoi` pixelization for
 datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.
@@ -107,11 +107,11 @@ traced_grid = tracer.traced_grid_2d_list_from(grid=masked_dataset.grid)[1]
 source_adapt_data = source_galaxy.image_2d_from(grid=traced_grid)
 
 """
-The source galaxy whose `VoronoiNNBrightness` `Pixelization` fits the data.
+The source galaxy whose `VoronoiBrightness` `Pixelization` fits the data.
 """
 pixelization = al.Pixelization(
     image_mesh=al.image_mesh.Hilbert(pixels=pixels, weight_floor=0.2, weight_power=3.0),
-    mesh=al.mesh.VoronoiNN(),
+    mesh=al.mesh.Voronoi(),
     regularization=al.reg.AdaptiveBrightnessSplit(
         inner_coefficient=0.01, outer_coefficient=100.0, signal_scale=0.05
     ),
@@ -174,7 +174,6 @@ Output an image of the fit, so that we can inspect that it fits the data as expe
 # fit_plotter.subplot_of_mapper(mapper_index=0)
 
 
-
 source_image = fit.inversion.interpolated_reconstruction_list_from(
     shape_native=(1001, 1001),
     # extent=[-1, 1, -1, 1]
@@ -197,11 +196,13 @@ tracer = al.Tracer(
     ]
 )
 
-def func(obj, grid, *args, **kwargs):
 
+def func(obj, grid, *args, **kwargs):
     return tracer.image_2d_via_input_plane_image_from(
-        grid=grid, plane_image=source_image,
+        grid=grid,
+        plane_image=source_image,
     )
+
 
 over_sampling = al.OverSamplingUniform.from_func(
     func=func,
@@ -213,23 +214,13 @@ over_sampling = al.OverSamplingUniform.from_func(
 print(over_sampling.sub_size)
 
 mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(
-        path=file_path, filename=f"sub_size", format="png"
-    )
+    output=aplt.Output(path=file_path, filename=f"sub_size", format="png")
 )
 plotter = aplt.Array2DPlotter(array=over_sampling.sub_size, mat_plot_2d=mat_plot_2d)
 plotter.figure_2d()
 
 
-
-
-
-grid = al.Grid2D.from_mask(
-    mask=mask,
-    over_sampling=al.OverSamplingUniform(
-        sub_size=8
-    )
-)
+grid = al.Grid2D.from_mask(mask=mask, over_sampling=al.OverSamplingUniform(sub_size=8))
 
 lens_galaxy = al.Galaxy(
     redshift=0.5,
@@ -249,17 +240,11 @@ tracer = al.Tracer(
 )
 
 image_sub_1 = tracer.image_2d_via_input_plane_image_from(
-    grid=grid,
-    plane_image=source_image
+    grid=grid, plane_image=source_image
 )
 
 
-grid = al.Grid2D.from_mask(
-    mask=mask,
-    over_sampling=al.OverSamplingUniform(
-        sub_size=16
-    )
-)
+grid = al.Grid2D.from_mask(mask=mask, over_sampling=al.OverSamplingUniform(sub_size=16))
 
 tracer = al.Tracer(
     galaxies=[
@@ -269,27 +254,20 @@ tracer = al.Tracer(
 )
 
 image_sub_2 = tracer.image_2d_via_input_plane_image_from(
-    grid=grid,
-    plane_image=source_image
+    grid=grid, plane_image=source_image
 )
 
 mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(
-        path=file_path, filename=f"image_sub_2", format="png"
-    )
+    output=aplt.Output(path=file_path, filename=f"image_sub_2", format="png")
 )
 plotter = aplt.Array2DPlotter(array=image_sub_2, mat_plot_2d=mat_plot_2d)
 plotter.figure_2d()
 
 
-
-
 residuals = image_sub_2 - image_sub_1
 
 mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(
-        path=file_path, filename=f"residuals_pix", format="png"
-    )
+    output=aplt.Output(path=file_path, filename=f"residuals_pix", format="png")
 )
 plotter = aplt.Array2DPlotter(array=residuals, mat_plot_2d=mat_plot_2d)
 plotter.figure_2d()

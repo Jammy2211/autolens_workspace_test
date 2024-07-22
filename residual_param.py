@@ -1,7 +1,7 @@
 """
-__PROFILING: Inversion VoronoiNN__
+__PROFILING: Inversion Voronoi__
 
-This profiling script times how long it takes to fit `Imaging` data with a `VoronoiNN` pixelization for
+This profiling script times how long it takes to fit `Imaging` data with a `Voronoi` pixelization for
 datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.
@@ -107,11 +107,11 @@ traced_grid = tracer.traced_grid_2d_list_from(grid=masked_dataset.grid)[1]
 source_adapt_data = source_galaxy.image_2d_from(grid=traced_grid)
 
 """
-The source galaxy whose `VoronoiNNBrightness` `Pixelization` fits the data.
+The source galaxy whose `VoronoiBrightness` `Pixelization` fits the data.
 """
 pixelization = al.Pixelization(
     image_mesh=al.image_mesh.Hilbert(pixels=pixels, weight_floor=0.2, weight_power=3.0),
-    mesh=al.mesh.VoronoiNN(),
+    mesh=al.mesh.Voronoi(),
     regularization=al.reg.AdaptiveBrightnessSplit(
         inner_coefficient=0.01, outer_coefficient=100.0, signal_scale=0.05
     ),
@@ -165,26 +165,11 @@ lens_galaxy = al.Galaxy(
     shear=al.mp.ExternalShear(gamma_1=0.001, gamma_2=0.001),
 )
 
-tracer = al.Tracer(
-    galaxies=[
-        lens_galaxy,
-        source_galaxy
-    ]
-)
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
-grid = al.Grid2D.from_mask(
-    mask=mask,
-    over_sampling=al.OverSamplingUniform(
-        sub_size=1
-    )
-)
+grid = al.Grid2D.from_mask(mask=mask, over_sampling=al.OverSamplingUniform(sub_size=1))
 
-tracer = al.Tracer(
-    galaxies=[
-        lens_galaxy,
-        source_galaxy
-    ]
-)
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
 image_prev = tracer.image_2d_from(
     grid=grid,
@@ -192,20 +177,11 @@ image_prev = tracer.image_2d_from(
 
 
 for sub_size in range(8):
-
     grid = al.Grid2D.from_mask(
-        mask=mask,
-        over_sampling=al.OverSamplingUniform(
-            sub_size=sub_size
-        )
+        mask=mask, over_sampling=al.OverSamplingUniform(sub_size=sub_size)
     )
 
-    tracer = al.Tracer(
-        galaxies=[
-            lens_galaxy,
-            source_galaxy
-        ]
-    )
+    tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
     image_new = tracer.image_2d_from(
         grid=grid,
@@ -218,7 +194,6 @@ for sub_size in range(8):
     )
     plotter = aplt.Array2DPlotter(array=image_new, mat_plot_2d=mat_plot_2d)
     plotter.figure_2d()
-
 
     residuals = image_new - image_prev
 

@@ -80,7 +80,7 @@ image_mesh = al.image_mesh.Overlay(shape=mesh_shape_2d)
 
 pixelization = al.Pixelization(
     image_mesh=image_mesh,
-    mesh=al.mesh.VoronoiNN(),
+    mesh=al.mesh.Voronoi(),
     regularization=al.reg.Constant(coefficient=1.0),
 )
 

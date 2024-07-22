@@ -124,7 +124,7 @@ class SimulateImagingPixelized:
             pixel_scales=self.mask.pixel_scales,
             over_sampling=al.OverSamplingUniform(
                 sub_size=self.image_plane_subgrid_size
-            )
+            ),
         )
 
         """
@@ -553,9 +553,7 @@ def run(
         lower_limit=-grid_dimension_arcsec, upper_limit=grid_dimension_arcsec
     )
     perturb_model.mass.redshift_object = mass_result.model.galaxies.lens.redshift
-    perturb_model.mass.redshift_source = (
-        mass_result.model.galaxies.source.redshift
-    )
+    perturb_model.mass.redshift_source = mass_result.model.galaxies.source.redshift
 
     """
     __Perturb Model Prior Func__

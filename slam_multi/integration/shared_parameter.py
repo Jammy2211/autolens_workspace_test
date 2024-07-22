@@ -155,8 +155,8 @@ def fit():
         analysis=analysis,
         source_lp_result=source_lp_result,
         image_mesh=al.image_mesh.Hilbert,
-        mesh_init=al.mesh.VoronoiNN,
-        mesh=al.mesh.VoronoiNN,
+        mesh_init=al.mesh.Voronoi,
+        mesh=al.mesh.Voronoi,
         regularization=al.reg.AdaptiveBrightness,
     )
 
