@@ -5,8 +5,9 @@ Database: Model-Fit
 This is a simple example of a model-fit which we wish to write to the database. This should simply output the
 results to the `.sqlite` database file.
 """
-def fit():
 
+
+def fit():
     import pytest
 
     # %matplotlib inline
@@ -69,7 +70,6 @@ def fit():
     """
     redshift_lens = 0.5
     redshift_source = 1.0
-
 
     """
     __SOURCE LP PIPELINE (with lens light)__
@@ -192,7 +192,7 @@ def fit():
      - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
     """
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
+        dataset=dataset,
     )
 
     mass_result = slam.mass_total.run(
@@ -221,7 +221,9 @@ def fit():
         pass
 
     agg = Aggregator.from_database(database_file)
-    agg.add_directory(directory=path.join("output", "database", "scrape", "slam_general"))
+    agg.add_directory(
+        directory=path.join("output", "database", "scrape", "slam_general")
+    )
 
     assert len(agg) > 0
 
@@ -315,7 +317,6 @@ def fit():
         print(f"\n****Covariance (covariance)****\n\n{covariance}")
         assert covariance[0][0] > 0.0 or np.isnan(covariance[0][0])
 
-
     """
     __Aggregator Module__
     """
@@ -339,7 +340,9 @@ def fit():
             tracer_plotter.figures_2d(convergence=True, potential=True)
 
         except al.exc.ProfileException:
-            print("TracerAgg with linear light profiles raises correct ProfileException")
+            print(
+                "TracerAgg with linear light profiles raises correct ProfileException"
+            )
 
         assert tracer.galaxies[0].mass.einstein_radius > 0.0
 
@@ -379,9 +382,10 @@ def fit():
     for fit_list in fit_imaging_gen:
         fit = fit_list[0]
 
-        assert fit.adapt_images.model_image is not None
+        assert fit.adapt_images is None
 
         print("FitImagingAgg Adapt Images Checked")
+
 
 if __name__ == "__main__":
     fit()

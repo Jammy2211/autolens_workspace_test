@@ -62,7 +62,7 @@ grid_2d = al.Grid2D.uniform(
     shape_native=data.shape_native, pixel_scales=data.pixel_scales
 )
 
-point_solver = al.PointSolver(grid=grid_2d, pixel_scale_precision=0.025)
+solver = al.PointSolver(grid=grid_2d, pixel_scale_precision=0.025)
 
 """
 __Search__
@@ -78,7 +78,7 @@ search = af.DynestyStatic(
 """
 __Analysis__
 """
-analysis = al.AnalysisPoint(point_dict=point_dict, solver=point_solver)
+analysis = al.AnalysisPoint(point_dict=point_dict, solver=solver)
 
 """
 __Model-Fit__

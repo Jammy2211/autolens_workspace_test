@@ -1,6 +1,8 @@
 import autofit as af
 import autolens as al
 
+from . import subhalo_util
+
 from typing import Union, Tuple
 
 
@@ -175,6 +177,13 @@ def run_2_grid_search(
             model.galaxies.subhalo.mass.centre_0,
         ],
         info=settings_search.info,
+    )
+
+    subhalo_util.visualize_subhalo_detect(
+        result_no_subhalo=subhalo_result_1,
+        result=result,
+        analysis=analysis,
+        paths=subhalo_grid_search.paths,
     )
 
     return result

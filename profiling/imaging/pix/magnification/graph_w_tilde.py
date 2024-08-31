@@ -67,9 +67,7 @@ def bar_deflection_profiles(
     plt.legend(handles, labels, fontsize=20)
 
     if "hst" in filename:
-        title = (
-            f"Voronoi Inversion W-Tilde HST (total time = {np.round(fit_time, 2)})"
-        )
+        title = f"Voronoi Inversion W-Tilde HST (total time = {np.round(fit_time, 2)})"
 
     plt.yticks(fontsize=16)
     plt.xticks([0.0, 1.0], fontsize=20)

@@ -5,8 +5,9 @@ Database: Model-Fit
 This is a simple example of a model-fit which we wish to write to the database. This should simply output the
 results to the `.sqlite` database file.
 """
-def fit():
 
+
+def fit():
     # %matplotlib inline
     # from pyprojroot import here
     # workspace_path = str(here())
@@ -21,7 +22,6 @@ def fit():
     from autoconf import conf
 
     conf.instance.push(new_path=path.join(cwd, "config", "fit"))
-
 
     import autofit as af
     import autolens as al
@@ -67,7 +67,6 @@ def fit():
     redshift_lens = 0.5
     redshift_source = 1.0
 
-
     """
     __SOURCE LP PIPELINE (no lens light)__
     
@@ -79,7 +78,6 @@ def fit():
      - Fixes the mass profile centre to (0.0, 0.0) (this assumption will be relaxed in the MASS PIPELINE).
     """
     analysis = al.AnalysisImaging(dataset=dataset)
-
 
     bulge = af.Model(al.lp_linear.Sersic)
     disk = af.Model(al.lp_linear.Exponential)
@@ -97,7 +95,6 @@ def fit():
         redshift_lens=redshift_lens,
         redshift_source=redshift_source,
     )
-
 
     """
     __MASS TOTAL PIPELINE (no lens light)__
@@ -193,14 +190,36 @@ def fit():
         """
         This should return an instance of the `SensitivityResult` object.
         """
-        sensitivity_result = fit_grid["result"]
+        result = fit_grid["result"]
+
+        result = al.SubhaloSensitivityResult(
+            result=result,
+        )
 
         """
         The log likelihoods of the base fits, perturbed fits and their difference.
         """
-        print(sensitivity_result.log_likelihoods_base)
-        print(sensitivity_result.log_likelihoods_perturbed)
-        print(sensitivity_result.log_likelihood_differences)
+        print(result.log_likelihoods_base)
+        print(result.log_likelihoods_perturbed)
+        print(result.log_likelihood_differences)
+
+        print(result._array_2d_from(values=result.log_likelihood_differences))
+
+        output = aplt.Output(
+            #       path=result.search.paths.output_path,
+            path=".",
+            format="png",
+        )
+
+        plotter = aplt.SubhaloSensitivityPlotter(
+            result=result,
+            data_subtracted=dataset.data,
+            mat_plot_2d=aplt.MatPlot2D(output=output),
+        )
+
+        plotter.subplot_figures_of_merit_grid()
+        plotter.figure_figures_of_merit_grid()
+
 
 if __name__ == "__main__":
     fit()

@@ -259,7 +259,7 @@ These two numbers are the primary driver of run time. More pixels = longer run t
 print(f"Inversion fit run times for image type {instrument} \n")
 print(f"Number of pixels = {masked_dataset.grid.shape_slim} \n")
 print(
-    f"Number of sub-pixels = {masked_dataset.grid_pixelization.over_sampler.sub_total} \n"
+    f"Number of sub-pixels = {masked_dataset.grids.pixelization.over_sampler.sub_total} \n"
 )
 
 """
@@ -273,7 +273,7 @@ __Predicted And Exccess Time__
 
 The predicted time is how long we expect the fit should take, based on the individual profiling of functions above.
 
-The excess time is the difference of this value from the fit time, and it indiciates whether the break-down above
+The excess time is the difference of this value from the fit time, and it indicates whether the break-down above
 has missed expensive steps.
 """
 predicted_time = 0.0
@@ -346,7 +346,7 @@ The `info_dict` contains all the key information of the analysis which describes
 info_dict = {}
 info_dict["repeats"] = repeats
 info_dict["image_pixels"] = masked_dataset.grid.shape_slim
-info_dict["sub_total"] = masked_dataset.grid_pixelization.over_sampler.sub_total
+info_dict["sub_total"] = masked_dataset.grids.pixelization.over_sampler.sub_total
 info_dict["mask_radius"] = mask_radius
 info_dict["psf_shape_2d"] = psf_shape_2d
 try:

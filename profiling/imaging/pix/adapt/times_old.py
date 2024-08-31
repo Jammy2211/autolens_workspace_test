@@ -265,7 +265,7 @@ https://github.com/Jammy2211/PyAutoGalaxy/blob/main/autogalaxy/profiles/light_pr
 start = time.time()
 for i in range(repeats):
     image = lens_galaxy.image_2d_from(grid=masked_dataset.grid)
-    blurring_image = lens_galaxy.image_2d_from(grid=masked_dataset.blurring_grid)
+    blurring_image = lens_galaxy.image_2d_from(grid=masked_dataset.grids.blurring)
 
 run_time_dict["Lens Light (Grid2D)"] = (time.time() - start) / repeats
 
@@ -285,7 +285,7 @@ masked_imaging_iterate = masked_imaging_iterate.apply_settings(
 start = time.time()
 for i in range(repeats):
     image = lens_galaxy.image_2d_from(grid=masked_imaging_iterate.grid)
-    blurring_image = lens_galaxy.image_2d_from(grid=masked_dataset.blurring_grid)
+    blurring_image = lens_galaxy.image_2d_from(grid=masked_dataset.grids.blurring)
 
 run_time_dict["Lens Light (Grid2DIterate)"] = (time.time() - start) / repeats
 
@@ -561,7 +561,7 @@ __Data Vector (D)__
 To solve for the source pixel fluxes we now pose the problem as a linear inversion which we use the NumPy linear 
 algebra libraries to solve. The linear algebra is based on the paper https://arxiv.org/pdf/astro-ph/0302587.pdf .
 
-This requires us to convert the blurred mapping matrix and our data / noise map into matrices of certain dimensions. 
+This requires us to convert the blurred mapping matrix and our `data` and `noise map` into matrices of certain dimensions. 
 
 The `data_vector` D is the first such matrix, which is given by equation (4) 
 in https://arxiv.org/pdf/astro-ph/0302587.pdf. 

@@ -244,7 +244,7 @@ __Predicted And Exccess Time__
 
 The predicted time is how long we expect the fit should take, based on the individual profiling of functions above.
 
-The excess time is the difference of this value from the fit time, and it indiciates whether the break-down above
+The excess time is the difference of this value from the fit time, and it indicates whether the break-down above
 has missed expensive steps.
 """
 predicted_time = 0.0

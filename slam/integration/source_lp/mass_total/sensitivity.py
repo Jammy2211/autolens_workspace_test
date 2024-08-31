@@ -72,7 +72,9 @@ def fit():
     mask_radius = 3.0
 
     mask = al.Mask2D.circular(
-        shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
+        shape_native=dataset.shape_native,
+        pixel_scales=dataset.pixel_scales,
+        radius=mask_radius,
     )
 
     dataset = dataset.apply_mask(mask=mask)
@@ -89,6 +91,7 @@ def fit():
     """
     settings_search = af.SettingsSearch(
         path_prefix=path.join("slam", "source_lp", "mass_total", "sensitivity"),
+        unique_tag="hello",
         number_of_cores=1,
         session=None,
     )

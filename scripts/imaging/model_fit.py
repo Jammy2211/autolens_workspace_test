@@ -157,12 +157,12 @@ __Result__
 The `Result` object also contains:
 
  - The model corresponding to the maximum log likelihood solution in parameter space.
- - The corresponding maximum log likelihood `Plane` and `FitImaging` objects.Information on the posterior as estimated by the `Dynesty` non-linear search. 
+ - The corresponding maximum log likelihood `Galaxies` and `FitImaging` objects.Information on the posterior as estimated by the `Dynesty` non-linear search. 
 """
 print(result.max_log_likelihood_instance)
 
 tracer_plotter = aplt.TracerPlotter(
-    tracer=result.max_log_likelihood_tracer, grid=result.grid
+    tracer=result.max_log_likelihood_tracer, grid=result.grids.uniform
 )
 tracer_plotter.subplot_tracer()
 

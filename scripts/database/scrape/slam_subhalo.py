@@ -5,8 +5,9 @@ Database: Model-Fit
 This is a simple example of a model-fit which we wish to write to the database. This should simply output the
 results to the `.sqlite` database file.
 """
-def fit():
 
+
+def fit():
     # %matplotlib inline
     # from pyprojroot import here
     # workspace_path = str(here())
@@ -66,7 +67,6 @@ def fit():
     """
     redshift_lens = 0.5
     redshift_source = 1.0
-
 
     """
     __SOURCE LP PIPELINE (with lens light)__
@@ -235,7 +235,9 @@ def fit():
     Add all results in the directory "output/slacs" to the database, which we manipulate below via the agg.
     Avoid rerunning this once the file `slacs.sqlite` has been built.
     """
-    agg.add_directory(directory=path.join("output", "database", "scrape", "slam_subhalo"))
+    agg.add_directory(
+        directory=path.join("output", "database", "scrape", "slam_subhalo")
+    )
 
     print("\n\n***********************")
     print("**GRID RESULTS TESTING**")
@@ -247,7 +249,6 @@ def fit():
         "****\n",
     )
     unique_tag = agg.grid_searches().search.unique_tag
-
 
     """
     The `GridSearchResult` is accessible via the database.
@@ -274,7 +275,8 @@ def fit():
     )
 
     assert (
-        agg.grid_searches().best_fits().values("samples")[0].log_likelihood_list[-1] > -1e88
+        agg.grid_searches().best_fits().values("samples")[0].log_likelihood_list[-1]
+        > -1e88
     )
 
     """
@@ -289,14 +291,13 @@ def fit():
         agg_subhalo.search.name == "subhalo[3]_[single_plane_refine]"
     )
 
-
     print("\n\n***********************")
     print("**AGG SUBHALO TESTS**")
     print("***********************\n\n")
 
     fit_no_subhalo_agg = al.agg.FitImagingAgg(aggregator=agg_no_subhalo)
     fit_no_subhalo_gen = fit_no_subhalo_agg.max_log_likelihood_gen_from()
-    fit_no_subhalo = list(fit_no_subhalo_gen)[0]
+    fit_no_subhalo = list(fit_no_subhalo_gen)[0][0]
 
     fit_subhalo_grid_best_fit_agg = al.agg.FitImagingAgg(
         aggregator=agg_subhalo_grid_best_fit
@@ -314,16 +315,18 @@ def fit():
 
     grid_search_result = list(agg_subhalo_grid)[0]["result"]
 
-    result_subhalo_grid_search = al.subhalo.SubhaloGridSearchResult(
-        result_subhalo_grid_search=grid_search_result,
+    result = al.subhalo.SubhaloGridSearchResult(
+        result=grid_search_result,
     )
 
     fit_imaging_with_subhalo = analysis.fit_from(
-        instance=result_subhalo_grid_search.best_samples.max_log_likelihood(),
+        instance=result.best_samples.max_log_likelihood(),
     )
 
     output = aplt.Output(
-        path=result_subhalo_grid_search.search.paths.output_path, format="png"
+        #       path=result.search.paths.output_path,
+        path=".",
+        format="png",
     )
 
     mat_plot = aplt.MatPlot2D(
@@ -331,7 +334,7 @@ def fit():
     )
 
     subhalo_plotter = al.subhalo.SubhaloPlotter(
-        result_subhalo_grid_search=result_subhalo_grid_search,
+        result=result,
         fit_imaging_no_subhalo=fit_no_subhalo,
         fit_imaging_with_subhalo=fit_imaging_with_subhalo,
         mat_plot_2d=mat_plot,
@@ -348,6 +351,7 @@ def fit():
     subhalo_plotter.figure_mass_grid()
     subhalo_plotter.subplot_detection_imaging()
     subhalo_plotter.subplot_detection_fits()
+
 
 if __name__ == "__main__":
     fit()

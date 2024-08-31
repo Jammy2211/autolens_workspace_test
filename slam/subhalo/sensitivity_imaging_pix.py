@@ -2,6 +2,8 @@ import autofit as af
 import autolens as al
 import autolens.plot as aplt
 
+from . import subhalo_util
+
 import os
 from typing import Optional, Union, Tuple
 
@@ -243,7 +245,6 @@ class SimulateImagingPixelized:
         )
 
         sensitivity_plotter = aplt.SubhaloSensitivityPlotter(
-            grid=grid,
             source_image=source_image,
             tracer_perturb=tracer,
             tracer_no_perturb=tracer_no_perturb,
@@ -681,4 +682,10 @@ def run(
         number_of_cores=settings_search.number_of_cores,
     )
 
-    return sensitivity.run()
+    result = sensitivity.run()
+
+    subhalo_util.visualize_sensitivity(
+        result=result, paths=paths, mass_result=mass_result, mask=mask
+    )
+
+    return result

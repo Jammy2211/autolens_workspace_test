@@ -350,8 +350,7 @@ it from this file if it is already there. This ensures that when a pipeline is r
 values are always used.
 """
 lp_chain_tracer = al.util.chaining.lp_chain_tracer_from(
-    light_result=light_result,
-    settings_search=settings_search
+    light_result=light_result, settings_search=settings_search
 )
 
 
@@ -365,7 +364,7 @@ mass_result = slam.mass_light_dark.run(
     source_result_for_source=source_pix_result_2,
     light_result=light_result,
     dark=dark,
-    link_mass_to_light_ratios=True
+    link_mass_to_light_ratios=True,
 )
 
 mass_result = slam.mass_light_dark.run(
@@ -377,7 +376,7 @@ mass_result = slam.mass_light_dark.run(
     light_result=light_result,
     use_gradient=True,
     dark=dark,
-    link_mass_to_light_ratios=True
+    link_mass_to_light_ratios=True,
 )
 
 dark = af.Model(al.mp.NFWMCRLudlowSph)
@@ -390,7 +389,7 @@ mass_result = slam.mass_light_dark.run(
     source_result_for_source=source_pix_result_2,
     light_result=light_result,
     dark=dark,
-    link_mass_to_light_ratios=True
+    link_mass_to_light_ratios=True,
 )
 
 mass_result = slam.mass_light_dark.run(
@@ -402,7 +401,7 @@ mass_result = slam.mass_light_dark.run(
     light_result=light_result,
     use_gradient=True,
     dark=dark,
-    link_mass_to_light_ratios=True
+    link_mass_to_light_ratios=True,
 )
 
 

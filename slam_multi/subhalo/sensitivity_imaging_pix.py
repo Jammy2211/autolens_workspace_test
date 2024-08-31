@@ -243,7 +243,6 @@ class SimulateImagingPixelized:
         )
 
         sensitivity_plotter = aplt.SubhaloSensitivityPlotter(
-            grid=grid,
             source_image=source_image,
             tracer_perturb=tracer,
             tracer_no_perturb=tracer_no_perturb,

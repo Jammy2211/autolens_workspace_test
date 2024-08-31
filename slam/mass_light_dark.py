@@ -8,13 +8,13 @@ from typing import Optional, Union
 def run(
     settings_search: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
-    lp_chain_tracer : al.Tracer,
+    lp_chain_tracer: al.Tracer,
     source_result_for_lens: af.Result,
     source_result_for_source: af.Result,
     light_result: af.Result,
     dark: Optional[af.Model] = af.Model(al.mp.NFWMCRLudlow),
     smbh: Optional[af.Model] = None,
-    use_gradient : bool = False,
+    use_gradient: bool = False,
     link_mass_to_light_ratios: bool = True,
 ) -> af.Result:
     """
@@ -74,10 +74,16 @@ def run(
     """
 
     lens_bulge = al.util.chaining.mass_light_dark_from(
-        light_result=light_result, lp_chain_tracer=lp_chain_tracer, name="bulge", use_gradient=use_gradient
+        light_result=light_result,
+        lp_chain_tracer=lp_chain_tracer,
+        name="bulge",
+        use_gradient=use_gradient,
     )
     lens_disk = al.util.chaining.mass_light_dark_from(
-        light_result=light_result, lp_chain_tracer=lp_chain_tracer, name="disk", use_gradient=use_gradient
+        light_result=light_result,
+        lp_chain_tracer=lp_chain_tracer,
+        name="disk",
+        use_gradient=use_gradient,
     )
 
     lens_bulge, lens_disk = al.util.chaining.link_ratios(
@@ -88,7 +94,6 @@ def run(
     )
 
     if dark is not None:
-
         try:
             dark.centre = lens_bulge.centre
         except AttributeError:

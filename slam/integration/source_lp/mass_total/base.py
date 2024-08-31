@@ -27,8 +27,8 @@ This uses the SLaM pipelines:
 Check them out for a full description of the analysis!
 """
 
-def fit():
 
+def fit():
     # %matplotlib inline
     # from pyprojroot import here
     # workspace_path = str(here())
@@ -235,6 +235,6 @@ def fit():
         subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     )
 
+
 if __name__ == "__main__":
     fit()
-

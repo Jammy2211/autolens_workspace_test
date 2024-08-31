@@ -122,7 +122,7 @@ nest:
       model_results_every_update: 1
       remove_state_files_at_end: true
       visualize_every_update: 1
-optimize:
+mle:
   Drawer:
     initialize:
       ball_lower_limit: 0.49

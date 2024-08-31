@@ -103,6 +103,7 @@ source_lp_result = slam.source_lp.run(
     redshift_source=redshift_source,
 )
 
+
 """
 __SOURCE PIX PIPELINE (with lens light)__
 
@@ -116,17 +117,39 @@ regularization, to set up the model and hyper images, and then:
  SOURCE PIX PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
 )
 
-source_pix_results = slam.source_pix.run(
+source_pix_result_1 = slam.source_pix.run_1(
     settings_search=settings_search,
     analysis=analysis,
     source_lp_result=source_lp_result,
-    image_mesh=al.image_mesh.Hilbert,
     mesh_init=al.mesh.Voronoi,
+)
+
+"""
+__SOURCE PIX PIPELINE 2 (with lens light)__
+"""
+analysis = al.AnalysisImaging(
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
+    settings_inversion=al.SettingsInversion(
+        image_mesh_min_mesh_pixels_per_pixel=3,
+        image_mesh_min_mesh_number=5,
+        image_mesh_adapt_background_percent_threshold=0.1,
+        image_mesh_adapt_background_percent_check=0.8,
+    ),
+)
+
+source_pix_result_2 = slam.source_pix.run_2(
+    settings_search=settings_search,
+    analysis=analysis,
+    source_lp_result=source_lp_result,
+    source_pix_result_1=source_pix_result_1,
+    image_mesh=al.image_mesh.Hilbert,
     mesh=al.mesh.Voronoi,
-    regularization=al.reg.AdaptiveBrightness,
+    regularization=al.reg.AdaptiveBrightnessSplit,
 )
 
 """
@@ -146,58 +169,22 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-total_gaussians = 30
-gaussian_per_basis = 2
-
-# The sigma values of the Gaussians will be fixed to values spanning 0.01 to the mask radius, 3.0".
-mask_radius = 3.0
-log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
-
-# By defining the centre here, it creates two free parameters that are assigned below to all Gaussians.
-
-centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-
-bulge_gaussian_list = []
-
-for j in range(gaussian_per_basis):
-    # A list of Gaussian model components whose parameters are customized belows.
-
-    gaussian_list = af.Collection(
-        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
-    )
-
-    # Iterate over every Gaussian and customize its parameters.
-
-    for i, gaussian in enumerate(gaussian_list):
-        gaussian.centre.centre_0 = centre_0  # All Gaussians have same y centre.
-        gaussian.centre.centre_1 = centre_1  # All Gaussians have same x centre.
-        gaussian.ell_comps = gaussian_list[
-            0
-        ].ell_comps  # All Gaussians have same elliptical components.
-        gaussian.sigma = (
-            10 ** log10_sigma_list[i]
-        )  # All Gaussian sigmas are fixed to values above.
-
-    bulge_gaussian_list += gaussian_list
-
-# The Basis object groups many light profiles together into a single model component.
-
-bulge = af.Model(
-    al.lp_basis.Basis,
-    profile_list=bulge_gaussian_list,
-)
+bulge = af.Model(al.lp_linear.Sersic)
+disk = af.Model(al.lp_linear.Exponential)
+bulge.centre = disk.centre
 
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
 )
 
-light_results = slam.light_lp.run(
+light_result = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_result=source_pix_results,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
     lens_bulge=bulge,
-    lens_disk=None,
+    lens_disk=disk,
 )
 
 """
@@ -225,15 +212,16 @@ analysis = al.AnalysisImaging(
 multipole = af.Model(al.mp.PowerLawMultipole)
 multipole.m = 3
 
-mass_results = slam.mass_total.run(
+mass_result = slam.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_pix_results,
-    light_result=light_results,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
+    light_result=light_result,
     mass=af.Model(al.mp.PowerLaw),
-    multipole=multipole,
-    reset_shear_prior=True,
+    multipole_3=multipole,
 )
+
 
 """
 __Database__
