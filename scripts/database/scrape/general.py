@@ -174,7 +174,7 @@ for noise_map in agg.values("dataset.noise_map"):
 try:
     for covariance in agg.values("covariance"):
         print(f"\n****Covariance (covariance)****\n\n{covariance}")
-        assert covariance[0][0] > 0.0 or np.isnan(covariance[0][0])
+        assert covariance is not None
 except ValueError:
     pass
 

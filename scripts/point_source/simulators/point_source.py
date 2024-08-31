@@ -77,13 +77,13 @@ and refined to locate the image-plane coordinates that map directly to the sourc
 The `pixel_scale_precision` is the resolution up to which the multiple images are computed. The lower the value, the
 longer the calculation, with a value of 0.001 being efficient but more than sufficient for most point-source datasets.
 """
-grid_2d = al.Grid2D.uniform(
-    shape_native=(100, 100),
-    pixel_scales=0.2,  # <- The pixel-scale describes the conversion from pixel units to arc-seconds.
+grid = al.Grid2D.uniform(
+    shape_native=(200, 200),
+    pixel_scales=0.05,  # <- The pixel-scale describes the conversion from pixel units to arc-seconds.
 )
 
-solver = al.PointSolver(
-    grid=grid_2d, use_upscaling=True, pixel_scale_precision=0.001, upscale_factor=2
+solver = al.PointSolver.for_grid(
+    grid=grid, pixel_scale_precision=0.001, magnification_threshold=0.1
 )
 
 """
@@ -115,23 +115,19 @@ modeling and to `.png` for general inspection.
 """
 visuals_2d = aplt.Visuals2D(multiple_images=positions)
 
-tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid_2d, visuals_2d=visuals_2d)
+tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, visuals_2d=visuals_2d)
 tracer_plotter.figures_2d(image=True)
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(path=dataset_path, filename="image_2d", format="fits")
 )
 
-tracer_plotter = aplt.TracerPlotter(
-    tracer=tracer, grid=grid_2d, mat_plot_2d=mat_plot_2d
-)
+tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d)
 tracer_plotter.figures_2d(image=True)
 
 mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png"))
 
-tracer_plotter = aplt.TracerPlotter(
-    tracer=tracer, grid=grid_2d, mat_plot_2d=mat_plot_2d
-)
+tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d)
 tracer_plotter.subplot_tracer()
 tracer_plotter.subplot_galaxies_images()
 
@@ -139,20 +135,19 @@ tracer_plotter.subplot_galaxies_images()
 Create a point-source dictionary data object and output this to a `.json` file, which is the format used to load and
 analyse the dataset.
 """
-point_dataset = al.PointDataset(
+dataset = al.PointDataset(
     name="point_0",
     positions=positions,
-    positions_noise_map=al.ArrayIrregular(
-        values=len(positions) * [grid_2d.pixel_scale]
-    ),
+    positions_noise_map=grid.pixel_scale,
     fluxes=fluxes,
-    fluxes_noise_map=al.ArrayIrregular(values=[1.0, 1.0]),
+    fluxes_noise_map=al.ArrayIrregular(
+        values=[np.sqrt(flux) for _ in range(len(fluxes))]
+    ),
 )
 
-point_dict = al.PointDict(point_dataset_list=[point_dataset])
-
-point_dict.output_to_json(
-    file_path=path.join(dataset_path, "point_dict.json"), overwrite=True
+al.output_to_json(
+    obj=dataset,
+    file_path=path.join(dataset_path, "point_dataset.json"),
 )
 
 """
@@ -164,13 +159,11 @@ mat_plot_1d = aplt.MatPlot1D(output=aplt.Output(path=dataset_path, format="png")
 mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png"))
 
 point_dataset_plotter = aplt.PointDatasetPlotter(
-    dataset=point_dataset, mat_plot_1d=mat_plot_1d, mat_plot_2d=mat_plot_2d
+    dataset=dataset, mat_plot_1d=mat_plot_1d, mat_plot_2d=mat_plot_2d
 )
 point_dataset_plotter.subplot_dataset()
 
-tracer_plotter = aplt.TracerPlotter(
-    tracer=tracer, grid=grid_2d, mat_plot_2d=mat_plot_2d
-)
+tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d)
 tracer_plotter.subplot_tracer()
 tracer_plotter.subplot_galaxies_images()
 
