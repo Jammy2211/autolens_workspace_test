@@ -2,6 +2,7 @@
     "type": "instance",
     "class_path": "autolens.lens.tracer.Tracer",
     "arguments": {
+        "run_time_dict": null,
         "galaxies": {
             "type": "list",
             "values": [
@@ -9,17 +10,20 @@
                     "type": "instance",
                     "class_path": "autogalaxy.galaxy.galaxy.Galaxy",
                     "arguments": {
-                        "redshift": 0.5,
                         "label": null,
+                        "redshift": 0.5,
                         "mass": {
                             "type": "instance",
                             "class_path": "autogalaxy.profiles.mass.total.isothermal.IsothermalSph",
                             "arguments": {
                                 "einstein_radius": 1.6,
-                                "centre": [
-                                    0.0,
-                                    0.0
-                                ]
+                                "centre": {
+                                    "type": "tuple",
+                                    "values": [
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
                             }
                         }
                     }
@@ -28,17 +32,20 @@
                     "type": "instance",
                     "class_path": "autogalaxy.galaxy.galaxy.Galaxy",
                     "arguments": {
-                        "redshift": 1.0,
                         "label": null,
+                        "redshift": 1.0,
                         "bulge": {
                             "type": "instance",
                             "class_path": "autogalaxy.profiles.light.standard.exponential.ExponentialSph",
                             "arguments": {
                                 "effective_radius": 0.1,
-                                "centre": [
-                                    0.0,
-                                    0.1
-                                ],
+                                "centre": {
+                                    "type": "tuple",
+                                    "values": [
+                                        0.0,
+                                        0.1
+                                    ]
+                                },
                                 "intensity": 0.3
                             }
                         }
@@ -46,7 +53,6 @@
                 }
             ]
         },
-        "run_time_dict": null,
         "cosmology": {
             "type": "instance",
             "class_path": "autogalaxy.cosmology.wrap.Planck15",
