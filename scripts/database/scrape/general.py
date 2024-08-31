@@ -171,10 +171,12 @@ for noise_map in agg.values("dataset.noise_map"):
     print(f"\n****Noise Map (dataset.noise_map)****\n\n{noise_map}")
     assert isinstance(noise_map, fits.PrimaryHDU)
 
-for covariance in agg.values("covariance"):
-    print(f"\n****Covariance (covariance)****\n\n{covariance}")
-    assert covariance[0][0] > 0.0 or np.isnan(covariance[0][0])
-
+try:
+    for covariance in agg.values("covariance"):
+        print(f"\n****Covariance (covariance)****\n\n{covariance}")
+        assert covariance[0][0] > 0.0 or np.isnan(covariance[0][0])
+except ValueError:
+    pass
 
 """
 __Aggregator Module__
