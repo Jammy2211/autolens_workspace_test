@@ -37,8 +37,8 @@ data = al.Array2D.from_fits(
     file_path=path.join(dataset_path, "data.fits"), pixel_scales=0.05
 )
 
-point_dict = al.PointDict.from_json(
-    file_path=path.join(dataset_path, "point_dict.json")
+dataset = al.from_json(
+    file_path=path.join(dataset_path, "point_dataset.json"),
 )
 
 """
@@ -58,11 +58,15 @@ model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 """
 __PointSolver__
 """
-grid_2d = al.Grid2D.uniform(
-    shape_native=data.shape_native, pixel_scales=data.pixel_scales
+grid = al.Grid2D.uniform(
+    shape_native=(100, 100),
+    pixel_scales=0.2,  # <- The pixel-scale describes the conversion from pixel units to arc-seconds.
 )
 
-solver = al.PointSolver(grid=grid_2d, pixel_scale_precision=0.025)
+solver = al.PointSolver.for_grid(
+    grid=grid, pixel_scale_precision=0.001, magnification_threshold=0.1
+)
+
 
 """
 __Search__
@@ -78,7 +82,7 @@ search = af.DynestyStatic(
 """
 __Analysis__
 """
-analysis = al.AnalysisPoint(point_dict=point_dict, solver=solver)
+analysis = al.AnalysisPoint(dataset=dataset, solver=solver)
 
 """
 __Model-Fit__
