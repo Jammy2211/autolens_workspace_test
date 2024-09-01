@@ -14,9 +14,10 @@ def fit():
     # %cd $workspace_path
     # print(f"Working Directory has been set to `{workspace_path}`")
 
-    import numpy as np
     import os
     from os import path
+
+    os.environ["PYAUTOFIT_TEST_MODE"] = "1"
 
     cwd = os.getcwd()
     from autoconf import conf
@@ -351,6 +352,8 @@ def fit():
     subhalo_plotter.figure_mass_grid()
     subhalo_plotter.subplot_detection_imaging()
     subhalo_plotter.subplot_detection_fits()
+
+    os.environ["PYAUTOFIT_TEST_MODE"] = "0"
 
 
 if __name__ == "__main__":

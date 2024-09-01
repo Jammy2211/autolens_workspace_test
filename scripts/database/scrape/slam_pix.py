@@ -14,9 +14,10 @@ import pytest
 # print(f"Working Directory has been set to `{workspace_path}`")
 
 from astropy.io import fits
-import numpy as np
 import os
 from os import path
+
+os.environ["PYAUTOFIT_TEST_MODE"] = "1"
 
 cwd = os.getcwd()
 from autoconf import conf
@@ -398,3 +399,5 @@ for fit_list in fit_imaging_gen:
     assert fit.adapt_images.model_image is not None
 
     print("FitImagingAgg Adapt Images Checked")
+
+os.environ["PYAUTOFIT_TEST_MODE"] = "0"

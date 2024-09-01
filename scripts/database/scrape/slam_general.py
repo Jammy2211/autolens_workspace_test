@@ -21,6 +21,8 @@ def fit():
     import os
     from os import path
 
+    os.environ["PYAUTOFIT_TEST_MODE"] = "1"
+
     cwd = os.getcwd()
     from autoconf import conf
 
@@ -385,6 +387,8 @@ def fit():
         assert fit.adapt_images is None
 
         print("FitImagingAgg Adapt Images Checked")
+
+    os.environ["PYAUTOFIT_TEST_MODE"] = "0"
 
 
 if __name__ == "__main__":
