@@ -110,8 +110,8 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=dataset)
 
-bulge = af.Model(al.lp_linear.Sersic)
-disk = af.Model(al.lp_linear.Exponential)
+bulge = af.Model(al.lp_linear.SersicCore)
+disk = af.Model(al.lp_linear.ExponentialCore)
 bulge.centre = disk.centre
 
 source_lp_result = slam.source_lp.run(
@@ -121,7 +121,7 @@ source_lp_result = slam.source_lp.run(
     lens_disk=disk,
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
-    source_bulge=af.Model(al.lp_linear.Sersic),
+    source_bulge=af.Model(al.lp_linear.SersicCore),
     mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
@@ -144,8 +144,8 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-bulge = af.Model(al.lp_linear.Sersic)
-disk = af.Model(al.lp_linear.Exponential)
+bulge = af.Model(al.lp_linear.SersicCore)
+disk = af.Model(al.lp_linear.ExponentialCore)
 bulge.centre = disk.centre
 
 light_result = slam.light_lp.run(

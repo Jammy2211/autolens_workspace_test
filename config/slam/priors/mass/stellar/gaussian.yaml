@@ -51,8 +51,8 @@ Gaussian:
       type: Absolute
       value: 1.0e-05
     gaussian_limits:
-      lower: '-1.0'
-      upper: '1.0'
+      lower: -1.0
+      upper: 1.0
   intensity:
     type: LogUniform
     lower_limit: 0.99999

@@ -109,10 +109,10 @@ source_lp_result = slam.source_lp.run(
 __SOURCE PIX PIPELINE (with lens light)__
 
 The SOURCE PIX PIPELINE (with lens light) uses two searches to initialize a robust model for the pixelization
-that reconstructs the source galaxy's light. It begins by fitting a `Voronoi` pixelization with `Constant` 
+that reconstructs the source galaxy's light. It begins by fitting a `Delaunay` pixelization with `Constant` 
 regularization, to set up the model and hyper images, and then:
 
- - Uses a `Voronoi` pixelization.
+ - Uses a `Delaunay` pixelization.
  - Uses an `AdaptiveBrightness` regularization.
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
@@ -126,7 +126,7 @@ source_pix_result_1 = slam.source_pix.run_1(
     settings_search=settings_search,
     analysis=analysis,
     source_lp_result=source_lp_result,
-    mesh_init=al.mesh.Voronoi,
+    mesh_init=al.mesh.Delaunay,
 )
 
 """
@@ -149,7 +149,7 @@ source_pix_result_2 = slam.source_pix.run_2(
     source_lp_result=source_lp_result,
     source_pix_result_1=source_pix_result_1,
     image_mesh=al.image_mesh.Hilbert,
-    mesh=al.mesh.Voronoi,
+    mesh=al.mesh.Delaunay,
     regularization=al.reg.AdaptiveBrightnessSplit,
 )
 

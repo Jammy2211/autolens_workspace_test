@@ -51,8 +51,8 @@ isothermal.Isothermal:
       type: Absolute
       value: 1.0e-05
     gaussian_limits:
-      lower: '-1.0'
-      upper: '1.0'
+      lower: -1.0
+      upper: 1.0
 isothermal.IsothermalSph:
   centre_0:
     type: Gaussian
@@ -151,8 +151,8 @@ isothermal_core.IsothermalCore:
       type: Absolute
       value: 1.0e-05
     gaussian_limits:
-      lower: '-1.0'
-      upper: '1.0'
+      lower: -1.0
+      upper: 1.0
 isothermal_core.IsothermalCoreSph:
   centre_0:
     type: Gaussian
@@ -286,8 +286,8 @@ power_law.PowerLaw:
       type: Absolute
       value: 1.0e-05
     gaussian_limits:
-      lower: '-1.0'
-      upper: '1.0'
+      lower: -1.0
+      upper: 1.0
   slope:
     type: Uniform
     lower_limit: 1.5
@@ -406,8 +406,8 @@ power_law_broken.PowerLawBroken:
       type: Absolute
       value: 1.0e-05
     gaussian_limits:
-      lower: '-1.0'
-      upper: '1.0'
+      lower: -1.0
+      upper: 1.0
   inner_slope:
     type: Uniform
     lower_limit: 0.0
@@ -556,8 +556,8 @@ power_law_core.PowerLawCore:
       type: Absolute
       value: 1.0e-05
     gaussian_limits:
-      lower: '-1.0'
-      upper: '1.0'
+      lower: -1.0
+      upper: 1.0
   slope:
     type: Uniform
     lower_limit: 1.5

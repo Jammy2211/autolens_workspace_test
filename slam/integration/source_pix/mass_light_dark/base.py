@@ -237,11 +237,16 @@ analysis = al.AnalysisImaging(
     dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
 )
 
+lp_chain_tracer = al.util.chaining.lp_chain_tracer_from(
+    light_result=light_result, settings_search=settings_search
+)
+
 dark = af.Model(al.mp.NFWMCRLudlow)
 
 mass_result = slam.mass_light_dark.run(
     settings_search=settings_search,
     analysis=analysis,
+    lp_chain_tracer=lp_chain_tracer,
     source_result_for_lens=source_pix_result_1,
     source_result_for_source=source_pix_result_2,
     light_result=light_result,
@@ -253,6 +258,7 @@ dark = af.Model(al.mp.NFWMCRLudlowSph)
 mass_result = slam.mass_light_dark.run(
     settings_search=settings_search,
     analysis=analysis,
+    lp_chain_tracer=lp_chain_tracer,
     source_result_for_lens=source_pix_result_1,
     source_result_for_source=source_pix_result_2,
     light_result=light_result,
@@ -264,6 +270,7 @@ dark = af.Model(al.mp.NFWMCRLudlow)
 mass_result = slam.mass_light_dark.run(
     settings_search=settings_search,
     analysis=analysis,
+    lp_chain_tracer=lp_chain_tracer,
     source_result_for_lens=source_pix_result_1,
     source_result_for_source=source_pix_result_2,
     light_result=light_result,

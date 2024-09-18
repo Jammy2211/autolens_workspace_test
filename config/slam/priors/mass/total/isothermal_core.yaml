@@ -61,8 +61,8 @@ IsothermalCore:
       type: Absolute
       value: 1.0e-05
     gaussian_limits:
-      lower: '-1.0'
-      upper: '1.0'
+      lower: -1.0
+      upper: 1.0
 IsothermalCoreSph:
   centre_0:
     type: Gaussian

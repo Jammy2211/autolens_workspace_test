@@ -200,7 +200,7 @@ def fit():
         profile_list=bulge_gaussian_list,
     )
 
-    source_bulge = af.Model(al.lp_linear.Sersic)
+    source_bulge = af.Model(al.lp_linear.SersicCore)
 
     source_lp_result = slam.source_lp.run(
         settings_search=settings_search,

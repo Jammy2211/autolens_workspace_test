@@ -41,8 +41,8 @@ gnfw.gNFW:
       type: Absolute
       value: 1.0e-05
     gaussian_limits:
-      lower: '-1.0'
-      upper: '1.0'
+      lower: -1.0
+      upper: 1.0
   inner_slope:
     type: Uniform
     lower_limit: 0.0
@@ -171,8 +171,8 @@ nfw.NFW:
       type: Absolute
       value: 1.0e-05
     gaussian_limits:
-      lower: '-1.0'
-      upper: '1.0'
+      lower: -1.0
+      upper: 1.0
   kappa_s:
     type: Uniform
     lower_limit: 0.0999
