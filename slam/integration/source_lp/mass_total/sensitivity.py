@@ -348,6 +348,7 @@ def fit():
         subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
         grid_dimension_arcsec=3.0,
         number_of_steps=2,
+        sensitivity_mask=[[True, True], [True, False]],
     )
 
 

@@ -82,6 +82,7 @@ def fit():
     """
     settings_search = af.SettingsSearch(
         path_prefix=path.join("slam", "source_lp", "mass_total", "base"),
+        unique_tag="hi",
         number_of_cores=1,
         session=None,
     )

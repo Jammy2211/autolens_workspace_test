@@ -10,7 +10,7 @@ include:
     einstein_radius: true
     half_light_radius: true
   include_2d:
-    border: true
+    border: false
     tangential_caustics: true
     radial_caustics: true
     tangential_critical_curves: true

@@ -5,7 +5,7 @@ import autolens.plot as aplt
 from . import subhalo_util
 
 import os
-from typing import Optional, Tuple, Union
+from typing import Optional, List, Tuple, Union
 
 """
 __Simulate Function Class__
@@ -410,6 +410,7 @@ def run(
     adapt_images: Optional[al.AdaptImages] = None,
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
+    sensitivity_mask : Optional[Union[al.Mask2D, List]] = None,
 ):
     """
     The SLaM SUBHALO PIPELINE for performing sensitivity mapping, which determines what mass dark matter subhalos
@@ -616,6 +617,7 @@ def run(
         perturb_fit_cls=PerturbFit(adapt_images=adapt_images),
         perturb_model_prior_func=perturb_model_prior_func,
         number_of_steps=number_of_steps,
+        mask=sensitivity_mask,
         number_of_cores=settings_search.number_of_cores,
     )
 
