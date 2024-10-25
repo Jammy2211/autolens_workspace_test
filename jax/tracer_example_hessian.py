@@ -1,13 +1,6 @@
 """
-Tracer Simple
-=============
-
-This is a very short example to help us JAX-ify the Tracer.
-
-Basically, the SIE and Power Law mass profiles should now support JAX, but the full lensing calculation goes
-via the `Tracer`.
-
-This example runs a JAX-ed `Tracer` calculation so we can sort it.
+Tracer Hessian
+==============
 """
 # %matplotlib inline
 # from pyprojroot import here
@@ -111,7 +104,7 @@ A_grid(
 """
 __Tracer__
 
-The Tracer takes a different path throuigh the source code, which is not fully JAX-ed yet.
+The Tracer takes a different path through the source code
 """
 lens = al.Galaxy(redshift=0.5, mass=mass)
 source = al.Galaxy(redshift=1.0, light=al.lp.Sersic(centre=(0.0, 0.0), intensity=1.0, effective_radius=1.0))
