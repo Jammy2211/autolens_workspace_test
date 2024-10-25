@@ -15,9 +15,11 @@ This example runs a JAX-ed `Tracer` calculation so we can sort it.
 # %cd $workspace_path
 # print(f"Working Directory has been set to `{workspace_path}`")
 
+import os
+os.environ["USE_JAX"] = "1"
+
 import jax
-from jax import grad
-from os import path
+jax.config.update("jax_enable_x64", True)
 
 import autolens as al
 
@@ -47,8 +49,10 @@ mass = al.mp.Isothermal(
     einstein_radius=1.0,
 )
 
-grad = jax.jit(grad(mass.deflections_yx_2d_from))
-grad(grid)
+mass.deflections_yx_2d_from(grid)
+
+jax.jit(mass.deflections_yx_2d_from)(grid)
+
 
 """
 __Tracer__
@@ -60,8 +64,9 @@ source = al.Galaxy(redshift=1.0, light=al.lp.Sersic(centre=(0.0, 0.0), intensity
 
 tracer = al.Tracer(galaxies=[lens, source])
 
-grad = jax.jit(grad(tracer.deflections_yx_2d_from))
-grad(grid)
+tracer.deflections_yx_2d_from(grid)
+
+jax.jit(tracer.deflections_yx_2d_from)(grid)
 
 """
 Checkout `autogalaxy_workspace/*/imaging/modeling/results.py` for a full description of the result object.
