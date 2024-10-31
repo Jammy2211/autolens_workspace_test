@@ -15,9 +15,11 @@ This example runs a JAX-ed `Tracer` calculation so we can sort it.
 # %cd $workspace_path
 # print(f"Working Directory has been set to `{workspace_path}`")
 
+import os
+os.environ["USE_JAX"] = "1"
+
 import jax
-from jax import grad
-from os import path
+jax.config.update("jax_enable_x64", True)
 
 import autolens as al
 
@@ -43,8 +45,15 @@ mass = al.mp.Isothermal(
     einstein_radius=1.0,
 )
 
+<<<<<<< HEAD
 grad = jax.jit(grad(mass.deflections_yx_2d_from))
 grad(grid.array)
+=======
+mass.deflections_yx_2d_from(grid)
+
+jax.jit(mass.deflections_yx_2d_from)(grid)
+
+>>>>>>> de0aed9d7f3056161285d30b11ce1031a938b457
 
 """
 __Tracer__
