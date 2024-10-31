@@ -33,6 +33,7 @@ Check them out for a full description of the analysis!
 # %cd $workspace_path
 # print(f"Working Directory has been set to `{workspace_path}`")
 
+import numpy as np
 import os
 from os import path
 
@@ -267,17 +268,32 @@ Each model-fit performed by sensitivity mapping creates a new instance of an `An
 data simulated by the `simulate_cls` for that model. This requires us to write a wrapper around the 
 PyAutoLens `AnalysisImaging` class.
 """
-subhalo_results = slam.subhalo.sensitivity_imaging_pix.run(
+
+from slam.subhalo import subhalo_util
+
+sensitivity_mask = subhalo_util.sensitivty_mask_from(
+    mass_result=mass_result,
+    number_of_pixels=5,
+)
+
+subhalo_util.visualize_sensitivity_mask(
+    mass_result=mass_result,
+    sensitivity_mask=sensitivity_mask,
+    settings_search=settings_search,
+)
+
+subhalo_result = slam.subhalo.sensitivity_imaging_lp.run(
     settings_search=settings_search,
     mask=mask,
     psf=dataset.psf,
+    adapt_images=al.AdaptImages.from_result(result=source_lp_result),
+    use_mle=False,
     mass_result=mass_result,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
-    adapt_images=al.AdaptImages.from_result(result=source_pix_result_1),
-    grid_dimension_arcsec=3.0,
-    number_of_steps=2,
+    grid_dimension_arcsec=sensitivity_mask.geometry.shape_native_scaled[0] / 2.0,
+    number_of_steps=sensitivity_mask.shape[0],
+    sensitivity_mask=sensitivity_mask,
 )
-
 """
 Finish.
 """

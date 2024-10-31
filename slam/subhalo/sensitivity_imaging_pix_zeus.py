@@ -362,9 +362,58 @@ class BaseFit:
             The `Paths` instance which contains the path to the folder where the results of the fit are written to.
         """
 
-        search = af.Nautilus(
+        lens_mass_centre_0 = instance.galaxies.lens.mass.centre[0]
+        lens_mass_centre_1 = instance.galaxies.lens.mass.centre[1]
+        lens_mass_ell_comps_0 = instance.galaxies.lens.mass.ell_comps[0]
+        lens_mass_ell_comps_1 = instance.galaxies.lens.mass.ell_comps[1]
+        lens_mass_einstein_radius = instance.galaxies.lens.mass.einstein_radius
+        lens_mass_slope = instance.galaxies.lens.mass.slope
+        lens_shear_gamma_1 = instance.galaxies.lens.shear.gamma_1
+        lens_shear_gamma_2 = instance.galaxies.lens.shear.gamma_2
+
+        initializer = af.InitializerParamBounds(
+            {
+                model.galaxies.lens.mass.centre.centre_0: (
+                    lens_mass_centre_0 - 0.01,
+                    lens_mass_centre_0 + 0.01,
+                ),
+                model.galaxies.lens.mass.centre.centre_1: (
+                    lens_mass_centre_1 - 0.01,
+                    lens_mass_centre_1 + 0.01,
+                ),
+                model.galaxies.lens.mass.ell_comps.ell_comps_0: (
+                    lens_mass_ell_comps_0 - 0.02,
+                    lens_mass_ell_comps_0 + 0.02,
+                ),
+                model.galaxies.lens.mass.ell_comps.ell_comps_1: (
+                    lens_mass_ell_comps_1 - 0.02,
+                    lens_mass_ell_comps_1 + 0.02,
+                ),
+                model.galaxies.lens.mass.einstein_radius: (
+                    lens_mass_einstein_radius - 0.05,
+                    lens_mass_einstein_radius + 0.05,
+                ),
+                model.galaxies.lens.mass.slope: (
+                    lens_mass_slope - 0.05,
+                    lens_mass_slope + 0.05,
+                ),
+                model.galaxies.lens.shear.gamma_1: (
+                    lens_shear_gamma_1 - 0.02,
+                    lens_shear_gamma_1 + 0.02,
+                ),
+                model.galaxies.lens.shear.gamma_2: (
+                    lens_shear_gamma_2 - 0.02,
+                    lens_shear_gamma_2 + 0.02,
+                ),
+            }
+        )
+
+        search = af.Zeus(
             paths=paths,
-            n_live=50,
+            nwalkers=16,
+            nsteps=66,
+            initializer=initializer,
+            #     visualize=True
         )
 
         analysis = al.AnalysisImaging(dataset=dataset)
@@ -388,7 +437,7 @@ to the simulated data.
 
 
 class PerturbFit:
-    def __init__(self, adapt_images):
+    def __init__(self, adapt_image):
         """
         Class used to fit every dataset used for sensitivity mapping with the perturbed model (the model with the
         perturbed feature sensitivity mapping maps out).
@@ -431,9 +480,73 @@ class PerturbFit:
             The `Paths` instance which contains the path to the folder where the results of the fit are written to.
         """
 
-        search = af.Nautilus(
+        lens_mass_centre_0 = instance.galaxies.lens.mass.centre[0]
+        lens_mass_centre_1 = instance.galaxies.lens.mass.centre[1]
+        lens_mass_ell_comps_0 = instance.galaxies.lens.mass.ell_comps[0]
+        lens_mass_ell_comps_1 = instance.galaxies.lens.mass.ell_comps[1]
+        lens_mass_einstein_radius = instance.galaxies.lens.mass.einstein_radius
+        lens_mass_slope = instance.galaxies.lens.mass.slope
+        lens_shear_gamma_1 = instance.galaxies.lens.shear.gamma_1
+        lens_shear_gamma_2 = instance.galaxies.lens.shear.gamma_2
+        perturb_mass_centre_0 = instance.perturb.mass.centre[0]
+        perturb_mass_centre_1 = instance.perturb.mass.centre[1]
+        perturb_mass_mass_at_200 = instance.perturb.mass.mass_at_200
+
+        initializer = af.InitializerParamBounds(
+            {
+                model.galaxies.lens.mass.centre.centre_0: (
+                    lens_mass_centre_0 - 0.01,
+                    lens_mass_centre_0 + 0.01,
+                ),
+                model.galaxies.lens.mass.centre.centre_1: (
+                    lens_mass_centre_1 - 0.01,
+                    lens_mass_centre_1 + 0.01,
+                ),
+                model.galaxies.lens.mass.ell_comps.ell_comps_0: (
+                    lens_mass_ell_comps_0 - 0.02,
+                    lens_mass_ell_comps_0 + 0.02,
+                ),
+                model.galaxies.lens.mass.ell_comps.ell_comps_1: (
+                    lens_mass_ell_comps_1 - 0.02,
+                    lens_mass_ell_comps_1 + 0.02,
+                ),
+                model.galaxies.lens.mass.einstein_radius: (
+                    lens_mass_einstein_radius - 0.05,
+                    lens_mass_einstein_radius + 0.05,
+                ),
+                model.galaxies.lens.mass.slope: (
+                    lens_mass_slope - 0.05,
+                    lens_mass_slope + 0.05,
+                ),
+                model.galaxies.lens.shear.gamma_1: (
+                    lens_shear_gamma_1 - 0.02,
+                    lens_shear_gamma_1 + 0.02,
+                ),
+                model.galaxies.lens.shear.gamma_2: (
+                    lens_shear_gamma_2 - 0.02,
+                    lens_shear_gamma_2 + 0.02,
+                ),
+                model.perturb.mass.centre.centre_0: (
+                    perturb_mass_centre_0 - 0.01,
+                    perturb_mass_centre_0 + 0.01,
+                ),
+                model.perturb.mass.centre.centre_1: (
+                    perturb_mass_centre_1 - 0.01,
+                    perturb_mass_centre_1 + 0.01,
+                ),
+                model.perturb.mass.mass_at_200: (
+                    perturb_mass_mass_at_200 - 1e7,
+                    perturb_mass_mass_at_200 + 1e7,
+                ),
+            }
+        )
+
+        search = af.Zeus(
             paths=paths,
-            n_live=50,
+            nwalkers=22,
+            nsteps=66,
+            initializer=initializer,
+            #     visualize=True
         )
 
         analysis = al.AnalysisImaging(dataset=dataset)
@@ -701,7 +814,7 @@ def run(
     """
 
     paths = af.DirectoryPaths(
-        name=f"subhalo__sensitivity{tag}",
+        name=f"subhalo__sensitivity__zeus",
         path_prefix=settings_search.path_prefix,
         unique_tag=settings_search.unique_tag,
     )

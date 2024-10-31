@@ -25,11 +25,7 @@ import autolens as al
 """
 __Grid__
 """
-mask = al.Mask2D.circular(
-    shape_native=(100, 100),
-    pixel_scales=0.05,
-    radius=3.0
-)
+mask = al.Mask2D.circular(shape_native=(100, 100), pixel_scales=0.05, radius=3.0)
 
 grid = al.Grid2D.from_mask(
     mask=mask,
@@ -48,7 +44,7 @@ mass = al.mp.Isothermal(
 )
 
 grad = jax.jit(grad(mass.deflections_yx_2d_from))
-grad(grid)
+grad(grid.array)
 
 """
 __Tracer__
@@ -56,12 +52,15 @@ __Tracer__
 The Tracer takes a different path throuigh the source code, which is not fully JAX-ed yet.
 """
 lens = al.Galaxy(redshift=0.5, mass=mass)
-source = al.Galaxy(redshift=1.0, light=al.lp.Sersic(centre=(0.0, 0.0), intensity=1.0, effective_radius=1.0))
+source = al.Galaxy(
+    redshift=1.0,
+    light=al.lp.Sersic(centre=(0.0, 0.0), intensity=1.0, effective_radius=1.0),
+)
 
 tracer = al.Tracer(galaxies=[lens, source])
 
 grad = jax.jit(grad(tracer.deflections_yx_2d_from))
-grad(grid)
+grad(grid.array)
 
 """
 Checkout `autogalaxy_workspace/*/imaging/modeling/results.py` for a full description of the result object.

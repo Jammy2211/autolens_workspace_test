@@ -79,7 +79,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_search = af.SettingsSearch(
-    path_prefix=path.join("slam", "source_pix", "mass_total", "clumps"),
+    path_prefix=path.join("slam", "source_pix", "mass_total", "extra_galaxies"),
     number_of_cores=1,
     session=None,
 )
@@ -96,21 +96,33 @@ redshift_source = 1.0
 """
 __Clump Model__ 
 
-This model includes clumps, which are `Galaxy` objects with light and mass profiles fixed to an input centre which 
+This model includes extra_galaxies, which are `Galaxy` objects with light and mass profiles fixed to an input centre which 
 model galaxies nearby the strong lens system.
 
-A full description of the clump API is given in the 
-script `autolens_workspace/*/imaging/modeling/features/clumps.py`
+A full description of the extra galaxies API is given in the 
+script `autolens_workspace/*/imaging/modeling/features/extra_galaxies.py`
 """
-clump_centres = al.Grid2DIrregular(values=[(1.0, 1.0), [2.0, 2.0]])
+# Extra Galaxies:
 
-clump_model = al.ClumpModel(
-    redshift=0.5,
-    centres=clump_centres,
-    light_cls=al.lp.SersicSph,
-    mass_cls=al.mp.IsothermalSph,
-    einstein_radius_upper_limit=1.0,
-)
+extra_galaxies_centres = al.Grid2DIrregular(values=[(1.0, 1.0), [2.0, 2.0]])
+
+extra_galaxies_dict = {}
+
+for i, extra_galaxy_centre in enumerate(extra_galaxies_centres):
+    extra_galaxy = af.Model(
+        al.Galaxy,
+        redshift=0.5,
+        bulge=al.lp_linear.SersicSph(centre=extra_galaxy_centre),
+        mass=al.mp.IsothermalSph(centre=extra_galaxy_centre),
+    )
+
+    extra_galaxy.mass.einstein_radius = af.UniformPrior(
+        lower_limit=0.0, upper_limit=0.1
+    )
+
+    extra_galaxies_dict[f"extra_galaxy_{i}"] = extra_galaxy
+
+extra_galaxies = af.Collection(**extra_galaxies_dict)
 
 """
 __SOURCE LP PIPELINE (with lens light)__
@@ -144,7 +156,7 @@ source_lp_result = slam.source_lp.run(
     mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
-    clump_model=clump_model,
+    extra_galaxies=extra_galaxies,
 )
 
 """
@@ -159,13 +171,37 @@ regularization, to set up the model and hyper images, and then:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
 """
+analysis = al.AnalysisImaging(
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
+)
 
-analysis = al.AnalysisImaging(dataset=dataset)
-
-source_pix_results = slam.source_pix.run(
+source_pix_result_1 = slam.source_pix.run_1(
     settings_search=settings_search,
     analysis=analysis,
     source_lp_result=source_lp_result,
+    mesh_init=al.mesh.Voronoi,
+)
+
+"""
+__SOURCE PIX PIPELINE 2 (with lens light)__
+"""
+analysis = al.AnalysisImaging(
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
+    settings_inversion=al.SettingsInversion(
+        image_mesh_min_mesh_pixels_per_pixel=3,
+        image_mesh_min_mesh_number=5,
+        image_mesh_adapt_background_percent_threshold=0.1,
+        image_mesh_adapt_background_percent_check=0.8,
+    ),
+)
+
+source_pix_result_2 = slam.source_pix.run_2(
+    settings_search=settings_search,
+    analysis=analysis,
+    source_lp_result=source_lp_result,
+    source_pix_result_1=source_pix_result_1,
     image_mesh=al.image_mesh.Hilbert,
     mesh=al.mesh.Voronoi,
     regularization=al.reg.AdaptiveBrightnessSplit,
@@ -196,10 +232,11 @@ analysis = al.AnalysisImaging(
     dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
 )
 
-light_results = slam.light_lp.run(
+light_result = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_result=source_pix_results,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
     lens_bulge=bulge,
     lens_disk=disk,
 )
@@ -226,11 +263,12 @@ analysis = al.AnalysisImaging(
     dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
 )
 
-mass_results = slam.mass_total.run(
+mass_result = slam.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
-    source_results=source_pix_results,
-    light_result=light_results,
+    source_result_for_lens=source_pix_result_1,
+    source_result_for_source=source_pix_result_2,
+    light_result=light_result,
     mass=af.Model(al.mp.PowerLaw),
 )
 
@@ -251,16 +289,32 @@ For this runner the SUBHALO PIPELINE customizes:
  the Python multiprocessing module.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
+    dataset=dataset,
+    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
 )
 
-subhalo_results = slam.subhalo.detection.run(
+subhalo_result_1 = slam.subhalo.detection.run_1_no_subhalo(
     settings_search=settings_search,
     analysis=analysis,
-    mass_results=mass_results,
+    mass_result=mass_result,
+)
+
+subhalo_grid_search_result_2 = slam.subhalo.detection.run_2_grid_search(
+    settings_search=settings_search,
+    analysis=analysis,
+    mass_result=mass_result,
+    subhalo_result_1=subhalo_result_1,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
+)
+
+subhalo_result_3 = slam.subhalo.detection.run_3_subhalo(
+    settings_search=settings_search,
+    analysis=analysis,
+    subhalo_result_1=subhalo_result_1,
+    subhalo_grid_search_result_2=subhalo_grid_search_result_2,
+    subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
 )
 
 """

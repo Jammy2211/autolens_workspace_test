@@ -52,9 +52,8 @@ def run(
     mass_centre
        If input, a fixed (y,x) centre of the mass profile is used which is not treated as a free parameter by the
        non-linear search.
-    clump_model
-        Add additional clumps containing light and mass profiles to the lens model. These have a known input centre and
-        are used to model nearby line of sight galaxies.
+    extra_galaxies
+        Additional extra galaxies containing light and mass profiles, which model nearby line of sight galaxies.
     """
 
     """
@@ -99,7 +98,7 @@ def run(
                 disk=source_disk,
             ),
         ),
-        clumps=clump_model.clumps,
+        extra_galaxies=clump_model.extra_galaxies,
     )
 
     # analysis = analysis.with_free_parameters(

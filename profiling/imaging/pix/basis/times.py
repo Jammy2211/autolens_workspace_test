@@ -8,6 +8,7 @@ This represents the time taken by a single iteration of the **PyAutoLens** log l
 """
 import os
 from os import path
+import numpy as np
 
 cwd = os.getcwd()
 
@@ -42,7 +43,7 @@ These settings control various aspects of how long a fit takes. The values below
 sub_size = 4
 mask_radius = 3.5
 psf_shape_2d = (21, 21)
-mesh_shape_2d = (50, 50)
+mesh_shape_2d = (35, 35)
 
 print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
@@ -50,44 +51,33 @@ print(f"psf shape = {psf_shape_2d}")
 print(f"pixelization shape = {mesh_shape_2d}")
 
 
-total_gaussians = 30
+total_gaussians = 180
 
-lens_gaussian_list = []
+# The sigma values of the Gaussians will be fixed to values spanning 0.01 to the mask radius, 3.0".
 
-for i, gaussian_index in enumerate(range(total_gaussians)):
+mask_radius = 3.0
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
+
+# A list of linear light profile Gaussians will be input here, which will then be used to fit the data.
+
+basis_gaussian_list = []
+
+# Iterate over every Gaussian and create it, with it centered at (0.0", 0.0") and assuming spherical symmetry.
+
+for i in range(total_gaussians):
     gaussian = al.lp_linear.Gaussian(
         centre=(0.0, 0.0),
-        ell_comps=(0.0, 0.0),
-        sigma=0.1 * i,
+        ell_comps=(0.052, 0.0),
+        sigma=10 ** log10_sigma_list[i],
     )
 
-    lens_gaussian_list.append(gaussian)
+    basis_gaussian_list.append(gaussian)
 
-
-total_gaussians = 20
-
-source_gaussian_list = []
-
-for i, gaussian_index in enumerate(range(total_gaussians)):
-    gaussian = al.lp_linear.Gaussian(
-        centre=(0.0, 0.0),
-        ell_comps=(0.0, 0.0),
-        sigma=0.1 * i,
-    )
-
-    source_gaussian_list.append(gaussian)
-
-lens_basis = al.lp_basis.Basis(
-    profile_list=lens_gaussian_list,
-)
-
-source_basis = al.lp_basis.Basis(
-    profile_list=source_gaussian_list,
-)
+basis = al.lp_basis.Basis(profile_list=basis_gaussian_list)
 
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    bulge=lens_basis,
+    bulge=basis,
     mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
@@ -98,7 +88,11 @@ lens_galaxy = al.Galaxy(
 
 source_galaxy = al.Galaxy(
     redshift=1.0,
-    bulge=source_basis,
+    pixelization=al.Pixelization(
+        image_mesh=al.image_mesh.Overlay(shape=mesh_shape_2d),
+        mesh=al.mesh.Delaunay(),
+        regularization=al.reg.ConstantSplit(coefficient=1.0),
+    ),
 )
 
 """
@@ -129,7 +123,7 @@ dataset = al.Imaging.from_fits(
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
-    over_sampling_pixelization=al.OverSamplingUniform(sub_size=4),
+    over_sampling=al.OverSamplingDataset(pixelization=al.OverSamplingUniform(sub_size=4)),
 )
 
 dataset.psf = dataset.psf.resized_from(new_shape=psf_shape_2d)
@@ -197,6 +191,10 @@ fit = al.FitImaging(
     tracer=tracer,
     run_time_dict=run_time_dict,
 )
+print(fit.inversion.regularization_matrix.shape)
+print(fit.inversion.regularization_matrix)
+np.save("regularization_matrix", fit.inversion.regularization_matrix)
+dffdfds
 fit.figure_of_merit
 
 run_time_dict = fit.run_time_dict
@@ -209,7 +207,7 @@ These two numbers are the primary driver of run time. More pixels = longer run t
 
 print(f"Inversion fit run times for image type {instrument} \n")
 print(f"Number of pixels = {masked_dataset.grid.shape_slim} \n")
-print(f"Number of sub-pixels = {masked_dataset.grid.sub_total} \n")
+#print(f"Number of sub-pixels = {masked_dataset.grid.over_sampler.sub_total} \n")
 
 """
 Print the profiling results of every step of the fit for command line output when running profiling scripts.
@@ -286,7 +284,7 @@ The `info_dict` contains all the key information of the analysis which describes
 """
 info_dict = {}
 info_dict["repeats"] = repeats
-info_dict["image_pixels"] = masked_dataset.grid.sub_shape_slim
+info_dict["image_pixels"] = masked_dataset.grid.shape_slim
 info_dict["sub_size"] = sub_size
 info_dict["mask_radius"] = mask_radius
 info_dict["psf_shape_2d"] = psf_shape_2d
@@ -308,3 +306,16 @@ with open(path.join(file_path, f"{instrument}_info.json"), "w+") as outfile:
 print(f"Chi Squared: {fit.chi_squared}")
 print(f"Noise Normalization: {fit.noise_normalization}")
 print(f"Figure of Merit: {fit.figure_of_merit}")
+
+
+print(fit.inversion.operated_mapping_matrix.shape)
+print(fit.inversion.data_vector.shape)
+print(fit.inversion.curvature_reg_matrix.shape)
+print(fit.inversion.regularization_matrix.shape)
+
+
+np.save("blurred_mapping_matrix", fit.inversion.operated_mapping_matrix)
+np.save("data_vector", fit.inversion.data_vector)
+np.save("curvature_reg_matrix", fit.inversion.curvature_reg_matrix)
+np.save("regularization_matrix", fit.inversion.regularization_matrix)
+np.save("reconstruction", fit.inversion.reconstruction)

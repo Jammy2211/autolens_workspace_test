@@ -59,7 +59,7 @@ def fit():
     
     Load the `Imaging` data, define the `Mask2D` and plot them.
     """
-    dataset_name = "with_lens_light"
+    dataset_name = "with_lens_light__asymmetric"
     dataset_path = path.join("dataset", "imaging", dataset_name)
 
     dataset = al.Imaging.from_fits(
@@ -91,7 +91,6 @@ def fit():
     """
     settings_search = af.SettingsSearch(
         path_prefix=path.join("slam", "source_lp", "mass_total", "sensitivity"),
-        unique_tag="hello",
         number_of_cores=1,
         session=None,
     )
@@ -172,8 +171,8 @@ def fit():
         profile_list=disk_gaussian_list,
     )
 
-    centre_0 = af.GaussianPrior(mean=0.0, sigma=0.3)
-    centre_1 = af.GaussianPrior(mean=0.0, sigma=0.3)
+    centre_0 = af.GaussianPrior(mean=1.4, sigma=0.3)
+    centre_1 = af.GaussianPrior(mean=1.4, sigma=0.3)
 
     total_gaussians = 20
     gaussian_per_basis = 1
@@ -339,6 +338,20 @@ def fit():
     data simulated by the `simulate_cls` for that model. This requires us to write a wrapper around the 
     PyAutoLens `AnalysisImaging` class.
     """
+    from slam.subhalo import subhalo_util
+
+    sensitivity_mask = subhalo_util.sensitivty_mask_brightest_from(
+        mass_result=mass_result,
+        grid_dimensions_extent=(-3.0, 3.0, -3.0, 3.0),
+        number_of_pixels=2,
+    )
+
+    subhalo_util.visualize_sensitivity_mask(
+        mass_result=mass_result,
+        sensitivity_mask=sensitivity_mask,
+        settings_search=settings_search,
+    )
+
     subhalo_result = slam.subhalo.sensitivity_imaging_lp.run(
         settings_search=settings_search,
         mask=mask,
@@ -346,9 +359,9 @@ def fit():
         adapt_images=al.AdaptImages.from_result(result=source_lp_result),
         mass_result=mass_result,
         subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
-        grid_dimension_arcsec=3.0,
-        number_of_steps=2,
-        sensitivity_mask=[[True, True], [True, False]],
+        grid_dimension_arcsec=sensitivity_mask.geometry.shape_native_scaled[0] / 2.0,
+        number_of_steps=sensitivity_mask.shape[0],
+        sensitivity_mask=sensitivity_mask,
     )
 
 

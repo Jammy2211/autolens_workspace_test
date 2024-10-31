@@ -78,7 +78,7 @@ __Settings AutoFit__
 The settings of autofit, which controls the output paths, parallelization, database use, etc.
 """
 settings_search = af.SettingsSearch(
-    path_prefix=path.join("slam", "source_lp", "mass_total", "clumps"),
+    path_prefix=path.join("slam", "source_lp", "mass_total", "extra_galaxies"),
     number_of_cores=1,
     session=None,
 )
@@ -94,23 +94,34 @@ redshift_source = 1.0
 
 
 """
-__Clump Model__ 
+__Extra Galaxies Model__ 
 
-This model includes clumps, which are `Galaxy` objects with light and mass profiles fixed to an input centre which 
+This model includes extra_galaxies, which are `Galaxy` objects with light and mass profiles fixed to an input centre which 
 model galaxies nearby the strong lens system.
 
-A full description of the clump API is given in the 
-script `autolens_workspace/*/imaging/modeling/features/clumps.py`
+A full description of the extra galaxies API is given in the 
+script `autolens_workspace/*/imaging/modeling/features/extra_galaxies.py`
 """
-clump_centres = al.Grid2DIrregular(values=[(1.0, 1.0), [2.0, 2.0]])
+# Extra Galaxies:
 
-clump_model = al.ClumpModel(
-    redshift=0.5,
-    centres=clump_centres,
-    light_cls=al.lp.SersicSph,
-    mass_cls=al.mp.IsothermalSph,
-    einstein_radius_upper_limit=1.0,
-)
+extra_galaxies_centres = al.Grid2DIrregular(values=[(1.0, 1.0)])
+
+extra_galaxies_list = []
+
+for i, extra_galaxy_centre in enumerate(extra_galaxies_centres):
+    extra_galaxy = af.Model(
+        al.Galaxy, redshift=0.5, bulge=al.lp_linear.SersicSph, mass=al.mp.IsothermalSph
+    )
+
+    extra_galaxy.bulge.centre = extra_galaxy_centre
+    extra_galaxy.mass.centre = extra_galaxy_centre
+    extra_galaxy.mass.einstein_radius = af.UniformPrior(
+        lower_limit=0.0, upper_limit=0.1
+    )
+
+    extra_galaxies_list.append(extra_galaxy)
+
+extra_galaxies = af.Collection(extra_galaxies_list)
 
 """
 __SOURCE LP PIPELINE (with lens light)__
@@ -129,8 +140,8 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=dataset)
 
-bulge = af.Model(al.lp.Sersic)
-disk = af.Model(al.lp.Exponential)
+bulge = af.Model(al.lp_linear.Sersic)
+disk = af.Model(al.lp_linear.Exponential)
 bulge.centre = disk.centre
 
 source_lp_result = slam.source_lp.run(
@@ -140,11 +151,11 @@ source_lp_result = slam.source_lp.run(
     lens_disk=disk,
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
-    source_bulge=af.Model(al.lp.Sersic),
+    source_bulge=af.Model(al.lp_linear.Sersic),
     mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
-    clump_model=clump_model,
+    extra_galaxies=extra_galaxies,
 )
 
 """
@@ -164,8 +175,8 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-bulge = af.Model(al.lp.Sersic)
-disk = af.Model(al.lp.Exponential)
+bulge = af.Model(al.lp_linear.Sersic)
+disk = af.Model(al.lp_linear.Exponential)
 bulge.centre = disk.centre
 
 light_result = slam.light_lp.run(

@@ -46,7 +46,13 @@ lens = af.Model(
 )
 source = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp_linear.Sersic)
 
-model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
+extra_galaxies = af.Collection(
+    extra_galaxy=af.Model(al.Galaxy, redshift=0.5, bulge=al.lp_linear.Sersic)
+)
+
+model = af.Collection(
+    galaxies=af.Collection(lens=lens, source=source), extra_galaxies=extra_galaxies
+)
 
 """
 __Search + Analysis + Model-Fit__
@@ -136,6 +142,14 @@ print(
     "\n",
 )
 
+extra_galaxy_bulge = agg.model.extra_galaxies.extra_galaxy.bulge
+agg_query = agg.query(extra_galaxy_bulge == al.lp_linear.Sersic)
+print(
+    "Total Samples Objects via `Sersic` extra galaxy model query = ",
+    len(agg_query),
+    "\n",
+)
+
 
 """
 __Files__
@@ -158,6 +172,7 @@ for samples_summary in agg.values("samples_summary"):
     instance = samples_summary.max_log_likelihood()
     print(f"\n****Max Log Likelihood (samples_summary)****\n\n{instance}")
     assert instance.galaxies.lens.mass.einstein_radius > 0.0
+    assert instance.extra_galaxies.extra_galaxy.bulge.effective_radius > 0.0
 
 for info in agg.values("info"):
     print(f"\n****Info****\n\n{info}")
@@ -202,6 +217,7 @@ for tracer_list in tracer_gen:
         print("TracerAgg with linear light profiles raises correct ProfileException")
 
     assert tracer.galaxies[0].mass.einstein_radius > 0.0
+    assert tracer.galaxies[1].bulge.effective_radius > 0.0  # Is an extra galaxy
 
     print("TracerAgg Checked")
 
@@ -231,5 +247,6 @@ for fit_list in fit_imaging_gen:
     fit_plotter.subplot_fit()
 
     assert fit.tracer.galaxies[0].mass.einstein_radius > 0.0
+    assert fit.tracer.galaxies[1].bulge.effective_radius > 0.0  # Is an extra galaxy
 
     print("FitImagingAgg Checked")

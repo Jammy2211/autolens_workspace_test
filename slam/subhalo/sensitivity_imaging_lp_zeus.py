@@ -5,7 +5,7 @@ import autolens.plot as aplt
 from . import subhalo_util
 
 import os
-from typing import List, Optional, Union, Tuple
+from typing import Optional, List, Tuple, Union
 
 """
 __Simulate Function Class__
@@ -25,39 +25,20 @@ In this example, this `instance.perturb` corresponds to two different subhalos w
 """
 
 
-class SimulateImagingPixelized:
-    def __init__(
-        self,
-        mask,
-        psf,
-        inversion,
-        interpolated_pixelized_shape: Union[tuple, tuple] = (1001, 1001),
-        image_plane_subgrid_size=8,
-    ):
+class SimulateImaging:
+    def __init__(self, mask, psf):
         """
-        Class used to simulate the strong lens dataset used for sensitivity mapping.
+        Class used to simulate the strong lens imaging used for sensitivity mapping.
 
         Parameters
         ----------
         mask
-            The mask applied to the real image data, which is applied to every simulated dataset.
+            The mask applied to the real image data, which is applied to every simulated imaging.
         psf
-           The PSF of the real image data, which is applied to every simulated dataset and used for each fit.
-        inversion
-            The `Inversion` used to reconstruct the source of the real image, included the pixelized source
-            reconstruction on a mesh (e.g. Delaunay / Voronoi).
-        interpolated_pixelized_shape
-            The pixelized source reconstruction is interpolated from an irregular mesh to a rectangular uniform array
-            and grid of this shape.
-        image_plane_subgrid_size
-            The size of the subgrid used to create the image-plane grid, whereby multiple image pixels
-            are traced to the source-plane image and evaluated to compute the flux of the simulated image.
+           The PSF of the real image data, which is applied to every simulated imaging and used for each fit.
         """
         self.mask = mask
         self.psf = psf
-        self.inversion = inversion
-        self.interpolated_pixelized_shape = interpolated_pixelized_shape
-        self.image_plane_subgrid_size = image_plane_subgrid_size
 
     def __call__(self, instance: af.ModelInstance, simulate_path: str):
         """
@@ -65,9 +46,6 @@ class SimulateImagingPixelized:
         by the sensitivity mapper.
 
         The simulation procedure is as follows:
-
-        1) Extract the pixelized reconstructed source of a previous fit, which is likely on an irregular mesh
-           (e.g. Delaunay / Voronoi), and interpolate the source emission onto a rectangular uniform array and grid.
 
         1) Use the input galaxies of the sensitivity `instance` to set up a tracer, which generates the image-plane
            image of the strong lens system.
@@ -97,10 +75,10 @@ class SimulateImagingPixelized:
 
         """
         __Resume Fit__
-
+        
         If sensitivity mapping already began on this grid cell, the dataset will have been simulated already and we
         do not want to resimulate it and change its noise properties. 
-
+        
         We therefore load it from the `simulate_path` instead.
         """
         try:
@@ -118,82 +96,33 @@ class SimulateImagingPixelized:
             pass
 
         """
-        __Source Galaxy Image__
-
-        Load the source galaxy image from the pixelized inversion of a previous fit, which could be on an irregular
-        Delaunay or Voronoi mesh. 
-
-        Irregular meshes cannot be used to simulate lensed images of a source. Therefore, we interpolate the mesh to 
-        a uniform grid of shape `interpolated_pixelized_shape`. This should be high resolution (e.g. 1000 x 1000) 
-        to ensure the interpolated source array captures all structure resolved on the Delaunay / Voronoi mesh.
-
-        Loads source array from previous reconstruction, maps to square and wraps in AutoLens Array.
-        Loads lens galaxy and perturb from provided instance
-        Loads source galaxy redshift and sets up a `galaxy` class object at that redshift.
-        """
-
-        mapper = self.inversion.cls_list_from(cls=al.AbstractMapper)[0]
-
-        mapper_valued = al.MapperValued(
-            mapper=mapper,
-            values=self.inversion.reconstruction_dict[mapper],
-        )
-
-        source_image = mapper_valued.interpolated_array_from(
-            shape_native=self.interpolated_pixelized_shape,
-        )
-
-        """
-        __Create Grids__
-
-        To create the lensed image, we will ray-trace image pixels to the source-plane and interpolate them onto the 
-        source galaxy image. 
-
-        We therefore need the image-plane grid of (y,x) coordinates.
-        """
-        grid = al.Grid2D.uniform(
-            shape_native=self.mask.shape_native,
-            pixel_scales=self.mask.pixel_scales,
-            over_sampling=al.OverSamplingUniform(
-                sub_size=self.image_plane_subgrid_size
-            ),
-        )
-
-        """
         __Ray Tracing__
 
-        We create a tracer, which will create the lensed grid we overlay the interpolated source galaxy image above
-        in order to create the lensed source galaxy image.
-
-        This creates the grid we will overlay the source image, in order to created the lensed source image.
-
-        The source-plane requires a source-galaxy with a `redshift` in order for the tracer to trace it. We therefore
-        make one, noting it has no light profiles because its emission is entirely defined by the source galaxy image.
+        Set up the `Tracer` which is used to simulate the strong lens imaging, which may include the subhalo in
+        addition to the lens and source galaxy.
         """
         tracer = al.Tracer(
             galaxies=[
                 instance.galaxies.lens,
                 instance.perturb,
-                al.Galaxy(redshift=instance.galaxies.source.redshift),
+                instance.galaxies.source,
             ]
         )
 
         """
         __Simulate__
 
-        Using the tracer above, we create the image of the lensed source galaxy on the image-plane grid. This
-        uses the `source_image` and therefore capture the source's irregular and asymmetric morphological features
-        which the source reconstruction procedure fitted.
-
         Set up the grid, PSF and simulator settings used to simulate imaging of the strong lens. These should be 
         tuned to match the S/N and noise properties of the observed data you are performing sensitivity mapping on.
-
-        The `SimulatorImaging` will be passed directly the image of the strong lens we created above, which
-        will be convolved with the psf before noise is added. 
-
-        To ensure the PSF convolution extends over the whole image, the image is padded before convolution to mitigate 
-        edge effects and trimmed after the simulation so it retains the original `shape_native`.
         """
+        grid = al.Grid2D.uniform(
+            shape_native=self.mask.shape_native,
+            pixel_scales=self.mask.pixel_scales,
+            over_sampling=al.OverSamplingIterate(
+                fractional_accuracy=0.9999, sub_steps=[2, 4, 8, 16]
+            ),
+        )
+
         simulator = al.SimulatorImaging(
             exposure_time=300.0,
             psf=self.psf,
@@ -202,9 +131,7 @@ class SimulateImagingPixelized:
             noise_seed=1
         )
 
-        dataset = simulator.via_source_image_from(
-            tracer=tracer, grid=grid, source_image=source_image
-        )
+        dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
 
         """
         __Masking__
@@ -218,33 +145,11 @@ class SimulateImagingPixelized:
         """
         Outputs info about the `Tracer` to the fit, so we know exactly how we simulated the image.
         """
-        tracer_no_perturb = al.Tracer(
-            galaxies=[
-                instance.galaxies.lens,
-                al.Galaxy(redshift=instance.galaxies.source.redshift),
-            ]
-        )
-
-        self.output_info(
-            simulate_path=simulate_path,
-            grid=grid,
-            dataset=dataset,
-            source_image=source_image,
-            tracer=tracer,
-            tracer_no_perturb=tracer_no_perturb,
-        )
+        self.output_info(simulate_path=simulate_path, dataset=dataset, tracer=tracer)
 
         return dataset
 
-    def output_info(
-        self,
-        simulate_path: str,
-        grid: al.Grid2D,
-        dataset: al.Imaging,
-        source_image: al.Array2D,
-        tracer: al.Tracer,
-        tracer_no_perturb: al.Tracer,
-    ):
+    def output_info(self, simulate_path: str, dataset: al.Imaging, tracer: al.Imaging):
         """
         Output information about the data simulated for this iteration of sensitivity mapping.
 
@@ -253,7 +158,7 @@ class SimulateImagingPixelized:
         - A subplot of the simulated imaging dataset.
         - A subplot of the tracer used to simulate this imaging dataset.
         - A .json file containing the tracer galaxies.
-                - Output the simulated dataset to .fits files which are used to load the data if a run is resumed.
+        - Output the simulated dataset to .fits files which are used to load the data if a run is resumed.
 
         Parameters
         ----------
@@ -261,9 +166,9 @@ class SimulateImagingPixelized:
             The path where the simulated dataset is output, contained within each sub-folder of the sensitivity
             mapping.
         dataset
-            The simulated dataset dataset which is visualized.
+            The simulated imaging dataset which is visualized.
         tracer
-            The tracer used to simulate the dataset dataset, which is visualized and output to a .json file.
+            The tracer used to simulate the imaging dataset, which is visualized and output to a .json file.
         """
 
         mat_plot = aplt.MatPlot2D(output=aplt.Output(path=simulate_path, format="png"))
@@ -271,19 +176,15 @@ class SimulateImagingPixelized:
         dataset_plotter = aplt.ImagingPlotter(dataset=dataset, mat_plot_2d=mat_plot)
         dataset_plotter.subplot_dataset()
 
+        tracer_plotter = aplt.TracerPlotter(
+            tracer=tracer, grid=dataset.grid, mat_plot_2d=mat_plot
+        )
+        tracer_plotter.subplot_lensed_images()
+
         al.output_to_json(
             obj=tracer,
             file_path=os.path.join(simulate_path, "tracer.json"),
         )
-
-        sensitivity_plotter = aplt.SubhaloSensitivityPlotter(
-            source_image=source_image,
-            tracer_perturb=tracer,
-            tracer_no_perturb=tracer_no_perturb,
-            mask=self.mask,
-            mat_plot_2d=mat_plot,
-        )
-        sensitivity_plotter.subplot_tracer_images()
 
         dataset.output_to_fits(
             data_path=os.path.join(simulate_path, "data.fits"),
@@ -337,8 +238,8 @@ class BaseFit:
         Parameters
         ----------
         adapt_images
-            The result of the previous search containing adapt images used to adapt certain pixelized source meshs's
-            and regularizations to the unlensed source morphology.
+            Contains the adapt-images which are used to make a pixelization's mesh and regularization adapt to the
+            reconstructed galaxy's morphology.
         """
         self.adapt_images = adapt_images
 
@@ -362,11 +263,91 @@ class BaseFit:
             The `Paths` instance which contains the path to the folder where the results of the fit are written to.
         """
 
-        search = af.Nautilus(
-            paths=paths,
-            n_live=50,
+        source_bulge_centre_0 = instance.galaxies.source.bulge.centre[0]
+        source_bulge_centre_1 = instance.galaxies.source.bulge.centre[1]
+        source_bulge_ell_comps_0 = instance.galaxies.source.bulge.ell_comps[0]
+        source_bulge_ell_comps_1 = instance.galaxies.source.bulge.ell_comps[1]
+        source_bulge_effective_radius = (
+            instance.galaxies.source.bulge.effective_radius
+        )
+        source_bulge_sersic_index = instance.galaxies.source.bulge.sersic_index
+        lens_mass_centre_0 = instance.galaxies.lens.mass.centre[0]
+        lens_mass_centre_1 = instance.galaxies.lens.mass.centre[1]
+        lens_mass_ell_comps_0 = instance.galaxies.lens.mass.ell_comps[0]
+        lens_mass_ell_comps_1 = instance.galaxies.lens.mass.ell_comps[1]
+        lens_mass_einstein_radius = instance.galaxies.lens.mass.einstein_radius
+        lens_mass_slope = instance.galaxies.lens.mass.slope
+        lens_shear_gamma_1 = instance.galaxies.lens.shear.gamma_1
+        lens_shear_gamma_2 = instance.galaxies.lens.shear.gamma_2
+
+        initializer = af.InitializerParamBounds(
+            {
+                model.galaxies.source.bulge.centre.centre_0: (
+                    source_bulge_centre_0 - 0.001,
+                    source_bulge_centre_0 + 0.001,
+                ),
+                model.galaxies.source.bulge.centre.centre_1: (
+                    source_bulge_centre_1 - 0.001,
+                    source_bulge_centre_1 + 0.001,
+                ),
+                model.galaxies.source.bulge.ell_comps.ell_comps_0: (
+                    source_bulge_ell_comps_0 - 0.005,
+                    source_bulge_ell_comps_0 + 0.005,
+                ),
+                model.galaxies.source.bulge.ell_comps.ell_comps_1: (
+                    source_bulge_ell_comps_1 - 0.005,
+                    source_bulge_ell_comps_1 + 0.005,
+                ),
+                model.galaxies.source.bulge.effective_radius: (
+                    source_bulge_effective_radius - 0.01,
+                    source_bulge_effective_radius + 0.01,
+                ),
+                model.galaxies.source.bulge.sersic_index: (
+                    source_bulge_sersic_index - 0.05,
+                    source_bulge_sersic_index + 0.05,
+                ),
+                model.galaxies.lens.mass.centre.centre_0: (
+                    lens_mass_centre_0 - 0.01,
+                    lens_mass_centre_0 + 0.01,
+                ),
+                model.galaxies.lens.mass.centre.centre_1: (
+                    lens_mass_centre_1 - 0.01,
+                    lens_mass_centre_1 + 0.01,
+                ),
+                model.galaxies.lens.mass.ell_comps.ell_comps_0: (
+                    lens_mass_ell_comps_0 - 0.02,
+                    lens_mass_ell_comps_0 + 0.02,
+                ),
+                model.galaxies.lens.mass.ell_comps.ell_comps_1: (
+                    lens_mass_ell_comps_1 - 0.02,
+                    lens_mass_ell_comps_1 + 0.02,
+                ),
+                model.galaxies.lens.mass.einstein_radius: (
+                    lens_mass_einstein_radius - 0.05,
+                    lens_mass_einstein_radius + 0.05,
+                ),
+                model.galaxies.lens.mass.slope: (
+                    lens_mass_slope - 0.05,
+                    lens_mass_slope + 0.05,
+                ),
+                model.galaxies.lens.shear.gamma_1: (
+                    lens_shear_gamma_1 - 0.02,
+                    lens_shear_gamma_1 + 0.02,
+                ),
+                model.galaxies.lens.shear.gamma_2: (
+                    lens_shear_gamma_2 - 0.02,
+                    lens_shear_gamma_2 + 0.02,
+                ),
+            }
         )
 
+        search = af.Zeus(
+            paths=paths,
+            nwalkers=36,
+            nsteps=66,
+            initializer=initializer,
+            #     visualize=True
+        )
         analysis = al.AnalysisImaging(dataset=dataset)
         analysis._adapt_images = self.adapt_images
 
@@ -431,9 +412,105 @@ class PerturbFit:
             The `Paths` instance which contains the path to the folder where the results of the fit are written to.
         """
 
-        search = af.Nautilus(
+        source_bulge_centre_0 = instance.galaxies.source.bulge.centre[0]
+        source_bulge_centre_1 = instance.galaxies.source.bulge.centre[1]
+        source_bulge_ell_comps_0 = instance.galaxies.source.bulge.ell_comps[0]
+        source_bulge_ell_comps_1 = instance.galaxies.source.bulge.ell_comps[1]
+        source_bulge_effective_radius = (
+            instance.galaxies.source.bulge.effective_radius
+        )
+        source_bulge_sersic_index = instance.galaxies.source.bulge.sersic_index
+        lens_mass_centre_0 = instance.galaxies.lens.mass.centre[0]
+        lens_mass_centre_1 = instance.galaxies.lens.mass.centre[1]
+        lens_mass_ell_comps_0 = instance.galaxies.lens.mass.ell_comps[0]
+        lens_mass_ell_comps_1 = instance.galaxies.lens.mass.ell_comps[1]
+        lens_mass_einstein_radius = instance.galaxies.lens.mass.einstein_radius
+        lens_mass_slope = instance.galaxies.lens.mass.slope
+        lens_shear_gamma_1 = instance.galaxies.lens.shear.gamma_1
+        lens_shear_gamma_2 = instance.galaxies.lens.shear.gamma_2
+        perturb_mass_centre_0 = instance.perturb.mass.centre[0]
+        perturb_mass_centre_1 = instance.perturb.mass.centre[1]
+        perturb_mass_mass_at_200 = instance.perturb.mass.mass_at_200
+
+        initializer = af.InitializerParamBounds(
+            {
+                model.galaxies.source.bulge.centre.centre_0: (
+                    source_bulge_centre_0 - 0.001,
+                    source_bulge_centre_0 + 0.001,
+                ),
+                model.galaxies.source.bulge.centre.centre_1: (
+                    source_bulge_centre_1 - 0.001,
+                    source_bulge_centre_1 + 0.001,
+                ),
+                model.galaxies.source.bulge.ell_comps.ell_comps_0: (
+                    source_bulge_ell_comps_0 - 0.005,
+                    source_bulge_ell_comps_0 + 0.005,
+                ),
+                model.galaxies.source.bulge.ell_comps.ell_comps_1: (
+                    source_bulge_ell_comps_1 - 0.005,
+                    source_bulge_ell_comps_1 + 0.005,
+                ),
+                model.galaxies.source.bulge.effective_radius: (
+                    source_bulge_effective_radius - 0.01,
+                    source_bulge_effective_radius + 0.01,
+                ),
+                model.galaxies.source.bulge.sersic_index: (
+                    source_bulge_sersic_index - 0.05,
+                    source_bulge_sersic_index + 0.05,
+                ),
+                model.galaxies.lens.mass.centre.centre_0: (
+                    lens_mass_centre_0 - 0.01,
+                    lens_mass_centre_0 + 0.01,
+                ),
+                model.galaxies.lens.mass.centre.centre_1: (
+                    lens_mass_centre_1 - 0.01,
+                    lens_mass_centre_1 + 0.01,
+                ),
+                model.galaxies.lens.mass.ell_comps.ell_comps_0: (
+                    lens_mass_ell_comps_0 - 0.02,
+                    lens_mass_ell_comps_0 + 0.02,
+                ),
+                model.galaxies.lens.mass.ell_comps.ell_comps_1: (
+                    lens_mass_ell_comps_1 - 0.02,
+                    lens_mass_ell_comps_1 + 0.02,
+                ),
+                model.galaxies.lens.mass.einstein_radius: (
+                    lens_mass_einstein_radius - 0.05,
+                    lens_mass_einstein_radius + 0.05,
+                ),
+                model.galaxies.lens.mass.slope: (
+                    lens_mass_slope - 0.05,
+                    lens_mass_slope + 0.05,
+                ),
+                model.galaxies.lens.shear.gamma_1: (
+                    lens_shear_gamma_1 - 0.02,
+                    lens_shear_gamma_1 + 0.02,
+                ),
+                model.galaxies.lens.shear.gamma_2: (
+                    lens_shear_gamma_2 - 0.02,
+                    lens_shear_gamma_2 + 0.02,
+                ),
+                model.perturb.mass.centre.centre_0: (
+                    perturb_mass_centre_0 - 0.01,
+                    perturb_mass_centre_0 + 0.01,
+                ),
+                model.perturb.mass.centre.centre_1: (
+                    perturb_mass_centre_1 - 0.01,
+                    perturb_mass_centre_1 + 0.01,
+                ),
+                model.perturb.mass.mass_at_200: (
+                    perturb_mass_mass_at_200 - 1e7,
+                    perturb_mass_mass_at_200 + 1e7,
+                ),
+            }
+        )
+
+        search = af.Zeus(
             paths=paths,
-            n_live=50,
+            nwalkers=36,
+            nsteps=66,
+            initializer=initializer,
+            #     visualize=True
         )
 
         analysis = al.AnalysisImaging(dataset=dataset)
@@ -499,6 +576,38 @@ def base_model_narrow_priors_from(base_model, result, stretch: float = 1.0):
             b=0.05 * stretch
         ).galaxies.lens.shear.gamma_2
 
+    if hasattr(base_model.galaxies.source, "bulge"):
+        base_model.galaxies.source.bulge.centre.centre_0 = result.model_bounded(
+            b=0.1 * stretch
+        ).galaxies.source.bulge.centre.centre_0
+        base_model.galaxies.source.bulge.centre.centre_1 = result.model_bounded(
+            b=0.1 * stretch
+        ).galaxies.source.bulge.centre.centre_1
+        base_model.galaxies.source.bulge.ell_comps.ell_comps_0 = result.model_bounded(
+            b=0.1 * stretch
+        ).galaxies.source.bulge.ell_comps.ell_comps_0
+        base_model.galaxies.source.bulge.ell_comps.ell_comps_1 = result.model_bounded(
+            b=0.1 * stretch
+        ).galaxies.source.bulge.ell_comps.ell_comps_1
+        base_model.galaxies.source.bulge.effective_radius = result.model_bounded(
+            b=0.2 * stretch
+        ).galaxies.source.bulge.effective_radius
+        base_model.galaxies.source.bulge.sersic_index = result.model_bounded(
+            b=0.2 * stretch
+        ).galaxies.source.bulge.sersic_index
+
+        if base_model.galaxies.source.bulge.effective_radius.lower_limit < 0.0:
+            base_model.galaxies.source.bulge.effective_radius = af.UniformPrior(
+                lower_limit=0.0,
+                upper_limit=base_model.galaxies.source.bulge.effective_radius.upper_limit,
+            )
+
+        if base_model.galaxies.source.bulge.sersic_index.lower_limit < 0.0:
+            base_model.galaxies.source.bulge.sersic_index = af.UniformPrior(
+                lower_limit=0.0,
+                upper_limit=base_model.galaxies.source.bulge.sersic_index.upper_limit,
+            )
+
     return base_model
 
 
@@ -508,7 +617,7 @@ def run(
     psf: al.Kernel2D,
     mass_result: af.Result,
     subhalo_mass: af.Model = af.Model(al.mp.NFWMCRLudlowSph),
-    adapt_images: Optional[al.AdaptImageMaker] = None,
+    adapt_images: Optional[al.AdaptImages] = None,
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
     sensitivity_mask: Optional[Union[al.Mask2D, List]] = None,
@@ -655,6 +764,9 @@ def run(
     simulation_instance.galaxies.lens = (
         fit.model_obj_linear_light_profiles_to_light_profiles.galaxies[0]
     )
+    simulation_instance.galaxies.source = (
+        fit.model_obj_linear_light_profiles_to_light_profiles.galaxies[-1]
+    )
 
     """
     __Simulation + Fits__
@@ -701,13 +813,9 @@ def run(
     """
 
     paths = af.DirectoryPaths(
-        name=f"subhalo__sensitivity{tag}",
+        name=f"subhalo__sensitivity__zeus",
         path_prefix=settings_search.path_prefix,
         unique_tag=settings_search.unique_tag,
-    )
-
-    simulate_cls = SimulateImagingPixelized(
-        mask=mask, psf=psf, inversion=mass_result.max_log_likelihood_fit.inversion
     )
 
     sensitivity = af.Sensitivity(
@@ -715,7 +823,7 @@ def run(
         simulation_instance=simulation_instance,
         base_model=base_model,
         perturb_model=perturb_model,
-        simulate_cls=simulate_cls,
+        simulate_cls=SimulateImaging(mask=mask, psf=psf),
         base_fit_cls=BaseFit(adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores),
         perturb_fit_cls=PerturbFit(adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores),
         perturb_model_prior_func=perturb_model_prior_func,

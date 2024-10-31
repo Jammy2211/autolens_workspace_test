@@ -9,6 +9,8 @@ This represents the time taken by a single iteration of the **PyAutoLens** log l
 import os
 from os import path
 
+import numpy as np
+
 cwd = os.getcwd()
 
 from autoconf import conf
@@ -64,7 +66,7 @@ These settings control various aspects of how long a fit takes. The values below
 sub_size = 4
 mask_radius = 3.5
 psf_shape_2d = (21, 21)
-mesh_shape_2d = (30, 30)
+mesh_shape_2d = (32, 32)
 
 
 print(f"sub grid size = {sub_size}")
@@ -108,8 +110,6 @@ lens_galaxy = al.Galaxy(
 """
 The source galaxy whose `Delaunay` `Pixelization` fits the data.
 """
-
-
 source_galaxy = al.Galaxy(
     redshift=1.0,
     pixelization=al.Pixelization(
@@ -325,3 +325,5 @@ print(info_dict)
 
 with open(path.join(file_path, f"{instrument}_info.json"), "w+") as outfile:
     json.dump(info_dict, outfile, indent=4)
+
+

@@ -79,7 +79,7 @@ The settings of autofit, which controls the output paths, parallelization, datab
 """
 settings_search = af.SettingsSearch(
     path_prefix=path.join(
-        "slam", "light_sersic__mass_light_dark__source_pix", "clumps"
+        "slam", "light_sersic__mass_light_dark__source_pix", "extra_galaxies"
     ),
     number_of_cores=1,
     session=None,
@@ -98,17 +98,17 @@ redshift_source = 1.0
 """
 __Clump Model__ 
 
-This model includes clumps, which are `Galaxy` objects with light and mass profiles fixed to an input centre which 
+This model includes extra_galaxies, which are `Galaxy` objects with light and mass profiles fixed to an input centre which 
 model galaxies nearby the strong lens system.
 
-A full description of the clump API is given in the 
-script `autolens_workspace/*/imaging/modeling/features/clumps.py`
+A full description of the extra galaxies API is given in the 
+script `autolens_workspace/*/imaging/modeling/features/extra_galaxies.py`
 """
-clump_centres = al.Grid2DIrregular(values=[(1.0, 1.0), [2.0, 2.0]])
+extra_galaxies_centres = al.Grid2DIrregular(values=[(1.0, 1.0), [2.0, 2.0]])
 
 clump_model = al.ClumpModel(
     redshift=0.5,
-    centres=clump_centres,
+    centres=extra_galaxies_centres,
     light_cls=al.lp.SersicSph,
     mass_cls=al.mp.IsothermalSph,
     einstein_radius_upper_limit=1.0,

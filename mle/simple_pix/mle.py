@@ -194,7 +194,9 @@ model = af.Collection(
         ),
         source=source,
     ),
-    clumps=al.util.chaining.clumps_from(result=source_pix_result_1, mass_as_model=True),
+    extra_galaxies=al.util.chaining.extra_galaxies_from(
+        result=source_pix_result_1, mass_as_model=True
+    ),
 )
 
 print(model.paths)
