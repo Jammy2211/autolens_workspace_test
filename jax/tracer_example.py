@@ -45,15 +45,8 @@ mass = al.mp.Isothermal(
     einstein_radius=1.0,
 )
 
-<<<<<<< HEAD
 grad = jax.jit(grad(mass.deflections_yx_2d_from))
 grad(grid.array)
-=======
-mass.deflections_yx_2d_from(grid)
-
-jax.jit(mass.deflections_yx_2d_from)(grid)
-
->>>>>>> de0aed9d7f3056161285d30b11ce1031a938b457
 
 """
 __Tracer__
