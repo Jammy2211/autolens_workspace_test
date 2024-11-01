@@ -235,13 +235,9 @@ def visualize_sensitivity_mask(mass_result, sensitivity_mask, settings_search):
         mass_result.max_log_likelihood_fit.model_images_of_planes_list[-1]
     )
 
-    print(sensitivity_mask.pixels_in_mask)
-
     sensitivity_mask = np.flipud(sensitivity_mask)
 
     sensitivity_mask = al.Mask2D(mask=sensitivity_mask, pixel_scales=lensed_source_image.pixel_scales)
-
-    print(sensitivity_mask.pixels_in_mask)
 
     sensitivity_mask_plot = np.where(sensitivity_mask, 0.0, 1.0)
 

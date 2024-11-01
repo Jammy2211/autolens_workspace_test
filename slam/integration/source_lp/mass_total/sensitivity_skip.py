@@ -90,7 +90,7 @@ def fit():
     The settings of autofit, which controls the output paths, parallelization, database use, etc.
     """
     settings_search = af.SettingsSearch(
-        path_prefix=path.join("slam", "source_lp", "mass_total", "sensitivity"),
+        path_prefix=path.join("slam", "source_lp", "mass_total", "sensitivity_skip"),
         number_of_cores=1,
         session=None,
     )
@@ -352,7 +352,7 @@ def fit():
         settings_search=settings_search,
     )
 
-    subhalo_result = slam.subhalo.sensitivity_imaging_lp.run(
+    subhalo_result = slam.subhalo.sensitivity_imaging_lp_skip_perturb.run(
         settings_search=settings_search,
         mask=mask,
         psf=dataset.psf,

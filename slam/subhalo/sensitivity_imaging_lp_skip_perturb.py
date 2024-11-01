@@ -333,12 +333,33 @@ class PerturbFit:
             The model instance which is fitted to the dataset, which includes the perturbed feature.
         paths
             The `Paths` instance which contains the path to the folder where the results of the fit are written to.
+        instance
+            The simulation instance, which includes the perturbed feature that is fitted for in the sensitivity mapping.
         """
 
-        search = af.Nautilus(
+        model.galaxies.source.bulge.centre_0 = instance.galaxies.source.bulge.centre[0]
+        model.galaxies.source.bulge.centre_1 = instance.galaxies.source.bulge.centre[1]
+        model.galaxies.source.bulge.ell_comps.ell_comps_0 = instance.galaxies.source.bulge.ell_comps[0]
+        model.galaxies.source.bulge.ell_comps.ell_comps_1 = instance.galaxies.source.bulge.ell_comps[1]
+        model.galaxies.source.bulge.effective_radius = instance.galaxies.source.bulge.effective_radius
+        model.galaxies.source.bulge.sersic_index = instance.galaxies.source.bulge.sersic_index
+
+        model.galaxies.lens.mass.centre_0 = instance.galaxies.lens.mass.centre[0]
+        model.galaxies.lens.mass.centre_1 = instance.galaxies.lens.mass.centre[1]
+        model.galaxies.lens.mass.ell_comps.ell_comps_0 = instance.galaxies.lens.mass.ell_comps[0]
+        model.galaxies.lens.mass.ell_comps.ell_comps_1 = instance.galaxies.lens.mass.ell_comps[1]
+        model.galaxies.lens.mass.einstein_radius = instance.galaxies.lens.mass.einstein_radius
+        model.galaxies.lens.mass.slope = instance.galaxies.lens.mass.slope
+        model.galaxies.lens.shear.gamma_1 = instance.galaxies.lens.shear.gamma_1
+        model.galaxies.lens.shear.gamma_2 = instance.galaxies.lens.shear.gamma_2
+
+        model.perturb.mass.centre.centre_0 = instance.perturb.mass.centre[0]
+        model.perturb.mass.centre.centre_1 = af.UniformPrior(lower_limit=instance.perturb.mass.centre[1] - 1.0e-4, upper_limit=instance.perturb.mass.centre[1] + 1.0e-4)
+        model.perturb.mass.mass_at_200 = instance.perturb.mass.mass_at_200
+
+        search = af.Drawer(
             paths=paths,
-            n_live=50,
-            number_of_cores=self.number_of_cores,
+            total_draws=1
         )
 
         analysis = al.AnalysisImaging(dataset=dataset)
