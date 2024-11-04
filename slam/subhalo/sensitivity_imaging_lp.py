@@ -128,7 +128,7 @@ class SimulateImaging:
             psf=self.psf,
             background_sky_level=0.1,
             add_poisson_noise=True,
-            noise_seed=1
+            noise_seed=1,
         )
 
         dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
@@ -220,7 +220,7 @@ for every simulated dataset.
 
 
 class BaseFit:
-    def __init__(self, adapt_images, number_of_cores : int = 1):
+    def __init__(self, adapt_images, number_of_cores: int = 1):
         """
         Class used to fit every dataset used for sensitivity mapping with the base model (the model without the
         perturbed feature sensitivity mapping maps out).
@@ -240,6 +240,9 @@ class BaseFit:
         adapt_images
             Contains the adapt-images which are used to make a pixelization's mesh and regularization adapt to the
             reconstructed galaxy's morphology.
+        number_of_cores
+            The number of cores used to perform the non-linear search. If 1, each model-fit on the grid is performed
+            in serial, if > 1 fits are distributed in parallel using the Python multiprocessing module.
         """
         self.adapt_images = adapt_images
         self.number_of_cores = number_of_cores
@@ -262,6 +265,10 @@ class BaseFit:
             The model instance which is fitted to the dataset, which does not include the perturbed feature.
         paths
             The `Paths` instance which contains the path to the folder where the results of the fit are written to.
+        instance
+            The simulation instance, which includes the perturbed feature that is used to simulate the dataset.
+            This is often not used, but may be useful for certain sensitivity mapping tasks, for example using
+            true values of the simulated instance to set up aspects of the model-fit (e.g. the priors).
         """
 
         search = af.Nautilus(
@@ -291,7 +298,7 @@ to the simulated data.
 
 
 class PerturbFit:
-    def __init__(self, adapt_images, number_of_cores : int = 1):
+    def __init__(self, adapt_images, number_of_cores: int = 1):
         """
         Class used to fit every dataset used for sensitivity mapping with the perturbed model (the model with the
         perturbed feature sensitivity mapping maps out).
@@ -311,6 +318,9 @@ class PerturbFit:
         adapt_images
             Contains the adapt-images which are used to make a pixelization's mesh and regularization adapt to the
             reconstructed galaxy's morphology.
+        number_of_cores
+            The number of cores used to perform the non-linear search. If 1, each model-fit on the grid is performed
+            in serial, if > 1 fits are distributed in parallel using the Python multiprocessing module.
         """
         self.adapt_images = adapt_images
         self.number_of_cores = number_of_cores
@@ -333,6 +343,10 @@ class PerturbFit:
             The model instance which is fitted to the dataset, which includes the perturbed feature.
         paths
             The `Paths` instance which contains the path to the folder where the results of the fit are written to.
+        instance
+            The simulation instance, which includes the perturbed feature that is used to simulate the dataset.
+            This is often not used, but may be useful for certain sensitivity mapping tasks, for example using
+            true values of the simulated instance to set up aspects of the model-fit (e.g. the priors).
         """
 
         search = af.Nautilus(
@@ -437,7 +451,6 @@ def base_model_narrow_priors_from(base_model, result, stretch: float = 1.0):
             )
 
     return base_model
-
 
 
 def run(
@@ -653,8 +666,12 @@ def run(
         base_model=base_model,
         perturb_model=perturb_model,
         simulate_cls=SimulateImaging(mask=mask, psf=psf),
-        base_fit_cls=BaseFit(adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores),
-        perturb_fit_cls=PerturbFit(adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores),
+        base_fit_cls=BaseFit(
+            adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
+        ),
+        perturb_fit_cls=PerturbFit(
+            adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
+        ),
         perturb_model_prior_func=perturb_model_prior_func,
         visualizer_cls=subhalo_util.Visualizer(mass_result=mass_result, mask=mask),
         number_of_steps=number_of_steps,

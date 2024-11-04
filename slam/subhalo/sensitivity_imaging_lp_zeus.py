@@ -128,7 +128,7 @@ class SimulateImaging:
             psf=self.psf,
             background_sky_level=0.1,
             add_poisson_noise=True,
-            noise_seed=1
+            noise_seed=1,
         )
 
         dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
@@ -220,7 +220,7 @@ for every simulated dataset.
 
 
 class BaseFit:
-    def __init__(self, adapt_images):
+    def __init__(self, adapt_images, number_of_cores: int = 1):
         """
         Class used to fit every dataset used for sensitivity mapping with the base model (the model without the
         perturbed feature sensitivity mapping maps out).
@@ -240,8 +240,12 @@ class BaseFit:
         adapt_images
             Contains the adapt-images which are used to make a pixelization's mesh and regularization adapt to the
             reconstructed galaxy's morphology.
+        number_of_cores
+            The number of cores used to perform the non-linear search. If 1, each model-fit on the grid is performed
+            in serial, if > 1 fits are distributed in parallel using the Python multiprocessing module.
         """
         self.adapt_images = adapt_images
+        self.number_of_cores = number_of_cores
 
     def __call__(self, dataset, model, paths, instance):
         """
@@ -267,9 +271,7 @@ class BaseFit:
         source_bulge_centre_1 = instance.galaxies.source.bulge.centre[1]
         source_bulge_ell_comps_0 = instance.galaxies.source.bulge.ell_comps[0]
         source_bulge_ell_comps_1 = instance.galaxies.source.bulge.ell_comps[1]
-        source_bulge_effective_radius = (
-            instance.galaxies.source.bulge.effective_radius
-        )
+        source_bulge_effective_radius = instance.galaxies.source.bulge.effective_radius
         source_bulge_sersic_index = instance.galaxies.source.bulge.sersic_index
         lens_mass_centre_0 = instance.galaxies.lens.mass.centre[0]
         lens_mass_centre_1 = instance.galaxies.lens.mass.centre[1]
@@ -346,7 +348,7 @@ class BaseFit:
             nwalkers=36,
             nsteps=66,
             initializer=initializer,
-            #     visualize=True
+            number_of_cores=self.number_of_cores,
         )
         analysis = al.AnalysisImaging(dataset=dataset)
         analysis._adapt_images = self.adapt_images
@@ -369,7 +371,7 @@ to the simulated data.
 
 
 class PerturbFit:
-    def __init__(self, adapt_images):
+    def __init__(self, adapt_images, number_of_cores: int = 1):
         """
         Class used to fit every dataset used for sensitivity mapping with the perturbed model (the model with the
         perturbed feature sensitivity mapping maps out).
@@ -389,8 +391,12 @@ class PerturbFit:
         adapt_images
             Contains the adapt-images which are used to make a pixelization's mesh and regularization adapt to the
             reconstructed galaxy's morphology.
+        number_of_cores
+            The number of cores used to perform the non-linear search. If 1, each model-fit on the grid is performed
+            in serial, if > 1 fits are distributed in parallel using the Python multiprocessing module.
         """
         self.adapt_images = adapt_images
+        self.number_of_cores = number_of_cores
 
     def __call__(self, dataset, model, paths, instance):
         """
@@ -416,9 +422,7 @@ class PerturbFit:
         source_bulge_centre_1 = instance.galaxies.source.bulge.centre[1]
         source_bulge_ell_comps_0 = instance.galaxies.source.bulge.ell_comps[0]
         source_bulge_ell_comps_1 = instance.galaxies.source.bulge.ell_comps[1]
-        source_bulge_effective_radius = (
-            instance.galaxies.source.bulge.effective_radius
-        )
+        source_bulge_effective_radius = instance.galaxies.source.bulge.effective_radius
         source_bulge_sersic_index = instance.galaxies.source.bulge.sersic_index
         lens_mass_centre_0 = instance.galaxies.lens.mass.centre[0]
         lens_mass_centre_1 = instance.galaxies.lens.mass.centre[1]
@@ -510,7 +514,7 @@ class PerturbFit:
             nwalkers=36,
             nsteps=66,
             initializer=initializer,
-            #     visualize=True
+            number_of_cores=self.number_of_cores,
         )
 
         analysis = al.AnalysisImaging(dataset=dataset)
@@ -824,8 +828,12 @@ def run(
         base_model=base_model,
         perturb_model=perturb_model,
         simulate_cls=SimulateImaging(mask=mask, psf=psf),
-        base_fit_cls=BaseFit(adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores),
-        perturb_fit_cls=PerturbFit(adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores),
+        base_fit_cls=BaseFit(
+            adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
+        ),
+        perturb_fit_cls=PerturbFit(
+            adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
+        ),
         perturb_model_prior_func=perturb_model_prior_func,
         visualizer_cls=subhalo_util.Visualizer(mass_result=mass_result, mask=mask),
         number_of_steps=number_of_steps,

@@ -128,7 +128,7 @@ class SimulateImaging:
             psf=self.psf,
             background_sky_level=0.1,
             add_poisson_noise=True,
-            noise_seed=1
+            noise_seed=1,
         )
 
         dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
@@ -220,7 +220,7 @@ for every simulated dataset.
 
 
 class BaseFit:
-    def __init__(self, adapt_images, number_of_cores : int = 1):
+    def __init__(self, adapt_images, number_of_cores: int = 1):
         """
         Class used to fit every dataset used for sensitivity mapping with the base model (the model without the
         perturbed feature sensitivity mapping maps out).
@@ -291,7 +291,7 @@ to the simulated data.
 
 
 class PerturbFit:
-    def __init__(self, adapt_images, number_of_cores : int = 1):
+    def __init__(self, adapt_images, number_of_cores: int = 1):
         """
         Class used to fit every dataset used for sensitivity mapping with the perturbed model (the model with the
         perturbed feature sensitivity mapping maps out).
@@ -337,29 +337,48 @@ class PerturbFit:
             The simulation instance, which includes the perturbed feature that is fitted for in the sensitivity mapping.
         """
 
-        model.galaxies.source.bulge.centre_0 = instance.galaxies.source.bulge.centre[0]
-        model.galaxies.source.bulge.centre_1 = instance.galaxies.source.bulge.centre[1]
-        model.galaxies.source.bulge.ell_comps.ell_comps_0 = instance.galaxies.source.bulge.ell_comps[0]
-        model.galaxies.source.bulge.ell_comps.ell_comps_1 = instance.galaxies.source.bulge.ell_comps[1]
-        model.galaxies.source.bulge.effective_radius = instance.galaxies.source.bulge.effective_radius
-        model.galaxies.source.bulge.sersic_index = instance.galaxies.source.bulge.sersic_index
-
-        model.galaxies.lens.mass.centre_0 = instance.galaxies.lens.mass.centre[0]
-        model.galaxies.lens.mass.centre_1 = instance.galaxies.lens.mass.centre[1]
-        model.galaxies.lens.mass.ell_comps.ell_comps_0 = instance.galaxies.lens.mass.ell_comps[0]
-        model.galaxies.lens.mass.ell_comps.ell_comps_1 = instance.galaxies.lens.mass.ell_comps[1]
-        model.galaxies.lens.mass.einstein_radius = instance.galaxies.lens.mass.einstein_radius
-        model.galaxies.lens.mass.slope = instance.galaxies.lens.mass.slope
-        model.galaxies.lens.shear.gamma_1 = instance.galaxies.lens.shear.gamma_1
-        model.galaxies.lens.shear.gamma_2 = instance.galaxies.lens.shear.gamma_2
-
-        model.perturb.mass.centre.centre_0 = instance.perturb.mass.centre[0]
-        model.perturb.mass.centre.centre_1 = af.UniformPrior(lower_limit=instance.perturb.mass.centre[1] - 1.0e-4, upper_limit=instance.perturb.mass.centre[1] + 1.0e-4)
-        model.perturb.mass.mass_at_200 = instance.perturb.mass.mass_at_200
+        initializer = af.InitializerParamStartPoints(
+            {
+                model.galaxies.source.bulge.centre.centre_0: instance.galaxies.source.bulge.centre[
+                    0
+                ],
+                model.galaxies.source.bulge.centre.centre_1: instance.galaxies.source.bulge.centre[
+                    1
+                ],
+                model.galaxies.source.bulge.ell_comps.ell_comps_0: instance.galaxies.source.bulge.ell_comps[
+                    0
+                ],
+                model.galaxies.source.bulge.ell_comps.ell_comps_1: instance.galaxies.source.bulge.ell_comps[
+                    1
+                ],
+                model.galaxies.source.bulge.effective_radius: instance.galaxies.source.bulge.effective_radius,
+                model.galaxies.source.bulge.sersic_index: instance.galaxies.source.bulge.sersic_index,
+                model.galaxies.lens.mass.centre.centre_0: instance.galaxies.lens.mass.centre[
+                    0
+                ],
+                model.galaxies.lens.mass.centre.centre_1: instance.galaxies.lens.mass.centre[
+                    1
+                ],
+                model.galaxies.lens.mass.ell_comps.ell_comps_0: instance.galaxies.lens.mass.ell_comps[
+                    0
+                ],
+                model.galaxies.lens.mass.ell_comps.ell_comps_1: instance.galaxies.lens.mass.ell_comps[
+                    1
+                ],
+                model.galaxies.lens.mass.einstein_radius: instance.galaxies.lens.mass.einstein_radius,
+                model.galaxies.lens.mass.slope: instance.galaxies.lens.mass.slope,
+                model.galaxies.lens.shear.gamma_1: instance.galaxies.lens.shear.gamma_1,
+                model.galaxies.lens.shear.gamma_2: instance.galaxies.lens.shear.gamma_2,
+                model.perturb.mass.centre.centre_0: instance.perturb.mass.centre[0],
+                model.perturb.mass.centre.centre_1: instance.perturb.mass.centre[1],
+                model.perturb.mass.mass_at_200: instance.perturb.mass.mass_at_200,
+            }
+        )
 
         search = af.Drawer(
             paths=paths,
-            total_draws=1
+            total_draws=1,
+            initializer=initializer,
         )
 
         analysis = al.AnalysisImaging(dataset=dataset)
@@ -458,7 +477,6 @@ def base_model_narrow_priors_from(base_model, result, stretch: float = 1.0):
             )
 
     return base_model
-
 
 
 def run(
@@ -663,7 +681,7 @@ def run(
     """
 
     paths = af.DirectoryPaths(
-        name=f"subhalo__sensitivity",
+        name=f"subhalo__sensitivity__skip_perturb",
         path_prefix=settings_search.path_prefix,
         unique_tag=settings_search.unique_tag,
     )
@@ -674,8 +692,12 @@ def run(
         base_model=base_model,
         perturb_model=perturb_model,
         simulate_cls=SimulateImaging(mask=mask, psf=psf),
-        base_fit_cls=BaseFit(adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores),
-        perturb_fit_cls=PerturbFit(adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores),
+        base_fit_cls=BaseFit(
+            adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
+        ),
+        perturb_fit_cls=PerturbFit(
+            adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
+        ),
         perturb_model_prior_func=perturb_model_prior_func,
         visualizer_cls=subhalo_util.Visualizer(mass_result=mass_result, mask=mask),
         number_of_steps=number_of_steps,

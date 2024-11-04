@@ -200,7 +200,7 @@ def sensitivty_mask_brightest_from(
 
     sorted_lensed_source_image = np.sort(lensed_source_image.flatten())[::-1]
     sensitivity_mask = (
-        lensed_source_image < sorted_lensed_source_image[number_of_pixels-1]
+        lensed_source_image < sorted_lensed_source_image[number_of_pixels - 1]
     )
 
     sensitivity_mask = np.flipud(sensitivity_mask)
@@ -237,7 +237,9 @@ def visualize_sensitivity_mask(mass_result, sensitivity_mask, settings_search):
 
     sensitivity_mask = np.flipud(sensitivity_mask)
 
-    sensitivity_mask = al.Mask2D(mask=sensitivity_mask, pixel_scales=lensed_source_image.pixel_scales)
+    sensitivity_mask = al.Mask2D(
+        mask=sensitivity_mask, pixel_scales=lensed_source_image.pixel_scales
+    )
 
     sensitivity_mask_plot = np.where(sensitivity_mask, 0.0, 1.0)
 
@@ -276,8 +278,7 @@ def visualize_sensitivity_mask(mass_result, sensitivity_mask, settings_search):
 
 
 class Visualizer:
-
-    def __init__(self, mass_result : af.Result, mask : al.Mask2D):
+    def __init__(self, mass_result: af.Result, mask: al.Mask2D):
         """
         Performs on-the-fly visualization of the sensitivity mapping, outputting the results of the sensitivity
         mapping so far to hard disk after each sensitivity cell fit is complete.
@@ -297,7 +298,7 @@ class Visualizer:
         self.mass_result = mass_result
         self.mask = mask
 
-    def __call__(self, sensitivity_result, paths : af.DirectoryPaths):
+    def __call__(self, sensitivity_result, paths: af.DirectoryPaths):
         """
         The `visualizer_cls` is called by the `Sensitivity` class after the `base_model` and `perturb_model` have been
         fitted to the simulated data, after every sensitivity cell has been fitted.
@@ -317,5 +318,8 @@ class Visualizer:
 
         """
         visualize_sensitivity(
-            result=sensitivity_result, paths=paths, mass_result=self.mass_result, mask=self.mask
+            result=sensitivity_result,
+            paths=paths,
+            mass_result=self.mass_result,
+            mask=self.mask,
         )

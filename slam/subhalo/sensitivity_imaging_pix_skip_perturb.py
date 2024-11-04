@@ -199,7 +199,7 @@ class SimulateImagingPixelized:
             psf=self.psf,
             background_sky_level=0.1,
             add_poisson_noise=True,
-            noise_seed=1
+            noise_seed=1,
         )
 
         dataset = simulator.via_source_image_from(
@@ -319,7 +319,7 @@ for every simulated dataset.
 
 
 class BaseFit:
-    def __init__(self, adapt_images):
+    def __init__(self, adapt_images, number_of_cores: int = 1):
         """
         Class used to fit every dataset used for sensitivity mapping with the base model (the model without the
         perturbed feature sensitivity mapping maps out).
@@ -339,8 +339,12 @@ class BaseFit:
         adapt_images
             The result of the previous search containing adapt images used to adapt certain pixelized source meshs's
             and regularizations to the unlensed source morphology.
+        number_of_cores
+            The number of cores used to perform the non-linear search. If 1, each model-fit on the grid is performed
+            in serial, if > 1 fits are distributed in parallel using the Python multiprocessing module.
         """
         self.adapt_images = adapt_images
+        self.number_of_cores = number_of_cores
 
     def __call__(self, dataset, model, paths, instance):
         """
@@ -365,6 +369,7 @@ class BaseFit:
         search = af.Nautilus(
             paths=paths,
             n_live=50,
+            number_of_cores=self.number_of_cores,
         )
 
         analysis = al.AnalysisImaging(dataset=dataset)
@@ -388,7 +393,7 @@ to the simulated data.
 
 
 class PerturbFit:
-    def __init__(self, adapt_images):
+    def __init__(self, adapt_images, number_of_cores: int = 1):
         """
         Class used to fit every dataset used for sensitivity mapping with the perturbed model (the model with the
         perturbed feature sensitivity mapping maps out).
@@ -408,8 +413,12 @@ class PerturbFit:
         adapt_images
             Contains the adapt-images which are used to make a pixelization's mesh and regularization adapt to the
             reconstructed galaxy's morphology.
+        number_of_cores
+            The number of cores used to perform the non-linear search. If 1, each model-fit on the grid is performed
+            in serial, if > 1 fits are distributed in parallel using the Python multiprocessing module.
         """
         self.adapt_images = adapt_images
+        self.number_of_cores = number_of_cores
 
     def __call__(self, dataset, model, paths, instance):
         """
@@ -431,9 +440,34 @@ class PerturbFit:
             The `Paths` instance which contains the path to the folder where the results of the fit are written to.
         """
 
-        search = af.Nautilus(
+        initializer = af.InitializerParamStartPoints(
+            {
+                model.galaxies.lens.mass.centre.centre_0: instance.galaxies.lens.mass.centre[
+                    0
+                ],
+                model.galaxies.lens.mass.centre.centre_1: instance.galaxies.lens.mass.centre[
+                    1
+                ],
+                model.galaxies.lens.mass.ell_comps.ell_comps_0: instance.galaxies.lens.mass.ell_comps[
+                    0
+                ],
+                model.galaxies.lens.mass.ell_comps.ell_comps_1: instance.galaxies.lens.mass.ell_comps[
+                    1
+                ],
+                model.galaxies.lens.mass.einstein_radius: instance.galaxies.lens.mass.einstein_radius,
+                model.galaxies.lens.mass.slope: instance.galaxies.lens.mass.slope,
+                model.galaxies.lens.shear.gamma_1: instance.galaxies.lens.shear.gamma_1,
+                model.galaxies.lens.shear.gamma_2: instance.galaxies.lens.shear.gamma_2,
+                model.perturb.mass.centre.centre_0: instance.perturb.mass.centre[0],
+                model.perturb.mass.centre.centre_1: instance.perturb.mass.centre[1],
+                model.perturb.mass.mass_at_200: instance.perturb.mass.mass_at_200,
+            }
+        )
+
+        search = af.Drawer(
             paths=paths,
-            n_live=50,
+            total_draws=1,
+            initializer=initializer,
         )
 
         analysis = al.AnalysisImaging(dataset=dataset)
@@ -701,7 +735,7 @@ def run(
     """
 
     paths = af.DirectoryPaths(
-        name=f"subhalo__sensitivity{tag}",
+        name=f"subhalo__sensitivity__pix__skip_perturb",
         path_prefix=settings_search.path_prefix,
         unique_tag=settings_search.unique_tag,
     )
@@ -716,8 +750,12 @@ def run(
         base_model=base_model,
         perturb_model=perturb_model,
         simulate_cls=simulate_cls,
-        base_fit_cls=BaseFit(adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores),
-        perturb_fit_cls=PerturbFit(adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores),
+        base_fit_cls=BaseFit(
+            adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
+        ),
+        perturb_fit_cls=PerturbFit(
+            adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
+        ),
         perturb_model_prior_func=perturb_model_prior_func,
         visualizer_cls=subhalo_util.Visualizer(mass_result=mass_result, mask=mask),
         number_of_steps=number_of_steps,

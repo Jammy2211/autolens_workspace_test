@@ -97,8 +97,8 @@ lensed source's multiple images.
 """
 visuals = aplt.Visuals2D(positions=dataset.positions)
 
-#array_plotter = aplt.Array2DPlotter(array=data, visuals_2d=visuals)
-#array_plotter.figure_2d()
+# array_plotter = aplt.Array2DPlotter(array=data, visuals_2d=visuals)
+# array_plotter.figure_2d()
 
 """
 __Point Solver__

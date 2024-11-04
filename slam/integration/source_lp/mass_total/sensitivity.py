@@ -343,7 +343,7 @@ def fit():
     sensitivity_mask = subhalo_util.sensitivty_mask_brightest_from(
         mass_result=mass_result,
         grid_dimensions_extent=(-3.0, 3.0, -3.0, 3.0),
-        number_of_pixels=2,
+        number_of_pixels=5,
     )
 
     subhalo_util.visualize_sensitivity_mask(
@@ -352,7 +352,7 @@ def fit():
         settings_search=settings_search,
     )
 
-    subhalo_result = slam.subhalo.sensitivity_imaging_lp.run(
+    subhalo_result = slam.subhalo.sensitivity_imaging_lp_zeus.run(
         settings_search=settings_search,
         mask=mask,
         psf=dataset.psf,

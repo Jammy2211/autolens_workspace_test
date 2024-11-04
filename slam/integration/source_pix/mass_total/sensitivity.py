@@ -268,11 +268,11 @@ Each model-fit performed by sensitivity mapping creates a new instance of an `An
 data simulated by the `simulate_cls` for that model. This requires us to write a wrapper around the 
 PyAutoLens `AnalysisImaging` class.
 """
-
 from slam.subhalo import subhalo_util
 
-sensitivity_mask = subhalo_util.sensitivty_mask_from(
+sensitivity_mask = subhalo_util.sensitivty_mask_brightest_from(
     mass_result=mass_result,
+    grid_dimensions_extent=(-3.0, 3.0, -3.0, 3.0),
     number_of_pixels=5,
 )
 
@@ -282,18 +282,18 @@ subhalo_util.visualize_sensitivity_mask(
     settings_search=settings_search,
 )
 
-subhalo_result = slam.subhalo.sensitivity_imaging_lp.run(
+subhalo_result = slam.subhalo.sensitivity_imaging_pix.run(
     settings_search=settings_search,
     mask=mask,
     psf=dataset.psf,
     adapt_images=al.AdaptImages.from_result(result=source_lp_result),
-    use_mle=False,
     mass_result=mass_result,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=sensitivity_mask.geometry.shape_native_scaled[0] / 2.0,
     number_of_steps=sensitivity_mask.shape[0],
     sensitivity_mask=sensitivity_mask,
 )
+
 """
 Finish.
 """

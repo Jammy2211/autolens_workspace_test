@@ -123,7 +123,9 @@ dataset = al.Imaging.from_fits(
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
-    over_sampling=al.OverSamplingDataset(pixelization=al.OverSamplingUniform(sub_size=4)),
+    over_sampling=al.OverSamplingDataset(
+        pixelization=al.OverSamplingUniform(sub_size=4)
+    ),
 )
 
 dataset.psf = dataset.psf.resized_from(new_shape=psf_shape_2d)
@@ -207,7 +209,7 @@ These two numbers are the primary driver of run time. More pixels = longer run t
 
 print(f"Inversion fit run times for image type {instrument} \n")
 print(f"Number of pixels = {masked_dataset.grid.shape_slim} \n")
-#print(f"Number of sub-pixels = {masked_dataset.grid.over_sampler.sub_total} \n")
+# print(f"Number of sub-pixels = {masked_dataset.grid.over_sampler.sub_total} \n")
 
 """
 Print the profiling results of every step of the fit for command line output when running profiling scripts.

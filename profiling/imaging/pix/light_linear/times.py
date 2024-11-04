@@ -325,5 +325,3 @@ print(info_dict)
 
 with open(path.join(file_path, f"{instrument}_info.json"), "w+") as outfile:
     json.dump(info_dict, outfile, indent=4)
-
-

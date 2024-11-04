@@ -199,7 +199,7 @@ class SimulateImagingPixelized:
             psf=self.psf,
             background_sky_level=0.1,
             add_poisson_noise=True,
-            noise_seed=1
+            noise_seed=1,
         )
 
         dataset = simulator.via_source_image_from(
@@ -319,7 +319,7 @@ for every simulated dataset.
 
 
 class BaseFit:
-    def __init__(self, adapt_images):
+    def __init__(self, adapt_images, number_of_cores: int = 1):
         """
         Class used to fit every dataset used for sensitivity mapping with the base model (the model without the
         perturbed feature sensitivity mapping maps out).
@@ -339,8 +339,12 @@ class BaseFit:
         adapt_images
             The result of the previous search containing adapt images used to adapt certain pixelized source meshs's
             and regularizations to the unlensed source morphology.
+        number_of_cores
+            The number of cores used to perform the non-linear search. If 1, each model-fit on the grid is performed
+            in serial, if > 1 fits are distributed in parallel using the Python multiprocessing module.
         """
         self.adapt_images = adapt_images
+        self.number_of_cores = number_of_cores
 
     def __call__(self, dataset, model, paths, instance):
         """
@@ -410,10 +414,10 @@ class BaseFit:
 
         search = af.Zeus(
             paths=paths,
-            nwalkers=16,
+            nwalkers=36,
             nsteps=66,
             initializer=initializer,
-            #     visualize=True
+            number_of_cores=self.number_of_cores,
         )
 
         analysis = al.AnalysisImaging(dataset=dataset)
@@ -437,7 +441,7 @@ to the simulated data.
 
 
 class PerturbFit:
-    def __init__(self, adapt_image):
+    def __init__(self, adapt_images, number_of_cores: int = 1):
         """
         Class used to fit every dataset used for sensitivity mapping with the perturbed model (the model with the
         perturbed feature sensitivity mapping maps out).
@@ -457,8 +461,12 @@ class PerturbFit:
         adapt_images
             Contains the adapt-images which are used to make a pixelization's mesh and regularization adapt to the
             reconstructed galaxy's morphology.
+        number_of_cores
+            The number of cores used to perform the non-linear search. If 1, each model-fit on the grid is performed
+            in serial, if > 1 fits are distributed in parallel using the Python multiprocessing module.
         """
         self.adapt_images = adapt_images
+        self.number_of_cores = number_of_cores
 
     def __call__(self, dataset, model, paths, instance):
         """
@@ -543,10 +551,10 @@ class PerturbFit:
 
         search = af.Zeus(
             paths=paths,
-            nwalkers=22,
+            nwalkers=36,
             nsteps=66,
             initializer=initializer,
-            #     visualize=True
+            number_of_cores=self.number_of_cores,
         )
 
         analysis = al.AnalysisImaging(dataset=dataset)
@@ -814,7 +822,7 @@ def run(
     """
 
     paths = af.DirectoryPaths(
-        name=f"subhalo__sensitivity__zeus",
+        name=f"subhalo__sensitivity__pix__zeus",
         path_prefix=settings_search.path_prefix,
         unique_tag=settings_search.unique_tag,
     )
@@ -829,8 +837,12 @@ def run(
         base_model=base_model,
         perturb_model=perturb_model,
         simulate_cls=simulate_cls,
-        base_fit_cls=BaseFit(adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores),
-        perturb_fit_cls=PerturbFit(adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores),
+        base_fit_cls=BaseFit(
+            adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
+        ),
+        perturb_fit_cls=PerturbFit(
+            adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
+        ),
         perturb_model_prior_func=perturb_model_prior_func,
         visualizer_cls=subhalo_util.Visualizer(mass_result=mass_result, mask=mask),
         number_of_steps=number_of_steps,
