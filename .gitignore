@@ -1,3 +1,7 @@
+root.log
+.DS_Store
+examples.zip
+examples/
 __pycache__/
 output/
 dataset/
