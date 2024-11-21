@@ -1,7 +1,9 @@
 import copy
 import numpy as np
 from os import path
+from typing import List, Union
 
+import autofit as af
 import autolens as al
 import autolens.plot as aplt
 
@@ -12,6 +14,7 @@ def output_model_to_fits(
     model_lens_light: bool = False,
     model_source_light: bool = False,
     source_reconstruction: bool = False,
+    source_reconstruction_noise_map: bool = False
 ):
     """
     Output modeling results from the SLAM pipeline to .fits files.
@@ -32,6 +35,9 @@ def output_model_to_fits(
     source_reconstruction
         When to output a 2D image of the source reconstruction to a .fits file, where this may be interpolated from
         an irregular pixelization like a Delaunay mesh or Voronoi mesh.
+    source_reconstruction_noise_map
+        When to output a 2D image of the source reconstruction noise-map to a .fits file, where this may be
+        interpolated from an irregular pixelization like a Delaunay mesh or Voronoi mesh.
     """
     fit = result.max_log_likelihood_fit
 
@@ -63,6 +69,22 @@ def output_model_to_fits(
             overwrite=True,
         )
 
+    if source_reconstruction_noise_map:
+
+        inversion = fit.inversion
+        mapper = inversion.cls_list_from(cls=al.AbstractMapper)[0]
+        mapper_valued = al.MapperValued(
+            mapper=mapper, values=inversion.reconstruction_noise_map
+        )
+
+        interpolated_reconstruction_noise_map = mapper_valued.interpolated_array_from(
+            shape_native=(601, 601)
+        )
+
+        interpolated_reconstruction_noise_map.output_to_fits(
+            file_path=path.join(output_path, "source_reconstruction_noise_map.fits"),
+            overwrite=True,
+        )
 
 def output_model_results(
     output_path: str,
@@ -105,6 +127,7 @@ def plot_fit_png_row(
     image_plane_extent,
     source_plane_extent,
     visuals_2d,
+    title_fontweight="normal"
 ):
     """
     Plots a row of a subplot which shows a fit to a list of datasets (e.g. varying across wavelengths) where each row
@@ -142,6 +165,7 @@ def plot_fit_png_row(
 
     plotter_main.mat_plot_2d.axis = aplt.Axis(extent=image_plane_extent)
     plotter_main.mat_plot_2d.cmap = aplt.Cmap()
+    plotter_main.mat_plot_2d.title = aplt.Title(fontweight=title_fontweight, fontsize=16)
     plotter.mat_plot_2d = plotter_main.mat_plot_2d
     plotter.mat_plot_2d.use_log10 = True
     plotter.set_title(label=f"{tag} Data")
@@ -205,7 +229,7 @@ def plot_fit_png_row(
     plotter.mat_plot_2d.use_log10 = False
 
 
-def output_fit_multi_png(output_path: str, result_list, tag_list=None, filename="fit"):
+def output_fit_multi_png(output_path: str, result_list, tag_list=None, filename="fit", main_dataset_index : int = 1e99):
     """
     Outputs a .png subplot of a fit to multiple datasets (e.g. varying across wavelengths) where each row
     corresponds to a different dataset.
@@ -273,6 +297,9 @@ def output_fit_multi_png(output_path: str, result_list, tag_list=None, filename=
     )
 
     for i, fit in enumerate(fit_list):
+
+        title_fontweight = "bold" if i == main_dataset_index else "normal"
+
         visuals_2d = aplt.Visuals2D(
             light_profile_centres=al.Grid2DIrregular(
                 values=[fit.tracer.galaxies[0].bulge.profile_list[0].centre]
@@ -294,6 +321,7 @@ def output_fit_multi_png(output_path: str, result_list, tag_list=None, filename=
             image_plane_extent=image_plane_extent,
             source_plane_extent=source_plane_extent,
             visuals_2d=visuals_2d,
+            title_fontweight=title_fontweight
         )
 
     plotter.mat_plot_2d.output.subplot_to_figure(auto_filename=filename)
@@ -306,6 +334,7 @@ def plot_source_png_row(
     tag,
     vmax,
     source_plane_extent,
+    title_fontweight="normal"
 ):
     """
     Plots a row of a subplot which shows a source reconstruction to a list of datasets (e.g. varying across wavelengths)
@@ -334,7 +363,8 @@ def plot_source_png_row(
 
     plotter.mat_plot_2d = plotter_main.mat_plot_2d
     plotter_main.mat_plot_2d.cmap = aplt.Cmap(vmin=0.0, vmax=vmax)
-    plotter.set_title(label=f"{tag} Source Plane")
+    plotter_main.mat_plot_2d.title = aplt.Title(fontweight=title_fontweight, fontsize=16)
+    plotter.set_title(label=f"{tag} Source")
     plotter.figures_2d_of_planes(
         plane_index=1,
         plane_image=True,
@@ -344,24 +374,10 @@ def plot_source_png_row(
 
     plotter_main.mat_plot_2d.axis = aplt.Axis(extent=source_plane_extent)
     plotter.mat_plot_2d = plotter_main.mat_plot_2d
-    plotter.set_title(label=f"{tag} Source Plane (Zoomed)")
+    plotter.set_title(label=f"{tag} Source (Zoomed)")
     plotter.figures_2d_of_planes(plane_index=1, plane_image=True, use_source_vmax=True)
 
-    plotter.set_title(label=f"{tag} Source Plane Log10 (Zoomed)")
-    plotter.mat_plot_2d.use_log10 = True
-    plotter.figures_2d_of_planes(
-        plane_index=1,
-        plane_image=True,
-    )
-
-    plotter.set_title(label=f"{tag} Source Plane Errors (Zoomed)")
-    plotter.mat_plot_2d.use_log10 = False
-    plotter.figures_2d_of_planes(
-        plane_index=1,
-        plane_errors=True,
-    )
-
-    plotter.set_title(label=f"{tag} Source Plane S/N (Zoomed)")
+    plotter.set_title(label=f"{tag} Source S/N (Zoomed)")
     plotter.mat_plot_2d.use_log10 = False
     plotter.figures_2d_of_planes(
         plane_index=1,
@@ -369,7 +385,7 @@ def plot_source_png_row(
     )
 
     plotter_main.mat_plot_2d.axis = aplt.Axis()
-    plotter.set_title(label=f"{tag} Source Plane Interpolation")
+    plotter.set_title(label=f"{tag} Source Interpolation")
     plotter.mat_plot_2d.use_log10 = False
     plotter.figures_2d_of_planes(
         plane_index=1,
@@ -381,7 +397,7 @@ def plot_source_png_row(
 
 
 def output_source_multi_png(
-    output_path: str, result_list, tag_list=None, filename="source_reconstruction"
+    output_path: str, result_list, tag_list=None, filename="source_reconstruction", main_dataset_index : int = 1e99
 ):
     """
     Outputs a .png subplot of the source-plane source reconstructions to multiple datasets (e.g. varying across
@@ -434,12 +450,14 @@ def output_source_multi_png(
     )
 
     plotter_main.open_subplot_figure(
-        number_subplots=len(fit_list) * 6,
-        subplot_shape=(len(fit_list), 6),
+        number_subplots=len(fit_list) * 4,
+        subplot_shape=(len(fit_list), 4),
     )
 
     for i, fit in enumerate(fit_list):
         tag = tag_list[i] if tag_list is not None else ""
+
+        title_fontweight = "bold" if i == main_dataset_index else "normal"
 
         plot_source_png_row(
             plotter_main=plotter_main,
@@ -447,6 +465,7 @@ def output_source_multi_png(
             tag=tag,
             vmax=vmax,
             source_plane_extent=source_plane_extent,
+            title_fontweight=title_fontweight
         )
 
     plotter_main.mat_plot_2d.output.subplot_to_figure(auto_filename=filename)
@@ -606,3 +625,77 @@ def output_subplot_mge_only_png(
 
     plotter_main.mat_plot_2d.output.subplot_to_figure(auto_filename=filename)
     plotter_main.close_subplot_figure()
+
+
+def analysis_multi_dataset_from(
+    analysis: Union[af.Analysis, af.CombinedAnalysis],
+    model,
+    multi_dataset_offset: bool = False,
+    multi_source_regularization: bool = False,
+    source_regularization_result=None,
+):
+    """
+    Updates the `Analysis` object to include free parameters for multi-dataset modeling.
+
+    The following updates can be made:
+
+    - The arc-second (y,x) offset between two datasets for multi-band fitting, where a different offset is used for each
+      dataset (e.g. 2 extra free parameters per dataset).
+
+    - The regularization parameters of the pixelization used to reconstruct the source, where different regularization
+      parameters are used for each dataset (e.g. 1-3 extra free parameters per dataset).
+
+    - The regularization parameters of the pixelization used to reconstruct the source are fixed to the max log likelihood
+      instance of the regularization from a previous model-fit (e.g. the SOURCE PIPELINE).
+
+    The function is quite rigid and should not be altered to change the behavior of the multi wavelength SLaM pipelines.
+    Future updates will add more flexibility, once multi wavelength modeling is better understood.
+
+    Parameters
+    ----------
+    analysis
+        The sum of analysis classes that are used to fit the data.
+    model
+        The model used to fit the data, which is extended to include the extra free parameters.
+    multi_dataset_offset
+        If True, a different (y,x) arc-second offset is used for each dataset.
+    multi_source_regularization
+        If True, a different regularization parameters are used for each dataset.
+    source_regularization_result
+        The result of a previous model-fit that is used to fix the regularization parameters of the source pixelization.
+
+    Returns
+    -------
+    The updated analysis object that includes the extra free parameters.
+    """
+    if not isinstance(analysis, af.CombinedAnalysis):
+        return analysis
+
+    if multi_dataset_offset and not multi_source_regularization:
+        analysis = analysis.with_free_parameters(model.dataset_model.grid_offset)
+    elif not multi_dataset_offset and multi_source_regularization:
+        analysis = analysis.with_free_parameters(
+            model.galaxies.source.pixelization.regularization
+        )
+    elif multi_dataset_offset and multi_source_regularization:
+        analysis = analysis.with_free_parameters(
+            model.dataset_model.grid_offset,
+            model.galaxies.source.pixelization.regularization,
+        )
+
+    for i in range(1, len(analysis)):
+        if multi_dataset_offset:
+            analysis[i][
+                model.dataset_model.grid_offset.grid_offset_0
+            ] = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+            analysis[i][
+                model.dataset_model.grid_offset.grid_offset_1
+            ] = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+
+    if source_regularization_result is not None:
+        for i in range(len(analysis)):
+            analysis[i][
+                model.galaxies.source.pixelization.regularization
+            ] = source_regularization_result[i].instance.galaxies.source.pixelization.regularization
+
+    return analysis

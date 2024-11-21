@@ -134,7 +134,7 @@ def run(
     )
 
     search = af.Nautilus(
-        name="mass_total[1]_light[lp]_mass[total]_source",
+        name="mass_total[1]",
         **settings_search.search_dict,
         n_live=150,
     )

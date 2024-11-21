@@ -33,6 +33,7 @@ Check them out for a full description of the analysis!
 # %cd $workspace_path
 # print(f"Working Directory has been set to `{workspace_path}`")
 
+import numpy as np
 import os
 from os import path
 
@@ -62,8 +63,10 @@ dataset = al.Imaging.from_fits(
     pixel_scales=0.2,
 )
 
+mask_radius = 3.0
+
 mask = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
 )
 
 dataset = dataset.apply_mask(mask=mask)
@@ -141,50 +144,167 @@ source galaxy's light, which in this example:
 """
 analysis = al.AnalysisImaging(dataset=dataset)
 
-bulge = af.Model(al.lp.Sersic)
-disk = af.Model(al.lp.Exponential)
-bulge.centre = disk.centre
+# Lens Light
+
+centre_0 = af.GaussianPrior(mean=0.0, sigma=0.1)
+centre_1 = af.GaussianPrior(mean=0.0, sigma=0.1)
+
+total_gaussians = 30
+gaussian_per_basis = 2
+
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
+
+bulge_gaussian_list = []
+
+for j in range(gaussian_per_basis):
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
+
+    for i, gaussian in enumerate(gaussian_list):
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
+
+    bulge_gaussian_list += gaussian_list
+
+lens_bulge = af.Model(
+    al.lp_basis.Basis,
+    profile_list=bulge_gaussian_list,
+)
+
+# Source Light
+
+centre_0 = af.GaussianPrior(mean=0.0, sigma=0.3)
+centre_1 = af.GaussianPrior(mean=0.0, sigma=0.3)
+
+total_gaussians = 30
+gaussian_per_basis = 1
+
+log10_sigma_list = np.linspace(-3, np.log10(1.0), total_gaussians)
+
+bulge_gaussian_list = []
+
+for j in range(gaussian_per_basis):
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
+
+    for i, gaussian in enumerate(gaussian_list):
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
+
+    bulge_gaussian_list += gaussian_list
+
+source_bulge = af.Model(
+    al.lp_basis.Basis,
+    profile_list=bulge_gaussian_list,
+)
+
+# Extra Galaxies:
+
+extra_galaxies_list = []
+
+for extra_galaxy_centre in extra_galaxies_centres:
+    # Extra Galaxy Light
+
+    total_gaussians = 10
+
+    ### FUTURE IMPROVEMENT: Set the size based on each extra galaxy's size as opposed to the mask.
+
+    log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
+
+    ### FUTURE IMPROVEMENT: Use elliptical Gaussians for the extra galaxies where the ellipticity is estimated beforehand.
+
+    extra_galaxy_gaussian_list = []
+
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.GaussianSph) for _ in range(total_gaussians)
+    )
+
+    for i, gaussian in enumerate(gaussian_list):
+        gaussian.centre.centre_0 = extra_galaxy_centre[0]
+        gaussian.centre.centre_1 = extra_galaxy_centre[1]
+        gaussian.sigma = 10 ** log10_sigma_list[i]
+
+    extra_galaxy_gaussian_list += gaussian_list
+
+    extra_galaxy_bulge = af.Model(
+        al.lp_basis.Basis, profile_list=extra_galaxy_gaussian_list
+    )
+
+    # Extra Galaxy Mass
+
+    mass = af.Model(al.mp.IsothermalSph)
+
+    mass.centre = extra_galaxy_centre
+    mass.einstein_radius = af.UniformPrior(lower_limit=0.0, upper_limit=0.1)
+
+    extra_galaxy = af.Model(
+        al.Galaxy, redshift=0.5, bulge=extra_galaxy_bulge, mass=mass
+    )
+
+    extra_galaxy.mass.centre = extra_galaxy_centre
+
+    extra_galaxies_list.append(extra_galaxy)
+
+extra_galaxies = af.Collection(extra_galaxies_list)
 
 source_lp_result = slam.source_lp.run(
     settings_search=settings_search,
     analysis=analysis,
-    lens_bulge=bulge,
-    lens_disk=disk,
+    lens_bulge=lens_bulge,
+    lens_disk=None,
     mass=af.Model(al.mp.Isothermal),
     shear=af.Model(al.mp.ExternalShear),
-    source_bulge=af.Model(al.lp.Sersic),
+    source_bulge=source_bulge,
     mass_centre=(0.0, 0.0),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
     extra_galaxies=extra_galaxies,
 )
-
 """
-__SOURCE PIX PIPELINE (with lens light)__
+__SOURCE PIX PIPELINE__
 
-The SOURCE PIX PIPELINE (with lens light) uses two searches to initialize a robust model for the pixelization
-that reconstructs the source galaxy's light. It begins by fitting a `Voronoi` pixelization with `Constant` 
-regularization, to set up the model and hyper images, and then:
+The SOURCE PIX PIPELINE (and every pipeline that follows) are identical to the `start_here.ipynb` example.
 
- - Uses a `Voronoi` pixelization.
- - Uses an `AdaptiveBrightness` regularization.
- - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
- SOURCE PIX PIPELINE.
+The model components for the extra galaxies (e.g. `lens_bulge` and `lens_disk`) are passed from the SOURCE LP PIPELINE,
+via the `source_lp_result` object, therefore you do not need to manually pass them below.
 """
 analysis = al.AnalysisImaging(
     dataset=dataset,
     adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
+    positions_likelihood=source_lp_result.positions_likelihood_from(
+        factor=3.0, minimum_threshold=0.2
+    ),
 )
+
+# Extra Galaxies:
+
+extra_galaxies = source_lp_result.model.extra_galaxies
+
+for galaxy, result_galaxy in zip(extra_galaxies, source_lp_result.instance.extra_galaxies):
+
+    galaxy.bulge = result_galaxy.bulge
 
 source_pix_result_1 = slam.source_pix.run_1(
     settings_search=settings_search,
     analysis=analysis,
     source_lp_result=source_lp_result,
-    mesh_init=al.mesh.Voronoi,
+    mesh_init=al.mesh.Delaunay,
+    extra_galaxies=extra_galaxies,
 )
 
 """
 __SOURCE PIX PIPELINE 2 (with lens light)__
+
+As above, this pipeline also has the same API as the `start_here.ipynb` example.
+
+The extra galaxies are passed from the SOURCE PIX PIPELINE, via the `source_pix_result_1` object, therefore you do not
+need to manually pass them below.
 """
 analysis = al.AnalysisImaging(
     dataset=dataset,
@@ -203,9 +323,10 @@ source_pix_result_2 = slam.source_pix.run_2(
     source_lp_result=source_lp_result,
     source_pix_result_1=source_pix_result_1,
     image_mesh=al.image_mesh.Hilbert,
-    mesh=al.mesh.Voronoi,
+    mesh=al.mesh.Delaunay,
     regularization=al.reg.AdaptiveBrightnessSplit,
 )
+
 
 """
 __LIGHT LP PIPELINE__
@@ -224,21 +345,54 @@ In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS 
  PIPELINE [fixed values].
 """
-bulge = af.Model(al.lp.Sersic)
-disk = af.Model(al.lp.Exponential)
-bulge.centre = disk.centre
+centre_0 = af.UniformPrior(lower_limit=-0.2, upper_limit=0.2)
+centre_1 = af.UniformPrior(lower_limit=-0.2, upper_limit=0.2)
+
+total_gaussians = 30
+gaussian_per_basis = 2
+
+log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
+
+bulge_gaussian_list = []
+
+for j in range(gaussian_per_basis):
+
+    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+
+    for i, gaussian in enumerate(gaussian_list):
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
+
+    bulge_gaussian_list += gaussian_list
+
+lens_bulge = af.Model(
+    al.lp_basis.Basis,
+    profile_list=bulge_gaussian_list,
+)
 
 analysis = al.AnalysisImaging(
     dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
 )
+
+
+# Extra Galaxies:
+
+extra_galaxies = source_lp_result.model.extra_galaxies
+
+for galaxy, result_galaxy in zip(extra_galaxies, source_pix_result_1.instance.extra_galaxies):
+
+    galaxy.mass = result_galaxy.mass
 
 light_result = slam.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
     source_result_for_lens=source_pix_result_1,
     source_result_for_source=source_pix_result_2,
-    lens_bulge=bulge,
-    lens_disk=disk,
+    lens_bulge=lens_bulge,
+    lens_disk=None,
+    extra_galaxies=extra_galaxies,
 )
 
 """
@@ -263,6 +417,14 @@ analysis = al.AnalysisImaging(
     dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
 )
 
+# Extra Galaxies:
+
+extra_galaxies = source_lp_result.model.extra_galaxies
+
+for galaxy, result_galaxy in zip(extra_galaxies, light_result.instance.extra_galaxies):
+
+    galaxy.bulge = result_galaxy.bulge
+
 mass_result = slam.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
@@ -270,6 +432,7 @@ mass_result = slam.mass_total.run(
     source_result_for_source=source_pix_result_2,
     light_result=light_result,
     mass=af.Model(al.mp.PowerLaw),
+    extra_galaxies=extra_galaxies,
 )
 
 """
@@ -293,10 +456,19 @@ analysis = al.AnalysisImaging(
     adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
 )
 
+# Extra Galaxies:
+
+extra_galaxies = mass_result.model.extra_galaxies
+
+for galaxy, result_galaxy in zip(extra_galaxies, light_result.instance.extra_galaxies):
+
+    galaxy.bulge = result_galaxy.bulge
+
 subhalo_result_1 = slam.subhalo.detection.run_1_no_subhalo(
     settings_search=settings_search,
     analysis=analysis,
     mass_result=mass_result,
+    extra_galaxies=extra_galaxies,
 )
 
 subhalo_grid_search_result_2 = slam.subhalo.detection.run_2_grid_search(
@@ -307,6 +479,7 @@ subhalo_grid_search_result_2 = slam.subhalo.detection.run_2_grid_search(
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
+    extra_galaxies=extra_galaxies,
 )
 
 subhalo_result_3 = slam.subhalo.detection.run_3_subhalo(
@@ -315,6 +488,7 @@ subhalo_result_3 = slam.subhalo.detection.run_3_subhalo(
     subhalo_result_1=subhalo_result_1,
     subhalo_grid_search_result_2=subhalo_grid_search_result_2,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
+    extra_galaxies=extra_galaxies,
 )
 
 """

@@ -340,7 +340,7 @@ print("\n\n***********************")
 print("***AGG MODULE TESTING***")
 print("***********************\n\n")
 
-agg = agg.query(agg.search.name == "mass_total[1]_light[lp]_mass[total]_source")
+agg = agg.query(agg.search.name == "mass_total[1]")
 
 tracer_agg = al.agg.TracerAgg(aggregator=agg)
 tracer_gen = tracer_agg.max_log_likelihood_gen_from()
