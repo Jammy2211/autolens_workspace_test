@@ -123,9 +123,9 @@ dataset = al.Imaging.from_fits(
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
-    over_sampling=al.OverSamplingDataset(
-        pixelization=al.OverSamplingUniform(sub_size=4)
-    ),
+    # over_sampling=al.OverSamplingDataset(
+    #     pixelization=4
+    # ),
 )
 
 dataset.psf = dataset.psf.resized_from(new_shape=psf_shape_2d)
@@ -193,10 +193,7 @@ fit = al.FitImaging(
     tracer=tracer,
     run_time_dict=run_time_dict,
 )
-print(fit.inversion.regularization_matrix.shape)
-print(fit.inversion.regularization_matrix)
-np.save("regularization_matrix", fit.inversion.regularization_matrix)
-dffdfds
+
 fit.figure_of_merit
 
 run_time_dict = fit.run_time_dict

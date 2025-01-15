@@ -122,7 +122,7 @@ class SimulateImagingPixelized:
         grid = al.Grid2D.uniform(
             shape_native=self.mask.shape_native,
             pixel_scales=self.mask.pixel_scales,
-            over_sampling=al.OverSamplingUniform(
+            over_sampling=al.OverSampling(
                 sub_size=self.image_plane_subgrid_size
             ),
         )

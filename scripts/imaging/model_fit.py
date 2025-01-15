@@ -162,7 +162,7 @@ The `Result` object also contains:
 print(result.max_log_likelihood_instance)
 
 tracer_plotter = aplt.TracerPlotter(
-    tracer=result.max_log_likelihood_tracer, grid=result.grids.uniform
+    tracer=result.max_log_likelihood_tracer, grid=result.grids.lp
 )
 tracer_plotter.subplot_tracer()
 

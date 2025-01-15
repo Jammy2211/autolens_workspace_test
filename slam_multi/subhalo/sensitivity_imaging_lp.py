@@ -91,7 +91,7 @@ class SimulateImaging:
         Set up the grid, PSF and simulator settings used to simulate imaging of the strong lens. These should be 
         tuned to match the S/N and noise properties of the observed data you are performing sensitivity mapping on.
         """
-        grid = al.Grid2DIterate.uniform(
+        grid = al.Grid2DIterate.lp(
             shape_native=self.mask.shape_native,
             pixel_scales=self.mask.pixel_scales,
             fractional_accuracy=0.9999,

@@ -47,7 +47,7 @@ sub-size of the grid is iteratively increased (in steps of 2, 4, 8, 16, 24) unti
 This ensures that the divergent and bright central regions of the source galaxy are fully resolved when determining the
 total flux emitted within a pixel.
 """
-grid_2d = al.Grid2DIterate.uniform(
+grid_2d = al.Grid2DIterate.lp(
     shape_native=(100, 100),
     pixel_scales=0.1,
     fractional_accuracy=0.9999,
@@ -141,8 +141,6 @@ dataset.output_to_fits(
 __Visualize__
 
 Output a subplot of the simulated dataset, the image and the tracer's quantities to the dataset path as .png files.
-
-For a faster run time, the tracer visualization uses the binned grid instead of the iterative grid.
 """
 mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png"))
 

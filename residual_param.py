@@ -74,7 +74,7 @@ dataset = al.Imaging.from_fits(
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
-    over_sampling_pixelization=al.OverSamplingUniform(sub_size=1),
+    over_sampling_over_sample_size_pixelization=1,
 )
 
 """
@@ -167,7 +167,7 @@ lens_galaxy = al.Galaxy(
 
 tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
-grid = al.Grid2D.from_mask(mask=mask, over_sampling=al.OverSamplingUniform(sub_size=1))
+grid = al.Grid2D.from_mask(mask=mask, over_sample_size=1)
 
 tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
@@ -178,7 +178,7 @@ image_prev = tracer.image_2d_from(
 
 for sub_size in range(8):
     grid = al.Grid2D.from_mask(
-        mask=mask, over_sampling=al.OverSamplingUniform(sub_size=sub_size)
+        mask=mask, over_sampling=al.OverSampling(sub_size=sub_size)
     )
 
     tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])

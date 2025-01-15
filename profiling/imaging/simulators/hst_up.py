@@ -43,7 +43,7 @@ sub-size of the grid is iteratively increased (in steps of 2, 4, 8, 16, 24) unti
 This ensures that the divergent and bright central regions of the source galaxy are fully resolved when determining the
 total flux emitted within a pixel.
 """
-grid = al.Grid2DIterate.uniform(
+grid = al.Grid2DIterate.lp(
     shape_native=(260, 260), pixel_scales=0.03, fractional_accuracy=0.9999
 )
 

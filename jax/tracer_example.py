@@ -31,7 +31,7 @@ __Grid__
 """
 mask = al.Mask2D.circular(shape_native=(100, 100), pixel_scales=0.05, radius=3.0)
 
-grid = al.Grid2D.from_mask(mask=mask, over_sampling=al.OverSamplingUniform(sub_size=1))
+grid = al.Grid2D.from_mask(mask=mask, over_sample_size=1)
 
 """
 __SIE Mass Profile__

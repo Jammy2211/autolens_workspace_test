@@ -41,7 +41,7 @@ dataset_path = path.join("dataset", dataset_type, dataset_name)
 """
 __Simulate__
 
-Simulate the image using a `Grid2D` with the `OverSamplingIterate` object.
+Simulate the image using a `Grid2D` with the adaptive over sampling scheme.
 """
 grid = al.Grid2D.uniform(
     shape_native=(100, 100),
@@ -133,8 +133,6 @@ dataset.output_to_fits(
 __Visualize__
 
 Output a subplot of the simulated dataset, the image and the tracer's quantities to the dataset path as .png files.
-
-For a faster run time, the tracer visualization uses the binned grid instead of the iterative grid.
 """
 mat_plot = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png"))
 

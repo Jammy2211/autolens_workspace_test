@@ -465,7 +465,7 @@ def fit():
 
         dataset = dataset.apply_over_sampling(
             over_sampling=al.OverSamplingDataset(
-                uniform=al.OverSamplingUniform.from_radial_bins(
+                lp=al.OverSampling.over_sample_size_via_radial_bins_from(
                     grid=dataset.grid,
                     sub_size_list=[4, 2, 1],
                     radial_list=[0.1, 0.3],
@@ -602,8 +602,8 @@ def fit():
 
         multi_result_dict[dataset_waveband] = multi_result
 
-        slam.slam_util.output_model_to_fits(
-            output_path=path.join(dataset_path, "model"),
+        slam.slam_util.output_result_to_fits(
+            output_path=path.join(dataset_path, "result"),
             result=multi_result,
             model_lens_light=True,
             model_source_light=True,
@@ -611,7 +611,7 @@ def fit():
         )
 
         slam.slam_util.output_model_results(
-            output_path=path.join(dataset_path, "model"),
+            output_path=path.join(dataset_path, "result"),
             result=multi_result,
             filename="sie_model.results",
         )

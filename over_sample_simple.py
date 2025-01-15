@@ -74,7 +74,7 @@ dataset = al.Imaging.from_fits(
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
-    over_sampling_pixelization=al.OverSamplingUniform(sub_size=sub_size),
+    over_sampling_pixelization=al.OverSampling(sub_size=sub_size),
 )
 
 """
@@ -204,7 +204,7 @@ def func(obj, grid, *args, **kwargs):
     )
 
 
-over_sampling = al.OverSamplingUniform.from_func(
+over_sampling = al.OverSampling.from_func(
     func=func,
     mask=mask,
     fractional_accuracy=0.7,
@@ -220,7 +220,7 @@ plotter = aplt.Array2DPlotter(array=over_sampling.sub_size, mat_plot_2d=mat_plot
 plotter.figure_2d()
 
 
-grid = al.Grid2D.from_mask(mask=mask, over_sampling=al.OverSamplingUniform(sub_size=8))
+grid = al.Grid2D.from_mask(mask=mask, over_sampling=al.OverSampling(sub_size=8))
 
 lens_galaxy = al.Galaxy(
     redshift=0.5,
@@ -244,7 +244,7 @@ image_sub_1 = tracer.image_2d_via_input_plane_image_from(
 )
 
 
-grid = al.Grid2D.from_mask(mask=mask, over_sampling=al.OverSamplingUniform(sub_size=16))
+grid = al.Grid2D.from_mask(mask=mask, over_sampling=al.OverSampling(sub_size=16))
 
 tracer = al.Tracer(
     galaxies=[

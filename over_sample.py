@@ -74,7 +74,7 @@ dataset = al.Imaging.from_fits(
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
-    over_sampling_pixelization=al.OverSamplingUniform(sub_size=1),
+    over_sampling_over_sample_size_pixelization=1,
 )
 
 """
@@ -180,7 +180,7 @@ source_image = fit.inversion.interpolated_reconstruction_list_from(
 )[0]
 
 
-grid = al.Grid2D.from_mask(mask=mask, over_sampling=al.OverSamplingUniform(sub_size=1))
+grid = al.Grid2D.from_mask(mask=mask, over_sample_size=1)
 
 lens_galaxy = al.Galaxy(
     redshift=0.5,
@@ -226,7 +226,7 @@ plotter = aplt.Array2DPlotter(array=image_sub_1, mat_plot_2d=mat_plot_2d)
 plotter.figure_2d()
 
 
-grid = al.Grid2D.from_mask(mask=mask, over_sampling=al.OverSamplingUniform(sub_size=2))
+grid = al.Grid2D.from_mask(mask=mask, over_sample_size=2)
 
 tracer = al.Tracer(
     galaxies=[
@@ -274,7 +274,7 @@ plotter = aplt.Array2DPlotter(array=fractional_accuracy, mat_plot_2d=mat_plot_2d
 plotter.figure_2d()
 
 
-over_sampling = al.OverSamplingUniform.from_adapt(
+over_sampling = al.OverSampling.over_sample_size_via_adapt_from(
     data=source_adapt_data,
     noise_map=masked_dataset.noise_map,
 )
