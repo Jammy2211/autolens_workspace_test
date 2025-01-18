@@ -74,7 +74,7 @@ dataset = al.Imaging.from_fits(
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
-    over_sampling_over_sample_size_pixelization=1,
+    over_sample_size_pixelization=1,
 )
 
 """
@@ -274,7 +274,7 @@ plotter = aplt.Array2DPlotter(array=fractional_accuracy, mat_plot_2d=mat_plot_2d
 plotter.figure_2d()
 
 
-over_sampling = al.OverSampling.over_sample_size_via_adapt_from(
+over_sampling = al.util.over_sample.over_sample_size_via_adapt_from(
     data=source_adapt_data,
     noise_map=masked_dataset.noise_map,
 )
