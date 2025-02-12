@@ -154,9 +154,7 @@ class SimulateImagingPixelized:
         grid = al.Grid2D.uniform(
             shape_native=self.mask.shape_native,
             pixel_scales=self.mask.pixel_scales,
-            over_sampling=al.OverSampling(
-                sub_size=self.image_plane_subgrid_size
-            ),
+            over_sample_size=self.image_plane_subgrid_size,
         )
 
         """
@@ -559,6 +557,7 @@ def run(
     adapt_images: Optional[al.AdaptImageMaker] = None,
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
+    batch_range: Tuple[int, int] = None,
     sensitivity_mask: Optional[Union[al.Mask2D, List]] = None,
 ):
     """
@@ -773,6 +772,7 @@ def run(
         perturb_model_prior_func=perturb_model_prior_func,
         visualizer_cls=subhalo_util.Visualizer(mass_result=mass_result, mask=mask),
         number_of_steps=number_of_steps,
+        batch_range=batch_range,
         mask=sensitivity_mask,
         number_of_cores=1,
     )

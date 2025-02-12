@@ -352,7 +352,7 @@ def fit():
         settings_search=settings_search,
     )
 
-    subhalo_result = slam.subhalo.sensitivity_imaging_lp_zeus.run(
+    subhalo_result = slam.subhalo.sensitivity_imaging_lp.run(
         settings_search=settings_search,
         mask=mask,
         psf=dataset.psf,
@@ -361,6 +361,7 @@ def fit():
         subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
         grid_dimension_arcsec=sensitivity_mask.geometry.shape_native_scaled[0] / 2.0,
         number_of_steps=sensitivity_mask.shape[0],
+        batch_range=(2, 5),
         sensitivity_mask=sensitivity_mask,
     )
 

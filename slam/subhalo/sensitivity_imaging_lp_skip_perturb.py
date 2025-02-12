@@ -495,6 +495,7 @@ def run(
     adapt_images: Optional[al.AdaptImages] = None,
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
+    batch_range: Tuple[int, int] = None,
     sensitivity_mask: Optional[Union[al.Mask2D, List]] = None,
 ):
     """
@@ -708,6 +709,7 @@ def run(
         perturb_model_prior_func=perturb_model_prior_func,
         visualizer_cls=subhalo_util.Visualizer(mass_result=mass_result, mask=mask),
         number_of_steps=number_of_steps,
+        batch_range=batch_range,
         mask=sensitivity_mask,
         number_of_cores=1,
     )
