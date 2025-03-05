@@ -50,16 +50,22 @@ def fit():
     import slam
 
     """
-    __Dataset__ 
+    __Search Settings__
+    """
+    settings_search = af.SettingsSearch(
+        path_prefix=path.join("model_graph"),
+        number_of_cores=1,
+        session=None,
+    )
 
-    Load, plot and mask the `Imaging` data.
+    """
+    __Dataset__ 
     """
     dataset_waveband_list = ["g", "r"]
     pixel_scale_list = [0.12, 0.08]
 
     dataset_name = "lens_sersic"
     dataset_main_path = path.join("dataset", "multi", dataset_name)
-    dataset_path = path.join(dataset_main_path, dataset_name)
 
     dataset_list = []
 
@@ -94,12 +100,9 @@ def fit():
 
         dataset_list.append(dataset)
 
-    settings_search = af.SettingsSearch(
-        path_prefix=path.join("slam", "base"),
-        number_of_cores=1,
-        session=None,
-    )
-
+    """
+    __Model 1__
+    """
     redshift_lens = 0.5
     redshift_source = 1.0
 
@@ -171,7 +174,7 @@ def fit():
     lens_point = None
     mass: af.Model = af.Model(al.mp.Isothermal)
     shear: af.Model(al.mp.ExternalShear) = af.Model(al.mp.ExternalShear)
-    source_bulge = af.Model(al.lp.Sersic)
+    source_bulge = source_bulge
     source_disk = None
     extra_galaxies = None
     dataset_model= af.Model(al.DatasetModel)
@@ -213,7 +216,6 @@ def fit():
     )
 
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
-
 
     """
     __Analysis Graphical Model__
