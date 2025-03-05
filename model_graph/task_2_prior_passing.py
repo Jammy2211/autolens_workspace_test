@@ -211,10 +211,10 @@ def fit():
 
 #    analysis = analysis.with_free_parameters(model.dataset_model.grid_offset)
 
-    search = af.Nautilus(
+    search = af.DynestyStatic(
         name="task_2_analysis_summing_search_1",
         **settings_search.search_dict,
-        n_live=200,
+        nlive=200,
     )
 
     source_lp_result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
@@ -260,10 +260,10 @@ def fit():
     #     model.galaxies.source.pixelization.regularization,
     # )
 
-    search = af.Nautilus(
+    search = af.DynestyStatic(
         name="task_2_analysis_summing_search_2",
         **settings_search.search_dict,
-        n_live=150,
+        nlive=150,
     )
 
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
@@ -328,10 +328,10 @@ def fit():
 
     factor_graph = af.FactorGraphModel(*analysis_factor_list)
 
-    search = af.Nautilus(
+    search = af.DynestyStatic(
         name="task_2_analysis_graph_search_1",
         **settings_search.search_dict,
-        n_live=200,
+        nlive=200,
     )
 
     source_lp_result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
@@ -381,10 +381,10 @@ def fit():
 
     factor_graph = af.FactorGraphModel(*analysis_factor_list)
 
-    search = af.Nautilus(
+    search = af.DynestyStatic(
         name="task_2_analysis_graph_search_2",
         **settings_search.search_dict,
-        n_live=150,
+        nlive=150,
     )
 
     result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)

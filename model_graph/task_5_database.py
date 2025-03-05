@@ -211,10 +211,10 @@ def fit():
 
 #    analysis = analysis.with_free_parameters(model.dataset_model.grid_offset)
 
-    search = af.Nautilus(
-        name="task_4_analysis_summing_database",
+    search = af.DynestyStatic(
+        name="task_5_analysis_summing_database",
         **settings_search.search_dict,
-        n_live=200,
+        nlive=200,
     )
 
     source_lp_result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
@@ -227,7 +227,7 @@ def fit():
 
     from autofit.database.aggregator import Aggregator
 
-    database_file = "task_4_database.sqlite"
+    database_file = "task_5_database.sqlite"
 
     try:
         os.remove(path.join("output", database_file))
@@ -236,7 +236,7 @@ def fit():
 
     agg = Aggregator.from_database(database_file)
     agg.add_directory(
-        directory=path.join("output", "model_graph", "task_4_analysis_summing_database")
+        directory=path.join("output", "model_graph", "task_5_analysis_summing_database")
     )
 
     assert len(agg) > 0
@@ -413,10 +413,10 @@ def fit():
 
     factor_graph = af.FactorGraphModel(*analysis_factor_list)
 
-    search = af.Nautilus(
-        name="task_4_analysis_graph_database",
+    search = af.DynestyStatic(
+        name="task_5_analysis_graph_database",
         **settings_search.search_dict,
-        n_live=200,
+        nlive=200,
     )
 
     source_lp_result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
@@ -429,7 +429,7 @@ def fit():
 
     from autofit.database.aggregator import Aggregator
 
-    database_file = "task_4_database_graph.sqlite"
+    database_file = "task_5_database_graph.sqlite"
 
     try:
         os.remove(path.join("output", database_file))
@@ -438,7 +438,7 @@ def fit():
 
     agg = Aggregator.from_database(database_file)
     agg.add_directory(
-        directory=path.join("output", "model_graph", "task_4_analysis_graph_database")
+        directory=path.join("output", "model_graph", "task_5_analysis_graph_database")
     )
 
     assert len(agg) > 0

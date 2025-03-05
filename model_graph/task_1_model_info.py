@@ -209,10 +209,10 @@ def fit():
 
     analysis = analysis.with_free_parameters(model.dataset_model.grid_offset)
 
-    search = af.Nautilus(
+    search = af.DynestyStatic(
         name="task_1_analysis_summing_example",
         **settings_search.search_dict,
-        n_live=200,
+        nlive=200,
     )
 
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
@@ -240,10 +240,10 @@ def fit():
 
     factor_graph = af.FactorGraphModel(*analysis_factor_list)
 
-    search = af.Nautilus(
+    search = af.DynestyStatic(
         name="task_1_analysis_graph_example",
         **settings_search.search_dict,
-        n_live=200,
+        nlive=200,
     )
 
     result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)

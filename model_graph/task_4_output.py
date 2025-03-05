@@ -181,8 +181,6 @@ def fit():
 
     """
     __Analysis Summing__
-
-    With Analysis Summing, I can set up a model via prior passing as follows
     """
     analysis_list = [al.AnalysisImaging(dataset=dataset) for dataset in dataset_list]
     analysis = sum(analysis_list)
@@ -206,76 +204,35 @@ def fit():
             ),
         ),
         extra_galaxies=extra_galaxies,
-    #    dataset_model=dataset_model,
+        dataset_model=dataset_model,
     )
 
-#    analysis = analysis.with_free_parameters(model.dataset_model.grid_offset)
+    analysis = analysis.with_free_parameters(model.dataset_model.grid_offset)
 
     search = af.DynestyStatic(
-        name="task_2_analysis_summing_search_1",
+        name="task_4_analysis_summing_output",
         **settings_search.search_dict,
         nlive=200,
     )
 
-    source_lp_result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
-
-    positions_likelihood = source_lp_result[0].positions_likelihood_from(
-        factor=3.0, minimum_threshold=0.2
-    )
-
-    """
-    __Preamble__
-    """
-    lens_bulge = lens_bulge
-    lens_disk = af.Model(al.lp.Exponential)
-    lens_point = None
-    mass: af.Model = af.Model(al.mp.Isothermal)
-    shear: af.Model(al.mp.ExternalShear) = af.Model(al.mp.ExternalShear)
-    source_bulge = source_bulge
-    source_disk = None
-    extra_galaxies = None
-    dataset_model= af.Model(al.DatasetModel)
+    result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
 
     """
     __Analysis Graphical Model__
     """
-    analysis_list = [al.AnalysisImaging(dataset=dataset) for dataset in dataset_list]
-
-    model = af.Collection(
-        galaxies=af.Collection(
-            lens=af.Model(
-                al.Galaxy,
-                redshift=redshift_lens,
-                bulge=lens_bulge,
-                disk=lens_disk,
-                point=lens_point,
-                mass=mass,
-                shear=shear,
-            ),
-            source=af.Model(
-                al.Galaxy,
-                redshift=redshift_source,
-                bulge=source_bulge,
-                disk=source_disk,
-            ),
-        ),
-        extra_galaxies=extra_galaxies,
-    #    dataset_model=dataset_model,
-    )
-
     analysis_factor_list = []
 
     for i, analysis in enumerate(analysis_list):
 
         analysis_model = model.copy()
 
-        # if i > 0:
-        #     analysis_model.dataset_model.grid_offset.grid_offset_0 = af.UniformPrior(
-        #         lower_limit=-1.0, upper_limit=1.0
-        #     )
-        #     analysis_model.dataset_model.grid_offset.grid_offset_1 = af.UniformPrior(
-        #         lower_limit=-1.0, upper_limit=1.0
-        #     )
+        if i > 0:
+            analysis_model.dataset_model.grid_offset.grid_offset_0 = af.UniformPrior(
+                lower_limit=-1.0, upper_limit=1.0
+            )
+            analysis_model.dataset_model.grid_offset.grid_offset_1 = af.UniformPrior(
+                lower_limit=-1.0, upper_limit=1.0
+            )
 
         analysis_factor = af.AnalysisFactor(prior_model=model, analysis=analysis)
 
@@ -284,16 +241,13 @@ def fit():
     factor_graph = af.FactorGraphModel(*analysis_factor_list)
 
     search = af.DynestyStatic(
-        name="task_2_analysis_graph_search_1",
+        name="task_4_analysis_graph_output",
         **settings_search.search_dict,
         nlive=200,
     )
 
-    source_lp_result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
+    result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
 
-    positions_likelihood = source_lp_result[0].positions_likelihood_from(
-        factor=3.0, minimum_threshold=0.2
-    )
 
 
 if __name__ == "__main__":
