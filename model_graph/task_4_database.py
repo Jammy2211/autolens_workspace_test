@@ -320,14 +320,14 @@ def fit():
 
     grid = al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.1)
 
-    for tracer_list in tracer_gen:
-        # Only one `Analysis` so take first and only tracer.
-        tracer = tracer_list[0]
-
-        tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
-        tracer_plotter.figures_2d(convergence=True, potential=True)
-
-        print("Tracer Checked")
+    # for tracer_list in tracer_gen:
+    #     # Only one `Analysis` so take first and only tracer.
+    #     tracer = tracer_list[0]
+    #
+    #     tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
+    #     tracer_plotter.figures_2d(convergence=True, potential=True)
+    #
+    #     print("Tracer Checked")
 
     imaging_agg = al.agg.ImagingAgg(aggregator=agg)
     imaging_gen = imaging_agg.dataset_gen_from()
@@ -340,21 +340,20 @@ def fit():
 
         print("Imaging Checked")
 
-    fit_agg = al.agg.FitImagingAgg(
-        aggregator=agg,
-        settings_inversion=al.SettingsInversion(use_border_relocator=False),
-    )
-    fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
+    # fit_agg = al.agg.FitImagingAgg(
+    #     aggregator=agg,
+    #     settings_inversion=al.SettingsInversion(use_border_relocator=False),
+    # )
+    # fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
+    #
+    # for fit_list in fit_imaging_gen:
+    #     fit = fit_list[0]
+    #
+    #     fit_plotter = aplt.FitImagingPlotter(fit=fit)
+    #     fit_plotter.subplot_fit()
+    #
+    #     print("FitImaging Checked")
 
-    for fit_list in fit_imaging_gen:
-        fit = fit_list[0]
-
-        fit_plotter = aplt.FitImagingPlotter(fit=fit)
-        fit_plotter.subplot_fit()
-
-        print("FitImaging Checked")
-
-    aaaaa
 
     """
     __Preamble__
@@ -415,63 +414,147 @@ def fit():
     factor_graph = af.FactorGraphModel(*analysis_factor_list)
 
     search = af.Nautilus(
-        name="task_2_analysis_graph_search_1",
+        name="task_4_analysis_graph_database",
         **settings_search.search_dict,
         n_live=200,
     )
 
     source_lp_result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
 
-    mass = al.util.chaining.mass_from(
-        mass=source_lp_result.model.galaxies.lens.mass,
-        mass_result=source_lp_result.model.galaxies.lens.mass,
-        unfix_mass_centre=True,
-    )
-    shear = source_lp_result.model.galaxies.lens.shear
 
-    model = af.Collection(
-        galaxies=af.Collection(
-            lens=af.Model(
-                al.Galaxy,
-                redshift=source_lp_result.instance.galaxies.lens.redshift,
-                bulge=source_lp_result.instance.galaxies.lens.bulge,
-                disk=source_lp_result.instance.galaxies.lens.disk,
-                point=source_lp_result.instance.galaxies.lens.point,
-                mass=mass,
-                shear=shear
-            ),
-            source=af.Model(
-                al.Galaxy,
-                redshift=source_lp_result.instance.galaxies.source.redshift,
-                pixelization=af.Model(
-                    al.Pixelization,
-                    image_mesh=image_mesh,
-                    mesh=af.Model(al.mesh.Delaunay),
-                    regularization=af.Model(al.reg.ConstantSplit),
-                ),
-            ),
-        ),
-        extra_galaxies=extra_galaxies,
-    #    dataset_model=dataset_model,
+
+    """
+    __Database Stuff__
+    """
+
+    from autofit.database.aggregator import Aggregator
+
+    database_file = "task_4_database_graph.sqlite"
+
+    try:
+        os.remove(path.join("output", database_file))
+    except FileNotFoundError:
+        pass
+
+    agg = Aggregator.from_database(database_file)
+    agg.add_directory(
+        directory=path.join("output", "model_graph", "task_4_analysis_graph_database")
     )
 
-    analysis_factor_list = []
+    assert len(agg) > 0
 
-    for analysis in analysis_list:
+    """
+    __Samples + Results__
 
-        analysis_factor = af.AnalysisFactor(prior_model=model, analysis=analysis)
+    Make sure database + agg can be used.
+    """
+    for samples in agg.values("samples"):
+        print(samples.log_likelihood_list[9])
 
-        analysis_factor_list.append(analysis_factor)
+    ml_vector = [
+        samps.max_log_likelihood(as_instance=False) for samps in agg.values("samples")
+    ]
+    print(ml_vector, "\n\n")
 
-    factor_graph = af.FactorGraphModel(*analysis_factor_list)
+    """
+    __Queries__
+    """
+    unique_tag = agg.search.unique_tag
+    agg_query = agg.query(unique_tag == "mass_sie__source_sersic__1")
+    samples_gen = agg_query.values("samples")
 
-    search = af.Nautilus(
-        name="task_2_analysis_graph_search_2",
-        **settings_search.search_dict,
-        n_live=150,
+    unique_tag = agg.search.unique_tag
+    agg_query = agg.query(unique_tag == "incorrect_name")
+    samples_gen = agg_query.values("samples")
+
+    name = agg.search.name
+    agg_query = agg.query(name == "database_example")
+    print("Total Queried Results via search name = ", len(agg_query), "\n\n")
+
+    lens = agg.model.galaxies.lens
+    agg_query = agg.query(lens.mass == al.mp.Isothermal)
+    print("Total Samples Objects via `Isothermal` model query = ", len(agg_query), "\n")
+
+    source = agg.model.galaxies.source
+    agg_query = agg.query(source.disk == None)
+    print("Total Samples Objects via `Isothermal` model query = ", len(agg_query), "\n")
+
+    mass = agg.model.galaxies.lens.mass
+    agg_query = agg.query((mass == al.mp.Isothermal) & (mass.einstein_radius > 1.0))
+    print(
+        "Total Samples Objects In Query `Isothermal and einstein_radius > 3.0` = ",
+        len(agg_query),
+        "\n",
     )
 
-    result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
+    """
+    __Files__
+
+    Check that all other files stored in database (e.g. model, search) can be loaded and used.
+    """
+
+    for model in agg.values("model"):
+        print(model.info)
+
+    for search in agg.values("search"):
+        print(search)
+
+    for samples_summary in agg.values("samples_summary"):
+        instance = samples_summary.max_log_likelihood()
+
+    # for info in agg.values("info"):
+    #     print(info["hi"])
+
+    # for data in agg.values("dataset.data"):
+    #     print(data)
+    #
+    # for noise_map in agg.values("dataset.noise_map"):
+    #     print(noise_map)
+
+    # for covariance in agg.values("covariance"):
+    #     print(covariance)
+
+    """
+    __Aggregator Module__
+    """
+    tracer_agg = al.agg.TracerAgg(aggregator=agg)
+    tracer_gen = tracer_agg.max_log_likelihood_gen_from()
+
+    grid = al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.1)
+
+    # for tracer_list in tracer_gen:
+    #     # Only one `Analysis` so take first and only tracer.
+    #     tracer = tracer_list[0]
+    #
+    #     tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
+    #     tracer_plotter.figures_2d(convergence=True, potential=True)
+    #
+    #     print("Tracer Checked")
+
+    imaging_agg = al.agg.ImagingAgg(aggregator=agg)
+    imaging_gen = imaging_agg.dataset_gen_from()
+
+    for dataset_list in imaging_gen:
+        dataset = dataset_list[0]
+
+        dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
+        dataset_plotter.subplot_dataset()
+
+        print("Imaging Checked")
+
+    # fit_agg = al.agg.FitImagingAgg(
+    #     aggregator=agg,
+    #     settings_inversion=al.SettingsInversion(use_border_relocator=False),
+    # )
+    # fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
+    #
+    # for fit_list in fit_imaging_gen:
+    #     fit = fit_list[0]
+    #
+    #     fit_plotter = aplt.FitImagingPlotter(fit=fit)
+    #     fit_plotter.subplot_fit()
+    #
+    #     print("FitImaging Checked")
 
 
 
