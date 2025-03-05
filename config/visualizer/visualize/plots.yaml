@@ -31,9 +31,6 @@ fit:
   normalized_residual_map: true
   residual_map: true
   signal_to_noise_map: true
-  all_at_end_png: true                     # Plot all individual plots listed below as .png (even if False)?
-  all_at_end_fits: true                    # Plot all individual plots listed below as .fits (even if False)?
-  all_at_end_pdf: false                    # Plot all individual plots listed below as publication-quality .pdf (even if False)?
 fit_imaging: {}
 fit_interferometer:
   amplitudes_vs_uv_distances: true
@@ -47,9 +44,6 @@ fit_interferometer:
   phases_vs_uv_distances: true
   uv_wavelengths: true
 tracer:
-  all_at_end_png: true                     # Plot all individual plots listed below as .png (even if False)?
-  all_at_end_fits: true                    # Plot all individual plots listed below as .fits (even if False)?
-  all_at_end_pdf: false                    # Plot all individual plots listed below as publication-quality .pdf (even if False)?
   convergence: true
   deflections: true
   image: true
@@ -79,9 +73,6 @@ fit_quantity:
   model_image: true
   noise_map: true
   residual_map: true
-  all_at_end_png: true                     # Plot all individual plots listed below as .png (even if False)?
-  all_at_end_fits: true                    # Plot all individual plots listed below as .fits (even if False)?
-  all_at_end_pdf: false                    # Plot all individual plots listed below as publication-quality .pdf (even if False)?
 adapt:
   images_of_planes: true
   model_image: true
@@ -96,6 +87,3 @@ plane:
   magnification: true
   potential: true
   source_plane_image: true
-  all_at_end_png: true                     # Plot all individual plots listed below as .png (even if False)?
-  all_at_end_fits: true                    # Plot all individual plots listed below as .fits (even if False)?
-  all_at_end_pdf: false                    # Plot all individual plots listed below as publication-quality .pdf (even if False)?

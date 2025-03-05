@@ -83,8 +83,6 @@ class SimulateImaging:
         """
         try:
 
-            print(simulate_path)
-
             dataset = al.Imaging.from_fits(
                 data_path=f"{simulate_path}/data.fits",
                 psf_path=f"{simulate_path}/psf.fits",
@@ -136,7 +134,7 @@ class SimulateImaging:
             exposure_time=300.0,
             psf=self.psf,
             background_sky_level=0.1,
-            add_poisson_noise_to_data=True,
+            add_poisson_noise_to_data=False,
             noise_seed=1,
         )
 

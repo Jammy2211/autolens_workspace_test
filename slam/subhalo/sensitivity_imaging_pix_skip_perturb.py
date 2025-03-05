@@ -753,6 +753,12 @@ def run(
         unique_tag=settings_search.unique_tag,
     )
 
+    subhalo_util.visualize_sensitivity_mask(
+        mass_result=mass_result,
+        sensitivity_mask=sensitivity_mask,
+        paths=paths
+    )
+
     simulate_cls = SimulateImagingPixelized(
         mask=mask, psf=psf, inversion=mass_result.max_log_likelihood_fit.inversion
     )

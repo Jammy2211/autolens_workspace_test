@@ -1,16 +1,16 @@
 def fit():
     """
-    SLaM (Source, Light and Mass): Source Light Pixelized + Light Profile + Mass Total + Subhalo NFW
+    slam_graph (Source, Light and Mass): Source Light Pixelized + Light Profile + Mass Total + Subhalo NFW
     ================================================================================================
 
-    SLaM pipelines break the analysis down into multiple pipelines which focus on modeling a specific aspect of the strong
+    slam_graph pipelines break the analysis down into multiple pipelines which focus on modeling a specific aspect of the strong
     lens, first the Source, then the (lens) Light and finally the Mass. Each of these pipelines has it own inputs which
     which customize the model and analysis in that pipeline.
 
     The models fitted in earlier pipelines determine the model used in later pipelines. For example, if the SOURCE PIPELINE
     uses a parametric `Sersic` profile for the bulge, this will be used in the subsequent MASS PIPELINE.
 
-    Using a SOURCE LP PIPELINE, LIGHT LP PIPELINE, MASS PIPELINE and SUBHALO PIPELINE this SLaM script
+    Using a SOURCE LP PIPELINE, LIGHT LP PIPELINE, MASS PIPELINE and SUBHALO PIPELINE this slam_graph script
     fits `Imaging` of a strong lens system, where in the final model:
 
      - The lens galaxy's light is a bulge+disk `Sersic` and `Exponential`.
@@ -18,7 +18,7 @@ def fit():
      - A dark matter subhalo near The lens galaxy mass is included as a`NFWMCRLudlowSph`.
      - The source galaxy is an `Inversion`.
 
-    This uses the SLaM pipelines:
+    This uses the slam_graph pipelines:
 
      `source_lp`
      `source_pix`
@@ -42,12 +42,12 @@ def fit():
 
     from autoconf import conf
 
-    conf.instance.push(new_path=path.join(cwd, "config", "slam"))
+    conf.instance.push(new_path=path.join(cwd, "config", "slam_graph"))
 
     import autofit as af
     import autolens as al
     import autolens.plot as aplt
-    import slam
+    import slam_graph
 
     """
     __Dataset__ 
@@ -180,7 +180,7 @@ def fit():
         profile_list=bulge_gaussian_list,
     )
 
-    source_lp_result = slam.source_lp.run(
+    source_lp_result = slam_graph.source_lp.run(
         settings_search=settings_search,
         analysis=analysis,
         lens_bulge=lens_bulge,
@@ -206,7 +206,7 @@ def fit():
         ),
     )
 
-    source_pix_result_1 = slam.source_pix.run_1(
+    source_pix_result_1 = slam_graph.source_pix.run_1(
         settings_search=settings_search,
         analysis=analysis,
         source_lp_result=source_lp_result,
@@ -229,7 +229,7 @@ def fit():
         ),
     )
 
-    source_pix_result_2 = slam.source_pix.run_2(
+    source_pix_result_2 = slam_graph.source_pix.run_2(
         settings_search=settings_search,
         analysis=analysis,
         source_lp_result=source_lp_result,
@@ -276,7 +276,7 @@ def fit():
         profile_list=bulge_gaussian_list,
     )
 
-    light_result = slam.light_lp.run(
+    light_result = slam_graph.light_lp.run(
         settings_search=settings_search,
         analysis=analysis,
         source_result_for_lens=source_pix_result_1,
@@ -298,7 +298,7 @@ def fit():
         ),
     )
 
-    mass_result = slam.mass_total.run(
+    mass_result = slam_graph.mass_total.run(
         settings_search=settings_search,
         analysis=analysis,
         source_result_for_lens=source_pix_result_1,
@@ -399,7 +399,7 @@ def fit():
         __Settings AutoFit__
         """
         settings_search = af.SettingsSearch(
-            path_prefix=path.join("slam", "multi", "independent"),
+            path_prefix=path.join("slam_graph", "multi", "independent"),
             unique_tag=f"{dataset_name}_data_{dataset_waveband}",
             info=None,
         )
@@ -451,7 +451,7 @@ def fit():
             profile_list=bulge_gaussian_list,
         )
 
-        source_lp_result = slam.source_lp.run(
+        source_lp_result = slam_graph.source_lp.run(
             settings_search=settings_search,
             analysis=analysis,
             lens_bulge=light_result.instance.galaxies.lens.bulge,
@@ -490,7 +490,7 @@ def fit():
             source_lp_result.instance.dataset_model.grid_offset[1]
         )
 
-        source_pix_result_1 = slam.source_pix.run_1(
+        source_pix_result_1 = slam_graph.source_pix.run_1(
             settings_search=settings_search,
             analysis=analysis,
             source_lp_result=source_lp_result,
@@ -521,7 +521,7 @@ def fit():
             source_lp_result.instance.dataset_model.grid_offset[1]
         )
 
-        multi_result = slam.source_pix.run_2(
+        multi_result = slam_graph.source_pix.run_2(
             settings_search=settings_search,
             analysis=analysis,
             source_lp_result=source_lp_result,

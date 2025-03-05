@@ -5,7 +5,7 @@ import autolens.plot as aplt
 from . import subhalo_util
 
 import os
-from typing import Optional, List, Tuple, Union
+from typing import List, Optional, Union, Tuple
 
 """
 __Simulate Function Class__
@@ -25,20 +25,39 @@ In this example, this `instance.perturb` corresponds to two different subhalos w
 """
 
 
-class SimulateImaging:
-    def __init__(self, mask, psf):
+class SimulateImagingPixelized:
+    def __init__(
+        self,
+        mask,
+        psf,
+        inversion,
+        interpolated_pixelized_shape: Union[tuple, tuple] = (1001, 1001),
+        image_plane_subgrid_size=8,
+    ):
         """
-        Class used to simulate the strong lens imaging used for sensitivity mapping.
+        Class used to simulate the strong lens dataset used for sensitivity mapping.
 
         Parameters
         ----------
         mask
-            The mask applied to the real image data, which is applied to every simulated imaging.
+            The mask applied to the real image data, which is applied to every simulated dataset.
         psf
-           The PSF of the real image data, which is applied to every simulated imaging and used for each fit.
+           The PSF of the real image data, which is applied to every simulated dataset and used for each fit.
+        inversion
+            The `Inversion` used to reconstruct the source of the real image, included the pixelized source
+            reconstruction on a mesh (e.g. Delaunay / Voronoi).
+        interpolated_pixelized_shape
+            The pixelized source reconstruction is interpolated from an irregular mesh to a rectangular uniform array
+            and grid of this shape.
+        image_plane_subgrid_size
+            The size of the subgrid used to create the image-plane grid, whereby multiple image pixels
+            are traced to the source-plane image and evaluated to compute the flux of the simulated image.
         """
         self.mask = mask
         self.psf = psf
+        self.inversion = inversion
+        self.interpolated_pixelized_shape = interpolated_pixelized_shape
+        self.image_plane_subgrid_size = image_plane_subgrid_size
 
     def __call__(self, instance: af.ModelInstance, simulate_path: str):
         """
@@ -46,6 +65,9 @@ class SimulateImaging:
         by the sensitivity mapper.
 
         The simulation procedure is as follows:
+
+        1) Extract the pixelized reconstructed source of a previous fit, which is likely on an irregular mesh
+           (e.g. Delaunay / Voronoi), and interpolate the source emission onto a rectangular uniform array and grid.
 
         1) Use the input galaxies of the sensitivity `instance` to set up a tracer, which generates the image-plane
            image of the strong lens system.
@@ -75,16 +97,13 @@ class SimulateImaging:
 
         """
         __Resume Fit__
-        
+
         If sensitivity mapping already began on this grid cell, the dataset will have been simulated already and we
         do not want to resimulate it and change its noise properties. 
-        
+
         We therefore load it from the `simulate_path` instead.
         """
         try:
-
-            print(simulate_path)
-
             dataset = al.Imaging.from_fits(
                 data_path=f"{simulate_path}/data.fits",
                 psf_path=f"{simulate_path}/psf.fits",
@@ -99,28 +118,83 @@ class SimulateImaging:
             pass
 
         """
+        __Source Galaxy Image__
+
+        We load the source galaxy image from the pixelized inversion of a previous fit, which was performed on an irregular 
+        Delaunay or Voronoi mesh.  
+        
+        Since irregular meshes cannot be directly used to simulate lensed images, we interpolate the source onto a uniform 
+        grid with shape `interpolated_pixelized_shape`. This grid should have a high resolution (e.g., 1000 × 1000) to preserve 
+        all resolved structure from the original Delaunay or Voronoi mesh.  
+        """
+
+        mapper = self.inversion.cls_list_from(cls=al.AbstractMapper)[0]
+
+        mapper_valued = al.MapperValued(
+            mapper=mapper,
+            values=self.inversion.reconstruction_dict[mapper],
+        )
+
+        source_image = mapper_valued.interpolated_array_from(
+            shape_native=self.interpolated_pixelized_shape,
+        )
+
+        """
+        __Create Grids__
+
+        To create the lensed image, we ray-trace image pixels to the source plane and interpolate them onto the source 
+        galaxy image.  
+
+        This requires an image-plane grid of (y, x) coordinates. In this example, we use a grid with the same 
+        resolution as the `Imaging` dataset, but without applying a mask.  
+
+        To ensure accurate ray-tracing, we apply an 8×8 oversampling scheme. This means that for each pixel in the 
+        image-plane grid, an 8×8 sub-pixel grid is ray-traced. This approach fully resolves how light is distributed 
+        across each simulated image pixel, given the source pixelization.
+        """
+        grid = al.Grid2D.uniform(
+            shape_native=self.mask.shape_native,
+            pixel_scales=self.mask.pixel_scales,
+            over_sample_size=self.image_plane_subgrid_size,
+        )
+
+        """
         __Ray Tracing__
 
-        Set up the `Tracer` which is used to simulate the strong lens imaging, which may include the subhalo in
-        addition to the lens and source galaxy.
+        We create a tracer to generate the lensed grid onto which we overlay the interpolated source galaxy image, 
+        producing the lensed source galaxy image.  
+        
+        The source-plane requires a source galaxy with a defined `redshift` for the tracer to function. Since the source’s 
+        emission is entirely determined by the source galaxy image, this galaxy has no light profiles.
         """
         tracer = al.Tracer(
             galaxies=[
                 instance.galaxies.lens,
                 instance.perturb,
-                instance.galaxies.source,
+                al.Galaxy(redshift=instance.galaxies.source.redshift),
             ]
         )
 
         """
         __Simulate__
 
-        Set up the grid, PSF and simulator settings used to simulate imaging of the strong lens. These should be 
-        tuned to match the S/N and noise properties of the observed data you are performing sensitivity mapping on.
+        Using the tracer, we generate the lensed source galaxy image on the image-plane grid. This process incorporates 
+        the `source_image`, preserving the irregular and asymmetric morphological features captured by the source 
+        reconstruction.  
+        
+        Next, we configure the grid, PSF, and simulator settings to match the signal-to-noise ratio (S/N) and noise 
+        properties of the observed data used for sensitivity mapping.  
+        
+        The `SimulatorImaging` takes the generated strong lens image and convolves it with the PSF before adding noise. 
+        To prevent edge effects, the image is padded before convolution and then trimmed to restore its 
+        original `shape_native`.
         """
-        grid = al.Grid2D.uniform(
-            shape_native=self.mask.shape_native,
-            pixel_scales=self.mask.pixel_scales,
+        simulator = al.SimulatorImaging(
+            exposure_time=300.0,
+            psf=self.psf,
+            background_sky_level=0.1,
+            add_poisson_noise_to_data=False,
+            noise_seed=1,
         )
 
         over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
@@ -132,15 +206,9 @@ class SimulateImaging:
 
         grid = grid.apply_over_sampling(over_sample_size=over_sample_size)
 
-        simulator = al.SimulatorImaging(
-            exposure_time=300.0,
-            psf=self.psf,
-            background_sky_level=0.1,
-            add_poisson_noise_to_data=True,
-            noise_seed=1,
+        dataset = simulator.via_source_image_from(
+            tracer=tracer, grid=grid, source_image=source_image
         )
-
-        dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
 
         """
         __Masking__
@@ -158,16 +226,41 @@ class SimulateImaging:
             centre_list=[(0.0, 0.0)],
         )
 
-        dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
+        dataset = dataset.apply_over_sampling(
+            over_sample_size_lp=over_sample_size,
+            over_sample_size_pixelization=4
+        )
 
         """
         Outputs info about the `Tracer` to the fit, so we know exactly how we simulated the image.
         """
-        self.output_info(simulate_path=simulate_path, dataset=dataset, tracer=tracer)
+        tracer_no_perturb = al.Tracer(
+            galaxies=[
+                instance.galaxies.lens,
+                al.Galaxy(redshift=instance.galaxies.source.redshift),
+            ]
+        )
+
+        self.output_info(
+            simulate_path=simulate_path,
+            grid=grid,
+            dataset=dataset,
+            source_image=source_image,
+            tracer=tracer,
+            tracer_no_perturb=tracer_no_perturb,
+        )
 
         return dataset
 
-    def output_info(self, simulate_path: str, dataset: al.Imaging, tracer: al.Imaging):
+    def output_info(
+        self,
+        simulate_path: str,
+        grid: al.Grid2D,
+        dataset: al.Imaging,
+        source_image: al.Array2D,
+        tracer: al.Tracer,
+        tracer_no_perturb: al.Tracer,
+    ):
         """
         Output information about the data simulated for this iteration of sensitivity mapping.
 
@@ -176,7 +269,7 @@ class SimulateImaging:
         - A subplot of the simulated imaging dataset.
         - A subplot of the tracer used to simulate this imaging dataset.
         - A .json file containing the tracer galaxies.
-        - Output the simulated dataset to .fits files which are used to load the data if a run is resumed.
+                - Output the simulated dataset to .fits files which are used to load the data if a run is resumed.
 
         Parameters
         ----------
@@ -184,9 +277,9 @@ class SimulateImaging:
             The path where the simulated dataset is output, contained within each sub-folder of the sensitivity
             mapping.
         dataset
-            The simulated imaging dataset which is visualized.
+            The simulated dataset dataset which is visualized.
         tracer
-            The tracer used to simulate the imaging dataset, which is visualized and output to a .json file.
+            The tracer used to simulate the dataset dataset, which is visualized and output to a .json file.
         """
 
         mat_plot = aplt.MatPlot2D(output=aplt.Output(path=simulate_path, format="png"))
@@ -194,15 +287,19 @@ class SimulateImaging:
         dataset_plotter = aplt.ImagingPlotter(dataset=dataset, mat_plot_2d=mat_plot)
         dataset_plotter.subplot_dataset()
 
-        tracer_plotter = aplt.TracerPlotter(
-            tracer=tracer, grid=dataset.grid, mat_plot_2d=mat_plot
-        )
-        tracer_plotter.subplot_lensed_images()
-
         al.output_to_json(
             obj=tracer,
             file_path=os.path.join(simulate_path, "tracer.json"),
         )
+
+        sensitivity_plotter = aplt.SubhaloSensitivityPlotter(
+            source_image=source_image,
+            tracer_perturb=tracer,
+            tracer_no_perturb=tracer_no_perturb,
+            mask=self.mask,
+            mat_plot_2d=mat_plot,
+        )
+        sensitivity_plotter.subplot_tracer_images()
 
         dataset.output_to_fits(
             data_path=os.path.join(simulate_path, "data.fits"),
@@ -256,8 +353,8 @@ class BaseFit:
         Parameters
         ----------
         adapt_images
-            Contains the adapt-images which are used to make a pixelization's mesh and regularization adapt to the
-            reconstructed galaxy's morphology.
+            The result of the previous search containing adapt images used to adapt certain pixelized source meshs's
+            and regularizations to the unlensed source morphology.
         number_of_cores
             The number of cores used to perform the non-linear search. If 1, each model-fit on the grid is performed
             in serial, if > 1 fits are distributed in parallel using the Python multiprocessing module.
@@ -283,10 +380,6 @@ class BaseFit:
             The model instance which is fitted to the dataset, which does not include the perturbed feature.
         paths
             The `Paths` instance which contains the path to the folder where the results of the fit are written to.
-        instance
-            The simulation instance, which includes the perturbed feature that is used to simulate the dataset.
-            This is often not used, but may be useful for certain sensitivity mapping tasks, for example using
-            true values of the simulated instance to set up aspects of the model-fit (e.g. the priors).
         """
 
         search = af.Nautilus(
@@ -361,10 +454,6 @@ class PerturbFit:
             The model instance which is fitted to the dataset, which includes the perturbed feature.
         paths
             The `Paths` instance which contains the path to the folder where the results of the fit are written to.
-        instance
-            The simulation instance, which includes the perturbed feature that is used to simulate the dataset.
-            This is often not used, but may be useful for certain sensitivity mapping tasks, for example using
-            true values of the simulated instance to set up aspects of the model-fit (e.g. the priors).
         """
 
         search = af.Nautilus(
@@ -436,38 +525,6 @@ def base_model_narrow_priors_from(base_model, result, stretch: float = 1.0):
             b=0.05 * stretch
         ).galaxies.lens.shear.gamma_2
 
-    if hasattr(base_model.galaxies.source, "bulge"):
-        base_model.galaxies.source.bulge.centre.centre_0 = result.model_bounded(
-            b=0.1 * stretch
-        ).galaxies.source.bulge.centre.centre_0
-        base_model.galaxies.source.bulge.centre.centre_1 = result.model_bounded(
-            b=0.1 * stretch
-        ).galaxies.source.bulge.centre.centre_1
-        base_model.galaxies.source.bulge.ell_comps.ell_comps_0 = result.model_bounded(
-            b=0.1 * stretch
-        ).galaxies.source.bulge.ell_comps.ell_comps_0
-        base_model.galaxies.source.bulge.ell_comps.ell_comps_1 = result.model_bounded(
-            b=0.1 * stretch
-        ).galaxies.source.bulge.ell_comps.ell_comps_1
-        base_model.galaxies.source.bulge.effective_radius = result.model_bounded(
-            b=0.2 * stretch
-        ).galaxies.source.bulge.effective_radius
-        base_model.galaxies.source.bulge.sersic_index = result.model_bounded(
-            b=0.2 * stretch
-        ).galaxies.source.bulge.sersic_index
-
-        if base_model.galaxies.source.bulge.effective_radius.lower_limit < 0.0:
-            base_model.galaxies.source.bulge.effective_radius = af.UniformPrior(
-                lower_limit=0.0,
-                upper_limit=base_model.galaxies.source.bulge.effective_radius.upper_limit,
-            )
-
-        if base_model.galaxies.source.bulge.sersic_index.lower_limit < 0.0:
-            base_model.galaxies.source.bulge.sersic_index = af.UniformPrior(
-                lower_limit=0.0,
-                upper_limit=base_model.galaxies.source.bulge.sersic_index.upper_limit,
-            )
-
     return base_model
 
 
@@ -477,7 +534,7 @@ def run(
     psf: al.Kernel2D,
     mass_result: af.Result,
     subhalo_mass: af.Model = af.Model(al.mp.NFWMCRLudlowSph),
-    adapt_images: Optional[al.AdaptImages] = None,
+    adapt_images: Optional[al.AdaptImageMaker] = None,
     grid_dimension_arcsec: float = 3.0,
     number_of_steps: Union[Tuple[int], int] = 5,
     batch_range: Tuple[int, int] = None,
@@ -625,9 +682,6 @@ def run(
     simulation_instance.galaxies.lens = (
         fit.model_obj_linear_light_profiles_to_light_profiles.galaxies[0]
     )
-    simulation_instance.galaxies.source = (
-        fit.model_obj_linear_light_profiles_to_light_profiles.galaxies[-1]
-    )
 
     """
     __Simulation + Fits__
@@ -674,7 +728,7 @@ def run(
     """
 
     paths = af.DirectoryPaths(
-        name=f"subhalo__sensitivity",
+        name=f"subhalo__sensitivity__pix__no_noise",
         path_prefix=settings_search.path_prefix,
         unique_tag=settings_search.unique_tag,
     )
@@ -685,12 +739,16 @@ def run(
         paths=paths
     )
 
+    simulate_cls = SimulateImagingPixelized(
+        mask=mask, psf=psf, inversion=mass_result.max_log_likelihood_fit.inversion
+    )
+
     sensitivity = af.Sensitivity(
         paths=paths,
         simulation_instance=simulation_instance,
         base_model=base_model,
         perturb_model=perturb_model,
-        simulate_cls=SimulateImaging(mask=mask, psf=psf),
+        simulate_cls=simulate_cls,
         base_fit_cls=BaseFit(
             adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
         ),
@@ -706,5 +764,9 @@ def run(
     )
 
     result = sensitivity.run()
+
+    subhalo_util.visualize_sensitivity(
+        result=result, paths=paths, mass_result=mass_result, mask=mask
+    )
 
     return result

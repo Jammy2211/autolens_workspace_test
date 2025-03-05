@@ -400,4 +400,16 @@ for fit_list in fit_imaging_gen:
 
     print("FitImagingAgg Adapt Images Checked")
 
+
+"""
+__CSV__
+
+Check that the `AggregateCSV` object can be used to output results to a `.csv` file.
+"""
+agg_csv = af.AggregateCSV(aggregator=agg)
+
+agg_csv.add_column(argument="galaxies.galaxy.bulge.effective_radius")
+agg_csv.add_column(argument="galaxies.galaxy.bulge.sersic_index")
+
+
 os.environ["PYAUTOFIT_TEST_MODE"] = "0"

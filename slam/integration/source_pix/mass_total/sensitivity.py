@@ -276,13 +276,7 @@ sensitivity_mask = subhalo_util.sensitivty_mask_brightest_from(
     number_of_pixels=5,
 )
 
-subhalo_util.visualize_sensitivity_mask(
-    mass_result=mass_result,
-    sensitivity_mask=sensitivity_mask,
-    settings_search=settings_search,
-)
-
-subhalo_result = slam.subhalo.sensitivity_imaging_pix.run(
+subhalo_result = slam.subhalo.sensitivity_imaging_pix_no_noise.run(
     settings_search=settings_search,
     mask=mask,
     psf=dataset.psf,
