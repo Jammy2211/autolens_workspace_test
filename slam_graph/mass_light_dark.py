@@ -148,10 +148,10 @@ def run(
         source_regularization_result=source_result_for_source,
     )
 
-    search = af.Nautilus(
+    search = af.DynestyStatic(
         name="mass_light_dark[1]",
         **settings_search.search_dict,
-        n_live=250,
+        nlive=250,
     )
 
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)

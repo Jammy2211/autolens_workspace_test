@@ -291,9 +291,11 @@ def fit():
 
     source_lp_result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
 
-    positions_likelihood = source_lp_result[0].positions_likelihood_from(
+    positions_likelihood = source_lp_result.positions_likelihood_from(
         factor=3.0, minimum_threshold=0.2
     )
+
+    print(positions_likelihood)
 
 
 if __name__ == "__main__":

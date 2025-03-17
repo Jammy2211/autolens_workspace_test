@@ -8,7 +8,7 @@ from typing import Union, Optional, Tuple
 
 def run(
     settings_search: af.SettingsSearch,
-    analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
+    analysis_list: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     source_result_for_lens: af.Result,
     source_result_for_source: af.Result,
     light_result: Optional[af.Result],
@@ -76,94 +76,92 @@ def run(
     This search aims to accurately estimate the lens mass model, using the improved mass model priors and source model 
     of the SOURCE PIPELINE
     """
-    mass = al.util.chaining.mass_from(
-        mass=mass,
-        mass_result=source_result_for_lens.model.galaxies.lens.mass,
-        unfix_mass_centre=True,
-    )
+    analysis_factor_list = []
 
-    if mass_centre is not None:
-        mass.centre = mass_centre
+    for i, analysis in enumerate(analysis_list):
 
-    if smbh is not None:
-        smbh.centre = mass.centre
+        mass = al.util.chaining.mass_from(
+            mass=mass,
+            mass_result=source_result_for_lens[i].model.galaxies.lens.mass,
+            unfix_mass_centre=True,
+        )
 
-    if light_result is None:
-        bulge = None
-        disk = None
-        point = None
+        if mass_centre is not None:
+            mass.centre = mass_centre
 
-    else:
-        bulge = light_result.instance.galaxies.lens.bulge
-        disk = light_result.instance.galaxies.lens.disk
-        point = light_result.instance.galaxies.lens.point
+        if smbh is not None:
+            smbh.centre = mass.centre
 
-    if not reset_shear_prior:
-        shear = source_result_for_lens.model.galaxies.lens.shear
-    else:
-        shear = al.mp.ExternalShear
+        if light_result is None:
+            bulge = None
+            disk = None
+            point = None
 
-    if multipole_1 is not None:
-        multipole_1.m = 1
-        multipole_1.centre = mass.centre
-        multipole_1.einstein_radius = mass.einstein_radius
-        multipole_1.slope = mass.slope
+        else:
+            bulge = light_result[i].instance.galaxies.lens.bulge
+            disk = light_result[i].instance.galaxies.lens.disk
+            point = light_result[i].instance.galaxies.lens.point
 
-    if multipole_3 is not None:
-        multipole_3.m = 3
-        multipole_3.centre = mass.centre
-        multipole_3.einstein_radius = mass.einstein_radius
-        multipole_3.slope = mass.slope
+        if not reset_shear_prior:
+            shear = source_result_for_lens[i].model.galaxies.lens.shear
+        else:
+            shear = al.mp.ExternalShear
 
-    if multipole_4 is not None:
-        multipole_4.m = 4
-        multipole_4.centre = mass.centre
-        multipole_4.einstein_radius = mass.einstein_radius
-        multipole_4.slope = mass.slope
+        if multipole_1 is not None:
+            multipole_1.m = 1
+            multipole_1.centre = mass.centre
+            multipole_1.einstein_radius = mass.einstein_radius
+            multipole_1.slope = mass.slope
 
-    source = al.util.chaining.source_from(
-        result=source_result_for_source,
-    )
+        if multipole_3 is not None:
+            multipole_3.m = 3
+            multipole_3.centre = mass.centre
+            multipole_3.einstein_radius = mass.einstein_radius
+            multipole_3.slope = mass.slope
 
-    model = af.Collection(
-        galaxies=af.Collection(
-            lens=af.Model(
-                al.Galaxy,
-                redshift=source_result_for_lens.instance.galaxies.lens.redshift,
-                bulge=bulge,
-                disk=disk,
-                point=point,
-                mass=mass,
-                multipole_1=multipole_1,
-                multipole_3=multipole_3,
-                multipole_4=multipole_4,
-                shear=shear,
-                smbh=smbh,
+        if multipole_4 is not None:
+            multipole_4.m = 4
+            multipole_4.centre = mass.centre
+            multipole_4.einstein_radius = mass.einstein_radius
+            multipole_4.slope = mass.slope
+
+        source = al.util.chaining.source_from(
+            result=source_result_for_source[i],
+        )
+
+        model = af.Collection(
+            galaxies=af.Collection(
+                lens=af.Model(
+                    al.Galaxy,
+                    redshift=source_result_for_lens[i].instance.galaxies.lens.redshift,
+                    bulge=bulge,
+                    disk=disk,
+                    point=point,
+                    mass=mass,
+                    multipole_1=multipole_1,
+                    multipole_3=multipole_3,
+                    multipole_4=multipole_4,
+                    shear=shear,
+                    smbh=smbh,
+                ),
+                source=source,
             ),
-            source=source,
-        ),
-        extra_galaxies=extra_galaxies,
-        dataset_model=dataset_model,
-    )
+            extra_galaxies=extra_galaxies,
+            dataset_model=dataset_model,
+        )
 
-    """
-    For single-dataset analyses, the following code does not change the model or analysis and can be ignored.
+        analysis_factor = af.AnalysisFactor(prior_model=model, analysis=analysis)
 
-    For multi-dataset analyses, the following code updates the model and analysis.
-    """
-    analysis = slam_util.analysis_multi_dataset_from(
-        analysis=analysis,
-        model=model,
-        multi_dataset_offset=True,
-        source_regularization_result=source_result_for_source,
-    )
+        analysis_factor_list.append(analysis_factor)
 
-    search = af.Nautilus(
+    factor_graph = af.FactorGraphModel(*analysis_factor_list)
+
+    search = af.DynestyStatic(
         name="mass_total[1]",
         **settings_search.search_dict,
-        n_live=150,
+        nlive=150,
     )
 
-    result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
+    result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
 
     return result

@@ -226,23 +226,18 @@ def fit():
      - Positions: We update the positions and positions threshold using the previous model-fitting result (as described 
      in `chaining/examples/parametric_to_pixelization.py`) to remove unphysical solutions from the `Inversion` model-fitting.
     """
-    # positions_likelihood = source_lp_result.positions_likelihood_from(
-    #     factor=3.0, minimum_threshold=0.2
-    # )
+    positions_likelihood = source_lp_result.positions_likelihood_from(
+        factor=3.0, minimum_threshold=0.2
+    )
 
-    # analysis_list = [
-    #     al.AnalysisImaging(
-    #         dataset=result.max_log_likelihood_fit.dataset,
-    #      #   adapt_image_maker=al.AdaptImageMaker(result=result),
-    #      #   positions_likelihood=positions_likelihood,
-    #     )
-    #     for result in source_lp_result
-    # ]
-
-#    analysis = sum(analysis_list)
-
-    print(source_lp_result.model.info)
-    fff
+    analysis_list = [
+        al.AnalysisImaging(
+            dataset=result.max_log_likelihood_fit.dataset,
+           adapt_image_maker=al.AdaptImageMaker(result=result),
+           positions_likelihood=positions_likelihood,
+        )
+        for result in source_lp_result
+    ]
 
     source_pix_result_1 = slam_graph.source_pix.run_1(
         settings_search=settings_search,
@@ -286,11 +281,9 @@ def fit():
         for result in source_pix_result_1
     ]
 
-    analysis = sum(analysis_list)
-
     source_pix_result_2 = slam_graph.source_pix.run_2(
         settings_search=settings_search,
-        analysis=analysis,
+        analysis_list=analysis_list,
         source_lp_result=source_lp_result,
         source_pix_result_1=source_pix_result_1,
         image_mesh=al.image_mesh.Hilbert,
@@ -323,8 +316,6 @@ def fit():
         for result in source_pix_result_1
     ]
 
-    analysis = sum(analysis_list)
-
     centre_0 = af.UniformPrior(lower_limit=-0.2, upper_limit=0.2)
     centre_1 = af.UniformPrior(lower_limit=-0.2, upper_limit=0.2)
 
@@ -355,7 +346,7 @@ def fit():
 
     light_result = slam_graph.light_lp.run(
         settings_search=settings_search,
-        analysis=analysis,
+        analysis_list=analysis_list,
         source_result_for_lens=source_pix_result_1,
         source_result_for_source=source_pix_result_2,
         lens_bulge=lens_bulge,
@@ -389,7 +380,7 @@ def fit():
      - Positions: We update the positions and positions threshold using the previous model-fitting result (as described 
      in `chaining/examples/parametric_to_pixelization.py`) to remove unphysical solutions from the `Inversion` model-fitting.
     """
-    positions_likelihood = source_lp_result[0].positions_likelihood_from(
+    positions_likelihood = source_pix_result_1[0].positions_likelihood_from(
         factor=3.0, minimum_threshold=0.2
     )
 
@@ -399,14 +390,12 @@ def fit():
             adapt_image_maker=al.AdaptImageMaker(result=result),
             positions_likelihood=positions_likelihood,
         )
-        for result in source_lp_result
+        for result in source_pix_result_1
     ]
-
-    analysis = sum(analysis_list)
 
     mass_result = slam_graph.mass_total.run(
         settings_search=settings_search,
-        analysis=analysis,
+        analysis_list=analysis_list,
         source_result_for_lens=source_pix_result_1,
         source_result_for_source=source_pix_result_2,
         light_result=light_result,
@@ -478,22 +467,24 @@ def fit():
      - The `number_of_cores` used for the gridsearch, where `number_of_cores > 1` performs the model-fits in paralle using
      the Python multiprocessing module.
     """
-    analysis = al.AnalysisImaging(
-        dataset=dataset,
-        adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
-    )
-
-    analysis = sum([analysis, analysis])
+    analysis_list = [
+        al.AnalysisImaging(
+            dataset=result.max_log_likelihood_fit.dataset,
+            adapt_image_maker=al.AdaptImageMaker(result=result),
+            positions_likelihood=positions_likelihood,
+        )
+        for result in source_pix_result_1
+    ]
 
     subhalo_result_1 = slam_graph.subhalo.detection.run_1_no_subhalo(
         settings_search=settings_search,
-        analysis=analysis,
+        analysis_list=analysis_list,
         mass_result=mass_result,
     )
 
     subhalo_grid_search_result_2 = slam_graph.subhalo.detection.run_2_grid_search(
         settings_search=settings_search,
-        analysis=analysis,
+        analysis_list=analysis_list,
         mass_result=mass_result,
         subhalo_result_1=subhalo_result_1,
         subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
@@ -503,7 +494,7 @@ def fit():
 
     subhalo_result_3 = slam_graph.subhalo.detection.run_3_subhalo(
         settings_search=settings_search,
-        analysis=analysis,
+        analysis_list=analysis_list,
         subhalo_result_1=subhalo_result_1,
         subhalo_grid_search_result_2=subhalo_grid_search_result_2,
         subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),

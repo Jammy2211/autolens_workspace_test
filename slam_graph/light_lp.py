@@ -8,7 +8,7 @@ from typing import Union, Optional
 
 def run(
     settings_search: af.SettingsSearch,
-    analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
+    analysis_list: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     source_result_for_lens: af.Result,
     source_result_for_source: af.Result,
     lens_bulge: Optional[af.Model] = af.Model(al.lp.Sersic),
@@ -63,45 +63,50 @@ def run(
     SOURCE PIPELINE as the mass and source models were not properly initialized.
     """
 
-    source = al.util.chaining.source_custom_model_from(
-        result=source_result_for_source, source_is_model=False
-    )
+    analysis_factor_list = []
 
-    model = af.Collection(
-        galaxies=af.Collection(
-            lens=af.Model(
-                al.Galaxy,
-                redshift=source_result_for_lens.instance.galaxies.lens.redshift,
-                bulge=lens_bulge,
-                disk=lens_disk,
-                point=lens_point,
-                mass=source_result_for_lens.instance.galaxies.lens.mass,
-                shear=source_result_for_lens.instance.galaxies.lens.shear,
+    for i, analysis in enumerate(analysis_list):
+
+        source = al.util.chaining.source_custom_model_from(
+            result=source_result_for_source[i], source_is_model=False
+        )
+
+        model = af.Collection(
+            galaxies=af.Collection(
+                lens=af.Model(
+                    al.Galaxy,
+                    redshift=source_result_for_lens[i].instance.galaxies.lens.redshift,
+                    bulge=lens_bulge,
+                    disk=lens_disk,
+                    point=lens_point,
+                    mass=source_result_for_lens[i].instance.galaxies.lens.mass,
+                    shear=source_result_for_lens[i].instance.galaxies.lens.shear,
+                ),
+                source=source,
             ),
-            source=source,
-        ),
-        extra_galaxies=extra_galaxies,
-        dataset_model=dataset_model,
-    )
+            extra_galaxies=extra_galaxies,
+            dataset_model=dataset_model,
+        )
 
-    """
-    For single-dataset analyses, the following code does not change the model or analysis and can be ignored.
+        analysis = slam_util.analysis_multi_dataset_from(
+            analysis=analysis,
+            model=model,
+            multi_dataset_offset=True,
+            source_regularization_result=source_result_for_source[i],
+        )
 
-    For multi-dataset analyses, the following code updates the model and analysis.
-    """
-    analysis = slam_util.analysis_multi_dataset_from(
-        analysis=analysis,
-        model=model,
-        multi_dataset_offset=True,
-        source_regularization_result=source_result_for_source,
-    )
+        analysis_factor = af.AnalysisFactor(prior_model=model, analysis=analysis)
 
-    search = af.Nautilus(
+        analysis_factor_list.append(analysis_factor)
+
+    factor_graph = af.FactorGraphModel(*analysis_factor_list)
+
+    search = af.DynestyStatic(
         name="light[1]",
         **settings_search.search_dict,
-        n_live=150,
+        nlive=150,
     )
 
-    result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
+    result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
 
     return result

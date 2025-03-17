@@ -336,44 +336,44 @@ def fit():
 
     source_lp_result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
 
-    mass = al.util.chaining.mass_from(
-        mass=source_lp_result.model.galaxies.lens.mass,
-        mass_result=source_lp_result.model.galaxies.lens.mass,
-        unfix_mass_centre=True,
-    )
-    shear = source_lp_result.model.galaxies.lens.shear
+    for i, analysis in enumerate(analysis_list):
 
-    image_mesh = af.Model(al.image_mesh.Overlay)
+        mass = al.util.chaining.mass_from(
+            mass=source_lp_result.model[i].galaxies.lens.mass,
+            mass_result=source_lp_result.model[i].galaxies.lens.mass,
+            unfix_mass_centre=True,
+        )
+        shear = source_lp_result.model[i].galaxies.lens.shear
 
-    model = af.Collection(
-        galaxies=af.Collection(
-            lens=af.Model(
-                al.Galaxy,
-                redshift=source_lp_result.instance.galaxies.lens.redshift,
-                bulge=source_lp_result.instance.galaxies.lens.bulge,
-                disk=source_lp_result.instance.galaxies.lens.disk,
-                point=source_lp_result.instance.galaxies.lens.point,
-                mass=mass,
-                shear=shear
-            ),
-            source=af.Model(
-                al.Galaxy,
-                redshift=source_lp_result.instance.galaxies.source.redshift,
-                pixelization=af.Model(
-                    al.Pixelization,
-                    image_mesh=image_mesh,
-                    mesh=af.Model(al.mesh.Delaunay),
-                    regularization=af.Model(al.reg.ConstantSplit),
+        image_mesh = af.Model(al.image_mesh.Overlay)
+
+        model = af.Collection(
+            galaxies=af.Collection(
+                lens=af.Model(
+                    al.Galaxy,
+                    redshift=source_lp_result.instance[i].galaxies.lens.redshift,
+                    bulge=source_lp_result.instance[i].galaxies.lens.bulge,
+                    disk=source_lp_result.instance[i].galaxies.lens.disk,
+                    point=source_lp_result.instance[i].galaxies.lens.point,
+                    mass=mass,
+                    shear=shear
+                ),
+                source=af.Model(
+                    al.Galaxy,
+                    redshift=source_lp_result.instance[i].galaxies.source.redshift,
+                    pixelization=af.Model(
+                        al.Pixelization,
+                        image_mesh=image_mesh,
+                        mesh=af.Model(al.mesh.Delaunay),
+                        regularization=af.Model(al.reg.ConstantSplit),
+                    ),
                 ),
             ),
-        ),
-        extra_galaxies=extra_galaxies,
-    #    dataset_model=dataset_model,
-    )
+            extra_galaxies=extra_galaxies,
+        #    dataset_model=dataset_model,
+        )
 
-    analysis_factor_list = []
-
-    for analysis in analysis_list:
+        analysis_factor_list = []
 
         analysis_factor = af.AnalysisFactor(prior_model=model, analysis=analysis)
 

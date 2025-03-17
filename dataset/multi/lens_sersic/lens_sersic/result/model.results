@@ -1,13 +1,9 @@
-Bayesian Evidence                                                               4549.14959262
-Maximum Log Likelihood                                                          4553.75476281
-Maximum Log Posterior                                                           4555.38712004
+Bayesian Evidence                                                               -875.57815161
+Maximum Log Likelihood                                                          -869.85443550
+Maximum Log Posterior                                                           -867.51626646
 
-model                                                                           Collection (N=10)
-    0                                                                           Collection (N=8)
-        dataset_model                                                           DatasetModel (N=0)
-    1                                                                           Collection (N=10)
-        dataset_model                                                           DatasetModel (N=2)
-    0 - 1
+model                                                                           GlobalPriorModel (N=8)
+    0 - 1                                                                       Collection (N=8)
         galaxies                                                                Collection (N=8)
             lens                                                                Galaxy (N=8)
                 bulge                                                           Basis (N=0)
@@ -19,26 +15,22 @@ model                                                                           
                 pixelization                                                    Pixelization (N=0)
                     regularization                                              AdaptiveBrightnessSplit (N=0)
                     image_mesh                                                  Hilbert (N=0)
+        dataset_model                                                           DatasetModel (N=0)
 
 Maximum Log Likelihood Model:
 
-1
-    dataset_model
-        grid_offset
-            grid_offset_0                                                       -0.070
-            grid_offset_1                                                       0.060
 0 - 1
     galaxies
         lens
             mass
                 ell_comps
-                    ell_comps_0                                                 0.001
-                    ell_comps_1                                                 0.000
+                    ell_comps_0                                                 -0.001
+                    ell_comps_1                                                 -0.001
                 einstein_radius                                                 1.600
                 centre
-                    centre_0                                                    -0.035
-                    centre_1                                                    0.033
-                slope                                                           1.533
+                    centre_0                                                    0.057
+                    centre_1                                                    0.074
+                slope                                                           2.705
             shear
                 gamma_1                                                         0.000
                 gamma_2                                                         0.000
@@ -50,23 +42,18 @@ Maximum Log Likelihood Model:
 
 Summary (1.0 sigma limits):
 
-1
-    dataset_model
-        grid_offset
-            grid_offset_0                                                       -0.0704 (-0.0978, 0.0987)
-            grid_offset_1                                                       0.0604 (-0.0996, 0.0999)
 0 - 1
     galaxies
         lens
             mass
                 ell_comps
-                    ell_comps_0                                                 0.0005 (0.0005, 0.0006)
-                    ell_comps_1                                                 0.0005 (0.0004, 0.0005)
-                einstein_radius                                                 1.6001 (1.5997, 1.6005)
+                    ell_comps_0                                                 -0.0007 (-0.0008, -0.0007)
+                    ell_comps_1                                                 -0.0009 (-0.0009, -0.0008)
+                einstein_radius                                                 1.5998 (1.5995, 1.6003)
                 centre
-                    centre_0                                                    -0.0347 (-0.0350, -0.0345)
-                    centre_1                                                    0.0328 (0.0325, 0.0330)
-                slope                                                           1.5331 (1.5115, 2.9926)
+                    centre_0                                                    0.0571 (0.0570, 0.0574)
+                    centre_1                                                    0.0737 (0.0734, 0.0739)
+                slope                                                           2.7049 (1.5281, 2.9886)
             shear
                 gamma_1 - gamma_2                                               0.0000 (0.0000, 0.0000)
 
@@ -76,6 +63,9 @@ instances
     dataset_model
         background_sky_level
             value                                                               0.0
+        grid_offset
+            grid_offset_0 - grid_offset_1
+                value                                                           0.0
     galaxies
         lens
             redshift
@@ -148,26 +138,25 @@ instances
         source
             redshift
                 value                                                           1.0
-            pixelization
-                image_mesh
-                    weight_floor                                                0.06316070112254353
-                    weight_power                                                2.70157398690578
 0
-    dataset_model
-        grid_offset
-            grid_offset_0 - grid_offset_1                                       0.0
     galaxies
         source
             pixelization
                 regularization
-                    inner_coefficient                                           1.0000708072620856
-                    outer_coefficient                                           0.9998565907893141
-                    signal_scale                                                0.98408023375675
+                    inner_coefficient                                           1.000830912084889
+                    outer_coefficient                                           1.0003606832643777
+                    signal_scale                                                0.22059236336287
+                image_mesh
+                    weight_floor                                                0.11572070151859044
+                    weight_power                                                2.4190627097818
 1
     galaxies
         source
             pixelization
                 regularization
-                    inner_coefficient                                           1.0008001439627394
-                    outer_coefficient                                           0.9998848818659869
-                    signal_scale                                                0.66231323989278
+                    inner_coefficient                                           0.999933700292591
+                    outer_coefficient                                           0.9992765074410379
+                    signal_scale                                                0.56368397950283
+                image_mesh
+                    weight_floor                                                0.00014651803363433948
+                    weight_power                                                4.71660276979806

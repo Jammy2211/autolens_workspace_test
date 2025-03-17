@@ -9,7 +9,7 @@ from typing import Optional, Union, Tuple
 
 def run_1_no_subhalo(
     settings_search: af.SettingsSearch,
-    analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
+    analysis_list: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     mass_result: af.Result,
     extra_galaxies: Optional[af.Collection] = None,
     dataset_model: Optional[af.Model] = None,
@@ -48,40 +48,42 @@ def run_1_no_subhalo(
     This model will be used to perform Bayesian model comparison with models that include a subhalo, to determine if 
     a subhalo is detected.
     """
+    analysis_factor_list = []
 
-    source = al.util.chaining.source_from(
-        result=mass_result,
-    )
+    for i, analysis in enumerate(analysis_list):
 
-    lens = mass_result.model.galaxies.lens
+        source = al.util.chaining.source_from(
+            result=mass_result[i],
+        )
 
-    model = af.Collection(
-        galaxies=af.Collection(lens=lens, source=source),
-        extra_galaxies=extra_galaxies,
-        dataset_model=dataset_model,
-    )
+        lens = mass_result[i].model.galaxies.lens
 
-    analysis = slam_util.analysis_multi_dataset_from(
-        analysis=analysis,
-        model=model,
-        multi_dataset_offset=True,
-        source_regularization_result=mass_result,
-    )
+        model = af.Collection(
+            galaxies=af.Collection(lens=lens, source=source),
+            extra_galaxies=extra_galaxies,
+            dataset_model=dataset_model,
+        )
 
-    search = af.Nautilus(
+        analysis_factor = af.AnalysisFactor(prior_model=model, analysis=analysis)
+
+        analysis_factor_list.append(analysis_factor)
+
+    factor_graph = af.FactorGraphModel(*analysis_factor_list)
+
+    search = af.DynestyStatic(
         name="subhalo[1]",
         **settings_search.search_dict,
-        n_live=200,
+        nlive=200,
     )
 
-    result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
+    result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
 
     return result
 
 
 def run_2_grid_search(
     settings_search: af.SettingsSearch,
-    analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
+    analysis_list: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     mass_result: af.Result,
     subhalo_result_1: af.Result,
     subhalo_mass: af.Model = af.Model(al.mp.NFWMCRLudlowSph),
@@ -150,42 +152,45 @@ def run_2_grid_search(
     )
 
     if not free_redshift:
-        subhalo.redshift = subhalo_result_1.instance.galaxies.lens.redshift
-        subhalo.mass.redshift_object = subhalo_result_1.instance.galaxies.lens.redshift
+        subhalo.redshift = subhalo_result_1[0].instance.galaxies.lens.redshift
+        subhalo.mass.redshift_object = subhalo_result_1[0].instance.galaxies.lens.redshift
         search_tag = "search_lens_plane"
     else:
         subhalo.redshift = af.UniformPrior(
             lower_limit=0.0,
-            upper_limit=subhalo_result_1.instance.galaxies.source.redshift,
+            upper_limit=subhalo_result_1[0].instance.galaxies.source.redshift,
         )
         subhalo.mass.redshift_object = subhalo.redshift
         search_tag = "search_multi_plane"
 
-    subhalo.mass.redshift_source = subhalo_result_1.instance.galaxies.source.redshift
+    subhalo.mass.redshift_source = subhalo_result_1[0].instance.galaxies.source.redshift
 
-    lens = mass_result.model.galaxies.lens
+    analysis_factor_list = []
 
-    source = al.util.chaining.source_from(
-        result=mass_result,
-    )
+    for i, analysis in enumerate(analysis_list):
 
-    model = af.Collection(
-        galaxies=af.Collection(lens=lens, subhalo=subhalo, source=source),
-        extra_galaxies=extra_galaxies,
-        dataset_model=dataset_model,
-    )
+        lens = mass_result[i].model.galaxies.lens
 
-    analysis = slam_util.analysis_multi_dataset_from(
-        analysis=analysis,
-        model=model,
-        multi_dataset_offset=True,
-        source_regularization_result=mass_result,
-    )
+        source = al.util.chaining.source_from(
+            result=mass_result[i],
+        )
 
-    search = af.Nautilus(
+        model = af.Collection(
+            galaxies=af.Collection(lens=lens, subhalo=subhalo, source=source),
+            extra_galaxies=extra_galaxies,
+            dataset_model=dataset_model,
+        )
+
+        analysis_factor = af.AnalysisFactor(prior_model=model, analysis=analysis)
+
+        analysis_factor_list.append(analysis_factor)
+
+    factor_graph = af.FactorGraphModel(*analysis_factor_list)
+
+    search = af.DynestyStatic(
         name=f"subhalo[2]_[{search_tag}]",
         **settings_search.search_dict,
-        n_live=200,
+        nlive=200,
     )
 
     subhalo_grid_search = af.SearchGridSearch(
@@ -193,6 +198,8 @@ def run_2_grid_search(
         number_of_steps=number_of_steps,
         number_of_cores=1,
     )
+
+    # result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
 
     result = subhalo_grid_search.fit(
         model=model,
@@ -205,7 +212,7 @@ def run_2_grid_search(
     )
 
     subhalo_util.visualize_subhalo_detect(
-        result_no_subhalo=subhalo_result_1,
+        result_no_subhalo=subhalo_result_1[0],
         result=result,
         analysis=analysis,
         paths=subhalo_grid_search.paths,
@@ -216,7 +223,7 @@ def run_2_grid_search(
 
 def run_3_subhalo(
     settings_search: af.SettingsSearch,
-    analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
+    analysis_list: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     subhalo_result_1: af.Result,
     subhalo_grid_search_result_2: af.GridSearchResult,
     subhalo_mass: af.Model = af.Model(al.mp.NFWMCRLudlowSph),
@@ -272,53 +279,56 @@ def run_3_subhalo(
 
     subhalo = af.Model(
         al.Galaxy,
-        redshift=subhalo_result_1.instance.galaxies.lens.redshift,
+        redshift=subhalo_result_1[0].instance.galaxies.lens.redshift,
         mass=subhalo_mass,
     )
 
     if not free_redshift:
-        subhalo.redshift = subhalo_result_1.instance.galaxies.lens.redshift
-        subhalo.mass.redshift_object = subhalo_result_1.instance.galaxies.lens.redshift
+        subhalo.redshift = subhalo_result_1[0].instance.galaxies.lens.redshift
+        subhalo.mass.redshift_object = subhalo_result_1[0].instance.galaxies.lens.redshift
         refine_tag = "single_plane_refine"
     else:
         subhalo.redshift = af.UniformPrior(
             lower_limit=0.0,
-            upper_limit=subhalo_result_1.instance.galaxies.source.redshift,
+            upper_limit=subhalo_result_1[0].instance.galaxies.source.redshift,
         )
         subhalo.mass.redshift_object = subhalo.redshift
         refine_tag = "multi_plane_refine"
 
     subhalo.mass.mass_at_200 = af.LogUniformPrior(lower_limit=1.0e6, upper_limit=1.0e11)
-    subhalo.mass.centre = subhalo_grid_search_result_2.model_absolute(
+    subhalo.mass.centre = subhalo_grid_search_result_2[0].model_absolute(
         a=1.0
     ).galaxies.subhalo.mass.centre
 
-    subhalo.redshift = subhalo_grid_search_result_2.model.galaxies.subhalo.redshift
+    subhalo.redshift = subhalo_grid_search_result_2[0].model.galaxies.subhalo.redshift
     subhalo.mass.redshift_object = subhalo.redshift
 
-    model = af.Collection(
-        galaxies=af.Collection(
-            lens=subhalo_grid_search_result_2.model.galaxies.lens,
-            subhalo=subhalo,
-            source=subhalo_grid_search_result_2.model.galaxies.source,
-        ),
-        extra_galaxies=extra_galaxies,
-        dataset_model=dataset_model,
-    )
+    analysis_factor_list = []
 
-    analysis = slam_util.analysis_multi_dataset_from(
-        analysis=analysis,
-        model=model,
-        multi_dataset_offset=True,
-        source_regularization_result=subhalo_result_1,
-    )
+    for i, analysis in enumerate(analysis_list):
 
-    search = af.Nautilus(
+        model = af.Collection(
+            galaxies=af.Collection(
+                lens=subhalo_grid_search_result_2[i].model.galaxies.lens,
+                subhalo=subhalo,
+                source=subhalo_grid_search_result_2[i].model.galaxies.source,
+            ),
+            extra_galaxies=extra_galaxies,
+            dataset_model=dataset_model,
+        )
+
+        analysis_factor = af.AnalysisFactor(prior_model=model, analysis=analysis)
+
+        analysis_factor_list.append(analysis_factor)
+
+    factor_graph = af.FactorGraphModel(*analysis_factor_list)
+
+    search = af.DynestyStatic(
         name=f"subhalo[3]_[{refine_tag}]",
         **settings_search.search_dict,
-        n_live=600,
+        nlive=600,
     )
 
-    result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
+    result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
 
     return result

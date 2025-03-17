@@ -117,10 +117,10 @@ def run(
 
     factor_graph = af.FactorGraphModel(*analysis_factor_list)
 
-    search = af.Nautilus(
+    search = af.DynestyStatic(
         name="source_lp[1]",
         **settings_search.search_dict,
-        n_live=200,
+        nlive=200,
     )
 
     result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)

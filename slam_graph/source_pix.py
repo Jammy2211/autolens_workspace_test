@@ -78,56 +78,51 @@ def run_1(
     images that are used in search 2.
     """
 
-    if not fixed_mass_model:
-
-        mass = al.util.chaining.mass_from(
-            mass=source_lp_result.model.galaxies.lens.mass,
-            mass_result=source_lp_result.model.galaxies.lens.mass,
-            unfix_mass_centre=True,
-        )
-        shear = source_lp_result.model.galaxies.lens.shear
-
-    else:
-
-        mass = source_lp_result.instance.galaxies.lens.mass
-        shear = source_lp_result.instance.galaxies.lens.shear
-
-    image_mesh_init.shape = image_mesh_init_shape
-
-    model = af.Collection(
-        galaxies=af.Collection(
-            lens=af.Model(
-                al.Galaxy,
-                redshift=source_lp_result.instance.galaxies.lens.redshift,
-                bulge=source_lp_result.instance.galaxies.lens.bulge,
-                disk=source_lp_result.instance.galaxies.lens.disk,
-                point=source_lp_result.instance.galaxies.lens.point,
-                mass=mass,
-                shear=shear
-            ),
-            source=af.Model(
-                al.Galaxy,
-                redshift=source_lp_result.instance.galaxies.source.redshift,
-                pixelization=af.Model(
-                    al.Pixelization,
-                    image_mesh=image_mesh_init,
-                    mesh=mesh_init,
-                    regularization=regularization_init,
-                ),
-            ),
-        ),
-        extra_galaxies=extra_galaxies,
-        dataset_model=dataset_model,
-    )
-
-    """
-    For single-dataset analyses, the following code does not change the model or analysis and can be ignored.
-
-    For multi-dataset analyses, the following code updates the model and analysis.
-    """
     analysis_factor_list = []
 
-    for analysis in analysis_list:
+    for i, analysis in enumerate(analysis_list):
+
+        if not fixed_mass_model:
+
+            mass = al.util.chaining.mass_from(
+                mass=source_lp_result[i].model.galaxies.lens.mass,
+                mass_result=source_lp_result[i].model.galaxies.lens.mass,
+                unfix_mass_centre=True,
+            )
+            shear = source_lp_result[i].model.galaxies.lens.shear
+
+        else:
+
+            mass = source_lp_result[i].instance.galaxies.lens.mass
+            shear = source_lp_result[i].instance.galaxies.lens.shear
+
+        image_mesh_init.shape = image_mesh_init_shape
+
+        model = af.Collection(
+            galaxies=af.Collection(
+                lens=af.Model(
+                    al.Galaxy,
+                    redshift=source_lp_result[i].instance.galaxies.lens.redshift,
+                    bulge=source_lp_result[i].instance.galaxies.lens.bulge,
+                    disk=source_lp_result[i].instance.galaxies.lens.disk,
+                    point=source_lp_result[i].instance.galaxies.lens.point,
+                    mass=mass,
+                    shear=shear
+                ),
+                source=af.Model(
+                    al.Galaxy,
+                    redshift=source_lp_result[i].instance.galaxies.source.redshift,
+                    pixelization=af.Model(
+                        al.Pixelization,
+                        image_mesh=image_mesh_init,
+                        mesh=mesh_init,
+                        regularization=regularization_init,
+                    ),
+                ),
+            ),
+            extra_galaxies=extra_galaxies,
+            dataset_model=dataset_model,
+        )
 
         analysis_factor = af.AnalysisFactor(prior_model=model, analysis=analysis)
 
@@ -135,22 +130,20 @@ def run_1(
 
     factor_graph = af.FactorGraphModel(*analysis_factor_list)
 
-    search = af.Nautilus(
+    search = af.DynestyStatic(
         name="source_pix[1]",
         **settings_search.search_dict,
-        n_live=150,
+        nlive=150,
     )
 
     result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
-
-    fff
 
     return result
 
 
 def run_2(
     settings_search: af.SettingsSearch,
-    analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
+    analysis_list: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     source_lp_result: af.Result,
     source_pix_result_1: af.Result,
     image_mesh: af.Model(al.AbstractImageMesh) = af.Model(al.image_mesh.Hilbert),
@@ -206,58 +199,56 @@ def run_2(
 
     This search initializes the pixelization's mesh and regularization.
     """
-    model = af.Collection(
-        galaxies=af.Collection(
-            lens=af.Model(
-                al.Galaxy,
-                redshift=source_lp_result.instance.galaxies.lens.redshift,
-                bulge=source_lp_result.instance.galaxies.lens.bulge,
-                disk=source_lp_result.instance.galaxies.lens.disk,
-                point=source_lp_result.instance.galaxies.lens.point,
-                mass=source_pix_result_1.instance.galaxies.lens.mass,
-                shear=source_pix_result_1.instance.galaxies.lens.shear,
-            ),
-            source=af.Model(
-                al.Galaxy,
-                redshift=source_lp_result.instance.galaxies.source.redshift,
-                pixelization=af.Model(
-                    al.Pixelization,
-                    image_mesh=image_mesh,
-                    mesh=mesh,
-                    regularization=regularization,
+    analysis_factor_list = []
+    
+    for i, analysis in enumerate(analysis_list):
+    
+        model = af.Collection(
+            galaxies=af.Collection(
+                lens=af.Model(
+                    al.Galaxy,
+                    redshift=source_lp_result[i].instance.galaxies.lens.redshift,
+                    bulge=source_lp_result[i].instance.galaxies.lens.bulge,
+                    disk=source_lp_result[i].instance.galaxies.lens.disk,
+                    point=source_lp_result[i].instance.galaxies.lens.point,
+                    mass=source_pix_result_1[i].instance.galaxies.lens.mass,
+                    shear=source_pix_result_1[i].instance.galaxies.lens.shear,
+                ),
+                source=af.Model(
+                    al.Galaxy,
+                    redshift=source_lp_result[i].instance.galaxies.source.redshift,
+                    pixelization=af.Model(
+                        al.Pixelization,
+                        image_mesh=image_mesh,
+                        mesh=mesh,
+                        regularization=regularization,
+                    ),
                 ),
             ),
-        ),
-        extra_galaxies=source_pix_result_1.instance.extra_galaxies,
-        dataset_model=dataset_model,
-    )
+            extra_galaxies=source_pix_result_1[i].instance.extra_galaxies,
+            dataset_model=dataset_model,
+        )
+    
+        if image_mesh_pixels_fixed is not None:
+            if hasattr(model.galaxies.source.pixelization.image_mesh, "pixels"):
+                model.galaxies.source.pixelization.image_mesh.pixels = (
+                    image_mesh_pixels_fixed
+                )
+    
+        analysis_factor = af.AnalysisFactor(prior_model=model, analysis=analysis)
+    
+        analysis_factor_list.append(analysis_factor)
 
-    if image_mesh_pixels_fixed is not None:
-        if hasattr(model.galaxies.source.pixelization.image_mesh, "pixels"):
-            model.galaxies.source.pixelization.image_mesh.pixels = (
-                image_mesh_pixels_fixed
-            )
-
-    """
-    For single-dataset analyses, the following code does not change the model or analysis and can be ignored.
-
-    For multi-dataset analyses, the following code updates the model and analysis.
-    """
-    analysis = slam_util.analysis_multi_dataset_from(
-        analysis=analysis,
-        model=model,
-        multi_dataset_offset=True,
-        multi_source_regularization=True,
-    )
+    factor_graph = af.FactorGraphModel(*analysis_factor_list)
 
     """
     __Search (Search 2)__
 
     This search uses the nested sampling algorithm Dynesty, in contrast to nearly every other search throughout the
-    autolens workspace which use `Nautilus`.
+    autolens workspace which use `DynestyStatic`.
 
     The reason is quite technical, but in a nutshell it is because the likelihood function sampled in `source_pix[2]`
-    is often not smooth. This leads to behaviour where the `Nautilus` search gets stuck sampling small regions of
+    is often not smooth. This leads to behaviour where the `DynestyStatic` search gets stuck sampling small regions of
     parameter space indefinitely, and does not converge and terminate.
 
     Dynesty has proven more robust to these issues, because it uses a random walk nested sampling algorithm which
@@ -274,6 +265,6 @@ def run_2(
         nlive=100,
     )
 
-    result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
+    result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
 
     return result
