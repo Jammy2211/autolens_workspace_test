@@ -309,11 +309,11 @@ def fit():
 
     for data in agg.values("dataset.data"):
         print(f"\n****Data (dataset.data)****\n\n{data}")
-        assert isinstance(data, fits.PrimaryHDU)
+        assert isinstance(data[0], fits.PrimaryHDU)
 
     for noise_map in agg.values("dataset.noise_map"):
         print(f"\n****Noise Map (dataset.noise_map)****\n\n{noise_map}")
-        assert isinstance(noise_map, fits.PrimaryHDU)
+        assert isinstance(noise_map[0], fits.PrimaryHDU)
 
     for covariance in agg.values("covariance"):
         print(f"\n****Covariance (covariance)****\n\n{covariance}")

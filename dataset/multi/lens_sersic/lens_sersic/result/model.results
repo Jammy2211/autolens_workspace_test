@@ -1,6 +1,6 @@
-Bayesian Evidence                                                               -875.57815161
-Maximum Log Likelihood                                                          -869.85443550
-Maximum Log Posterior                                                           -867.51626646
+Bayesian Evidence                                                               -20867.62845039
+Maximum Log Likelihood                                                          -20861.90473428
+Maximum Log Posterior                                                           -20858.29569771
 
 model                                                                           GlobalPriorModel (N=8)
     0 - 1                                                                       Collection (N=8)
@@ -24,15 +24,15 @@ Maximum Log Likelihood Model:
         lens
             mass
                 ell_comps
-                    ell_comps_0                                                 -0.001
-                    ell_comps_1                                                 -0.001
+                    ell_comps_0                                                 0.000
+                    ell_comps_1                                                 -0.000
                 einstein_radius                                                 1.600
                 centre
-                    centre_0                                                    0.057
-                    centre_1                                                    0.074
-                slope                                                           2.705
+                    centre_0                                                    -0.080
+                    centre_1                                                    0.004
+                slope                                                           2.798
             shear
-                gamma_1                                                         0.000
+                gamma_1                                                         -0.000
                 gamma_2                                                         0.000
 
  WARNING: The samples have not converged enough to compute a PDF and model errors. 
@@ -47,15 +47,16 @@ Summary (1.0 sigma limits):
         lens
             mass
                 ell_comps
-                    ell_comps_0                                                 -0.0007 (-0.0008, -0.0007)
-                    ell_comps_1                                                 -0.0009 (-0.0009, -0.0008)
-                einstein_radius                                                 1.5998 (1.5995, 1.6003)
+                    ell_comps_0                                                 0.0003 (0.0003, 0.0003)
+                    ell_comps_1                                                 -0.0001 (-0.0001, -0.0000)
+                einstein_radius                                                 1.5999 (1.5995, 1.6003)
                 centre
-                    centre_0                                                    0.0571 (0.0570, 0.0574)
-                    centre_1                                                    0.0737 (0.0734, 0.0739)
-                slope                                                           2.7049 (1.5281, 2.9886)
+                    centre_0                                                    -0.0797 (-0.0800, -0.0795)
+                    centre_1                                                    0.0040 (0.0036, 0.0041)
+                slope                                                           2.7976 (1.5342, 2.9881)
             shear
-                gamma_1 - gamma_2                                               0.0000 (0.0000, 0.0000)
+                gamma_1                                                         -0.0000 (-0.0000, -0.0000)
+                gamma_2                                                         0.0000 (0.0000, 0.0000)
 
 instances
 
@@ -143,20 +144,20 @@ instances
         source
             pixelization
                 regularization
-                    inner_coefficient                                           1.000830912084889
-                    outer_coefficient                                           1.0003606832643777
-                    signal_scale                                                0.22059236336287
+                    inner_coefficient                                           1.0009768032311712
+                    outer_coefficient                                           1.0007840821700065
+                    signal_scale                                                0.30810244068771
                 image_mesh
-                    weight_floor                                                0.11572070151859044
-                    weight_power                                                2.4190627097818
+                    weight_floor                                                0.00014594067737487993
+                    weight_power                                                2.53255279802974
 1
     galaxies
         source
             pixelization
                 regularization
-                    inner_coefficient                                           0.999933700292591
-                    outer_coefficient                                           0.9992765074410379
-                    signal_scale                                                0.56368397950283
+                    inner_coefficient                                           1.0006558861568584
+                    outer_coefficient                                           1.0002585062346288
+                    signal_scale                                                0.87484851651227
                 image_mesh
-                    weight_floor                                                0.00014651803363433948
-                    weight_power                                                4.71660276979806
+                    weight_floor                                                3.363119931128184e-05
+                    weight_power                                                2.84192587567691

@@ -4,6 +4,7 @@ import autolens.plot as aplt
 
 from . import subhalo_util
 
+import numpy as np
 import os
 from typing import List, Optional, Union, Tuple
 
@@ -112,7 +113,19 @@ class SimulateImagingPixelized:
                 check_noise_map=False,
             )
 
-            return dataset.apply_mask(mask=self.mask)
+            dataset = dataset.apply_mask(mask=self.mask)
+
+            over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
+                grid=dataset.grid,
+                sub_size_list=[8, 4, 1],
+                radial_list=[0.3, 0.6],
+                centre_list=[(0.0, 0.0)],
+            )
+
+            return dataset.apply_over_sampling(
+                over_sample_size_lp=over_sample_size,
+                over_sample_size_pixelization=4
+            )
 
         except FileNotFoundError:
             pass
@@ -120,12 +133,16 @@ class SimulateImagingPixelized:
         """
         __Source Galaxy Image__
 
-        We load the source galaxy image from the pixelized inversion of a previous fit, which was performed on an irregular 
-        Delaunay or Voronoi mesh.  
-        
-        Since irregular meshes cannot be directly used to simulate lensed images, we interpolate the source onto a uniform 
-        grid with shape `interpolated_pixelized_shape`. This grid should have a high resolution (e.g., 1000 × 1000) to preserve 
-        all resolved structure from the original Delaunay or Voronoi mesh.  
+        We now load the source galaxy image from the pixelized inversion of a previous fit, which could be on an irregular
+        Delaunay or Voronoi mesh. 
+
+        Irregular meshes cannot be used to simulate lensed images of a source. Therefore, we interpolate the mesh to 
+        a uniform grid of shape `interpolated_pixelized_shape`. This should be high resolution (e.g. 1000 x 1000) 
+        to ensure the interpolated source array captures all structure resolved on the Delaunay / Voronoi mesh.
+
+        Loads source array from previous reconstruction, maps to square and wraps in AutoLens Array.
+        Loads lens galaxy and perturb from provided instance
+        Loads source galaxy redshift and sets up a `galaxy` class object at that redshift.
         """
 
         mapper = self.inversion.cls_list_from(cls=al.AbstractMapper)[0]
@@ -137,20 +154,16 @@ class SimulateImagingPixelized:
 
         source_image = mapper_valued.interpolated_array_from(
             shape_native=self.interpolated_pixelized_shape,
+            extent=(-2.0, 2.0, -2.0, 2.0),
         )
 
         """
         __Create Grids__
 
-        To create the lensed image, we ray-trace image pixels to the source plane and interpolate them onto the source 
-        galaxy image.  
+        To create the lensed image, we will ray-trace image pixels to the source-plane and interpolate them onto the 
+        source galaxy image. 
 
-        This requires an image-plane grid of (y, x) coordinates. In this example, we use a grid with the same 
-        resolution as the `Imaging` dataset, but without applying a mask.  
-
-        To ensure accurate ray-tracing, we apply an 8×8 oversampling scheme. This means that for each pixel in the 
-        image-plane grid, an 8×8 sub-pixel grid is ray-traced. This approach fully resolves how light is distributed 
-        across each simulated image pixel, given the source pixelization.
+        We therefore need the image-plane grid of (y,x) coordinates.
         """
         grid = al.Grid2D.uniform(
             shape_native=self.mask.shape_native,
@@ -161,11 +174,13 @@ class SimulateImagingPixelized:
         """
         __Ray Tracing__
 
-        We create a tracer to generate the lensed grid onto which we overlay the interpolated source galaxy image, 
-        producing the lensed source galaxy image.  
-        
-        The source-plane requires a source galaxy with a defined `redshift` for the tracer to function. Since the source’s 
-        emission is entirely determined by the source galaxy image, this galaxy has no light profiles.
+        We create a tracer, which will create the lensed grid we overlay the interpolated source galaxy image above
+        in order to create the lensed source galaxy image.
+
+        This creates the grid we will overlay the source image, in order to created the lensed source image.
+
+        The source-plane requires a source-galaxy with a `redshift` in order for the tracer to trace it. We therefore
+        make one, noting it has no light profiles because its emission is entirely defined by the source galaxy image.
         """
         tracer = al.Tracer(
             galaxies=[
@@ -178,19 +193,21 @@ class SimulateImagingPixelized:
         """
         __Simulate__
 
-        Using the tracer, we generate the lensed source galaxy image on the image-plane grid. This process incorporates 
-        the `source_image`, preserving the irregular and asymmetric morphological features captured by the source 
-        reconstruction.  
-        
-        Next, we configure the grid, PSF, and simulator settings to match the signal-to-noise ratio (S/N) and noise 
-        properties of the observed data used for sensitivity mapping.  
-        
-        The `SimulatorImaging` takes the generated strong lens image and convolves it with the PSF before adding noise. 
-        To prevent edge effects, the image is padded before convolution and then trimmed to restore its 
-        original `shape_native`.
+        Using the tracer above, we create the image of the lensed source galaxy on the image-plane grid. This
+        uses the `source_image` and therefore capture the source's irregular and asymmetric morphological features
+        which the source reconstruction procedure fitted.
+
+        Set up the grid, PSF and simulator settings used to simulate imaging of the strong lens. These should be 
+        tuned to match the S/N and noise properties of the observed data you are performing sensitivity mapping on.
+
+        The `SimulatorImaging` will be passed directly the image of the strong lens we created above, which
+        will be convolved with the psf before noise is added. 
+
+        To ensure the PSF convolution extends over the whole image, the image is padded before convolution to mitigate 
+        edge effects and trimmed after the simulation so it retains the original `shape_native`.
         """
         simulator = al.SimulatorImaging(
-            exposure_time=300.0,
+            exposure_time=1000.0,
             psf=self.psf,
             background_sky_level=0.1,
             add_poisson_noise_to_data=True,
@@ -613,7 +630,10 @@ def run(
     # perturb_model.mass.mass_at_200 = af.UniformPrior(
     #     lower_limit=1e6, upper_limit=1e11
     # )
-    perturb_model.mass.mass_at_200 = 1e10
+    perturb_model.mass.log10m_vir = 9.0
+    perturb_model.mass.c_gNFW = 12.0
+    perturb_model.mass.overdens = 200.0
+    perturb_model.mass.inner_slope = 2.2
     perturb_model.mass.centre.centre_0 = af.UniformPrior(
         lower_limit=-grid_dimension_arcsec, upper_limit=grid_dimension_arcsec
     )
@@ -661,8 +681,8 @@ def run(
             upper_limit=perturb_instance.mass.centre[1] + b,
         )
 
-        perturb_model.mass.mass_at_200 = af.LogUniformPrior(
-            lower_limit=1e6, upper_limit=1e12
+        perturb_model.mass.log10m_vir = af.UniformPrior(
+            lower_limit=6, upper_limit=12
         )
 
         return perturb_model
@@ -728,7 +748,7 @@ def run(
     """
 
     paths = af.DirectoryPaths(
-        name=f"subhalo__sensitivity__pix",
+        name=f"subhalo__sensitivity",
         path_prefix=settings_search.path_prefix,
         unique_tag=settings_search.unique_tag,
     )
