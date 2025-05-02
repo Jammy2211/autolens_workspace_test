@@ -35,19 +35,10 @@ def fit():
     # print(f"Working Directory has been set to `{workspace_path}`")
 
     import numpy as np
-    import os
     from os import path
-
-    cwd = os.getcwd()
-
-    from autoconf import conf
-
-    conf.instance.push(new_path=path.join(cwd, "config", "slam"))
 
     import autofit as af
     import autolens as al
-    import autolens.plot as aplt
-    import slam
 
     """
     __Search Settings__
@@ -177,13 +168,12 @@ def fit():
     source_bulge = source_bulge
     source_disk = None
     extra_galaxies = None
-    dataset_model= af.Model(al.DatasetModel)
+    dataset_model = af.Model(al.DatasetModel)
 
     """
     __Analysis Summing__
     """
     analysis_list = [al.AnalysisImaging(dataset=dataset) for dataset in dataset_list]
-    analysis = sum(analysis_list)
 
     model = af.Collection(
         galaxies=af.Collection(
@@ -207,16 +197,6 @@ def fit():
         dataset_model=dataset_model,
     )
 
-    analysis = analysis.with_free_parameters(model.dataset_model.grid_offset)
-
-    search = af.DynestyStatic(
-        name="task_4_analysis_summing_output",
-        **settings_search.search_dict,
-        nlive=200,
-    )
-
-    result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
-
     """
     __Analysis Graphical Model__
     """
@@ -224,13 +204,13 @@ def fit():
 
     for i, analysis in enumerate(analysis_list):
 
-        analysis_model = model.copy()
+        model_analysis = model.copy()
 
         if i > 0:
-            analysis_model.dataset_model.grid_offset.grid_offset_0 = af.UniformPrior(
+            model_analysis.dataset_model.grid_offset.grid_offset_0 = af.UniformPrior(
                 lower_limit=-1.0, upper_limit=1.0
             )
-            analysis_model.dataset_model.grid_offset.grid_offset_1 = af.UniformPrior(
+            model_analysis.dataset_model.grid_offset.grid_offset_1 = af.UniformPrior(
                 lower_limit=-1.0, upper_limit=1.0
             )
 
@@ -247,7 +227,6 @@ def fit():
     )
 
     result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
-
 
 
 if __name__ == "__main__":

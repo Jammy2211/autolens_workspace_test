@@ -38,12 +38,6 @@ def fit():
     import os
     from os import path
 
-    cwd = os.getcwd()
-
-    from autoconf import conf
-
-    conf.instance.push(new_path=path.join(cwd, "config", "slam"))
-
     import autofit as af
     import autolens as al
     import autolens.plot as aplt
@@ -177,7 +171,7 @@ def fit():
     source_bulge = source_bulge
     source_disk = None
     extra_galaxies = None
-    dataset_model= af.Model(al.DatasetModel)
+    dataset_model = af.Model(al.DatasetModel)
 
     """
     __Analysis Summing__
@@ -206,10 +200,10 @@ def fit():
             ),
         ),
         extra_galaxies=extra_galaxies,
-    #    dataset_model=dataset_model,
+        #    dataset_model=dataset_model,
     )
 
-#    analysis = analysis.with_free_parameters(model.dataset_model.grid_offset)
+    #    analysis = analysis.with_free_parameters(model.dataset_model.grid_offset)
 
     search = af.DynestyStatic(
         name="task_2_analysis_summing_search_1",
@@ -217,7 +211,9 @@ def fit():
         nlive=200,
     )
 
-    source_lp_result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
+    source_lp_result = search.fit(
+        model=model, analysis=analysis, **settings_search.fit_dict
+    )
 
     positions_likelihood = source_lp_result[0].positions_likelihood_from(
         factor=3.0, minimum_threshold=0.2
@@ -234,7 +230,7 @@ def fit():
     source_bulge = source_bulge
     source_disk = None
     extra_galaxies = None
-    dataset_model= af.Model(al.DatasetModel)
+    dataset_model = af.Model(al.DatasetModel)
 
     """
     __Analysis Graphical Model__
@@ -260,20 +256,20 @@ def fit():
             ),
         ),
         extra_galaxies=extra_galaxies,
-    #    dataset_model=dataset_model,
+        #    dataset_model=dataset_model,
     )
 
     analysis_factor_list = []
 
     for i, analysis in enumerate(analysis_list):
 
-        analysis_model = model.copy()
+        model_analysis = model.copy()
 
         # if i > 0:
-        #     analysis_model.dataset_model.grid_offset.grid_offset_0 = af.UniformPrior(
+        #     model_analysis.dataset_model.grid_offset.grid_offset_0 = af.UniformPrior(
         #         lower_limit=-1.0, upper_limit=1.0
         #     )
-        #     analysis_model.dataset_model.grid_offset.grid_offset_1 = af.UniformPrior(
+        #     model_analysis.dataset_model.grid_offset.grid_offset_1 = af.UniformPrior(
         #         lower_limit=-1.0, upper_limit=1.0
         #     )
 
@@ -289,7 +285,9 @@ def fit():
         nlive=200,
     )
 
-    source_lp_result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
+    source_lp_result = search.fit(
+        model=factor_graph.global_prior_model, analysis=factor_graph
+    )
 
     positions_likelihood = source_lp_result.positions_likelihood_from(
         factor=3.0, minimum_threshold=0.2

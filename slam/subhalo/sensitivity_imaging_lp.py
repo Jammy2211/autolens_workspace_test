@@ -27,7 +27,7 @@ In this example, this `instance.perturb` corresponds to two different subhalos w
 
 
 class SimulateImaging:
-    def __init__(self, mask, psf):
+    def __init__(self, mask, psf, add_poisson_noise_to_data: bool):
         """
         Class used to simulate the strong lens imaging used for sensitivity mapping.
 
@@ -40,6 +40,7 @@ class SimulateImaging:
         """
         self.mask = mask
         self.psf = psf
+        self.add_poisson_noise_to_data = add_poisson_noise_to_data
 
     def __call__(self, instance: af.ModelInstance, simulate_path: str):
         """
@@ -170,7 +171,7 @@ class SimulateImaging:
             exposure_time=1000.0,
             psf=self.psf,
             background_sky_level=0.1,
-            add_poisson_noise_to_data=True,
+            add_poisson_noise_to_data=self.add_poisson_noise_to_data,
             noise_seed=1,
         )
 
@@ -368,7 +369,7 @@ to the simulated data.
 
 
 class PerturbFit:
-    def __init__(self, adapt_images, number_of_cores: int = 1):
+    def __init__(self, adapt_images, fast_perturb_fit : bool, number_of_cores: int = 1):
         """
         Class used to fit every dataset used for sensitivity mapping with the perturbed model (the model with the
         perturbed feature sensitivity mapping maps out).
@@ -388,11 +389,15 @@ class PerturbFit:
         adapt_images
             Contains the adapt-images which are used to make a pixelization's mesh and regularization adapt to the
             reconstructed galaxy's morphology.
+        fast_perturb_fit
+            If True, a fast perturb fit is performed which performs a single iteration using the input model that
+            simulated and fits the data.
         number_of_cores
             The number of cores used to perform the non-linear search. If 1, each model-fit on the grid is performed
             in serial, if > 1 fits are distributed in parallel using the Python multiprocessing module.
         """
         self.adapt_images = adapt_images
+        self.fast_perturb_fit = fast_perturb_fit
         self.number_of_cores = number_of_cores
 
     def __call__(self, dataset, model, paths, instance):
@@ -419,14 +424,66 @@ class PerturbFit:
             true values of the simulated instance to set up aspects of the model-fit (e.g. the priors).
         """
 
-        search = af.Nautilus(
-            paths=paths,
-            n_live=50,
-            number_of_cores=self.number_of_cores,
-        )
-
         analysis = al.AnalysisImaging(dataset=dataset)
         analysis._adapt_images = self.adapt_images
+
+        if self.fast_perturb_fit:
+
+            initializer = af.InitializerParamStartPoints(
+                {
+                    model.galaxies.source.bulge.centre.centre_0: instance.galaxies.source.bulge.centre[
+                        0
+                    ],
+                    model.galaxies.source.bulge.centre.centre_1: instance.galaxies.source.bulge.centre[
+                        1
+                    ],
+                    model.galaxies.source.bulge.ell_comps.ell_comps_0: instance.galaxies.source.bulge.ell_comps[
+                        0
+                    ],
+                    model.galaxies.source.bulge.ell_comps.ell_comps_1: instance.galaxies.source.bulge.ell_comps[
+                        1
+                    ],
+                    model.galaxies.source.bulge.effective_radius: instance.galaxies.source.bulge.effective_radius,
+                    model.galaxies.source.bulge.sersic_index: instance.galaxies.source.bulge.sersic_index,
+                    model.galaxies.lens.mass.centre.centre_0: instance.galaxies.lens.mass.centre[
+                        0
+                    ],
+                    model.galaxies.lens.mass.centre.centre_1: instance.galaxies.lens.mass.centre[
+                        1
+                    ],
+                    model.galaxies.lens.mass.ell_comps.ell_comps_0: instance.galaxies.lens.mass.ell_comps[
+                        0
+                    ],
+                    model.galaxies.lens.mass.ell_comps.ell_comps_1: instance.galaxies.lens.mass.ell_comps[
+                        1
+                    ],
+                    model.galaxies.lens.mass.einstein_radius: instance.galaxies.lens.mass.einstein_radius,
+                    model.galaxies.lens.mass.slope: instance.galaxies.lens.mass.slope,
+                    model.galaxies.lens.shear.gamma_1: instance.galaxies.lens.shear.gamma_1,
+                    model.galaxies.lens.shear.gamma_2: instance.galaxies.lens.shear.gamma_2,
+                    model.perturb.mass.centre.centre_0: instance.perturb.mass.centre[0],
+                    model.perturb.mass.centre.centre_1: instance.perturb.mass.centre[1],
+                    #                model.perturb.mass.mass_at_200: instance.perturb.mass.mass_at_200,
+                    model.perturb.mass.log10m_vir: instance.perturb.mass.log10m_vir,
+                    model.perturb.mass.c_gNFW: instance.perturb.mass.c_gNFW,
+                    model.perturb.mass.overdens: instance.perturb.mass.overdens,
+                    model.perturb.mass.inner_slope: instance.perturb.mass.inner_slope,
+                }
+            )
+
+            search = af.Drawer(
+                paths=paths,
+                total_draws=1,
+                initializer=initializer,
+            )
+
+        else:
+
+            search = af.Nautilus(
+                paths=paths,
+                n_live=50,
+                number_of_cores=self.number_of_cores,
+            )
 
         return search.fit(model=model, analysis=analysis)
 
@@ -531,6 +588,8 @@ def run(
         subhalo_mass: af.Model = af.Model(al.mp.NFWMCRLudlowSph),
         adapt_images: Optional[al.AdaptImages] = None,
         grid_dimension_arcsec: float = 3.0,
+        add_poisson_noise_to_data : bool = False,
+        fast_perturb_fit: bool = True,
         number_of_steps: Union[Tuple[int], int] = 5,
         batch_range: Tuple[int, int] = None,
         sensitivity_mask: Optional[Union[al.Mask2D, List]] = None,
@@ -553,6 +612,12 @@ def run(
     grid_dimension_arcsec
         the arc-second dimensions of the grid in the y and x directions. An input value of 3.0" means the grid in
         all four directions extends to 3.0" giving it dimensions 6.0" x 6.0".
+    add_poisson_noise_to_data
+        Whether to simulate the sensitivity mapping data with noise, which by default is not included as one can still
+        quantify the sensitivity without noise, which reduces poison fluctuations in the analysis.
+    fast_perturb_fit
+        If True, a fast perturb fit is performed which performs a single iteration using the input model that
+        simulated and fits the data.
     number_of_steps
         The 2D dimensions of the grid (e.g. number_of_steps x number_of_steps) that the subhalo search is performed for.
     number_of_cores
@@ -743,12 +808,12 @@ def run(
         simulation_instance=simulation_instance,
         base_model=base_model,
         perturb_model=perturb_model,
-        simulate_cls=SimulateImaging(mask=mask, psf=psf),
+        simulate_cls=SimulateImaging(mask=mask, psf=psf, add_poisson_noise_to_data=add_poisson_noise_to_data),
         base_fit_cls=BaseFit(
             adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
         ),
         perturb_fit_cls=PerturbFit(
-            adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
+            adapt_images=adapt_images, fast_perturb_fit=fast_perturb_fit, number_of_cores=settings_search.number_of_cores
         ),
         perturb_model_prior_func=perturb_model_prior_func,
         visualizer_cls=subhalo_util.Visualizer(mass_result=mass_result, mask=mask),

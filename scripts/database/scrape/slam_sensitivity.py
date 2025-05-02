@@ -19,11 +19,6 @@ def fit():
 
     os.environ["PYAUTOFIT_TEST_MODE"] = "1"
 
-    cwd = os.getcwd()
-    from autoconf import conf
-
-    conf.instance.push(new_path=path.join(cwd, "config", "fit"))
-
     import autofit as af
     import autolens as al
     import autolens.plot as aplt

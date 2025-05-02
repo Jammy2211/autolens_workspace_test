@@ -178,13 +178,9 @@ for info in agg.values("info"):
     print(f"\n****Info****\n\n{info}")
     assert info["hi"] == "there"
 
-for data in agg.values("dataset.data"):
-    print(f"\n****Data (dataset.data)****\n\n{data}")
-    assert isinstance(data[0], fits.PrimaryHDU)
-
-for noise_map in agg.values("dataset.noise_map"):
-    print(f"\n****Noise Map (dataset.noise_map)****\n\n{noise_map}")
-    assert isinstance(noise_map[0], fits.PrimaryHDU)
+for dataset in agg.values("dataset"):
+    print(f"\n****Data (dataset.data)****\n\n{dataset}")
+    assert isinstance(dataset[0], fits.PrimaryHDU)
 
 try:
     for covariance in agg.values("covariance"):

@@ -43,12 +43,6 @@ def fit():
     import os
     from os import path
 
-    cwd = os.getcwd()
-
-    from autoconf import conf
-
-    conf.instance.push(new_path=path.join(cwd, "config", "slam"))
-
     import autofit as af
     import autolens as al
     import autolens.plot as aplt
@@ -346,19 +340,13 @@ def fit():
         number_of_pixels=5,
     )
 
-    subhalo_util.visualize_sensitivity_mask(
-        mass_result=mass_result,
-        sensitivity_mask=sensitivity_mask,
-        settings_search=settings_search,
-    )
-
     subhalo_result = slam.subhalo.sensitivity_imaging_lp.run(
         settings_search=settings_search,
         mask=mask,
         psf=dataset.psf,
         adapt_images=al.AdaptImages.from_result(result=source_lp_result),
         mass_result=mass_result,
-        subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
+        subhalo_mass=af.Model(al.mp.gNFWVirialMassgNFWConcSph),
         grid_dimension_arcsec=sensitivity_mask.geometry.shape_native_scaled[0] / 2.0,
         number_of_steps=sensitivity_mask.shape[0],
         batch_range=(2, 5),

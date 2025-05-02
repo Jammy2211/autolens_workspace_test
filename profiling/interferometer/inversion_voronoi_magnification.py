@@ -6,12 +6,6 @@ This profiling script times how long an `Inversion` takes to fit `Interferometer
 import os
 from os import path
 
-cwd = os.getcwd()
-
-from autoconf import conf
-
-conf.instance.push(new_path=path.join(cwd, "config", ""))
-
 import autolens as al
 import autolens.plot as aplt
 from autoarray.inversion import mappers

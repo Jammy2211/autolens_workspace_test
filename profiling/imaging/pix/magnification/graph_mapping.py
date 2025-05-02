@@ -6,12 +6,6 @@ This script creates plots for all `Imaging` profiling scripts performed by PyAut
 import os
 from os import path
 
-cwd = os.getcwd()
-
-from autoconf import conf
-
-conf.instance.push(new_path=path.join(cwd, "config", "profiling"))
-
 import autolens as al
 import json
 import numpy as np

@@ -53,7 +53,7 @@ much high resolution datasets (which can be performed by replacing "sma.fits" be
 uv_wavelengths_path = path.join(
     "dataset", "interferometer", "instruments", "alma_low_res_backup"
 )
-uv_wavelengths = al.util.array_1d.numpy_array_1d_via_fits_from(
+uv_wavelengths = al.ndarray_via_fits_from(
     file_path=path.join(uv_wavelengths_path, "uv_wavelengths.fits"), hdu=0
 )
 

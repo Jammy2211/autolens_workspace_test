@@ -9,12 +9,6 @@ This represents the time taken by a single iteration of the **PyAutoLens** log l
 import os
 from os import path
 
-cwd = os.getcwd()
-
-from autoconf import conf
-
-conf.instance.push(new_path=path.join(cwd, "config", "profiling"))
-
 from scipy.optimize import minimize_scalar
 
 import autolens as al

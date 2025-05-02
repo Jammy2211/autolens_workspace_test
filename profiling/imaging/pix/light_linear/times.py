@@ -11,12 +11,6 @@ from os import path
 
 import numpy as np
 
-cwd = os.getcwd()
-
-from autoconf import conf
-
-conf.instance.push(new_path=path.join(cwd, "config", "profiling"))
-
 import time
 import json
 

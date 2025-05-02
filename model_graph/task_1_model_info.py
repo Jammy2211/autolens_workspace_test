@@ -38,12 +38,6 @@ def fit():
     import os
     from os import path
 
-    cwd = os.getcwd()
-
-    from autoconf import conf
-
-    conf.instance.push(new_path=path.join(cwd, "config", "slam"))
-
     import autofit as af
     import autolens as al
     import autolens.plot as aplt
@@ -177,7 +171,7 @@ def fit():
     source_bulge = source_bulge
     source_disk = None
     extra_galaxies = None
-    dataset_model= af.Model(al.DatasetModel)
+    dataset_model = af.Model(al.DatasetModel)
 
     """
     __Analysis Summing__
@@ -224,13 +218,13 @@ def fit():
 
     for i, analysis in enumerate(analysis_list):
 
-        analysis_model = model.copy()
+        model_analysis = model.copy()
 
         if i > 0:
-            analysis_model.dataset_model.grid_offset.grid_offset_0 = af.UniformPrior(
+            model_analysis.dataset_model.grid_offset.grid_offset_0 = af.UniformPrior(
                 lower_limit=-1.0, upper_limit=1.0
             )
-            analysis_model.dataset_model.grid_offset.grid_offset_1 = af.UniformPrior(
+            model_analysis.dataset_model.grid_offset.grid_offset_1 = af.UniformPrior(
                 lower_limit=-1.0, upper_limit=1.0
             )
 
@@ -247,7 +241,6 @@ def fit():
     )
 
     result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
-
 
 
 if __name__ == "__main__":

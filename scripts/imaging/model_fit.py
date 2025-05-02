@@ -23,12 +23,6 @@ Inversions are covered in detail in chapter 4 of the **HowToLens** lectures.
 import os
 from os import path
 
-cwd = os.getcwd()
-
-from autoconf import conf
-
-conf.instance.push(new_path=path.join(cwd, "config", "searches"))
-
 import autofit as af
 import autolens as al
 import autolens.plot as aplt

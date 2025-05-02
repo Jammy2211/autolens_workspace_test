@@ -38,12 +38,6 @@ def fit():
     import os
     from os import path
 
-    cwd = os.getcwd()
-
-    from autoconf import conf
-
-    conf.instance.push(new_path=path.join(cwd, "config", "slam"))
-
     import autofit as af
     import autolens as al
     import autolens.plot as aplt
@@ -177,7 +171,7 @@ def fit():
     source_bulge = source_bulge
     source_disk = None
     extra_galaxies = None
-    dataset_model= af.Model(al.DatasetModel)
+    dataset_model = af.Model(al.DatasetModel)
 
     """
     __Analysis Summing__
@@ -185,7 +179,6 @@ def fit():
     With Analysis Summing, I can set up a model via prior passing as follows
     """
     analysis_list = [al.AnalysisImaging(dataset=dataset) for dataset in dataset_list]
-    analysis = sum(analysis_list)
 
     model = af.Collection(
         galaxies=af.Collection(
@@ -206,154 +199,8 @@ def fit():
             ),
         ),
         extra_galaxies=extra_galaxies,
-    #    dataset_model=dataset_model,
+        #    dataset_model=dataset_model,
     )
-
-#    analysis = analysis.with_free_parameters(model.dataset_model.grid_offset)
-
-    search = af.DynestyStatic(
-        name="task_5_analysis_summing_database",
-        **settings_search.search_dict,
-        nlive=200,
-    )
-
-    source_lp_result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
-
-
-
-    """
-    __Database Stuff__
-    """
-
-    from autofit.database.aggregator import Aggregator
-
-    database_file = "task_5_database.sqlite"
-
-    try:
-        os.remove(path.join("output", database_file))
-    except FileNotFoundError:
-        pass
-
-    agg = Aggregator.from_database(database_file)
-    agg.add_directory(
-        directory=path.join("output", "model_graph", "task_5_analysis_summing_database")
-    )
-
-    assert len(agg) > 0
-
-    """
-    __Samples + Results__
-
-    Make sure database + agg can be used.
-    """
-    for samples in agg.values("samples"):
-        print(samples.log_likelihood_list[9])
-
-    ml_vector = [
-        samps.max_log_likelihood(as_instance=False) for samps in agg.values("samples")
-    ]
-    print(ml_vector, "\n\n")
-
-    """
-    __Queries__
-    """
-    unique_tag = agg.search.unique_tag
-    agg_query = agg.query(unique_tag == "mass_sie__source_sersic__1")
-    samples_gen = agg_query.values("samples")
-
-    unique_tag = agg.search.unique_tag
-    agg_query = agg.query(unique_tag == "incorrect_name")
-    samples_gen = agg_query.values("samples")
-
-    name = agg.search.name
-    agg_query = agg.query(name == "database_example")
-    print("Total Queried Results via search name = ", len(agg_query), "\n\n")
-
-    lens = agg.model.galaxies.lens
-    agg_query = agg.query(lens.mass == al.mp.Isothermal)
-    print("Total Samples Objects via `Isothermal` model query = ", len(agg_query), "\n")
-
-    source = agg.model.galaxies.source
-    agg_query = agg.query(source.disk == None)
-    print("Total Samples Objects via `Isothermal` model query = ", len(agg_query), "\n")
-
-    mass = agg.model.galaxies.lens.mass
-    agg_query = agg.query((mass == al.mp.Isothermal) & (mass.einstein_radius > 1.0))
-    print(
-        "Total Samples Objects In Query `Isothermal and einstein_radius > 3.0` = ",
-        len(agg_query),
-        "\n",
-    )
-
-    """
-    __Files__
-
-    Check that all other files stored in database (e.g. model, search) can be loaded and used.
-    """
-
-    for model in agg.values("model"):
-        print(model.info)
-
-    for search in agg.values("search"):
-        print(search)
-
-    for samples_summary in agg.values("samples_summary"):
-        instance = samples_summary.max_log_likelihood()
-
-    # for info in agg.values("info"):
-    #     print(info["hi"])
-
-    # for data in agg.values("dataset.data"):
-    #     print(data)
-    #
-    # for noise_map in agg.values("dataset.noise_map"):
-    #     print(noise_map)
-
-    # for covariance in agg.values("covariance"):
-    #     print(covariance)
-
-    """
-    __Aggregator Module__
-    """
-    tracer_agg = al.agg.TracerAgg(aggregator=agg)
-    tracer_gen = tracer_agg.max_log_likelihood_gen_from()
-
-    grid = al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.1)
-
-    # for tracer_list in tracer_gen:
-    #     # Only one `Analysis` so take first and only tracer.
-    #     tracer = tracer_list[0]
-    #
-    #     tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
-    #     tracer_plotter.figures_2d(convergence=True, potential=True)
-    #
-    #     print("Tracer Checked")
-
-    imaging_agg = al.agg.ImagingAgg(aggregator=agg)
-    imaging_gen = imaging_agg.dataset_gen_from()
-
-    for dataset_list in imaging_gen:
-        dataset = dataset_list[0]
-
-        dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
-        dataset_plotter.subplot_dataset()
-
-        print("Imaging Checked")
-
-    # fit_agg = al.agg.FitImagingAgg(
-    #     aggregator=agg,
-    #     settings_inversion=al.SettingsInversion(use_border_relocator=False),
-    # )
-    # fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
-    #
-    # for fit_list in fit_imaging_gen:
-    #     fit = fit_list[0]
-    #
-    #     fit_plotter = aplt.FitImagingPlotter(fit=fit)
-    #     fit_plotter.subplot_fit()
-    #
-    #     print("FitImaging Checked")
-
 
     """
     __Preamble__
@@ -366,7 +213,7 @@ def fit():
     source_bulge = source_bulge
     source_disk = None
     extra_galaxies = None
-    dataset_model= af.Model(al.DatasetModel)
+    dataset_model = af.Model(al.DatasetModel)
 
     """
     __Analysis Graphical Model__
@@ -390,20 +237,20 @@ def fit():
             ),
         ),
         extra_galaxies=extra_galaxies,
-    #    dataset_model=dataset_model,
+        #    dataset_model=dataset_model,
     )
 
     analysis_factor_list = []
 
     for i, analysis in enumerate(analysis_list):
 
-        analysis_model = model.copy()
+        model_analysis = model.copy()
 
         # if i > 0:
-        #     analysis_model.dataset_model.grid_offset.grid_offset_0 = af.UniformPrior(
+        #     model_analysis.dataset_model.grid_offset.grid_offset_0 = af.UniformPrior(
         #         lower_limit=-1.0, upper_limit=1.0
         #     )
-        #     analysis_model.dataset_model.grid_offset.grid_offset_1 = af.UniformPrior(
+        #     model_analysis.dataset_model.grid_offset.grid_offset_1 = af.UniformPrior(
         #         lower_limit=-1.0, upper_limit=1.0
         #     )
 
@@ -417,11 +264,15 @@ def fit():
         name="task_5_analysis_graph_database",
         **settings_search.search_dict,
         nlive=200,
+        maxcall=500,
+        maxiter=500,
     )
 
-    source_lp_result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
-
-
+    source_lp_result = search.fit(
+        model=factor_graph.global_prior_model,
+        analysis=factor_graph,
+        info={"hi": "there"},
+    )
 
     """
     __Database Stuff__
@@ -449,7 +300,8 @@ def fit():
     Make sure database + agg can be used.
     """
     for samples in agg.values("samples"):
-        print(samples.log_likelihood_list[9])
+        print(samples.log_likelihood_list)
+        print(samples.log_likelihood_list[0])
 
     ml_vector = [
         samps.max_log_likelihood(as_instance=False) for samps in agg.values("samples")
@@ -502,17 +354,14 @@ def fit():
     for samples_summary in agg.values("samples_summary"):
         instance = samples_summary.max_log_likelihood()
 
-    # for info in agg.values("info"):
-    #     print(info["hi"])
+    for info in agg.values("info"):
+        print(info["hi"])
 
-    # for data in agg.values("dataset.data"):
-    #     print(data)
-    #
-    # for noise_map in agg.values("dataset.noise_map"):
-    #     print(noise_map)
+    for dataset in agg.values("dataset"):
+        print(dataset)
 
-    # for covariance in agg.values("covariance"):
-    #     print(covariance)
+    for covariance in agg.values("covariance"):
+        print(covariance)
 
     """
     __Aggregator Module__
@@ -555,7 +404,6 @@ def fit():
     #     fit_plotter.subplot_fit()
     #
     #     print("FitImaging Checked")
-
 
 
 if __name__ == "__main__":

@@ -23,11 +23,6 @@ def fit():
 
     os.environ["PYAUTOFIT_TEST_MODE"] = "1"
 
-    cwd = os.getcwd()
-    from autoconf import conf
-
-    conf.instance.push(new_path=path.join(cwd, "config", "fit"))
-
     import autofit as af
     import autolens as al
     import autolens.plot as aplt
@@ -307,13 +302,9 @@ def fit():
         print(f"\n****Info****\n\n{info}")
         assert info["hi"] == "there"
 
-    for data in agg.values("dataset.data"):
-        print(f"\n****Data (dataset.data)****\n\n{data}")
-        assert isinstance(data[0], fits.PrimaryHDU)
-
-    for noise_map in agg.values("dataset.noise_map"):
-        print(f"\n****Noise Map (dataset.noise_map)****\n\n{noise_map}")
-        assert isinstance(noise_map[0], fits.PrimaryHDU)
+    for dataset in agg.values("dataset"):
+        print(f"\n****Data (dataset.data)****\n\n{dataset}")
+        assert isinstance(dataset[0], fits.PrimaryHDU)
 
     for covariance in agg.values("covariance"):
         print(f"\n****Covariance (covariance)****\n\n{covariance}")
