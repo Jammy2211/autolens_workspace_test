@@ -117,16 +117,17 @@ class SimulateImagingPixelized:
 
             dataset = dataset.apply_mask(mask=self.mask)
 
-            over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
-                grid=dataset.grid,
-                sub_size_list=[8, 4, 1],
-                radial_list=[0.3, 0.6],
-                centre_list=[(0.0, 0.0)],
+            over_sample_size = (
+                al.util.over_sample.over_sample_size_via_radial_bins_from(
+                    grid=dataset.grid,
+                    sub_size_list=[8, 4, 1],
+                    radial_list=[0.3, 0.6],
+                    centre_list=[(0.0, 0.0)],
+                )
             )
 
             return dataset.apply_over_sampling(
-                over_sample_size_lp=over_sample_size,
-                over_sample_size_pixelization=4
+                over_sample_size_lp=over_sample_size, over_sample_size_pixelization=4
             )
 
         except FileNotFoundError:
@@ -246,8 +247,7 @@ class SimulateImagingPixelized:
         )
 
         dataset = dataset.apply_over_sampling(
-            over_sample_size_lp=over_sample_size,
-            over_sample_size_pixelization=4
+            over_sample_size_lp=over_sample_size, over_sample_size_pixelization=4
         )
 
         """
@@ -428,7 +428,7 @@ to the simulated data.
 
 
 class PerturbFit:
-    def __init__(self, adapt_images, fast_perturb_fit : bool, number_of_cores: int = 1):
+    def __init__(self, adapt_images, fast_perturb_fit: bool, number_of_cores: int = 1):
         """
         Class used to fit every dataset used for sensitivity mapping with the perturbed model (the model with the
         perturbed feature sensitivity mapping maps out).
@@ -729,9 +729,7 @@ def run(
             upper_limit=perturb_instance.mass.centre[1] + b,
         )
 
-        perturb_model.mass.log10m_vir = af.UniformPrior(
-            lower_limit=6, upper_limit=12
-        )
+        perturb_model.mass.log10m_vir = af.UniformPrior(lower_limit=6, upper_limit=12)
 
         return perturb_model
 
@@ -802,13 +800,14 @@ def run(
     )
 
     subhalo_util.visualize_sensitivity_mask(
-        mass_result=mass_result,
-        sensitivity_mask=sensitivity_mask,
-        paths=paths
+        mass_result=mass_result, sensitivity_mask=sensitivity_mask, paths=paths
     )
 
     simulate_cls = SimulateImagingPixelized(
-        mask=mask, psf=psf, inversion=mass_result.max_log_likelihood_fit.inversion, add_poisson_noise_to_data=add_poisson_noise_to_data
+        mask=mask,
+        psf=psf,
+        inversion=mass_result.max_log_likelihood_fit.inversion,
+        add_poisson_noise_to_data=add_poisson_noise_to_data,
     )
 
     sensitivity = af.Sensitivity(
@@ -821,7 +820,9 @@ def run(
             adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
         ),
         perturb_fit_cls=PerturbFit(
-            adapt_images=adapt_images, fast_perturb_fit=fast_perturb_fit, number_of_cores=settings_search.number_of_cores
+            adapt_images=adapt_images,
+            fast_perturb_fit=fast_perturb_fit,
+            number_of_cores=settings_search.number_of_cores,
         ),
         perturb_model_prior_func=perturb_model_prior_func,
         visualizer_cls=subhalo_util.Visualizer(mass_result=mass_result, mask=mask),

@@ -109,22 +109,28 @@ class SimulateImaging:
 
             source_centre = instance.galaxies.source.bulge.centre
 
-            over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
-                grid=traced_grid,
-                sub_size_list=[16, 8, 2],
-                radial_list=[0.1, 0.3],
-                centre_list=[source_centre],
+            over_sample_size = (
+                al.util.over_sample.over_sample_size_via_radial_bins_from(
+                    grid=traced_grid,
+                    sub_size_list=[16, 8, 2],
+                    radial_list=[0.1, 0.3],
+                    centre_list=[source_centre],
+                )
             )
 
-            over_sample_size_lens = al.util.over_sample.over_sample_size_via_radial_bins_from(
-                grid=dataset.grid,
-                sub_size_list=[8, 4, 1],
-                radial_list=[0.3, 0.6],
-                centre_list=[(0.0, 0.0)],
+            over_sample_size_lens = (
+                al.util.over_sample.over_sample_size_via_radial_bins_from(
+                    grid=dataset.grid,
+                    sub_size_list=[8, 4, 1],
+                    radial_list=[0.3, 0.6],
+                    centre_list=[(0.0, 0.0)],
+                )
             )
 
             over_sample_size = np.where(
-                over_sample_size > over_sample_size_lens, over_sample_size, over_sample_size_lens
+                over_sample_size > over_sample_size_lens,
+                over_sample_size,
+                over_sample_size_lens,
             )
             over_sample_size = al.Array2D(values=over_sample_size, mask=self.mask)
 
@@ -199,15 +205,19 @@ class SimulateImaging:
             centre_list=[source_centre],
         )
 
-        over_sample_size_lens = al.util.over_sample.over_sample_size_via_radial_bins_from(
-            grid=dataset.grid,
-            sub_size_list=[8, 4, 1],
-            radial_list=[0.3, 0.6],
-            centre_list=[(0.0, 0.0)],
+        over_sample_size_lens = (
+            al.util.over_sample.over_sample_size_via_radial_bins_from(
+                grid=dataset.grid,
+                sub_size_list=[8, 4, 1],
+                radial_list=[0.3, 0.6],
+                centre_list=[(0.0, 0.0)],
+            )
         )
 
         over_sample_size = np.where(
-            over_sample_size > over_sample_size_lens, over_sample_size, over_sample_size_lens
+            over_sample_size > over_sample_size_lens,
+            over_sample_size,
+            over_sample_size_lens,
         )
         over_sample_size = al.Array2D(values=over_sample_size, mask=self.mask)
 
@@ -369,7 +379,7 @@ to the simulated data.
 
 
 class PerturbFit:
-    def __init__(self, adapt_images, fast_perturb_fit : bool, number_of_cores: int = 1):
+    def __init__(self, adapt_images, fast_perturb_fit: bool, number_of_cores: int = 1):
         """
         Class used to fit every dataset used for sensitivity mapping with the perturbed model (the model with the
         perturbed feature sensitivity mapping maps out).
@@ -581,18 +591,18 @@ def base_model_narrow_priors_from(base_model, result, stretch: float = 1.0):
 
 
 def run(
-        settings_search: af.SettingsSearch,
-        mask: al.Mask2D,
-        psf: al.Kernel2D,
-        mass_result: af.Result,
-        subhalo_mass: af.Model = af.Model(al.mp.NFWMCRLudlowSph),
-        adapt_images: Optional[al.AdaptImages] = None,
-        grid_dimension_arcsec: float = 3.0,
-        add_poisson_noise_to_data : bool = False,
-        fast_perturb_fit: bool = True,
-        number_of_steps: Union[Tuple[int], int] = 5,
-        batch_range: Tuple[int, int] = None,
-        sensitivity_mask: Optional[Union[al.Mask2D, List]] = None,
+    settings_search: af.SettingsSearch,
+    mask: al.Mask2D,
+    psf: al.Kernel2D,
+    mass_result: af.Result,
+    subhalo_mass: af.Model = af.Model(al.mp.NFWMCRLudlowSph),
+    adapt_images: Optional[al.AdaptImages] = None,
+    grid_dimension_arcsec: float = 3.0,
+    add_poisson_noise_to_data: bool = False,
+    fast_perturb_fit: bool = True,
+    number_of_steps: Union[Tuple[int], int] = 5,
+    batch_range: Tuple[int, int] = None,
+    sensitivity_mask: Optional[Union[al.Mask2D, List]] = None,
 ):
     """
     The SLaM SUBHALO PIPELINE for performing sensitivity mapping, which determines what mass dark matter subhalos
@@ -722,9 +732,7 @@ def run(
             upper_limit=perturb_instance.mass.centre[1] + b,
         )
 
-        perturb_model.mass.log10m_vir = af.UniformPrior(
-            lower_limit=6, upper_limit=12
-        )
+        perturb_model.mass.log10m_vir = af.UniformPrior(lower_limit=6, upper_limit=12)
 
         return perturb_model
 
@@ -798,9 +806,7 @@ def run(
     )
 
     subhalo_util.visualize_sensitivity_mask(
-        mass_result=mass_result,
-        sensitivity_mask=sensitivity_mask,
-        paths=paths
+        mass_result=mass_result, sensitivity_mask=sensitivity_mask, paths=paths
     )
 
     sensitivity = af.Sensitivity(
@@ -808,12 +814,16 @@ def run(
         simulation_instance=simulation_instance,
         base_model=base_model,
         perturb_model=perturb_model,
-        simulate_cls=SimulateImaging(mask=mask, psf=psf, add_poisson_noise_to_data=add_poisson_noise_to_data),
+        simulate_cls=SimulateImaging(
+            mask=mask, psf=psf, add_poisson_noise_to_data=add_poisson_noise_to_data
+        ),
         base_fit_cls=BaseFit(
             adapt_images=adapt_images, number_of_cores=settings_search.number_of_cores
         ),
         perturb_fit_cls=PerturbFit(
-            adapt_images=adapt_images, fast_perturb_fit=fast_perturb_fit, number_of_cores=settings_search.number_of_cores
+            adapt_images=adapt_images,
+            fast_perturb_fit=fast_perturb_fit,
+            number_of_cores=settings_search.number_of_cores,
         ),
         perturb_model_prior_func=perturb_model_prior_func,
         visualizer_cls=subhalo_util.Visualizer(mass_result=mass_result, mask=mask),

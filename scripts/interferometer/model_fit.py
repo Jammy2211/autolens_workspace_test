@@ -9,6 +9,7 @@ This script fits `Interferometer` dataset of a 'galaxy-scale' strong lens with a
  - The source galaxy's light is a parametric `Delaunay` `Pixelization` and `Constant`
    regularization.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())

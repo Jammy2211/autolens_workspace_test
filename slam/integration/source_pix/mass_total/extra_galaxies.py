@@ -27,6 +27,7 @@ This uses the SLaM pipelines:
 
 Check them out for a full description of the analysis!
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())
@@ -60,7 +61,9 @@ dataset = al.Imaging.from_fits(
 mask_radius = 3.0
 
 mask = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
+    shape_native=dataset.shape_native,
+    pixel_scales=dataset.pixel_scales,
+    radius=mask_radius,
 )
 
 dataset = dataset.apply_mask(mask=mask)
@@ -280,7 +283,9 @@ analysis = al.AnalysisImaging(
 
 extra_galaxies = source_lp_result.model.extra_galaxies
 
-for galaxy, result_galaxy in zip(extra_galaxies, source_lp_result.instance.extra_galaxies):
+for galaxy, result_galaxy in zip(
+    extra_galaxies, source_lp_result.instance.extra_galaxies
+):
 
     galaxy.bulge = result_galaxy.bulge
 
@@ -351,7 +356,9 @@ bulge_gaussian_list = []
 
 for j in range(gaussian_per_basis):
 
-    gaussian_list = af.Collection(af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians))
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
 
     for i, gaussian in enumerate(gaussian_list):
         gaussian.centre.centre_0 = centre_0
@@ -375,7 +382,9 @@ analysis = al.AnalysisImaging(
 
 extra_galaxies = source_lp_result.model.extra_galaxies
 
-for galaxy, result_galaxy in zip(extra_galaxies, source_pix_result_1.instance.extra_galaxies):
+for galaxy, result_galaxy in zip(
+    extra_galaxies, source_pix_result_1.instance.extra_galaxies
+):
 
     galaxy.mass = result_galaxy.mass
 

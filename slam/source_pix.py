@@ -103,7 +103,7 @@ def run_1(
                 disk=source_lp_result.instance.galaxies.lens.disk,
                 point=source_lp_result.instance.galaxies.lens.point,
                 mass=mass,
-                shear=shear
+                shear=shear,
             ),
             source=af.Model(
                 al.Galaxy,

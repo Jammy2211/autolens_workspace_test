@@ -8,7 +8,7 @@ from typing import Optional, Union
 
 def run(
     settings_search: af.SettingsSearch,
-    analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
+    analysis_list: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     lp_chain_tracer: al.Tracer,
     source_result_for_lens: af.Result,
     source_result_for_source: af.Result,
@@ -80,73 +80,70 @@ def run(
     The dark matter mass profile has the lens and source redshifts added to it, which are used to determine its mass
     from the mass-to-concentration relation of Ludlow et al.    
     """
+    analysis_factor_list = []
 
-    lens_bulge = al.util.chaining.mass_light_dark_from(
-        light_result=light_result,
-        lp_chain_tracer=lp_chain_tracer,
-        name="bulge",
-        use_gradient=use_gradient,
-    )
-    lens_disk = al.util.chaining.mass_light_dark_from(
-        light_result=light_result,
-        lp_chain_tracer=lp_chain_tracer,
-        name="disk",
-        use_gradient=use_gradient,
-    )
+    for i, analysis in enumerate(analysis_list):
 
-    lens_bulge, lens_disk = al.util.chaining.link_ratios(
-        link_mass_to_light_ratios=link_mass_to_light_ratios,
-        light_result=light_result,
-        bulge=lens_bulge,
-        disk=lens_disk,
-    )
+        lens_bulge = al.util.chaining.mass_light_dark_from(
+            light_result=light_result[i],
+            lp_chain_tracer=lp_chain_tracer,
+            name="bulge",
+            use_gradient=use_gradient,
+        )
+        lens_disk = al.util.chaining.mass_light_dark_from(
+            light_result=light_result[i],
+            lp_chain_tracer=lp_chain_tracer,
+            name="disk",
+            use_gradient=use_gradient,
+        )
 
-    if dark is not None:
-        try:
-            dark.centre = lens_bulge.centre
-        except AttributeError:
-            dark.centre = lens_bulge.profile_list[0].centre
+        lens_bulge, lens_disk = al.util.chaining.link_ratios(
+            link_mass_to_light_ratios=link_mass_to_light_ratios,
+            light_result=light_result[i],
+            bulge=lens_bulge,
+            disk=lens_disk,
+        )
 
-        dark.mass_at_200 = af.LogUniformPrior(lower_limit=1e10, upper_limit=1e15)
-        dark.redshift_object = light_result.instance.galaxies.lens.redshift
-        dark.redshift_source = light_result.instance.galaxies.source.redshift
+        if dark is not None:
+            try:
+                dark.centre = lens_bulge.centre
+            except AttributeError:
+                dark.centre = lens_bulge.profile_list[0].centre
 
-    if smbh is not None:
-        smbh.centre = lens_bulge.centre
+            dark.mass_at_200 = af.LogUniformPrior(lower_limit=1e10, upper_limit=1e15)
+            dark.redshift_object = light_result[i].instance.galaxies.lens.redshift
+            dark.redshift_source = light_result[i].instance.galaxies.source.redshift
 
-    source = al.util.chaining.source_from(
-        result=source_result_for_source,
-    )
+        if smbh is not None:
+            smbh.centre = lens_bulge.centre
 
-    model = af.Collection(
-        galaxies=af.Collection(
-            lens=af.Model(
-                al.Galaxy,
-                redshift=light_result.instance.galaxies.lens.redshift,
-                bulge=lens_bulge,
-                disk=lens_disk,
-                point=light_result.instance.galaxies.lens.point,
-                dark=dark,
-                shear=source_result_for_lens.model.galaxies.lens.shear,
-                smbh=smbh,
+        source = al.util.chaining.source_from(
+            result=source_result_for_source[i],
+        )
+
+        model = af.Collection(
+            galaxies=af.Collection(
+                lens=af.Model(
+                    al.Galaxy,
+                    redshift=light_result[i].instance.galaxies.lens.redshift,
+                    bulge=lens_bulge,
+                    disk=lens_disk,
+                    point=light_result[i].instance.galaxies.lens.point,
+                    dark=dark,
+                    shear=source_result_for_lens[i].model.galaxies.lens.shear,
+                    smbh=smbh,
+                ),
+                source=source,
             ),
-            source=source,
-        ),
-        extra_galaxies=extra_galaxies,
-        dataset_model=dataset_model,
-    )
+            extra_galaxies=extra_galaxies,
+            dataset_model=dataset_model,
+        )
 
-    """
-    For single-dataset analyses, the following code does not change the model or analysis and can be ignored.
+        analysis_factor = af.AnalysisFactor(prior_model=model, analysis=analysis)
 
-    For multi-dataset analyses, the following code updates the model and analysis.
-    """
-    analysis = slam_util.analysis_multi_dataset_from(
-        analysis=analysis,
-        model=model,
-        multi_dataset_offset=True,
-        source_regularization_result=source_result_for_source,
-    )
+        analysis_factor_list.append(analysis_factor)
+
+    factor_graph = af.FactorGraphModel(*analysis_factor_list)
 
     search = af.DynestyStatic(
         name="mass_light_dark[1]",
@@ -154,6 +151,6 @@ def run(
         nlive=250,
     )
 
-    result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
+    result = search.fit(model=factor_graph.global_prior_model, analysis=factor_graph)
 
     return result

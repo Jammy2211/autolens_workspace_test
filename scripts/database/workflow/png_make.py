@@ -27,7 +27,7 @@ capabilities.
 __CSV, Png and Fits__
 
 Workflow functionality closely mirrors the `png_make.py` and `fits_make.py`  examples, which load results of
-model-fits and output th em as .png files and .fits files to quickly summarise results. 
+model-fits and output th em as .png files and .fits files to quickly summarise results.
 
 The same initial fit creating results in a folder called `results_folder_png` is therefore used.
 
@@ -55,6 +55,7 @@ because it is optimized for fast querying of results.
 See the package `results/database` for a full description of how to set up the database and the benefits it provides,
 especially if loading results from hard-disk is slow.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())

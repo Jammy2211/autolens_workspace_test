@@ -14,6 +14,7 @@ use their simplest forms, a `Rectangular` `Pixelization` and `Constant` `Regular
 
 Inversions are covered in detail in chapter 4 of the **HowToLens** lectures.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())

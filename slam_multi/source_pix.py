@@ -107,7 +107,7 @@ def run_1(
                     disk=source_lp_result[i].instance.galaxies.lens.disk,
                     point=source_lp_result[i].instance.galaxies.lens.point,
                     mass=mass,
-                    shear=shear
+                    shear=shear,
                 ),
                 source=af.Model(
                     al.Galaxy,
@@ -200,9 +200,9 @@ def run_2(
     This search initializes the pixelization's mesh and regularization.
     """
     analysis_factor_list = []
-    
+
     for i, analysis in enumerate(analysis_list):
-    
+
         model = af.Collection(
             galaxies=af.Collection(
                 lens=af.Model(
@@ -228,15 +228,15 @@ def run_2(
             extra_galaxies=source_pix_result_1[i].instance.extra_galaxies,
             dataset_model=dataset_model,
         )
-    
+
         if image_mesh_pixels_fixed is not None:
             if hasattr(model.galaxies.source.pixelization.image_mesh, "pixels"):
                 model.galaxies.source.pixelization.image_mesh.pixels = (
                     image_mesh_pixels_fixed
                 )
-    
+
         analysis_factor = af.AnalysisFactor(prior_model=model, analysis=analysis)
-    
+
         analysis_factor_list.append(analysis_factor)
 
     factor_graph = af.FactorGraphModel(*analysis_factor_list)

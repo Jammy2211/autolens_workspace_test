@@ -25,7 +25,7 @@ Internally, splicing uses standard Astorpy functions to open, edit and save .fit
 __CSV, Png and Fits__
 
 Workflow functionality closely mirrors the `png_make.py` and `fits_make.py`  examples, which load results of
-model-fits and output th em as .png files and .fits files to quickly summarise results. 
+model-fits and output th em as .png files and .fits files to quickly summarise results.
 
 The same initial fit creating results in a folder called `results_folder_fits` is therefore used.
 
@@ -53,6 +53,7 @@ because it is optimized for fast querying of results.
 See the package `results/database` for a full description of how to set up the database and the benefits it provides,
 especially if loading results from hard-disk is slow.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())
@@ -122,7 +123,9 @@ for i in range(2):
         number_of_cores=1,
     )
 
-    analysis = al.AnalysisImaging(dataset=dataset, raise_inversion_positions_likelihood_exception=False)
+    analysis = al.AnalysisImaging(
+        dataset=dataset, raise_inversion_positions_likelihood_exception=False
+    )
 
     result = search.fit(model=model, analysis=analysis)
 
@@ -281,7 +284,9 @@ for i, reconstruction_dict in enumerate(reconstruction_dict_list):
     x = reconstruction_dict["x"]
     values = reconstruction_dict["reconstruction"]
 
-    points = np.stack(arrays=(reconstruction_dict["x"], reconstruction_dict["y"]), axis=-1)
+    points = np.stack(
+        arrays=(reconstruction_dict["x"], reconstruction_dict["y"]), axis=-1
+    )
 
     interpolation_grid = al.Grid2D.from_extent(
         extent=(-1.0, 1.0, -1.0, 1.0), shape_native=(201, 201)

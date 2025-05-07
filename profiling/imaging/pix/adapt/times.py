@@ -6,6 +6,7 @@ datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.
 """
+
 import os
 from os import path
 
@@ -344,9 +345,9 @@ info_dict["sub_total"] = masked_dataset.grids.pixelization.over_sampler.sub_tota
 info_dict["mask_radius"] = mask_radius
 info_dict["psf_shape_2d"] = psf_shape_2d
 try:
-    info_dict[
-        "w_tilde_curvature_preload_size"
-    ] = fit.inversion.leq.w_tilde.curvature_preload.shape[0]
+    info_dict["w_tilde_curvature_preload_size"] = (
+        fit.inversion.leq.w_tilde.curvature_preload.shape[0]
+    )
 except AttributeError:
     pass
 info_dict["source_pixels"] = len(fit.inversion.reconstruction)

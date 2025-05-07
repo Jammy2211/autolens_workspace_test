@@ -7,6 +7,7 @@ This script simulates `Imaging` of a strong lens where:
  - The resolution, PSF and S/N are representative of Hubble Space Telescope `Imaging` that has been multidrizzled to
    higher resolution.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())
@@ -59,7 +60,10 @@ To simulate the `Imaging` dataset we first create a simulator, which defines the
 noise levels and psf of the dataset that is simulated.
 """
 simulator = al.SimulatorImaging(
-    exposure_time=2000.0, psf=psf, background_sky_level=1.0, add_poisson_noise_to_data=True
+    exposure_time=2000.0,
+    psf=psf,
+    background_sky_level=1.0,
+    add_poisson_noise_to_data=True,
 )
 
 """

@@ -41,7 +41,7 @@ def fit():
     import autofit as af
     import autolens as al
     import autolens.plot as aplt
-    import slam_graph
+    import slam_multi
 
     """
     __Dataset__ 
@@ -179,7 +179,7 @@ def fit():
 
     analysis_list = [al.AnalysisImaging(dataset=dataset) for dataset in dataset_list]
 
-    source_lp_result = slam_graph.source_lp.run(
+    source_lp_result = slam_multi.source_lp.run(
         settings_search=settings_search,
         analysis_list=analysis_list,
         lens_bulge=lens_bulge,
@@ -227,13 +227,13 @@ def fit():
     analysis_list = [
         al.AnalysisImaging(
             dataset=result.max_log_likelihood_fit.dataset,
-           adapt_image_maker=al.AdaptImageMaker(result=result),
-           positions_likelihood=positions_likelihood,
+            adapt_image_maker=al.AdaptImageMaker(result=result),
+            positions_likelihood=positions_likelihood,
         )
         for result in source_lp_result
     ]
 
-    source_pix_result_1 = slam_graph.source_pix.run_1(
+    source_pix_result_1 = slam_multi.source_pix.run_1(
         settings_search=settings_search,
         analysis_list=analysis_list,
         source_lp_result=source_lp_result,
@@ -275,7 +275,7 @@ def fit():
         for result in source_pix_result_1
     ]
 
-    source_pix_result_2 = slam_graph.source_pix.run_2(
+    source_pix_result_2 = slam_multi.source_pix.run_2(
         settings_search=settings_search,
         analysis_list=analysis_list,
         source_lp_result=source_lp_result,
@@ -338,7 +338,7 @@ def fit():
         profile_list=bulge_gaussian_list,
     )
 
-    light_result = slam_graph.light_lp.run(
+    light_result = slam_multi.light_lp.run(
         settings_search=settings_search,
         analysis_list=analysis_list,
         source_result_for_lens=source_pix_result_1,
@@ -387,7 +387,7 @@ def fit():
         for result in source_pix_result_1
     ]
 
-    mass_result = slam_graph.mass_total.run(
+    mass_result = slam_multi.mass_total.run(
         settings_search=settings_search,
         analysis_list=analysis_list,
         source_result_for_lens=source_pix_result_1,
@@ -395,54 +395,6 @@ def fit():
         light_result=light_result,
         mass=af.Model(al.mp.PowerLaw),
         dataset_model=af.Model(al.DatasetModel),
-    )
-
-    """
-    __Output__
-
-    The slam_graph pipeline above outputs the model-fitting results to the `output` folder of the workspace, which includes
-    the usual model results, visualization, and .json files.
-
-    As described in the `autolens_workspace/*/results` package there is an API for loading these results from hard disk
-    to Python, for example so they can be manipulated in a Juypter notebook.
-
-    However, it is also often useful to output the results to the dataset folder of each lens in standard formats, for
-    example images of the lens and lensed source in .fits or visualization outputs like .png files. This makes transferring
-    the results more portable, especially if they are to be used by other people.
-
-    The `slam_util` module provides convenience methods for outputting many results to the dataset folder, we
-    use it below to output the following results:
-
-     - Images of the model lens light, lensed source light and source reconstruction to .fits files.
-     - A text `model.results` file containing the lens model parameter estimates.
-     - A subplot containing the fit in one row, which is output to .png.
-     - A subplot of the source reconstruction in the source plane in one row, which is output to .png.
-
-    """
-    slam_graph.slam_util.output_result_to_fits(
-        output_path=path.join(dataset_path, "result"),
-        result=mass_result,
-        model_lens_light=True,
-        model_source_light=True,
-        source_reconstruction=True,
-    )
-
-    slam_graph.slam_util.output_model_results(
-        output_path=path.join(dataset_path, "result"),
-        result=mass_result,
-        filename="model.results",
-    )
-
-    slam_graph.slam_util.output_fit_multi_png(
-        output_path=dataset_path,
-        result_list=[mass_result],
-        filename="sie_fit",
-    )
-
-    slam_graph.slam_util.output_source_multi_png(
-        output_path=dataset_path,
-        result_list=[mass_result],
-        filename="source_reconstruction",
     )
 
     """
@@ -470,13 +422,13 @@ def fit():
         for result in source_pix_result_1
     ]
 
-    subhalo_result_1 = slam_graph.subhalo.detection.run_1_no_subhalo(
+    subhalo_result_1 = slam_multi.subhalo.detection.run_1_no_subhalo(
         settings_search=settings_search,
         analysis_list=analysis_list,
         mass_result=mass_result,
     )
 
-    subhalo_grid_search_result_2 = slam_graph.subhalo.detection.run_2_grid_search(
+    subhalo_grid_search_result_2 = slam_multi.subhalo.detection.run_2_grid_search(
         settings_search=settings_search,
         analysis_list=analysis_list,
         mass_result=mass_result,
@@ -486,7 +438,7 @@ def fit():
         number_of_steps=2,
     )
 
-    subhalo_result_3 = slam_graph.subhalo.detection.run_3_subhalo(
+    subhalo_result_3 = slam_multi.subhalo.detection.run_3_subhalo(
         settings_search=settings_search,
         analysis_list=analysis_list,
         subhalo_result_1=subhalo_result_1,
@@ -500,6 +452,5 @@ def fit():
 
 
 if __name__ == "__main__":
-    import schwimmbad
 
     fit()

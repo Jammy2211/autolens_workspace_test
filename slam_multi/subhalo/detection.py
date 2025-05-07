@@ -153,7 +153,9 @@ def run_2_grid_search(
 
     if not free_redshift:
         subhalo.redshift = subhalo_result_1[0].instance.galaxies.lens.redshift
-        subhalo.mass.redshift_object = subhalo_result_1[0].instance.galaxies.lens.redshift
+        subhalo.mass.redshift_object = subhalo_result_1[
+            0
+        ].instance.galaxies.lens.redshift
         search_tag = "search_lens_plane"
     else:
         subhalo.redshift = af.UniformPrior(
@@ -285,7 +287,9 @@ def run_3_subhalo(
 
     if not free_redshift:
         subhalo.redshift = subhalo_result_1[0].instance.galaxies.lens.redshift
-        subhalo.mass.redshift_object = subhalo_result_1[0].instance.galaxies.lens.redshift
+        subhalo.mass.redshift_object = subhalo_result_1[
+            0
+        ].instance.galaxies.lens.redshift
         refine_tag = "single_plane_refine"
     else:
         subhalo.redshift = af.UniformPrior(
@@ -296,9 +300,11 @@ def run_3_subhalo(
         refine_tag = "multi_plane_refine"
 
     subhalo.mass.mass_at_200 = af.LogUniformPrior(lower_limit=1.0e6, upper_limit=1.0e11)
-    subhalo.mass.centre = subhalo_grid_search_result_2[0].model_absolute(
-        a=1.0
-    ).galaxies.subhalo.mass.centre
+    subhalo.mass.centre = (
+        subhalo_grid_search_result_2[0]
+        .model_absolute(a=1.0)
+        .galaxies.subhalo.mass.centre
+    )
 
     subhalo.redshift = subhalo_grid_search_result_2[0].model.galaxies.subhalo.redshift
     subhalo.mass.redshift_object = subhalo.redshift

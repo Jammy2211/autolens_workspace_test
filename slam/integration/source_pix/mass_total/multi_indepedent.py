@@ -56,7 +56,9 @@ def fit():
 
     dataset = al.Imaging.from_fits(
         data_path=path.join(dataset_main_path, f"{dataset_waveband}_data.fits"),
-        noise_map_path=path.join(dataset_main_path, f"{dataset_waveband}_noise_map.fits"),
+        noise_map_path=path.join(
+            dataset_main_path, f"{dataset_waveband}_noise_map.fits"
+        ),
         psf_path=path.join(dataset_main_path, f"{dataset_waveband}_psf.fits"),
         pixel_scales=0.08,
     )
@@ -64,7 +66,9 @@ def fit():
     mask_radius = 3.0
 
     mask = al.Mask2D.circular(
-        shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
+        shape_native=dataset.shape_native,
+        pixel_scales=dataset.pixel_scales,
+        radius=mask_radius,
     )
 
     dataset = dataset.apply_mask(mask=mask)
@@ -563,7 +567,7 @@ def fit():
             source_lp_result=source_lp_result,
             mesh_init=al.mesh.Delaunay,
             dataset_model=dataset_model,
-            fixed_mass_model=True
+            fixed_mass_model=True,
         )
 
         source_pix_result_1.max_log_likelihood_fit.inversion.cls_list_from(
@@ -612,7 +616,9 @@ def fit():
 
     slam.slam_util.output_fit_multi_png(
         output_path=path.join(dataset_main_path),
-        result_list=[multi_result_dict[dataset_waveband] for dataset_waveband in tag_list],
+        result_list=[
+            multi_result_dict[dataset_waveband] for dataset_waveband in tag_list
+        ],
         tag_list=tag_list,
         filename="8_sie_fit",
         main_dataset_index=0,
@@ -620,12 +626,13 @@ def fit():
 
     slam.slam_util.output_source_multi_png(
         output_path=path.join(dataset_main_path),
-        result_list=[multi_result_dict[dataset_waveband] for dataset_waveband in tag_list],
+        result_list=[
+            multi_result_dict[dataset_waveband] for dataset_waveband in tag_list
+        ],
         tag_list=tag_list,
         filename="9_source_reconstruction",
         main_dataset_index=0,
     )
-
 
 
 if __name__ == "__main__":

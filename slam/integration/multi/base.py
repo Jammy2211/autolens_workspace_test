@@ -52,12 +52,12 @@ def fit():
     pixel_scale_list = [0.12, 0.08]
 
     dataset_name = "lens_sersic"
-    dataset_main_path = path.join("dataset", "multi",  dataset_name)
+    dataset_main_path = path.join("dataset", "multi", dataset_name)
     dataset_path = path.join(dataset_main_path, dataset_name)
 
     dataset_list = []
 
-    for dataset_waveband, pixel_scale in zip(dataset_waveband_list,pixel_scale_list):
+    for dataset_waveband, pixel_scale in zip(dataset_waveband_list, pixel_scale_list):
         dataset = al.Imaging.from_fits(
             data_path=path.join(dataset_main_path, f"{dataset_waveband}_data.fits"),
             noise_map_path=path.join(

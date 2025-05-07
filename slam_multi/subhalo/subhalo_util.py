@@ -143,6 +143,7 @@ def visualize_sensitivity(
     plotter.subplot_sensitivity()
     plotter.sensitivity_to_fits()
 
+
 def sensitivty_mask_brightest_from(
     mass_result,
     grid_dimensions_extent: Tuple[float, float, float, float],

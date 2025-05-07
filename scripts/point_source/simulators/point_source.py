@@ -7,6 +7,7 @@ This script simulates `Positions` data of a strong lens where:
  - The lens galaxy's total mass distribution is an `Isothermal`.
  - The source `Galaxy` is a `Point`.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())

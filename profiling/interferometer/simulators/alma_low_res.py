@@ -6,6 +6,7 @@ This script simulates `Interferometer` data of a 'galaxy-scale' strong lens wher
 
  - The resolution, UV wavelengths and S/N are representative of Square Mile Array (SMA) interferometry.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())

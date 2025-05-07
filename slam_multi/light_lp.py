@@ -88,13 +88,6 @@ def run(
             dataset_model=dataset_model,
         )
 
-        analysis = slam_util.analysis_multi_dataset_from(
-            analysis=analysis,
-            model=model,
-            multi_dataset_offset=True,
-            source_regularization_result=source_result_for_source[i],
-        )
-
         analysis_factor = af.AnalysisFactor(prior_model=model, analysis=analysis)
 
         analysis_factor_list.append(analysis_factor)

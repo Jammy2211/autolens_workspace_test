@@ -3,6 +3,7 @@ __PROFILING: Plots__
 
 This script creates plots for all `Imaging` profiling scripts performed by PyAutoLens.
 """
+
 import os
 from os import path
 

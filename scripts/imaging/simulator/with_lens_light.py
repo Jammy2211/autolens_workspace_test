@@ -7,6 +7,7 @@ This script simulates `Imaging` of a strong lens where:
  - The lens galaxy's total mass distribution is an `Isothermal` and `ExternalShear`.
  - The source galaxy's `LightProfile` is an `Sersic`.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())
@@ -57,7 +58,10 @@ To simulate the `Imaging` dataset we first create a simulator, which defines the
 noise levels and psf of the dataset that is simulated.
 """
 simulator = al.SimulatorImaging(
-    exposure_time=300.0, psf=psf, background_sky_level=0.1, add_poisson_noise_to_data=True
+    exposure_time=300.0,
+    psf=psf,
+    background_sky_level=0.1,
+    add_poisson_noise_to_data=True,
 )
 
 """

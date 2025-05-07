@@ -41,7 +41,7 @@ def fit():
     import autofit as af
     import autolens as al
     import autolens.plot as aplt
-    import slam_graph
+    import slam_multi
 
     """
     __Dataset__ 
@@ -52,12 +52,12 @@ def fit():
     pixel_scale_list = [0.12, 0.08]
 
     dataset_name = "lens_sersic"
-    dataset_main_path = path.join("dataset", "multi",  dataset_name)
+    dataset_main_path = path.join("dataset", "multi", dataset_name)
     dataset_path = path.join(dataset_main_path, dataset_name)
 
     dataset_list = []
 
-    for dataset_waveband, pixel_scale in zip(dataset_waveband_list,pixel_scale_list):
+    for dataset_waveband, pixel_scale in zip(dataset_waveband_list, pixel_scale_list):
         dataset = al.Imaging.from_fits(
             data_path=path.join(dataset_main_path, f"{dataset_waveband}_data.fits"),
             noise_map_path=path.join(
@@ -174,7 +174,7 @@ def fit():
         profile_list=bulge_gaussian_list,
     )
 
-    source_lp_result = slam_graph.source_lp.run(
+    source_lp_result = slam_multi.source_lp.run(
         settings_search=settings_search,
         analysis=analysis,
         lens_bulge=lens_bulge,
@@ -200,7 +200,7 @@ def fit():
         ),
     )
 
-    source_pix_result_1 = slam_graph.source_pix.run_1(
+    source_pix_result_1 = slam_multi.source_pix.run_1(
         settings_search=settings_search,
         analysis=analysis,
         source_lp_result=source_lp_result,
@@ -223,7 +223,7 @@ def fit():
         ),
     )
 
-    source_pix_result_2 = slam_graph.source_pix.run_2(
+    source_pix_result_2 = slam_multi.source_pix.run_2(
         settings_search=settings_search,
         analysis=analysis,
         source_lp_result=source_lp_result,
@@ -239,7 +239,8 @@ def fit():
     As above, this pipeline also has the same API as the `start_here.ipynb` example.
     """
     analysis = al.AnalysisImaging(
-        dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
+        dataset=dataset,
+        adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
     )
 
     centre_0 = af.UniformPrior(lower_limit=-0.2, upper_limit=0.2)
@@ -270,7 +271,7 @@ def fit():
         profile_list=bulge_gaussian_list,
     )
 
-    light_result = slam_graph.light_lp.run(
+    light_result = slam_multi.light_lp.run(
         settings_search=settings_search,
         analysis=analysis,
         source_result_for_lens=source_pix_result_1,
@@ -292,7 +293,7 @@ def fit():
         ),
     )
 
-    mass_result = slam_graph.mass_total.run(
+    mass_result = slam_multi.mass_total.run(
         settings_search=settings_search,
         analysis=analysis,
         source_result_for_lens=source_pix_result_1,
@@ -445,7 +446,7 @@ def fit():
             profile_list=bulge_gaussian_list,
         )
 
-        source_lp_result = slam_graph.source_lp.run(
+        source_lp_result = slam_multi.source_lp.run(
             settings_search=settings_search,
             analysis=analysis,
             lens_bulge=light_result.instance.galaxies.lens.bulge,
@@ -484,7 +485,7 @@ def fit():
             source_lp_result.instance.dataset_model.grid_offset[1]
         )
 
-        source_pix_result_1 = slam_graph.source_pix.run_1(
+        source_pix_result_1 = slam_multi.source_pix.run_1(
             settings_search=settings_search,
             analysis=analysis,
             source_lp_result=source_lp_result,
@@ -515,7 +516,7 @@ def fit():
             source_lp_result.instance.dataset_model.grid_offset[1]
         )
 
-        multi_result = slam_graph.source_pix.run_2(
+        multi_result = slam_multi.source_pix.run_2(
             settings_search=settings_search,
             analysis=analysis,
             source_lp_result=source_lp_result,

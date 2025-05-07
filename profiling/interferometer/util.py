@@ -37,9 +37,7 @@ dataset_path = path.join("dataset", "interferometer", "instruments", "alma_high_
 
 uv_wavelengths_path = path.join(dataset_path, "uv_wavelengths.fits")
 
-uv_wavelengths = al.util.array_2d.numpy_array_2d_via_fits_from(
-    file_path=uv_wavelengths_path, hdu=0
-)
+uv_wavelengths = al.ndarray_via_fits_from(file_path=uv_wavelengths_path, hdu=0)
 
 grid = image_plane_grid_from_uv_wavelengths(uv_wavelengths=uv_wavelengths)
 

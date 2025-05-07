@@ -5,6 +5,7 @@ Database: Model-Fit
 This is a simple example of a model-fit which we wish to write to the database. This should simply output the
 results to the `.sqlite` database file.
 """
+
 import pytest
 
 # %matplotlib inline
