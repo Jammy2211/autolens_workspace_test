@@ -1,7 +1,6 @@
 import autofit as af
 import autolens as al
-
-from . import slam_util
+from autogalaxy.analysis import chaining_util
 
 from typing import Optional, Tuple, Union
 
@@ -10,15 +9,14 @@ def run_1(
     settings_search: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     source_lp_result: af.Result,
+    extra_galaxies: Optional[af.Collection] = None,
     image_mesh_init: af.Model(al.AbstractImageMesh) = af.Model(al.image_mesh.Overlay),
     mesh_init: af.Model(al.AbstractMesh) = af.Model(al.mesh.Delaunay),
     image_mesh_init_shape: Tuple[int, int] = (34, 34),
     regularization_init: af.Model(al.AbstractRegularization) = af.Model(
         al.reg.AdaptiveBrightnessSplit
     ),
-    extra_galaxies: Optional[af.Collection] = None,
     dataset_model: Optional[af.Model] = None,
-    fixed_mass_model: bool = False,
 ) -> af.Result:
     """
     The first SLaM SOURCE PIX PIPELINE, which initializes a lens model which uses a pixelized source for the source
@@ -34,9 +32,6 @@ def run_1(
 
     Parameters
     ----------
-    settings_search
-        The settings used to set up the non-linear search which are general to all SLaM pipelines, for example
-        the `path_prefix`.
     analysis
         The analysis class which includes the `log_likelihood_function` and can be customized for the SLaM model-fit.
     source_lp_result
@@ -53,15 +48,9 @@ def run_1(
     regularization_init
         The regularization, which places a smoothness prior on the source reconstruction, used by the pixelization
         which fits the source light in the initialization search (`search[1]`).
-    extra_galaxies
-        Additional extra galaxies containing light and mass profiles, which model nearby line of sight galaxies.
     dataset_model
         Add aspects of the dataset to the model, for example the arc-second (y,x) offset between two datasets for
         multi-band fitting or the background sky level.
-    fixed_mass_model
-        Whether the mass model is fixed from the SOURCE LP PIPELINE, which is generally used for multi-band fitting
-        where the mass model is fixed to the first band, albeit it may work for standard fitting if the SOURCE LP
-        PIPELINE provides a good mass model.
     """
 
     """
@@ -81,19 +70,11 @@ def run_1(
     images that are used in search 2.
     """
 
-    if not fixed_mass_model:
-
-        mass = al.util.chaining.mass_from(
-            mass=source_lp_result.model.galaxies.lens.mass,
-            mass_result=source_lp_result.model.galaxies.lens.mass,
-            unfix_mass_centre=True,
-        )
-        shear = source_lp_result.model.galaxies.lens.shear
-
-    else:
-
-        mass = source_lp_result.instance.galaxies.lens.mass
-        shear = source_lp_result.instance.galaxies.lens.shear
+    mass = chaining_util.mass_from( #al.util.chaining.mass_from(
+        mass=source_lp_result.model.galaxies.lens.mass,
+        mass_result=source_lp_result.model.galaxies.lens.mass,
+        unfix_mass_centre=True,
+    )
 
     image_mesh_init.shape = image_mesh_init_shape
 
@@ -106,7 +87,7 @@ def run_1(
                 disk=source_lp_result.instance.galaxies.lens.disk,
                 point=source_lp_result.instance.galaxies.lens.point,
                 mass=mass,
-                shear=shear,
+                shear=source_lp_result.model.galaxies.lens.shear,
             ),
             source=af.Model(
                 al.Galaxy,
@@ -119,6 +100,7 @@ def run_1(
                 ),
             ),
         ),
+        #extra_galaxies=al.util.chaining.extra_galaxies_from(result=source_lp_result),
         extra_galaxies=extra_galaxies,
         dataset_model=dataset_model,
     )
@@ -139,13 +121,13 @@ def run_2(
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     source_lp_result: af.Result,
     source_pix_result_1: af.Result,
+    extra_galaxies: Optional[af.Collection] = None,
     image_mesh: af.Model(al.AbstractImageMesh) = af.Model(al.image_mesh.Hilbert),
     mesh: af.Model(al.AbstractMesh) = af.Model(al.mesh.Delaunay),
     regularization: af.Model(al.AbstractRegularization) = af.Model(
         al.reg.AdaptiveBrightnessSplit
     ),
     image_mesh_pixels_fixed: Optional[int] = 1000,
-    dataset_model: Optional[af.Model] = None,
 ) -> af.Result:
     """
     The second SLaM SOURCE PIX PIPELINE, which fits a fixed lens model which uses a pixelized source for the source
@@ -158,9 +140,6 @@ def run_2(
 
     Parameters
     ----------
-    settings_search
-        The settings used to set up the non-linear search which are general to all SLaM pipelines, for example
-        the `path_prefix`.
     analysis
         The analysis class which includes the `log_likelihood_function` and can be customized for the SLaM model-fit.
     source_lp_result
@@ -177,11 +156,6 @@ def run_2(
     image_mesh_pixels_fixed
         The fixed number of pixels in the image-mesh, if an image-mesh with an input number of pixels is used
         (e.g. `Hilbert`).
-    extra_galaxies
-        Additional extra galaxies containing light and mass profiles, which model nearby line of sight galaxies.
-    dataset_model
-        Add aspects of the dataset to the model, for example the arc-second (y,x) offset between two datasets for
-        multi-band fitting or the background sky level.
     """
 
     """
@@ -217,8 +191,8 @@ def run_2(
                 ),
             ),
         ),
-        extra_galaxies=source_pix_result_1.instance.extra_galaxies,
-        dataset_model=dataset_model,
+        #extra_galaxies=al.util.chaining.extra_galaxies_from(result=source_lp_result),
+        extra_galaxies=extra_galaxies,
     )
 
     if image_mesh_pixels_fixed is not None:
@@ -249,126 +223,6 @@ def run_2(
         name="source_pix[2]",
         **settings_search.search_dict,
         nlive=100,
-    )
-
-    result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
-
-    return result
-
-
-
-def run_DSPL_1(
-    settings_search: af.SettingsSearch,
-    analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
-    source_lp_result: af.Result,
-    lens_mass: af.Model = af.Model(al.mp.Isothermal),
-    shear: af.Model(al.mp.ExternalShear) = af.Model(al.mp.ExternalShear),
-    source_mass_1: Optional[af.Model] = af.Model(al.mp.Isothermal),
-    extra_galaxies: Optional[af.Collection] = None,
-    image_mesh_init: af.Model(al.AbstractImageMesh) = af.Model(al.image_mesh.Overlay),
-    mesh_init: af.Model(al.AbstractMesh) = af.Model(al.mesh.Delaunay),
-    image_mesh_init_shape: Tuple[int, int] = (34, 34),
-    regularization_init: af.Model(al.AbstractRegularization) = af.Model(
-        al.reg.AdaptiveBrightnessSplit
-    ),
-    dataset_model: Optional[af.Model] = None,
-) -> af.Result:
-    """
-    The first SLaM SOURCE PIX PIPELINE, which initializes a lens model which uses a pixelized source for the source
-    analysis.
-
-    The first SOURCE PIX PIPELINE may require an adapt-image, for example to adapt the regularization scheme to the
-    source's unlensed morphology. The adapt image provided by the SOURCE LP PIPELINE may not cover the entire source
-    galaxy (e.g. because the MGE only captures part of the source) and produce a suboptimal fit.
-
-    The result of this pipeline is used in the second SOURCE PIX PIPELINE to adapt the source pixelization to the
-    source's unlensed morphology via an adapt image, where the adapt image produced in this pipeline will give a robust
-    source image because it uses a pixelized source.
-
-    Parameters
-    ----------
-    analysis
-        The analysis class which includes the `log_likelihood_function` and can be customized for the SLaM model-fit.
-    source_lp_result
-        The results of the SLaM SOURCE LP PIPELINE which ran before this pipeline.
-    image_mesh_init
-        The image mesh, which defines how the mesh centres are computed in the image-plane, used by the pixelization
-        in the first search which initializes the source.
-    image_mesh_init_shape
-        The shape (e.g. resolution) of the image-mesh used in the initialization search (`search[1]`). This is only
-        used if the image-mesh has a `shape` parameter (e.g. `Overlay`).
-    mesh_init
-        The mesh, which defines how the source is reconstruction in the source-plane, used by the pixelization
-        in the first search which initializes the source.
-    regularization_init
-        The regularization, which places a smoothness prior on the source reconstruction, used by the pixelization
-        which fits the source light in the initialization search (`search[1]`).
-    dataset_model
-        Add aspects of the dataset to the model, for example the arc-second (y,x) offset between two datasets for
-        multi-band fitting or the background sky level.
-    """
-
-    """
-    __Model + Search + Analysis + Model-Fit (Search 1)__
-
-    Search 1 of the SOURCE PIX PIPELINE fits a lens model where:
-
-    - The lens galaxy light is modeled using light profiles [parameters fixed to result of SOURCE LP PIPELINE].
-
-     - The lens galaxy mass is modeled using a total mass distribution [parameters initialized from the results of the 
-     SOURCE LP PIPELINE].
-
-     - The source galaxy's light is the input initialization image mesh, mesh and regularization scheme [parameters of 
-     regularization free to vary].
-
-    This search improves the lens mass model by modeling the source using a pixelization and computes the adapt
-    images that are used in search 2.
-    """
-
-    image_mesh_init.shape = image_mesh_init_shape
-
-    model = af.Collection(
-        galaxies=af.Collection(
-            lens=af.Model(
-                al.Galaxy,
-                redshift=source_lp_result.instance.galaxies.lens.redshift,
-                bulge=source_lp_result.instance.galaxies.lens.bulge,
-                mass=lens_mass,
-                shear=shear,
-            ),
-            source_1=af.Model(
-                al.Galaxy,
-                redshift=source_lp_result.instance.galaxies.source_1.redshift,
-                pixelization=af.Model(
-                    al.Pixelization,
-                    image_mesh=image_mesh_init,
-                    mesh=mesh_init,
-                    regularization=regularization_init,
-                ),
-                mass=source_mass_1
-            ),
-            source_2=af.Model(
-                al.Galaxy,
-                redshift=source_lp_result.instance.galaxies.source_2.redshift,
-                pixelization=af.Model(
-                    al.Pixelization,
-                    image_mesh=image_mesh_init,
-                    mesh=mesh_init,
-                    regularization=regularization_init,
-                ),
-
-            ),
-        ),
-        #extra_galaxies=al.util.chaining.extra_galaxies_from(result=source_lp_result),
-        extra_galaxies=extra_galaxies,
-        dataset_model=dataset_model,
-    )
-
-    search = af.Nautilus(
-        name="source_pix[1]",
-        **settings_search.search_dict,
-        n_live=150,
-        n_like_max=300
     )
 
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)

@@ -90,17 +90,17 @@ def fit():
 
     """
     __SOURCE LP PIPELINE (with lens light)__
-    
+
     The SOURCE LP PIPELINE (with lens light) uses three searches to initialize a robust model for the 
     source galaxy's light, which in this example:
-     
+
      - Uses a parametric `Sersic` bulge and `Exponential` disk with centres aligned for the lens
      galaxy's light.
-     
+
      - Uses an `Isothermal` model for the lens's total mass distribution with an `ExternalShear`.
-    
+
      Settings:
-    
+
      - Mass Centre: Fix the mass profile centre to (0.0, 0.0) (this assumption will be relaxed in the MASS PIPELINE).
     """
     analysis = al.AnalysisImaging(dataset=dataset)
@@ -109,17 +109,16 @@ def fit():
     disk = af.Model(al.lp.Exponential)
     bulge.centre = disk.centre
 
-    source_lp_result = slam.source_lp.run(
+    source_lp_result = slam.source_lp.run_DSPL(
         settings_search=settings_search,
         analysis=analysis,
         lens_bulge=bulge,
-        lens_disk=disk,
-        mass=af.Model(al.mp.Isothermal),
+        #  lens_disk=disk,
+        lens_mass=af.Model(al.mp.Isothermal),
         shear=af.Model(al.mp.ExternalShear),
-        source_bulge=af.Model(al.lp.Sersic),
-        mass_centre=(0.0, 0.0),
-        redshift_lens=redshift_lens,
-        redshift_source=redshift_source,
+        source_bulge_1=af.Model(al.lp.Sersic),
+        #  redshift_lens=redshift_lens,
+        #  redshift_source_1=redshift_source,
     )
 
     """
@@ -148,7 +147,7 @@ def fit():
         adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
     )
 
-    source_pix_result_1 = slam.source_pix.run_1(
+    source_pix_result_1 = slam.source_pix.run_DSPL_1(
         settings_search=settings_search,
         analysis=analysis,
         source_lp_result=source_lp_result,
@@ -161,6 +160,14 @@ def fit():
     analysis = al.AnalysisImaging(
         dataset=dataset,
         adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
+        positions_likelihood_list=[
+            source_lp_result.positions_likelihood_from(
+                factor=3.0, minimum_threshold=0.2, plane_redshift=source_lp_result.instance.galaxies.source_1.redshift,
+            ),
+            source_lp_result.positions_likelihood_from(
+                factor=3.0, minimum_threshold=0.2, plane_redshift=source_lp_result.instance.galaxies.source_2.redshift,
+            )
+        ],
         settings_inversion=al.SettingsInversion(
             image_mesh_min_mesh_pixels_per_pixel=3,
             image_mesh_min_mesh_number=5,
@@ -169,11 +176,16 @@ def fit():
         ),
     )
 
+    print(analysis.positions_likelihood_list[0].positions)
+    print(analysis.positions_likelihood_list[1].positions)
+
+
     source_pix_result_2 = slam.source_pix.run_2(
         settings_search=settings_search,
         analysis=analysis,
         source_lp_result=source_lp_result,
         source_pix_result_1=source_pix_result_1,
+        source_mass_1=source_lp_result.model.galaxies.source_1.mass,
         image_mesh=al.image_mesh.Hilbert,
         mesh=al.mesh.Voronoi,
         regularization=al.reg.AdaptiveBrightnessSplit,

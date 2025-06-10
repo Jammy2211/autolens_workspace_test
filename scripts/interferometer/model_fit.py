@@ -114,7 +114,7 @@ search = af.DynestyStatic(
 __Position Likelihood__
 
 """
-positions_likelihood = al.PositionsLHPenalty(positions=positions, threshold=0.1)
+positions_likelihood = al.PositionsLH(positions=positions, threshold=0.1)
 
 """
 __Analysis__
@@ -124,7 +124,7 @@ model to the `Interferometer`dataset.
 """
 analysis = al.AnalysisInterferometer(
     dataset=dataset,
-    positions_likelihood=positions_likelihood,
+    positions_likelihood_list=[positions_likelihood],
     settings_inversion=settings_inversion,
 )
 

@@ -229,7 +229,7 @@ def fit():
         al.AnalysisImaging(
             dataset=result.max_log_likelihood_fit.dataset,
             adapt_image_maker=al.AdaptImageMaker(result=result),
-            positions_likelihood=positions_likelihood,
+            positions_likelihood_list=[positions_likelihood],
         )
         for result in source_lp_result
     ]
@@ -389,7 +389,7 @@ def fit():
         al.AnalysisImaging(
             dataset=result.max_log_likelihood_fit.dataset,
             adapt_image_maker=al.AdaptImageMaker(result=result),
-            positions_likelihood=positions_likelihood,
+            positions_likelihood_list=[positions_likelihood],
         )
         for result in source_lp_result
     ]
@@ -507,6 +507,5 @@ def fit():
 
 
 if __name__ == "__main__":
-    import schwimmbad
 
     fit()

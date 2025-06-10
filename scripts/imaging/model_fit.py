@@ -120,7 +120,7 @@ search = af.DynestyStatic(
 __Position Likelihood__
 
 """
-positions_likelihood = al.PositionsLHPenalty(positions=positions, threshold=0.1)
+positions_likelihood = al.PositionsLH(positions=positions, threshold=0.1)
 
 """
 __Analysis__
@@ -129,7 +129,7 @@ The `AnalysisImaging` object defines the `log_likelihood_function` used by the n
 the `Imaging` dataset. 
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, positions_likelihood=positions_likelihood
+    dataset=dataset, positions_likelihood_list=[positions_likelihood]
 )
 
 """

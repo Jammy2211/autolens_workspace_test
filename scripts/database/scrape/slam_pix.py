@@ -18,7 +18,7 @@ from astropy.io import fits
 import os
 from os import path
 
-os.environ["PYAUTOFIT_TEST_MODE"] = "1"
+#os.environ["PYAUTOFIT_TEST_MODE"] = "1"
 
 import autofit as af
 import autolens as al

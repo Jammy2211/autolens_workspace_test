@@ -228,7 +228,7 @@ def fit():
         al.AnalysisImaging(
             dataset=result.max_log_likelihood_fit.dataset,
             adapt_image_maker=al.AdaptImageMaker(result=result),
-            positions_likelihood=positions_likelihood,
+            positions_likelihood_list=[positions_likelihood],
         )
         for result in source_lp_result
     ]
@@ -382,7 +382,7 @@ def fit():
         al.AnalysisImaging(
             dataset=result.max_log_likelihood_fit.dataset,
             adapt_image_maker=al.AdaptImageMaker(result=result),
-            positions_likelihood=positions_likelihood,
+            positions_likelihood_list=[positions_likelihood],
         )
         for result in source_pix_result_1
     ]
@@ -417,7 +417,7 @@ def fit():
         al.AnalysisImaging(
             dataset=result.max_log_likelihood_fit.dataset,
             adapt_image_maker=al.AdaptImageMaker(result=result),
-            positions_likelihood=positions_likelihood,
+            positions_likelihood_list=[positions_likelihood],
         )
         for result in source_pix_result_1
     ]
