@@ -159,7 +159,7 @@ lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass, shear=shear)
 
 # Source:
 
-mesh = al.mesh.Rectangular()
+mesh = al.mesh.Rectangular(shape=(3,3))
 regularization = al.reg.Constant(coefficient=1.0)
 
 pixelization = al.Pixelization(
