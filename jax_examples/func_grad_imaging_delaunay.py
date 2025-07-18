@@ -151,7 +151,9 @@ mesh = al.mesh.Rectangular(shape=(30,30))
 regularization = al.reg.Constant(coefficient=1.0)
 
 pixelization = al.Pixelization(
-    image_mesh=None, mesh=mesh, regularization=regularization
+    image_mesh=al.image_mesh.Overlay(shape=(30, 30)),
+    mesh=al.mesh.Delaunay(),
+    regularization=regularization
 )
 
 source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
