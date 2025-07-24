@@ -23,6 +23,7 @@ Operated light profiles offer an alternative approach, whereby the light profile
 convolved with the PSF. This operated light profile is then fitted directly to the point-source emission, which as
 discussed above shows the PSF features.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())
@@ -91,6 +92,7 @@ solver = al.PointSolver.for_grid(
     grid=grid, pixel_scale_precision=0.001, magnification_threshold=0.1
 )
 
+
 class FitPositionsImagePairAllOverwrite(al.FitPositionsImagePairAll):
 
     def __init__(
@@ -100,8 +102,8 @@ class FitPositionsImagePairAllOverwrite(al.FitPositionsImagePairAll):
         noise_map,
         tracer,
         einstein_radius,
-        solver = None,
-        profile = None,
+        solver=None,
+        profile=None,
     ):
 
         super().__init__(
@@ -117,7 +119,15 @@ class FitPositionsImagePairAllOverwrite(al.FitPositionsImagePairAll):
 
     @property
     def model_data(self) -> aa.Grid2DIrregular:
-        return aa.Grid2DIrregular(jnp.array([[0.1*self.einstein_radius, 0.1*self.einstein_radius], [0.2*self.einstein_radius, 0.2*self.einstein_radius]]))
+        return aa.Grid2DIrregular(
+            jnp.array(
+                [
+                    [0.1 * self.einstein_radius, 0.1 * self.einstein_radius],
+                    [0.2 * self.einstein_radius, 0.2 * self.einstein_radius],
+                ]
+            )
+        )
+
 
 def solve(einstein_radius):
 
@@ -146,6 +156,7 @@ def solve(einstein_radius):
     )
 
     return fit.log_likelihood
+
 
 print(solve(einstein_radius=1.6))
 

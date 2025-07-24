@@ -23,6 +23,7 @@ Operated light profiles offer an alternative approach, whereby the light profile
 convolved with the PSF. This operated light profile is then fitted directly to the point-source emission, which as
 discussed above shows the PSF features.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())
@@ -90,6 +91,7 @@ solver = al.PointSolver.for_grid(
     grid=grid, pixel_scale_precision=0.001, magnification_threshold=0.1
 )
 
+
 def solve(einstein_radius):
 
     lens_galaxy = al.Galaxy(
@@ -110,7 +112,10 @@ def solve(einstein_radius):
 
     solution = solver.solve(
         tracer=tracer,
-        source_plane_coordinate=(0.07, 0.07),  # <- The source-plane coordinate of the point source.
+        source_plane_coordinate=(
+            0.07,
+            0.07,
+        ),  # <- The source-plane coordinate of the point source.
     ).array
 
     target = jnp.array([1.0, 1.0])
@@ -128,6 +133,7 @@ def solve(einstein_radius):
     min_dist = jnp.sqrt(jnp.min(dists_squared))
 
     return min_dist
+
 
 print(solve(einstein_radius=1.6))
 

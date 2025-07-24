@@ -23,6 +23,7 @@ Operated light profiles offer an alternative approach, whereby the light profile
 convolved with the PSF. This operated light profile is then fitted directly to the point-source emission, which as
 discussed above shows the PSF features.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())
@@ -71,9 +72,9 @@ dataset = dataset.apply_mask(mask=mask_2d)
 
 dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
 
-positions = al.Grid2DIrregular(al.from_json(
-    file_path=path.join(dataset_path, "positions.json")
-))
+positions = al.Grid2DIrregular(
+    al.from_json(file_path=path.join(dataset_path, "positions.json"))
+)
 
 # over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
 #     grid=dataset.grid,
@@ -147,8 +148,10 @@ lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass, shear=shear)
 
 # Source:
 
-mesh = al.mesh.Rectangular(shape=(30,30))
+mesh = al.mesh.Rectangular(shape=(30, 30))
 regularization = al.reg.Constant(coefficient=1.0)
+
+# regularization = al.reg.AdaptiveBrightness()
 
 pixelization = al.Pixelization(
     image_mesh=None, mesh=mesh, regularization=regularization
@@ -176,12 +179,28 @@ import jax.numpy as jnp
 analysis = al.AnalysisImaging(
     dataset=dataset,
     positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
-    settings_inversion=al.SettingsInversion(use_w_tilde=False, force_edge_pixels_to_zeros=False),
+    settings_inversion=al.SettingsInversion(
+        use_w_tilde=False, force_edge_pixels_to_zeros=False
+    ),
     preloads=al.Preloads(
         mapper_indices=al.mapper_indices_from(model=model),
         source_pixel_zeroed_indices=jnp.array([0]),
-    )
+    ),
 )
+
+# adapt_image = al.Array2D.ones(shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales)
+# adapt_image = adapt_image.apply_mask(mask=dataset.mask)
+#
+# print(adapt_image.sub_shape_slim)
+# print(adapt_image.shape_slim)
+# fff
+#
+# galaxy_name_image_dict = {
+#     "('galaxies', 'lens')":  adapt_image,
+#     "('galaxies', 'source')" : adapt_image,
+# }
+#
+# analysis._adapt_images = al.AdaptImages(galaxy_name_image_dict=galaxy_name_image_dict)
 
 """
 The analysis and `log_likelihood_function` are internally wrapped into a `Fitness` class in **PyAutoFit**, which pairs

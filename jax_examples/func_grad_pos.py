@@ -23,6 +23,7 @@ Operated light profiles offer an alternative approach, whereby the light profile
 convolved with the PSF. This operated light profile is then fitted directly to the point-source emission, which as
 discussed above shows the PSF features.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())
@@ -169,7 +170,8 @@ can compute its gradient.
 analysis = al.AnalysisPoint(
     dataset=dataset,
     solver=solver,
-    fit_positions_cls=al.FitPositionsImagePairAll,  # Image-plane chi-squared with repeat image pairs.
+    fit_positions_cls=al.FitPositionsSource,
+    #    fit_positions_cls=al.FitPositionsImagePairAll,
 )
 
 """
@@ -191,5 +193,5 @@ fitness = Fitness(
 We now test the JAX-ing of this LH function.
 """
 parameters = model.physical_values_from_prior_medians
-func = jax.jit(fitness)
+func = jax.grad(fitness)
 print(func(parameters))

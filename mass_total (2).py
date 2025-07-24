@@ -136,9 +136,9 @@ def run(
             ),
             source=source,
         ),
-        #extra_galaxies=al.util.chaining.extra_galaxies_from(
-            #result=source_result_for_lens, mass_as_model=True
-        #),
+        # extra_galaxies=al.util.chaining.extra_galaxies_from(
+        # result=source_result_for_lens, mass_as_model=True
+        # ),
         extra_galaxies=extra_galaxies,
     )
 
@@ -151,6 +151,7 @@ def run(
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
 
     return result
+
 
 def run_DSPL(
     settings_search: af.SettingsSearch,
@@ -231,7 +232,6 @@ def run_DSPL(
         shear = source_lp_result_2.model.galaxies.lens.shear
     else:
         shear = al.mp.ExternalShear
-
 
     model = af.Collection(
         galaxies=af.Collection(

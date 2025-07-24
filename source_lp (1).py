@@ -96,7 +96,7 @@ def run_1(
             source_2=af.Model(
                 al.Galaxy,
                 redshift=redshift_source_2,
-            )
+            ),
         ),
         extra_galaxies=extra_galaxies,
     )
@@ -110,6 +110,7 @@ def run_1(
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
 
     return result
+
 
 def run_2(
     settings_search: af.SettingsSearch,
@@ -201,6 +202,7 @@ def run_2(
 
     return result
 
+
 def run_DSPL(
     settings_search: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
@@ -268,7 +270,6 @@ def run_DSPL(
     This search aims to accurately estimate an initial lens light model, mass model and source model.
     """
 
-
     model = af.Collection(
         galaxies=af.Collection(
             lens=af.Model(
@@ -302,6 +303,7 @@ def run_DSPL(
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
 
     return result
+
 
 def run_cosmo(
     settings_search: af.SettingsSearch,

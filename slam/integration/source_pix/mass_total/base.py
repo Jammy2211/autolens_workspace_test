@@ -152,7 +152,7 @@ def fit():
         settings_search=settings_search,
         analysis=analysis,
         source_lp_result=source_lp_result,
-        mesh_init=al.mesh.Voronoi,
+        mesh_init=al.mesh.Delaunay,
     )
 
     """

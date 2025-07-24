@@ -3,6 +3,7 @@ Modeling Features: Multi Gaussian Expansion
 ===========================================
 
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())
@@ -147,7 +148,7 @@ for j in range(gaussian_per_basis):
             0
         ].ell_comps  # All Gaussians have same elliptical components.
         gaussian.sigma = (
-                10 ** log10_sigma_list[i]
+            10 ** log10_sigma_list[i]
         )  # All Gaussian sigmas are fixed to values above.
 
     bulge_gaussian_list += gaussian_list
@@ -191,7 +192,7 @@ search = af.Nautilus(
     name="mge",
     unique_tag=dataset_name,
     n_live=75,
-    iterations_per_update=200
+    iterations_per_update=200,
 )
 
 """
@@ -206,6 +207,5 @@ search.perform_visualization(
     model=model,
     analysis=analysis,
     during_analysis=True,
-    instance=model.instance_from_prior_medians()
+    instance=model.instance_from_prior_medians(),
 )
-

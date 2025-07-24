@@ -23,6 +23,7 @@ Operated light profiles offer an alternative approach, whereby the light profile
 convolved with the PSF. This operated light profile is then fitted directly to the point-source emission, which as
 discussed above shows the PSF features.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())
@@ -63,7 +64,7 @@ dataset = al.Interferometer.from_fits(
     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
     real_space_mask=real_space_mask,
     transformer_class=al.TransformerDFT,
-#    dft_preload_transform=False
+    #    dft_preload_transform=False
 )
 
 """
@@ -72,9 +73,9 @@ __Mask__
 The model-fit requires a `Mask2D` defining the regions of the image we fit the model to the data, which we define
 and use to set up the `Imaging` object that the model fits.
 """
-positions = al.Grid2DIrregular(al.from_json(
-    file_path=path.join(dataset_path, "positions.json")
-))
+positions = al.Grid2DIrregular(
+    al.from_json(file_path=path.join(dataset_path, "positions.json"))
+)
 
 # over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
 #     grid=dataset.grid,
@@ -172,7 +173,7 @@ can compute its gradient.
 analysis = al.AnalysisInterferometer(
     dataset=dataset,
     positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
-    settings_inversion=al.SettingsInversion(use_w_tilde=False)
+    settings_inversion=al.SettingsInversion(use_w_tilde=False),
 )
 
 

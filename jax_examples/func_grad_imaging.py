@@ -23,6 +23,7 @@ Operated light profiles offer an alternative approach, whereby the light profile
 convolved with the PSF. This operated light profile is then fitted directly to the point-source emission, which as
 discussed above shows the PSF features.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())
@@ -71,9 +72,9 @@ dataset = dataset.apply_mask(mask=mask_2d)
 
 dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
 
-positions = al.Grid2DIrregular(al.from_json(
-    file_path=path.join(dataset_path, "positions.json")
-))
+positions = al.Grid2DIrregular(
+    al.from_json(file_path=path.join(dataset_path, "positions.json"))
+)
 
 # over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
 #     grid=dataset.grid,
@@ -176,8 +177,6 @@ source = af.Model(al.Galaxy, redshift=1.0, bulge=bulge)
 # Overall Lens Model:
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
-
-
 
 
 # # Lens:
@@ -317,4 +316,3 @@ We now test the JAX-ing of this LH function.
 parameters = model.physical_values_from_prior_medians
 func = jax.jit(fitness)
 print(func(parameters))
-

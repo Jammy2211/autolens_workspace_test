@@ -256,7 +256,6 @@ def run_2(
     return result
 
 
-
 def run_DSPL_1(
     settings_search: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
@@ -345,7 +344,7 @@ def run_DSPL_1(
                     mesh=mesh_init,
                     regularization=regularization_init,
                 ),
-                mass=source_mass_1
+                mass=source_mass_1,
             ),
             source_2=af.Model(
                 al.Galaxy,
@@ -356,19 +355,15 @@ def run_DSPL_1(
                     mesh=mesh_init,
                     regularization=regularization_init,
                 ),
-
             ),
         ),
-        #extra_galaxies=al.util.chaining.extra_galaxies_from(result=source_lp_result),
+        # extra_galaxies=al.util.chaining.extra_galaxies_from(result=source_lp_result),
         extra_galaxies=extra_galaxies,
         dataset_model=dataset_model,
     )
 
     search = af.Nautilus(
-        name="source_pix[1]",
-        **settings_search.search_dict,
-        n_live=150,
-        n_like_max=300
+        name="source_pix[1]", **settings_search.search_dict, n_live=150, n_like_max=300
     )
 
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
