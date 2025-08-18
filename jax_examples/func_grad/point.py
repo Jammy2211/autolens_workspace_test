@@ -30,16 +30,18 @@ discussed above shows the PSF features.
 # %cd $workspace_path
 # print(f"Working Directory has been set to `{workspace_path}`")
 
+import numpy as np
 import jax.numpy as jnp
 import jax
 from jax import grad
 from pathlib import Path
 
-import autoarray as aa
+import autofit as af
 import autolens as al
 from autoconf import conf
 
 conf.instance["general"]["model"]["ignore_prior_limits"] = True
+
 
 """
 __Dataset__
@@ -58,6 +60,11 @@ We load this data as a `PointDataset`, which contains the positions of every poi
 dataset = al.from_json(
     file_path=dataset_path / "point_dataset_positions_only.json",
 )
+
+# dataset = al.from_json(
+#     file_path=dataset_path / "point_dataset_with_fluxes_and_time_delays.json",
+# )
+
 
 """
 __Point Solver__
@@ -92,77 +99,109 @@ solver = al.PointSolver.for_grid(
     grid=grid, pixel_scale_precision=0.001, magnification_threshold=0.1
 )
 
+"""
+__Model__
 
-class FitPositionsImagePairAllOverwrite(al.FitPositionsImagePairAll):
+We compose a lens model where:
 
-    def __init__(
-        self,
-        name: str,
-        data,
-        noise_map,
-        tracer,
-        einstein_radius,
-        solver=None,
-        profile=None,
-    ):
+ - The lens galaxy's total mass distribution is an `Isothermal` [5 parameters].
+ - The source galaxy's light is a point `Point` [2 parameters].
 
-        super().__init__(
-            name=name,
-            data=data,
-            noise_map=noise_map,
-            tracer=tracer,
-            solver=solver,
-            profile=profile,
-        )
+The number of free parameters and therefore the dimensionality of non-linear parameter space is N=7.
 
-        self.einstein_radius = einstein_radius
+__Name Pairing__
 
-    @property
-    def model_data(self) -> aa.Grid2DIrregular:
-        return aa.Grid2DIrregular(
-            jnp.array(
-                [
-                    [0.1 * self.einstein_radius, 0.1 * self.einstein_radius],
-                    [0.2 * self.einstein_radius, 0.2 * self.einstein_radius],
-                ]
-            )
-        )
+Every point-source dataset in the `PointDataset` has a name, which in this example was `point_0`. This `name` pairs 
+the dataset to the `Point` in the model below. Because the name of the dataset is `point_0`, the 
+only `Point` object that is used to fit it must have the name `point_0`.
 
+If there is no point-source in the model that has the same name as a `PointDataset`, that data is not used in
+the model-fit. If a point-source is included in the model whose name has no corresponding entry in 
+the `PointDataset` it will raise an error.
 
-def solve(einstein_radius):
+In this example, where there is just one source, name pairing appears unnecessary. However, point-source datasets may
+have many source galaxies in them, and name pairing is necessary to ensure every point source in the lens model is 
+fitted to its particular lensed images in the `PointDataset`.
 
-    lens_galaxy = al.Galaxy(
-        redshift=0.5,
-        mass=al.mp.Isothermal(
-            centre=(0.0, 0.0),
-            einstein_radius=einstein_radius,
-            ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
-        ),
-    )
+__Coordinates__
 
-    source_galaxy = al.Galaxy(
-        redshift=1.0,
-        point_0=al.ps.Point(centre=(0.07, 0.07)),
-    )
+The model fitting default settings assume that the lens galaxy centre is near the coordinates (0.0", 0.0"). 
 
-    tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
+If for your dataset the  lens is not centred at (0.0", 0.0"), we recommend that you either: 
 
-    fit = FitPositionsImagePairAllOverwrite(
-        name="point_0",
-        data=al.Grid2DIrregular([[0.1, 0.1], [0.2, 0.2]]),
-        noise_map=al.ArrayIrregular([0.1, 0.1]),
-        tracer=tracer,
-        einstein_radius=einstein_radius,
-    )
+ - Reduce your data so that the centre is (`autolens_workspace/*/data_preparation`). 
+ - Manually override the lens model priors (`autolens_workspace/*/modeling/imaging/customize/priors.py`).
+"""
+# Lens:
 
-    return fit.log_likelihood
+mass = af.Model(al.mp.Isothermal)
 
+mass.centre.centre_0 = af.UniformPrior(lower_limit=0.0, upper_limit=0.02)
+mass.centre.centre_1 = af.UniformPrior(lower_limit=0.0, upper_limit=0.02)
+mass.ell_comps.ell_comps_0 = af.UniformPrior(lower_limit=0.0, upper_limit=0.02)
+mass.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=0.0, upper_limit=0.02)
+mass.einstein_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.8)
 
-print(solve(einstein_radius=1.6))
+lens = af.Model(al.Galaxy, redshift=0.5, mass=mass)
 
-grad = jax.jit(grad(solve))
-print(grad(1.6))
+# Source:
+
+point_0 = af.Model(al.ps.PointFlux)
+
+point_0.centre.centre_0 = af.UniformPrior(lower_limit=0.06, upper_limit=0.08)
+point_0.centre.centre_1 = af.UniformPrior(lower_limit=0.06, upper_limit=0.08)
+# point_0.flux = af.UniformPrior(lower_limit=0.0, upper_limit=2.0)
+
+source = af.Model(al.Galaxy, redshift=1.0, point_0=point_0)
+
+# Overall Lens Model:
+
+model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
 """
-Checkout `autogalaxy_workspace/*/imaging/modeling/results.py` for a full description of the result object.
+The `info` attribute shows the model in a readable format.
 """
+print(model.info)
+
+"""
+__Analysis__
+
+The `AnalysisImaging` object defines the `log_likelihood_function` which will be used to determine if JAX
+can compute its gradient.
+"""
+analysis = al.AnalysisPoint(
+    dataset=dataset,
+    solver=solver,
+    # fit_positions_cls=al.FitPositionsSource,
+    fit_positions_cls=al.FitPositionsImagePairAll,
+)
+
+"""
+The analysis and `log_likelihood_function` are internally wrapped into a `Fitness` class in **PyAutoFit**, which pairs
+the model with likelihood.
+
+This is the function on which JAX gradients are computed, so we create this class here.
+"""
+import time
+from autofit.non_linear.fitness import Fitness
+
+fitness = Fitness(
+    model=model,
+    analysis=analysis,
+    fom_is_log_likelihood=True,
+    resample_figure_of_merit=-1.0e99,
+)
+
+"""
+We now test the JAX-ing of this LH function.
+"""
+param_vector = jnp.array(model.physical_values_from_prior_medians)
+print(fitness.call_numpy_wrapper(param_vector))
+
+start = time.time()
+
+# profiler.start_trace("profiler_output")
+
+print(fitness.call_numpy_wrapper(param_vector))
+
+print("JAX JIT LOOP Time taken:", time.time() - start)

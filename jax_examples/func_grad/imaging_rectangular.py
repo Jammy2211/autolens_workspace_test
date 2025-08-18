@@ -30,6 +30,7 @@ discussed above shows the PSF features.
 # %cd $workspace_path
 # print(f"Working Directory has been set to `{workspace_path}`")
 
+import numpy as np
 import jax
 from jax import grad
 from os import path
@@ -41,31 +42,21 @@ from autoconf import conf
 conf.instance["general"]["model"]["ignore_prior_limits"] = True
 
 """
-__Mask__
-
-We define the ‘real_space_mask’ which defines the grid the image the strong lens is evaluated using.
-"""
-real_space_mask = al.Mask2D.circular(
-    shape_native=(800, 800), pixel_scales=0.05, radius=4.0
-)
-
-"""
 __Dataset__
 
 Load and plot the galaxy dataset `operated` via .fits files, which we will fit with 
 the model.
 """
-dataset_name = "simple"
-dataset_path = path.join("dataset", "interferometer", dataset_name)
+dataset_name = "no_lens_light"
+dataset_path = path.join("dataset", "imaging", dataset_name)
 
-dataset = al.Interferometer.from_fits(
+dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
+    psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
-    real_space_mask=real_space_mask,
-    transformer_class=al.TransformerDFT,
-    #    dft_preload_transform=False
+    pixel_scales=0.1,
 )
+
 
 """
 __Mask__
@@ -73,6 +64,14 @@ __Mask__
 The model-fit requires a `Mask2D` defining the regions of the image we fit the model to the data, which we define
 and use to set up the `Imaging` object that the model fits.
 """
+mask_2d = al.Mask2D.circular(
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
+)
+
+dataset = dataset.apply_mask(mask=mask_2d)
+
+dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
+
 positions = al.Grid2DIrregular(
     al.from_json(file_path=path.join(dataset_path, "positions.json"))
 )
@@ -85,7 +84,8 @@ positions = al.Grid2DIrregular(
 # )
 #
 # dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
-
+#
+dataset.convolver
 
 """
 __Model__
@@ -98,62 +98,37 @@ example we fit a model where:
 
 The number of free parameters and therefore the dimensionality of non-linear parameter space is N=11.
 """
-lens_galaxy = al.Galaxy(
-    redshift=0.5,
-    mass=al.mp.Isothermal(
-        centre=(0.0, 0.0),
-        einstein_radius=1.6,
-        ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
-    ),
-    shear=al.mp.ExternalShear(gamma_1=0.05, gamma_2=0.05),
-)
-
-source_galaxy = al.Galaxy(
-    redshift=1.0,
-    bulge=al.lp.SersicCore(
-        centre=(0.0, 0.0),
-        ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=60.0),
-        intensity=4.0,
-        effective_radius=0.1,
-        sersic_index=1.0,
-    ),
-)
-
-
-# Lens:
-
-mass = af.Model(al.mp.Isothermal)
-
-mass.centre.centre_0 = af.UniformPrior(lower_limit=0.01, upper_limit=0.03)
-mass.centre.centre_1 = af.UniformPrior(lower_limit=0.01, upper_limit=0.03)
-
-mass.ell_comps.ell_comps_0 = af.UniformPrior(lower_limit=0.01, upper_limit=0.1)
-mass.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=0.01, upper_limit=0.1)
-
-mass.einstein_radius = af.UniformPrior(lower_limit=1.0, upper_limit=2.2)
-
-shear = af.Model(al.mp.ExternalShear)
-
-shear.gamma_1 = af.UniformPrior(lower_limit=0.0, upper_limit=0.1)
-shear.gamma_2 = af.UniformPrior(lower_limit=0.0, upper_limit=0.1)
-
-lens = af.Model(al.Galaxy, redshift=0.5, mass=mass, shear=shear)
-
-# Source:
+# # Lens:
 
 bulge = af.Model(al.lp_linear.Sersic)
 
-bulge.centre.centre_0 = af.UniformPrior(lower_limit=0.01, upper_limit=0.03)
-bulge.centre.centre_1 = af.UniformPrior(lower_limit=0.01, upper_limit=0.03)
+mass = af.Model(al.mp.Isothermal)
 
-bulge.ell_comps.ell_comps_0 = af.UniformPrior(lower_limit=0.01, upper_limit=0.1)
-bulge.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=0.01, upper_limit=0.1)
+shear = af.Model(al.mp.ExternalShear)
 
-# bulge.intensity = af.UniformPrior(lower_limit=0.0, upper_limit=8.0)
-bulge.effective_radius = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-bulge.sersic_index = af.UniformPrior(lower_limit=0.5, upper_limit=1.5)
+lens = af.Model(
+    al.Galaxy,
+    redshift=0.5,
+    #       bulge=bulge,
+    mass=mass,
+    shear=shear,
+)
 
-source = af.Model(al.Galaxy, redshift=1.0, bulge=bulge)
+# Source:
+
+mesh_shape = (40, 40)
+total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
+
+mesh = al.mesh.Rectangular(shape=mesh_shape)
+regularization = al.reg.Constant(coefficient=1.0)
+
+# regularization = al.reg.AdaptiveBrightness()
+
+pixelization = al.Pixelization(
+    image_mesh=None, mesh=mesh, regularization=regularization
+)
+
+source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
 
 # Overall Lens Model:
 
@@ -170,12 +145,38 @@ __Analysis__
 The `AnalysisImaging` object defines the `log_likelihood_function` which will be used to determine if JAX
 can compute its gradient.
 """
-analysis = al.AnalysisInterferometer(
+import jax.numpy as jnp
+
+analysis = al.AnalysisImaging(
     dataset=dataset,
-    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
-    settings_inversion=al.SettingsInversion(use_w_tilde=False),
+    #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
+    settings_inversion=al.SettingsInversion(
+        use_w_tilde=False, force_edge_pixels_to_zeros=True
+    ),
+    preloads=al.Preloads(
+        mapper_indices=al.mapper_indices_from(
+            total_linear_light_profiles=0, total_mapper_pixels=total_mapper_pixels
+        ),
+        source_pixel_zeroed_indices=al.util.mesh.rectangular_edge_pixel_list_from(
+            mesh_shape
+        ),
+    ),
+    raise_inversion_positions_likelihood_exception=False,
 )
 
+# adapt_image = al.Array2D.ones(shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales)
+# adapt_image = adapt_image.apply_mask(mask=dataset.mask)
+#
+# print(adapt_image.sub_shape_slim)
+# print(adapt_image.shape_slim)
+# fff
+#
+# galaxy_name_image_dict = {
+#     "('galaxies', 'lens')":  adapt_image,
+#     "('galaxies', 'source')" : adapt_image,
+# }
+#
+# analysis._adapt_images = al.AdaptImages(galaxy_name_image_dict=galaxy_name_image_dict)
 
 """
 The analysis and `log_likelihood_function` are internally wrapped into a `Fitness` class in **PyAutoFit**, which pairs
@@ -184,6 +185,7 @@ the model with likelihood.
 This is the function on which JAX gradients are computed, so we create this class here.
 """
 from autofit.non_linear.fitness import Fitness
+import time
 
 fitness = Fitness(
     model=model,
@@ -192,9 +194,59 @@ fitness = Fitness(
     resample_figure_of_merit=-1.0e99,
 )
 
-"""
-We now test the JAX-ing of this LH function.
-"""
-parameters = model.physical_values_from_prior_medians
-func = jax.jit(fitness)
-print(func(parameters))
+batch_size = 2
+
+parameters = np.zeros((batch_size, model.total_free_parameters))
+
+for i in range(batch_size):
+    parameters[i, :] = model.random_unit_vector_within_limits()
+
+param_vector = model.physical_values_from_prior_medians
+
+result_list = []
+
+# func = fitness
+# func.call(param_vector)
+# start = time.time()
+# for i in range(batch_size):
+#
+#     result = func.call(parameters[i, :])
+#
+#     result_list.append(result)
+#
+# print(result_list)
+# print("NO JAX Time taken:", time.time() - start)
+
+# func = jax.vmap(fitness)
+# print(func(parameters))
+#
+# start = time.time()
+# print(func(jnp.array(parameters)))
+# print("JAX Vmap Time taken:", time.time() - start)
+
+fitness = Fitness(
+    model=model,
+    analysis=analysis,
+    fom_is_log_likelihood=True,
+    resample_figure_of_merit=-1.0e99,
+)
+
+parameters2 = np.array(parameters)
+
+param_vector = np.array(model.physical_values_from_prior_medians)
+
+result_list = []
+
+vectorized_fitness = jax.jit(jax.vmap(fitness.call))
+result = vectorized_fitness(parameters)
+
+# jax.vmap(fitness.call_numpy_wrapper(param_vector)
+start = time.time()
+# for i in range(batch_size):
+#    result = fitness.call_numpy_wrapper(np.array(parameters2[i, :]))
+result = vectorized_fitness(parameters)
+
+result_list.append(result)
+
+print(result)
+print("JAX JIT LOOP Time taken:", time.time() - start)

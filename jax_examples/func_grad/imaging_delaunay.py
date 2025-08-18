@@ -98,51 +98,13 @@ example we fit a model where:
 
 The number of free parameters and therefore the dimensionality of non-linear parameter space is N=11.
 """
-lens_galaxy = al.Galaxy(
-    redshift=0.5,
-    bulge=al.lp.Sersic(
-        centre=(0.0, 0.0),
-        ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
-        intensity=2.0,
-        effective_radius=0.6,
-        sersic_index=3.0,
-    ),
-    mass=al.mp.Isothermal(
-        centre=(0.0, 0.0),
-        einstein_radius=1.6,
-        ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
-    ),
-    shear=al.mp.ExternalShear(gamma_1=0.05, gamma_2=0.05),
-)
-
 # # Lens:
-#
+
 bulge = af.Model(al.lp_linear.Sersic)
-
-bulge.centre.centre_0 = af.UniformPrior(lower_limit=-0.03, upper_limit=0.03)
-bulge.centre.centre_1 = af.UniformPrior(lower_limit=-0.03, upper_limit=0.03)
-
-bulge.ell_comps.ell_comps_0 = af.UniformPrior(lower_limit=0.01, upper_limit=0.1)
-bulge.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=0.01, upper_limit=0.1)
-
-# bulge.intensity = af.UniformPrior(lower_limit=1.0, upper_limit=3.0)
-bulge.effective_radius = af.UniformPrior(lower_limit=0.4, upper_limit=0.8)
-bulge.sersic_index = af.UniformPrior(lower_limit=2.0, upper_limit=4.0)
 
 mass = af.Model(al.mp.Isothermal)
 
-mass.centre.centre_0 = af.UniformPrior(lower_limit=0.01, upper_limit=0.03)
-mass.centre.centre_1 = af.UniformPrior(lower_limit=0.01, upper_limit=0.03)
-
-mass.ell_comps.ell_comps_0 = af.UniformPrior(lower_limit=0.01, upper_limit=0.1)
-mass.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=0.01, upper_limit=0.1)
-
-mass.einstein_radius = af.UniformPrior(lower_limit=1.0, upper_limit=2.2)
-
 shear = af.Model(al.mp.ExternalShear)
-
-shear.gamma_1 = af.UniformPrior(lower_limit=0.0, upper_limit=0.1)
-shear.gamma_2 = af.UniformPrior(lower_limit=0.0, upper_limit=0.1)
 
 lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass, shear=shear)
 
@@ -151,10 +113,10 @@ lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass, shear=shear)
 mesh = al.mesh.Rectangular(shape=(30, 30))
 regularization = al.reg.Constant(coefficient=1.0)
 
-# regularization = al.reg.AdaptiveBrightness()
-
 pixelization = al.Pixelization(
-    image_mesh=None, mesh=mesh, regularization=regularization
+    image_mesh=al.image_mesh.Overlay(shape=(30, 30)),
+    mesh=al.mesh.Delaunay(),
+    regularization=regularization,
 )
 
 source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
@@ -187,20 +149,6 @@ analysis = al.AnalysisImaging(
         source_pixel_zeroed_indices=jnp.array([0]),
     ),
 )
-
-# adapt_image = al.Array2D.ones(shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales)
-# adapt_image = adapt_image.apply_mask(mask=dataset.mask)
-#
-# print(adapt_image.sub_shape_slim)
-# print(adapt_image.shape_slim)
-# fff
-#
-# galaxy_name_image_dict = {
-#     "('galaxies', 'lens')":  adapt_image,
-#     "('galaxies', 'source')" : adapt_image,
-# }
-#
-# analysis._adapt_images = al.AdaptImages(galaxy_name_image_dict=galaxy_name_image_dict)
 
 """
 The analysis and `log_likelihood_function` are internally wrapped into a `Fitness` class in **PyAutoFit**, which pairs
