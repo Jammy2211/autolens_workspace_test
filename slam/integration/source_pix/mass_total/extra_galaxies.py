@@ -100,7 +100,7 @@ This model includes extra_galaxies, which are `Galaxy` objects with light and ma
 model galaxies nearby the strong lens system.
 
 A full description of the extra galaxies API is given in the 
-script `autolens_workspace/*/imaging/modeling/features/extra_galaxies.py`
+script `autolens_workspace/*/modeling/imaging/features/extra_galaxies.py`
 """
 # Extra Galaxies:
 
@@ -274,9 +274,9 @@ via the `source_lp_result` object, therefore you do not need to manually pass th
 analysis = al.AnalysisImaging(
     dataset=dataset,
     adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
-    positions_likelihood_list=[source_lp_result.positions_likelihood_from(
-        factor=3.0, minimum_threshold=0.2
-    )],
+    positions_likelihood_list=[
+        source_lp_result.positions_likelihood_from(factor=3.0, minimum_threshold=0.2)
+    ],
 )
 
 # Extra Galaxies:

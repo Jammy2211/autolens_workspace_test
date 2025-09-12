@@ -70,7 +70,7 @@ def run_1(
     images that are used in search 2.
     """
 
-    mass = chaining_util.mass_from( #al.util.chaining.mass_from(
+    mass = chaining_util.mass_from(  # al.util.chaining.mass_from(
         mass=source_lp_result.model.galaxies.lens.mass,
         mass_result=source_lp_result.model.galaxies.lens.mass,
         unfix_mass_centre=True,
@@ -100,7 +100,7 @@ def run_1(
                 ),
             ),
         ),
-        #extra_galaxies=al.util.chaining.extra_galaxies_from(result=source_lp_result),
+        # extra_galaxies=al.util.chaining.extra_galaxies_from(result=source_lp_result),
         extra_galaxies=extra_galaxies,
         dataset_model=dataset_model,
     )
@@ -191,7 +191,7 @@ def run_2(
                 ),
             ),
         ),
-        #extra_galaxies=al.util.chaining.extra_galaxies_from(result=source_lp_result),
+        # extra_galaxies=al.util.chaining.extra_galaxies_from(result=source_lp_result),
         extra_galaxies=extra_galaxies,
     )
 

@@ -183,7 +183,6 @@ def run_DSPL(
     This search aims to accurately estimate an initial lens light model, mass model and source model.
     """
 
-
     model = af.Collection(
         galaxies=af.Collection(
             lens=af.Model(
@@ -209,10 +208,7 @@ def run_DSPL(
     )
 
     search = af.Nautilus(
-        name="source_lp[2]",
-        **settings_search.search_dict,
-        n_live=150,
-        n_like_max=300
+        name="source_lp[2]", **settings_search.search_dict, n_live=150, n_like_max=300
     )
 
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)

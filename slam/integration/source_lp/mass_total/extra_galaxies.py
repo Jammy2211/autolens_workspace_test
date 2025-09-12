@@ -95,7 +95,7 @@ This model includes extra_galaxies, which are `Galaxy` objects with light and ma
 model galaxies nearby the strong lens system.
 
 A full description of the extra galaxies API is given in the 
-script `autolens_workspace/*/imaging/modeling/features/extra_galaxies.py`
+script `autolens_workspace/*/modeling/imaging/features/extra_galaxies.py`
 """
 # Extra Galaxies:
 

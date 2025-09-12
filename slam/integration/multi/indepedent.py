@@ -195,9 +195,11 @@ def fit():
     analysis = al.AnalysisImaging(
         dataset=dataset,
         adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
-        positions_likelihood_list=[source_lp_result.positions_likelihood_from(
-            factor=3.0, minimum_threshold=0.2
-        )],
+        positions_likelihood_list=[
+            source_lp_result.positions_likelihood_from(
+                factor=3.0, minimum_threshold=0.2
+            )
+        ],
     )
 
     source_pix_result_1 = slam_multi.source_pix.run_1(
@@ -288,9 +290,11 @@ def fit():
     analysis = al.AnalysisImaging(
         dataset=dataset,
         adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
-        positions_likelihood_list=[source_pix_result_2.positions_likelihood_from(
-            factor=3.0, minimum_threshold=0.2
-        )],
+        positions_likelihood_list=[
+            source_pix_result_2.positions_likelihood_from(
+                factor=3.0, minimum_threshold=0.2
+            )
+        ],
     )
 
     mass_result = slam_multi.mass_total.run(

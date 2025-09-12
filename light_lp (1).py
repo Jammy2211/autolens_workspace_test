@@ -73,8 +73,8 @@ def run_1(
             ),
             source=source,
         ),
-        #extra_galaxies=al.util.chaining.extra_galaxies_from(
-         #   result=source_result_for_lens, light_as_model=True
+        # extra_galaxies=al.util.chaining.extra_galaxies_from(
+        #   result=source_result_for_lens, light_as_model=True
         extra_galaxies=extra_galaxies,
     )
 
@@ -88,11 +88,12 @@ def run_1(
 
     return result
 
+
 def run_2(
     settings_search: af.SettingsSearch,
     analysis: Union[al.AnalysisImaging, al.AnalysisInterferometer],
     source_result_for_lens: af.Result,
-    #source_result_for_source: af.Result,
+    # source_result_for_source: af.Result,
     extra_galaxies: Optional[af.Collection] = None,
     lens_bulge: Optional[af.Model] = af.Model(al.lp.Sersic),
     lens_disk: Optional[af.Model] = None,
@@ -139,9 +140,9 @@ def run_2(
     SOURCE PIPELINE as the mass and source models were not properly initialized.
     """
 
-    #source = al.util.chaining.source_custom_model_from(
-     #   result=source_result_for_source, source_is_model=False
-    #)
+    # source = al.util.chaining.source_custom_model_from(
+    #   result=source_result_for_source, source_is_model=False
+    # )
 
     model = af.Collection(
         galaxies=af.Collection(
@@ -151,13 +152,13 @@ def run_2(
                 bulge=lens_bulge,
                 disk=lens_disk,
                 point=lens_point,
-                #mass=source_result_for_lens.instance.galaxies.lens.mass,
-                #shear=source_result_for_lens.instance.galaxies.lens.shear,
+                # mass=source_result_for_lens.instance.galaxies.lens.mass,
+                # shear=source_result_for_lens.instance.galaxies.lens.shear,
             ),
-            #source=source,
+            # source=source,
         ),
-        #extra_galaxies=al.util.chaining.extra_galaxies_from(
-         #   result=source_result_for_lens, light_as_model=True
+        # extra_galaxies=al.util.chaining.extra_galaxies_from(
+        #   result=source_result_for_lens, light_as_model=True
         extra_galaxies=extra_galaxies,
     )
 
@@ -170,6 +171,7 @@ def run_2(
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
 
     return result
+
 
 def run_DSPL(
     settings_search: af.SettingsSearch,

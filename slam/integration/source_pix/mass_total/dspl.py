@@ -162,11 +162,15 @@ def fit():
         adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
         positions_likelihood_list=[
             source_lp_result.positions_likelihood_from(
-                factor=3.0, minimum_threshold=0.2, plane_redshift=source_lp_result.instance.galaxies.source_1.redshift,
+                factor=3.0,
+                minimum_threshold=0.2,
+                plane_redshift=source_lp_result.instance.galaxies.source_1.redshift,
             ),
             source_lp_result.positions_likelihood_from(
-                factor=3.0, minimum_threshold=0.2, plane_redshift=source_lp_result.instance.galaxies.source_2.redshift,
-            )
+                factor=3.0,
+                minimum_threshold=0.2,
+                plane_redshift=source_lp_result.instance.galaxies.source_2.redshift,
+            ),
         ],
         settings_inversion=al.SettingsInversion(
             image_mesh_min_mesh_pixels_per_pixel=3,
@@ -178,7 +182,6 @@ def fit():
 
     print(analysis.positions_likelihood_list[0].positions)
     print(analysis.positions_likelihood_list[1].positions)
-
 
     source_pix_result_2 = slam.source_pix.run_2(
         settings_search=settings_search,

@@ -26,6 +26,7 @@ This uses the SLaM pipelines:
 
 Check them out for a full description of the analysis!
 """
+
 from autolens.lens.tracer_util import plane_redshifts_from
 
 
@@ -116,12 +117,12 @@ def fit():
         settings_search=settings_search,
         analysis=analysis,
         lens_bulge=bulge,
-      #  lens_disk=disk,
+        #  lens_disk=disk,
         lens_mass=af.Model(al.mp.Isothermal),
         shear=af.Model(al.mp.ExternalShear),
         source_bulge_1=af.Model(al.lp.Sersic),
-      #  redshift_lens=redshift_lens,
-      #  redshift_source_1=redshift_source,
+        #  redshift_lens=redshift_lens,
+        #  redshift_source_1=redshift_source,
     )
 
     """
@@ -145,11 +146,15 @@ def fit():
         dataset=dataset,
         positions_likelihood_list=[
             source_lp_result.positions_likelihood_from(
-                factor=3.0, minimum_threshold=0.2, plane_redshift=source_lp_result.instance.galaxies.source_1.redshift,
+                factor=3.0,
+                minimum_threshold=0.2,
+                plane_redshift=source_lp_result.instance.galaxies.source_1.redshift,
             ),
             source_lp_result.positions_likelihood_from(
-                factor=3.0, minimum_threshold=0.2, plane_redshift=source_lp_result.instance.galaxies.source_2.redshift,
-            )
+                factor=3.0,
+                minimum_threshold=0.2,
+                plane_redshift=source_lp_result.instance.galaxies.source_2.redshift,
+            ),
         ],
     )
 
@@ -165,7 +170,7 @@ def fit():
         analysis=analysis,
         source_lp_result=source_lp_result,
         lens_bulge=bulge,
-#        lens_disk=disk,
+        #        lens_disk=disk,
     )
 
     """
