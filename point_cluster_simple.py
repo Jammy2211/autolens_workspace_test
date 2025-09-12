@@ -43,18 +43,10 @@ conf.instance["general"]["model"]["ignore_prior_limits"] = True
 
 """
 __Dataset__
-
-Load the strong lens point-source dataset `simple`, which is the dataset we will use to perform point source 
-lens modeling.
 """
 dataset_name = "simple"
 dataset_path = Path("dataset") / "point_source" / dataset_name
 
-"""
-We now load the point source dataset we will fit using point source modeling. 
-
-We load this data as a `PointDataset`, which contains the positions of every point source. 
-"""
 dataset = al.from_json(
     file_path=dataset_path / "point_dataset_positions_only.json",
 )
@@ -62,27 +54,6 @@ dataset = al.from_json(
 
 """
 __Point Solver__
-
-For point-source modeling we require a `PointSolver`, which determines the multiple-images of the mass model for a 
-point source at location (y,x) in the source plane. 
-
-It does this by ray tracing triangles from the image-plane to the source-plane and calculating if the 
-source-plane (y,x) centre is inside the triangle. The method gradually ray-traces smaller and smaller triangles so 
-that the multiple images can be determine with sub-pixel precision.
-
-The `PointSolver` requires a starting grid of (y,x) coordinates in the image-plane which defines the first set
-of triangles that are ray-traced to the source-plane. It also requires that a `pixel_scale_precision` is input, 
-which is the resolution up to which the multiple images are computed. The lower the `pixel_scale_precision`, the
-longer the calculation, with the value of 0.001 below balancing efficiency with precision.
-
-Strong lens mass models have a multiple image called the "central image". However, the image is nearly always 
-significantly demagnified, meaning that it is not observed and cannot constrain the lens model. As this image is a
-valid multiple image, the `PointSolver` will locate it irrespective of whether its so demagnified it is not observed.
-To ensure this does not occur, we set a `magnification_threshold=0.1`, which discards this image because its
-magnification will be well below this threshold.
-
-If your dataset contains a central image that is observed you should reduce to include it in
-the analysis.
 """
 grid = al.Grid2D.uniform(
     shape_native=(100, 100),
@@ -95,36 +66,6 @@ solver = al.PointSolver.for_grid(
 
 """
 __Model__
-
-We compose a lens model where:
-
- - The lens galaxy's total mass distribution is an `Isothermal` [5 parameters].
- - The source galaxy's light is a point `Point` [2 parameters].
-
-The number of free parameters and therefore the dimensionality of non-linear parameter space is N=7.
-
-__Name Pairing__
-
-Every point-source dataset in the `PointDataset` has a name, which in this example was `point_0`. This `name` pairs 
-the dataset to the `Point` in the model below. Because the name of the dataset is `point_0`, the 
-only `Point` object that is used to fit it must have the name `point_0`.
-
-If there is no point-source in the model that has the same name as a `PointDataset`, that data is not used in
-the model-fit. If a point-source is included in the model whose name has no corresponding entry in 
-the `PointDataset` it will raise an error.
-
-In this example, where there is just one source, name pairing appears unnecessary. However, point-source datasets may
-have many source galaxies in them, and name pairing is necessary to ensure every point source in the lens model is 
-fitted to its particular lensed images in the `PointDataset`.
-
-__Coordinates__
-
-The model fitting default settings assume that the lens galaxy centre is near the coordinates (0.0", 0.0"). 
-
-If for your dataset the  lens is not centred at (0.0", 0.0"), we recommend that you either: 
-
- - Reduce your data so that the centre is (`autolens_workspace/*/data_preparation`). 
- - Manually override the lens model priors (`autolens_workspace/*/modeling/imaging/customize/priors.py`).
 """
 import pandas as pd
 
@@ -152,6 +93,7 @@ for _, row in df.iterrows():
 
 centre_list = [
     (0.01, 0.01),
+    (0.02, 0.02),
 ]
 
 points = {}
@@ -182,20 +124,9 @@ for i in range(len(centre_list)):
 
 model = af.Collection(galaxies=af.Collection(**lens_galaxies, **source_galaxies))
 
-
-"""
-The `info` attribute shows the model in a readable format.
-"""
-print(model.info)
-
 """
 __Analysis__
-
-The `AnalysisImaging` object defines the `log_likelihood_function` which will be used to determine if JAX
-can compute its gradient.
 """
-
-
 analysis_factor_list = []
 
 for i in range(len(centre_list)):
@@ -223,10 +154,7 @@ for i in range(len(centre_list)):
 factor_graph = af.FactorGraphModel(*analysis_factor_list)
 
 """
-The analysis and `log_likelihood_function` are internally wrapped into a `Fitness` class in **PyAutoFit**, which pairs
-the model with likelihood.
-
-This is the function on which JAX gradients are computed, so we create this class here.
+__Fitness__
 """
 import time
 from autofit.non_linear.fitness import Fitness
@@ -245,8 +173,6 @@ param_vector = np.array(model.physical_values_from_prior_medians)
 print(fitness(param_vector))
 
 start = time.time()
-
-# profiler.start_trace("profiler_output")
 
 print(fitness(param_vector))
 

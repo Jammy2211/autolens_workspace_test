@@ -1,9 +1,9 @@
 from dask.distributed import Client
 import time
 import numpy as np
-import jax.numpy as jnp
-import jax
-from jax import grad
+# import jax.numpy as jnp
+# import jax
+# from jax import grad
 from os import path
 
 import autofit as af
@@ -74,20 +74,25 @@ def fit():
     client = Client(processes=True, n_workers=4, threads_per_worker=1)
     print("Dashboard:", client.dashboard_link)
 
-
     # 3) Scatter the entire dict as ONE Future (broadcast to all workers)
     #    Now workers will each have a local copy of lookup_dict
     fitness_future = client.scatter(fitness, broadcast=True)
 
     # 4) Define the worker function; it takes the key AND the lookup dict
-    def process_key(key: str, lookup_dict: dict[str, float]) -> float:
-        # lookup_dict is a plain dict here (not a Future)
-        return lookup_dict[key] * 2.0
+    def process_fitness(params, lookup_fitness) -> float:
+        return lookup_fitness(params)
+
+    params_list = [
+        model.random_vector_from_priors,
+        model.random_vector_from_priors,
+        model.random_vector_from_priors,
+        model.random_vector_from_priors,
+    ]
 
     # 5) Submit tasks in parallel, passing lookup_future as the second argument
     futures = [
-        client.submit(process_key, key, lookup_future)
-        for key in ["a", "b", "c"]
+        client.submit(process_fitness, params, fitness_future)
+        for params in params_list
     ]
 
     # 6) Gather results back to the client and print
