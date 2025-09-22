@@ -101,8 +101,8 @@ np.save(f"{folder}/w_matrix", dataset.w_tilde.w_matrix)
 np.save(
     f"{folder}/psf_operator_matrix_dense", dataset.w_tilde.psf_operator_matrix_dense
 )
-np.save(f"{folder}/mapping_mattrix", inversion.mapping_matrix)
-np.save(f"{folder}/blurred_mapping_mattrix", inversion.operated_mapping_matrix)
+np.save(f"{folder}/mapping_matrix", inversion.mapping_matrix)
+np.save(f"{folder}/blurred_mapping_matrix", inversion.operated_mapping_matrix)
 np.save(f"{folder}/w_tilde_data", inversion.w_tilde_data)
 np.save(f"{folder}/curvature_matrix", inversion.curvature_matrix)
 np.save(f"{folder}/regularization_matrix", inversion.regularization_matrix)
