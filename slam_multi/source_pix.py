@@ -92,6 +92,11 @@ def run_1(
                 mass_result=source_lp_result[i].model.galaxies.lens.mass,
                 unfix_mass_centre=True,
             )
+
+            if i > 0:
+
+                mass.centre = model.galaxies.lens.mass.centre
+
             shear = source_lp_result[i].model.galaxies.lens.shear
 
         else:

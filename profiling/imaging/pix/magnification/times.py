@@ -36,6 +36,8 @@ else:
 """
 The number of repeats used to estimate the run time.
 """
+from autoconf import conf
+
 repeats = conf.instance["general"]["profiling"]["repeats"]
 print("Number of repeats = " + str(repeats))
 print()
@@ -43,7 +45,7 @@ print()
 """
 These settings control various aspects of how long a fit takes. The values below are default PyAutoLens values.
 """
-sub_size = 1
+sub_size = 4
 mask_radius = 3.0
 psf_shape_2d = (21, 21)
 mesh_shape_2d = (60, 60)
@@ -93,7 +95,7 @@ source_galaxy = al.Galaxy(
     redshift=1.0,
     pixelization=al.Pixelization(
         image_mesh=image_mesh,
-        mesh=al.mesh.Voronoi(),
+        mesh=al.mesh.Delaunay(),
     ),
 )
 

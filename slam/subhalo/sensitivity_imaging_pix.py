@@ -688,7 +688,7 @@ def run(
     # perturb_model.mass.mass_at_200 = af.UniformPrior(
     #     lower_limit=1e6, upper_limit=1e11
     # )
-    perturb_model.mass.log10m_vir = 9.0
+    perturb_model.mass.mass_at_200 = 1e9
     perturb_model.mass.c_gNFW = 12.0
     perturb_model.mass.overdens = 200.0
     perturb_model.mass.inner_slope = 2.2
@@ -739,7 +739,7 @@ def run(
             upper_limit=perturb_instance.mass.centre[1] + b,
         )
 
-        perturb_model.mass.log10m_vir = af.UniformPrior(lower_limit=6, upper_limit=12)
+        perturb_model.mass.mass_at_200 = af.UniformPrior(lower_limit=1e6, upper_limit=1e12)
 
         return perturb_model
 

@@ -6,12 +6,12 @@ datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.
 """
-
 import os
 from os import path
 
 import time
 import json
+from autoconf import conf
 import autolens as al
 import autolens.plot as aplt
 
@@ -41,7 +41,7 @@ print()
 """
 These settings control various aspects of how long a fit takes. The values below are default PyAutoLens values.
 """
-sub_size = 1
+sub_size = 4
 mask_radius = 4.0
 psf_shape_2d = (21, 21)
 pixels = 1000
@@ -109,7 +109,7 @@ dataset = al.Imaging.from_fits(
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
     pixel_scales=pixel_scale,
-    over_sample_size_pixelization=1,
+    over_sample_size_pixelization=sub_size,
 )
 
 """
@@ -141,17 +141,20 @@ tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 traced_grid = tracer.traced_grid_2d_list_from(grid=masked_dataset.grid)[1]
 source_adapt_data = source_galaxy.image_2d_from(grid=traced_grid)
 
-over_sampling = al.util.over_sample.over_sample_size_via_adapt_from(
-    data=source_adapt_data,
-    noise_map=masked_dataset.noise_map,
-)
-
-dataset = al.Imaging(
-    data=dataset.data,
-    noise_map=dataset.noise_map,
-    psf=dataset.psf,
-    over_sampling_pixelization=over_sampling,
-)
+"""
+ADAPTIVE OVER SAMPLING, DO NOT USE
+"""
+# over_sampling = al.util.over_sample.over_sample_size_via_adapt_from(
+#     data=source_adapt_data,
+#     noise_map=masked_dataset.noise_map,
+# )
+#
+# dataset = al.Imaging(
+#     data=dataset.data,
+#     noise_map=dataset.noise_map,
+#     psf=dataset.psf,
+#     over_sample_size_pixelization=over_sampling,
+# )
 
 masked_dataset = dataset.apply_mask(mask=mask)
 
@@ -307,6 +310,8 @@ if os.path.exists(path.join(file_path, filename)):
 
 with open(path.join(file_path, filename), "w") as outfile:
     json.dump(fit_time, outfile)
+
+print(fit)
 
 """
 Output an image of the fit, so that we can inspect that it fits the data as expected.

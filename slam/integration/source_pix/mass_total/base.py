@@ -75,7 +75,7 @@ def fit():
     """
     settings_search = af.SettingsSearch(
         path_prefix=path.join("slam", "source_pix", "mass_total", "base"),
-        number_of_cores=1,
+        number_of_cores=2,
         session=None,
     )
 
@@ -143,10 +143,18 @@ def fit():
      - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
      SOURCE PIX PIPELINE.
     """
+
     analysis = al.AnalysisImaging(
         dataset=dataset,
-        adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
+      #  adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
     )
+
+    galaxy_name_image_dict = {
+        "('galaxies', 'lens')":  source_lp_result.adapt_images_from().galaxy_name_image_dict["('galaxies', 'lens')"],
+        "('galaxies', 'source')" : source_lp_result.adapt_images_from().galaxy_name_image_dict["('galaxies', 'source')"],
+    }
+
+    analysis._adapt_images = al.AdaptImages(galaxy_name_image_dict=galaxy_name_image_dict)
 
     source_pix_result_1 = slam.source_pix.run_1(
         settings_search=settings_search,
@@ -175,7 +183,7 @@ def fit():
         source_lp_result=source_lp_result,
         source_pix_result_1=source_pix_result_1,
         image_mesh=al.image_mesh.Hilbert,
-        mesh=al.mesh.Voronoi,
+        mesh=al.mesh.Delaunay,
         regularization=al.reg.AdaptiveBrightnessSplit,
     )
 
