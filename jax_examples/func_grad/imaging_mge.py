@@ -58,7 +58,6 @@ dataset = al.Imaging.from_fits(
     pixel_scales=0.05,
 )
 
-
 """
 __Mask__
 
@@ -151,7 +150,7 @@ lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass, shear=shear)
 
 # Source:
 
-total_gaussians = 20
+total_gaussians = 1000
 gaussian_per_basis = 1
 
 # By defining the centre here, it creates two free parameters that are assigned to the source Gaussians.
@@ -190,7 +189,7 @@ model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 """
 The `info` attribute shows the model in a readable format.
 """
-print(model.info)
+# print(model.info)
 
 """
 __Analysis__
@@ -214,42 +213,8 @@ This is the function on which JAX gradients are computed, so we create this clas
 from autofit.non_linear.fitness import Fitness
 import time
 
-fitness = Fitness(
-    model=model,
-    analysis=analysis,
-    fom_is_log_likelihood=True,
-    resample_figure_of_merit=-1.0e99,
-)
-
-batch_size = 20
-
-parameters = np.zeros((batch_size, model.total_free_parameters))
-
-for i in range(batch_size):
-    parameters[i, :] = model.random_unit_vector_within_limits()
-
-param_vector = model.physical_values_from_prior_medians
-
-result_list = []
-
-# func = fitness
-# func.call(param_vector)
-# start = time.time()
-# for i in range(batch_size):
-#
-#     result = func.call(parameters[i, :])
-#
-#     result_list.append(result)
-#
-# print(result_list)
-# print("NO JAX Time taken:", time.time() - start)
-
-# func = jax.vmap(fitness)
-# print(func(parameters))
-#
-# start = time.time()
-# print(func(jnp.array(parameters)))
-# print("JAX Vmap Time taken:", time.time() - start)
+use_vmap = False
+batch_size = 30
 
 fitness = Fitness(
     model=model,
@@ -258,22 +223,36 @@ fitness = Fitness(
     resample_figure_of_merit=-1.0e99,
 )
 
-parameters2 = np.array(parameters)
+param_vector = jnp.array(model.physical_values_from_prior_medians)
 
-param_vector = np.array(model.physical_values_from_prior_medians)
+if not use_vmap:
 
-result_list = []
+    start = time.time()
+    print()
+    print(fitness.call_numpy_wrapper(param_vector))
+    print("JAX Time To JIT Function:", time.time() - start)
 
-vectorized_fitness = jax.jit(jax.vmap(fitness.call))
-result = vectorized_fitness(parameters)
+    start = time.time()
+    print()
+    print(fitness.call_numpy_wrapper(param_vector))
+    print("JAX Time taken using JIT:", time.time() - start)
 
-# jax.vmap(fitness.call_numpy_wrapper(param_vector)
-start = time.time()
-# for i in range(batch_size):
-#    result = fitness.call_numpy_wrapper(np.array(parameters2[i, :]))
-result = vectorized_fitness(parameters)
+else:
 
-result_list.append(result)
+    parameters = np.zeros((batch_size, model.total_free_parameters))
 
-print(result)
-print("JAX JIT LOOP Time taken:", time.time() - start)
+    for i in range(batch_size):
+        parameters[i, :] = model.physical_values_from_prior_medians
+
+    parameters = jnp.array(parameters)
+
+    start = time.time()
+    print()
+    func = jax.vmap(jax.jit(fitness.call_numpy_wrapper))
+    print(func(parameters))
+    print("JAX Time To VMAP + JIT Function", time.time() - start)
+
+    start = time.time()
+    print()
+    print(func(parameters))
+    print("JAX Time Taken using VMAP:", time.time() - start)

@@ -147,6 +147,9 @@ This is the function on which JAX gradients are computed, so we create this clas
 from autofit.non_linear.fitness import Fitness
 import time
 
+use_vmap = False
+batch_size = 30
+
 fitness = Fitness(
     model=model,
     analysis=analysis,
@@ -154,145 +157,33 @@ fitness = Fitness(
     resample_figure_of_merit=-1.0e99,
 )
 
-# batch_size = 5
-#
-# parameters = np.zeros((batch_size, model.total_free_parameters))
-#
-# for i in range(batch_size):
-#     parameters[i, :] = model.random_unit_vector_within_limits()
-#
-# param_vector = model.physical_values_from_prior_medians
-#
-# func = fitness
-# func.call(param_vector)
-# start = time.time()
-# for i in range(batch_size):
-#     print(func.call(parameters[i, :]))
-# print("NO JAX Time taken:", time.time() - start)
-#
-# func = jax.vmap(fitness)
-# print(func(parameters))
-#
-# start = time.time()
-# print(func(jnp.array(parameters2)))
-# print("JAX Vmap Time taken:", time.time() - start)
-
-# fitness = Fitness(
-#     model=model,
-#     analysis=analysis,
-#     fom_is_log_likelihood=True,
-#     resample_figure_of_merit=-1.0e99,
-# )
-#
-# parameters2 = np.zeros((batch_size, model.total_free_parameters))
-#
-# for i in range(batch_size):
-#     parameters2[i, :] = model.random_unit_vector_within_limits()
-#
-# parameters2 = jnp.array(parameters2)
-#
-# param_vector = jnp.array(model.physical_values_from_prior_medians)
-#
-# fitness._call(param_vector)
-# start = time.time()
-# for i in range(batch_size):
-#     print(fitness._call(jnp.array(parameters2[i, :])))
-# print("JAX JIT LOOP Time taken:", time.time() - start)
-
-
-from jax import profiler
-
-
 param_vector = jnp.array(model.physical_values_from_prior_medians)
-print(fitness.call_numpy_wrapper(param_vector))
 
-start = time.time()
+if not use_vmap:
 
-# profiler.start_trace("profiler_output")
+    start = time.time()
+    print(fitness.call_numpy_wrapper(param_vector))
+    print("JAX Time To JIT Function:", time.time() - start)
 
-print(fitness.call_numpy_wrapper(param_vector))
+    start = time.time()
+    print(fitness.call_numpy_wrapper(param_vector))
+    print("JAX Time taken using JIT:", time.time() - start)
 
-# profiler.stop_trace()
+else:
 
-print("JAX JIT LOOP Time taken:", time.time() - start)
+    parameters = np.zeros((batch_size, model.total_free_parameters))
 
-# param_vector = model.physical_values_from_prior_medians
-# func = fitness
+    for i in range(batch_size):
+        parameters[i, :] = model.physical_values_from_prior_medians
 
-# start = time.time()
-# for i in range(batch_size):
-#     func(param_vector)
-# print("NO JAX Time taken:", time.time() - start)
+    parameters = jnp.array(parameters)
 
-# func = jax.jit(fitness)
-# start = time.time()
-# for i in range(batch_size):
-#     func(param_vector)
-# print("JAX JIT LOOP Time taken:", time.time() - start)
-#
-#
-#
-# def prior_transform_vectorized(cube, model):
-#
-#     trans = np.array([model.vector_from_unit_vector(row) for row in cube])
-#
-#     return trans
-#
-#
-# start = time.time()
-# prior_transform_vectorized(parameters, model)
-# end = time.time()
-# print(f"Time taken for prior transform vectorized: {end - start:.4f} seconds")
-#
-#
-# def prior_transform(cube, model):
-#     return model.vector_from_unit_vector(unit_vector=cube)
-#
-#
-# start = time.time()
-# for cube in parameters:
-#     prior_transform(cube, model)
-# end = time.time()
-#
-# print(f"Time taken for prior NORMAL transformed: {end - start:.4f} seconds")
-#
-#
-#
-#
-# from evosax.algorithms import CMA_ES
-#
-# solution = jnp.array(model.physical_values_from_prior_medians)
-#
-# # Instantiate the search strategy
-# population_size = batch_size
-# es = CMA_ES(population_size=population_size, solution=solution)
-# params = es.default_params
-#
-# # Initialize state
-# key = jax.random.key(0)
-# key, subkey = jax.random.split(key)
-# state = es.init(key, solution, params)
-#
-# # Ask-Eval-Tell loop
-# num_generations = 1000
-#
-# import time
-#
-# for i in range(num_generations):
-#
-#     key, key_ask, key_eval = jax.random.split(key, 3)
-#
-#     # Generate a set of candidate solutions to evaluate
-#     population, state = es.ask(key_ask, state, params)
-#
-#     start = time.time()
-#
-#     # Evaluate the fitness of the population
-#     fitness = func(population)
-#
-#     print("fitness time:", time.time() - start)
-#
-#     # Update the evolution strategy
-#     state, metrics = es.tell(key, population, fitness, state, params)
-#
-# instance = model.instance_from_vector(vector=state.best_solution)
+    start = time.time()
+    func = jax.vmap(jax.jit(fitness.call_numpy_wrapper))
+    print(func(parameters))
+    print("JAX Time To VMAP + JIT Function", time.time() - start)
+
+    start = time.time()
+    print(func(parameters))
+    print("JAX Time Taken using VMAP:", time.time() - start)
+    print("Time per Batch:", (time.time() - start / batch_size))

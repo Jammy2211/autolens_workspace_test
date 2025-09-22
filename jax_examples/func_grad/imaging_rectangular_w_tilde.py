@@ -111,6 +111,8 @@ dataset = dataset.apply_mask(mask=mask_2d)
 # dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
 #
 dataset.convolver
+dataset.w_tilde.w_matrix
+dataset.w_tilde.psf_operator_matrix_dense
 
 """
 __Model__
@@ -208,7 +210,7 @@ analysis = al.AnalysisImaging(
     dataset=dataset,
     #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
     settings_inversion=al.SettingsInversion(
-        use_w_tilde=False,
+        use_w_tilde=True,
         force_edge_pixels_to_zeros=True,
     ),
     preloads=al.Preloads(
@@ -291,7 +293,7 @@ print(f"Figure of Merit = {fit.figure_of_merit}")
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
-        path=file_path, filename=f"{instrument}_subplot_fit", format="png"
+        path=file_path, filename=f"{instrument}_subplot_fit_w_tilde", format="png"
     )
 )
 fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
@@ -299,7 +301,7 @@ fit_plotter.subplot_fit()
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
-        path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"
+        path=file_path, filename=f"{instrument}_subplot_of_plane_1_w_tilde", format="png"
     )
 )
 fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
@@ -307,7 +309,7 @@ fit_plotter.subplot_of_planes(plane_index=1)
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
-        path=file_path, filename=f"{instrument}_subplot_inversion_0", format="png"
+        path=file_path, filename=f"{instrument}_subplot_inversion_0_w_tilde", format="png"
     )
 )
 fit_plotter = aplt.InversionPlotter(inversion=fit.inversion, mat_plot_2d=mat_plot_2d)
