@@ -100,6 +100,7 @@ __Start Here Notebook__
 
 If any code in this script is unclear, refer to the `modeling/start_here.ipynb` notebook.
 """
+
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())
@@ -421,7 +422,7 @@ for j in range(gaussian_per_basis):
             0
         ].ell_comps  # All Gaussians have same elliptical components.
         gaussian.sigma = (
-                10 ** log10_sigma_list[i]
+            10 ** log10_sigma_list[i]
         )  # All Gaussian sigmas are fixed to values above.
 
     bulge_gaussian_list += gaussian_list
@@ -466,7 +467,7 @@ search = af.DynestyStatic(
     unique_tag=dataset_name,
     nlive=75,
     maxcall=5000,
-    maxiter=5000
+    maxiter=5000,
     #  iterations_per_update=10000
 )
 
@@ -583,7 +584,7 @@ for j in range(gaussian_per_basis):
             0
         ].ell_comps  # All Gaussians have same elliptical components.
         gaussian.sigma = (
-                10 ** log10_sigma_list[i]
+            10 ** log10_sigma_list[i]
         )  # All Gaussian sigmas are fixed to values above.
 
     bulge_gaussian_list += gaussian_list

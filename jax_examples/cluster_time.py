@@ -18,7 +18,7 @@ for _, row in df.iterrows():
 
     mass = al.mp.IsothermalSph(
         centre=(row["center_y(arcsec)"], row["center_x(arcsec)"]),
-        einstein_radius=(row["kappa_scale"] / (834.6912404))
+        einstein_radius=(row["kappa_scale"] / (834.6912404)),
     )
 
     lens_galaxy = al.Galaxy(redshift=0.5, mass=mass)
@@ -42,7 +42,6 @@ grid = al.Grid2D.uniform(
 print(grid)
 
 print(np.max(tracer.deflections_yx_2d_from(grid=grid)))
-
 
 
 solver = al.PointSolver.for_grid(

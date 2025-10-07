@@ -206,7 +206,9 @@ source_galaxies = {}
 
 for i in range(len(centre_list)):
 
-    source_galaxies[f"source_{i}"] = af.Model(al.Galaxy, redshift=redshift_list[i], **{f"point_{i}": points[f"point_{i}"]})
+    source_galaxies[f"source_{i}"] = af.Model(
+        al.Galaxy, redshift=redshift_list[i], **{f"point_{i}": points[f"point_{i}"]}
+    )
 
 # Overall Lens Model:
 

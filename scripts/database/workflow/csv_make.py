@@ -106,7 +106,10 @@ for i in range(2):
     )
 
     class AnalysisLatent(al.AnalysisImaging):
-        def compute_latent_variables(self, instance):
+        def compute_latent_variables(self, parameters, model):
+
+            instance = model.instance_from_vector(vector=parameters)
+
             return {"example.latent": instance.galaxies.lens.mass.einstein_radius * 2.0}
 
     analysis = AnalysisLatent(dataset=dataset)

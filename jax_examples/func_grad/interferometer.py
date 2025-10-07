@@ -31,7 +31,7 @@ discussed above shows the PSF features.
 # print(f"Working Directory has been set to `{workspace_path}`")
 
 import jax
-from jax import grad
+import jax.numpy as jnp
 from os import path
 
 import autofit as af
@@ -162,6 +162,10 @@ the model with likelihood.
 This is the function on which JAX gradients are computed, so we create this class here.
 """
 from autofit.non_linear.fitness import Fitness
+import time
+
+use_vmap = False
+batch_size = 30
 
 fitness = Fitness(
     model=model,
@@ -169,6 +173,40 @@ fitness = Fitness(
     fom_is_log_likelihood=True,
     resample_figure_of_merit=-1.0e99,
 )
+
+param_vector = jnp.array(model.physical_values_from_prior_medians)
+
+if not use_vmap:
+
+    start = time.time()
+    print()
+    print(fitness._call(param_vector))
+    print("JAX Time To JIT Function:", time.time() - start)
+
+    start = time.time()
+    print()
+    print(fitness._call(param_vector))
+    print("JAX Time taken using JIT:", time.time() - start)
+
+else:
+
+    parameters = np.zeros((batch_size, model.total_free_parameters))
+
+    for i in range(batch_size):
+        parameters[i, :] = model.physical_values_from_prior_medians
+
+    parameters = jnp.array(parameters)
+
+    start = time.time()
+    print()
+    print(fitness._vmap(parameters))
+    print("JAX Time To VMAP + JIT Function", time.time() - start)
+
+    start = time.time()
+    print()
+    print(fitness._vmap(parameters))
+    print("JAX Time Taken using VMAP:", time.time() - start)
+    print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
 """
 We now test the JAX-ing of this LH function.

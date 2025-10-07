@@ -44,8 +44,6 @@ from autoconf import conf
 conf.instance["general"]["model"]["ignore_prior_limits"] = True
 
 
-
-
 """
 __Dataset__
 """
@@ -122,7 +120,9 @@ source_galaxies = {}
 
 for i in range(len(centre_list)):
 
-    source_galaxies[f"source_{i}"] = af.Model(al.Galaxy, redshift=1.0, **{f"point_{i}": points[f"point_{i}"]})
+    source_galaxies[f"source_{i}"] = af.Model(
+        al.Galaxy, redshift=1.0, **{f"point_{i}": points[f"point_{i}"]}
+    )
 
 # Overall Lens Model:
 
@@ -208,7 +208,7 @@ batch_size = 30
 parameters = np.zeros((batch_size, model.total_free_parameters))
 
 for i in range(batch_size):
-#    parameters[i, :] = model.random_unit_vector_within_limits()
+    #    parameters[i, :] = model.random_unit_vector_within_limits()
     parameters[i, :] = model.physical_values_from_prior_medians
 
 param_vector = model.physical_values_from_prior_medians
@@ -231,4 +231,4 @@ print(func(parameters))
 start = time.time()
 print(func(jnp.array(parameters)))
 print("JAX Vmap Time taken:", time.time() - start)
-print("JAX Vmap Time taken per sample:", (time.time() - start)/batch_size)
+print("JAX Vmap Time taken per sample:", (time.time() - start) / batch_size)

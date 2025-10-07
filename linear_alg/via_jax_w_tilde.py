@@ -31,9 +31,8 @@ dataset = aa.Imaging.from_fits(
 )
 
 mask = aa.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=2.0
 )
-
 
 """
 Reshape Dataset so that its exactly paired to the extent PSF convolution goes over including the blurring mask edge.
@@ -96,7 +95,6 @@ def curvature_matrix_via_w_tilde_from(
     return jnp.dot(mapping_matrix.T, jnp.dot(w_tilde, mapping_matrix))
 
 
-
 jitted_curvature_matrix_via_w_tilde_from = jax.jit(curvature_matrix_via_w_tilde_from)
 
 """
@@ -107,7 +105,8 @@ mapping_matrix = jnp.array(mapping_matrix)
 curvature_matrix_w_tilde = jitted_curvature_matrix_via_w_tilde_from(
     w_tilde=w_matrix, mapping_matrix=mapping_matrix
 )
-
+print(np.max(curvature_matrix_w_tilde))
+print(np.min(curvature_matrix_w_tilde))
 
 """
 __Time JIT__
@@ -117,7 +116,8 @@ start = time.time()
 curvature_matrix_w_tilde = jitted_curvature_matrix_via_w_tilde_from(
     w_tilde=w_matrix, mapping_matrix=mapping_matrix
 )
-print(curvature_matrix_w_tilde[0, 0])
+print(np.max(curvature_matrix_w_tilde))
+print(np.min(curvature_matrix_w_tilde))
 
 print(f"Time JAX jit curvature_matrix w_tilde: {time.time() - start}")
 

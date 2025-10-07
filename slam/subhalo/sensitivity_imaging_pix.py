@@ -739,7 +739,9 @@ def run(
             upper_limit=perturb_instance.mass.centre[1] + b,
         )
 
-        perturb_model.mass.mass_at_200 = af.UniformPrior(lower_limit=1e6, upper_limit=1e12)
+        perturb_model.mass.mass_at_200 = af.UniformPrior(
+            lower_limit=1e6, upper_limit=1e12
+        )
 
         return perturb_model
 

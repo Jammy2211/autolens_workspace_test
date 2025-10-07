@@ -14,6 +14,7 @@ pixel_scale = pixel_scales_dict[instrument]
 mesh_shape = (32, 32)
 
 dataset_path = Path("dataset") / "imaging" / "instruments" / instrument
+# dataset_path = Path("..") / ".." / "dataset" / "imaging" / "instruments" / instrument
 
 dataset = al.Imaging.from_fits(
     data_path=dataset_path / "data.fits",
@@ -23,52 +24,27 @@ dataset = al.Imaging.from_fits(
     over_sample_size_pixelization=4,
 )
 
+# dataset = dataset.resized_from()
+
 mask = al.Mask2D.circular(
     shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
 )
 
-"""
-Reshape Dataset so that its exactly paired to the extent PSF convolution goes over including the blurring mask edge.
 
-This speeds up JAX calculations as the PSF convolution is done on a smaller array with fewer zero entries.
-
-This will be put in the source code soon during `apply_mask`.
-"""
-
-
-def false_span(mask: np.ndarray):
-    """
-    Given a boolean mask with False marking valid pixels,
-    return the (y_min, y_max), (x_min, x_max) spans of False entries.
-    """
-    # Find coordinates of False pixels
+def make_mask_rectangular(mask, dataset):
     ys, xs = np.where(~mask)
-
-    if ys.size == 0 or xs.size == 0:
-        raise ValueError("No False entries in mask!")
-
     y_min, y_max = ys.min(), ys.max()
     x_min, x_max = xs.min(), xs.max()
+    (pad_y, pad_x) = dataset.psf.shape_native
+    z = np.ones(mask.shape, dtype=bool)
+    z[
+        y_min - pad_y // 2 : y_max + pad_y // 2, x_min - pad_x // 2 : x_max + pad_x // 2
+    ] = False
+    return z
 
-    return (y_max - y_min, x_max - x_min)
 
-
-y_distance, x_distance = false_span(mask=mask.mask)
-
-(pad_y, pad_x) = dataset.psf.shape_native
-
-new_shape = (y_distance + pad_y, x_distance + pad_x)
-
-mask = mask.resized_from(new_shape=new_shape)
-data = dataset.data.resized_from(new_shape=new_shape)
-noise_map = dataset.noise_map.resized_from(new_shape=new_shape)
-
-dataset = al.Imaging(
-    data=data,
-    noise_map=noise_map,
-    psf=dataset.psf,
-    over_sample_size_pixelization=4,
-)
+new_mask_array = make_mask_rectangular(mask, dataset)
+mask._array = new_mask_array
 
 dataset = dataset.apply_mask(mask=mask)
 
@@ -107,9 +83,7 @@ tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 fit = al.FitImaging(
     dataset=dataset,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(
-        use_w_tilde=True, use_border_relocator=True
-    ),
+    settings_inversion=al.SettingsInversion(use_w_tilde=True),
 )
 
 inversion = fit.inversion
@@ -119,6 +93,7 @@ mapper = inversion.cls_list_from(al.AbstractMapper)[0]
 print(fit.figure_of_merit)
 
 folder = Path("linear_alg") / "arrs" / instrument
+
 
 np.save(
     f"{folder}/pix_indexes_for_sub_slim_index", mapper.pix_indexes_for_sub_slim_index
@@ -140,9 +115,6 @@ np.save(f"{folder}/data_to_pix_unique", mapper.unique_mappings.data_to_pix_uniqu
 np.save(f"{folder}/data_weights", mapper.unique_mappings.data_weights)
 np.save(f"{folder}/pix_lengths", mapper.unique_mappings.pix_lengths)
 np.save(f"{folder}/w_matrix", dataset.w_tilde.w_matrix)
-np.save(f"{folder}/curvature_preload", dataset.w_tilde.curvature_preload)
-np.save(f"{folder}/w_indexes", dataset.w_tilde.indexes)
-np.save(f"{folder}/w_lengths", dataset.w_tilde.lengths)
 np.save(
     f"{folder}/psf_operator_matrix_dense", dataset.w_tilde.psf_operator_matrix_dense
 )

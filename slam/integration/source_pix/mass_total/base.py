@@ -146,15 +146,21 @@ def fit():
 
     analysis = al.AnalysisImaging(
         dataset=dataset,
-      #  adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
+        #  adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
     )
 
     galaxy_name_image_dict = {
-        "('galaxies', 'lens')":  source_lp_result.adapt_images_from().galaxy_name_image_dict["('galaxies', 'lens')"],
-        "('galaxies', 'source')" : source_lp_result.adapt_images_from().galaxy_name_image_dict["('galaxies', 'source')"],
+        "('galaxies', 'lens')": source_lp_result.adapt_images_from().galaxy_name_image_dict[
+            "('galaxies', 'lens')"
+        ],
+        "('galaxies', 'source')": source_lp_result.adapt_images_from().galaxy_name_image_dict[
+            "('galaxies', 'source')"
+        ],
     }
 
-    analysis._adapt_images = al.AdaptImages(galaxy_name_image_dict=galaxy_name_image_dict)
+    analysis._adapt_images = al.AdaptImages(
+        galaxy_name_image_dict=galaxy_name_image_dict
+    )
 
     source_pix_result_1 = slam.source_pix.run_1(
         settings_search=settings_search,

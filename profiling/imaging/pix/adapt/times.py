@@ -6,6 +6,7 @@ datasets of varying resolution.
 
 This represents the time taken by a single iteration of the **PyAutoLens** log likelihood function.
 """
+
 import os
 from os import path
 

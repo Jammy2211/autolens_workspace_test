@@ -150,7 +150,7 @@ lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass, shear=shear)
 
 # Source:
 
-total_gaussians = 1000
+total_gaussians = 30
 gaussian_per_basis = 1
 
 # By defining the centre here, it creates two free parameters that are assigned to the source Gaussians.
@@ -214,7 +214,7 @@ from autofit.non_linear.fitness import Fitness
 import time
 
 use_vmap = False
-batch_size = 30
+batch_size = 50
 
 fitness = Fitness(
     model=model,
@@ -229,12 +229,12 @@ if not use_vmap:
 
     start = time.time()
     print()
-    print(fitness.call_numpy_wrapper(param_vector))
+    print(fitness._call(param_vector))
     print("JAX Time To JIT Function:", time.time() - start)
 
     start = time.time()
     print()
-    print(fitness.call_numpy_wrapper(param_vector))
+    print(fitness._call(param_vector))
     print("JAX Time taken using JIT:", time.time() - start)
 
 else:
@@ -248,11 +248,11 @@ else:
 
     start = time.time()
     print()
-    func = jax.vmap(jax.jit(fitness.call_numpy_wrapper))
-    print(func(parameters))
+    print(fitness._vmap(parameters))
     print("JAX Time To VMAP + JIT Function", time.time() - start)
 
     start = time.time()
     print()
-    print(func(parameters))
+    print(fitness._vmap(parameters))
     print("JAX Time Taken using VMAP:", time.time() - start)
+    print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)

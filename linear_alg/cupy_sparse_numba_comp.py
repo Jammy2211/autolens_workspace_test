@@ -13,28 +13,11 @@ instrument = "hst"
 
 folder = Path("linear_alg") / "arrs" / instrument
 
-# pix_indexes_for_sub_slim_index = np.load(f"{folder}/pix_indexes_for_sub_slim_index.npy")
-# pix_size_for_sub_slim_index = np.load(f"{folder}/pix_size_for_sub_slim_index.npy")
-# pix_weights_for_sub_slim_index = np.load(f"{folder}/pix_weights_for_sub_slim_index.npy")
-# pixels = np.load(f"{folder}/pixels.npy")
-# total_mask_pixels = np.load(f"{folder}/total_mask_pixels.npy")
-# slim_index_for_sub_slim_index = np.load(f"{folder}/slim_index_for_sub_slim_index.npy")
-# sub_fraction = np.load(f"{folder}/sub_fraction.npy")
-# native_index_for_slim_index = np.load(f"{folder}/native_index_for_slim_index.npy")
 data_to_pix_unique = np.load(f"{folder}/data_to_pix_unique.npy")
 data_weights = np.load(f"{folder}/data_weights.npy")
 pix_lengths = np.load(f"{folder}/pix_lengths.npy")
-# w_matrix = np.load(f"{folder}/w_matrix.npy")
-# psf_operator_matrix_dense = np.load(f"{folder}/psf_operator_matrix_dense.npy")
 mapping_matrix = np.load(f"{folder}/mapping_matrix.npy")
-# blurred_mapping_matrix = np.load(f"{folder}/blurred_mapping_matrix.npy")
-# w_tilde_data = np.load(f"{folder}/w_tilde_data.npy")
 curvature_matrix = np.load(f"{folder}/curvature_matrix.npy")
-# regularization_matrix = np.load(f"{folder}/regularization_matrix.npy")
-# data_vector = np.load(f"{folder}/data_vector.npy")
-# reconstruction = np.load(f"{folder}/reconstruction.npy")
-# mapped_reconstructed_image = np.load(f"{folder}/mapped_reconstructed_image.npy")
-# log_evidence = np.load(f"{folder}/log_evidence.npy")
 
 pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
@@ -52,47 +35,6 @@ dataset = aa.Imaging.from_fits(
 mask = aa.Mask2D.circular(
     shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
 )
-
-"""
-Reshape Dataset so that its exactly paired to the extent PSF convolution goes over including the blurring mask edge.
-
-This speeds up JAX calculations as the PSF convolution is done on a smaller array with fewer zero entries.
-
-This will be put in the source code soon during `apply_mask`.
-"""
-# def false_span(mask: np.ndarray):
-#     """
-#     Given a boolean mask with False marking valid pixels,
-#     return the (y_min, y_max), (x_min, x_max) spans of False entries.
-#     """
-#     # Find coordinates of False pixels
-#     ys, xs = np.where(~mask)
-#
-#     if ys.size == 0 or xs.size == 0:
-#         raise ValueError("No False entries in mask!")
-#
-#     y_min, y_max = ys.min(), ys.max()
-#     x_min, x_max = xs.min(), xs.max()
-#
-#     return (y_max - y_min, x_max - x_min)
-#
-#
-# y_distance, x_distance = false_span(mask=mask.mask)
-#
-# (pad_y, pad_x) = dataset.psf.shape_native
-#
-# new_shape = (y_distance + pad_y, x_distance + pad_x)
-#
-# mask = mask.resized_from(new_shape=new_shape)
-# data = dataset.data.resized_from(new_shape=new_shape)
-# noise_map = dataset.noise_map.resized_from(new_shape=new_shape)
-#
-# dataset = aa.Imaging(
-#     data=data,
-#     noise_map=noise_map,
-#     psf=dataset.psf,
-#     over_sample_size_pixelization=4,
-# )
 
 """
 __Mask__
@@ -131,19 +73,11 @@ print(f"PSF Shape: {dataset.psf.shape_native}")
 print(f"Mapping Matrix Shape: {mapping_matrix.shape}")
 print("Curvature Matrix Shape: ", curvature_matrix.shape)
 
-print(
-    f"Mapping Matrix non zero per column {np.count_nonzero(mapping_matrix, axis=0).mean()}"
-)
-print(
-    f"Mapping Matrix non zero per row {np.count_nonzero(mapping_matrix, axis=1).mean()}"
-)
-print(
-    f"W Matrix non zero per column {np.count_nonzero(dataset.w_tilde.w_matrix, axis=0).mean()}"
-)
-print(
-    f"W Matrix non zero per row {np.count_nonzero(dataset.w_tilde.w_matrix, axis=1).mean()}"
-)
-ffff
+# print(f"Mapping Matrix non zero per column {np.count_nonzero(mapping_matrix, axis=0).mean()}")
+# print(f"Mapping Matrix non zero per row {np.count_nonzero(mapping_matrix, axis=1).mean()}")
+# print(f"W Matrix non zero per column {np.count_nonzero(dataset.w_tilde.w_matrix, axis=0).mean()}")
+# print(f"W Matrix non zero per row {np.count_nonzero(dataset.w_tilde.w_matrix, axis=1).mean()}")
+# ffff
 
 """
 __Time__
@@ -180,6 +114,88 @@ curvature_matrix_w_tilde = inversion_imaging_numba_util.curvature_matrix_via_w_t
 
 print(f"Time numba CPU curvature_matrix calculation via w_tilde: {time.time() - start}")
 
-# Raises exceptions, need to follow up but not important for profilng.
 
-# assert np.allclose(curvature_matrix_calc, curvature_matrix)
+import time
+import numpy as np
+import scipy.sparse as sp
+import cupy as cp
+import cupyx.scipy.sparse as cpx_sparse
+
+
+def benchmark_with_real_data(mapping_matrix, w_matrix, F_numba):
+    """
+    Benchmark curvature matrix construction using real saved arrays.
+    mapping_matrix : np.ndarray [image_pixels, source_pixels]
+    w_matrix       : np.ndarray [image_pixels, image_pixels]
+    """
+    image_pixels, source_pixels = mapping_matrix.shape
+    print(f"\nBenchmarking with image={image_pixels}, source={source_pixels}")
+
+    # --- Convert to SciPy sparse ---
+    print("Building sparse matrices...")
+    t0 = time.time()
+    M_sparse = sp.csr_matrix(mapping_matrix)
+    W_sparse = sp.csr_matrix(w_matrix)
+    t1 = time.time()
+    print(
+        f" SciPy sparse build: {t1 - t0:.3f}s | nnz M={M_sparse.nnz}, W={W_sparse.nnz}"
+    )
+
+    # --- SciPy Sparse Benchmark ---
+    t0 = time.time()
+    F_sparse = M_sparse.T @ (W_sparse @ M_sparse)
+    t1 = time.time()
+    print(
+        f" SciPy sparse compute: {t1 - t0:.3f}s | shape={F_sparse.shape} | nnz={F_sparse.nnz}"
+    )
+
+    # --- CuPy Sparse Benchmark (GPU) ---
+    print("Sending to GPU...")
+    t0 = time.time()
+    M_cu = cpx_sparse.csr_matrix(cp.asarray(mapping_matrix))
+    W_cu = cpx_sparse.csr_matrix(cp.asarray(w_matrix))
+    cp.cuda.Stream.null.synchronize()
+    t1 = time.time()
+    print(f" CuPy sparse build: {t1 - t0:.3f}s | nnz M={M_cu.nnz}, W={W_cu.nnz}")
+
+    F_cu = M_cu.T @ (W_cu @ M_cu)
+
+    t0 = time.time()
+    F_cu = M_cu.T @ (W_cu @ M_cu)
+    cp.cuda.Stream.null.synchronize()  # ensure timing is accurate
+    t1 = time.time()
+    print(f" CuPy sparse compute: {t1 - t0:.3f}s | shape={F_cu.shape} | nnz={F_cu.nnz}")
+
+    # --- Norm check (Frobenius norm of data only) ---
+    fro_scipy = np.sqrt((F_sparse.data**2).sum())
+    fro_cupy = cp.sqrt(cp.sum(F_cu.data**2)).get()
+    print(
+        f" Norm check: SciPy={fro_scipy:.4e}, CuPy={fro_cupy:.4e}, diff={abs(fro_scipy - fro_cupy):.4e}"
+    )
+
+    # Frobenius norm difference
+    diff = np.linalg.norm(F_numba - F_cu.toarray().get())
+    print(f"F-norm difference: {diff:.3e}")
+    assert diff < 1e-4
+
+    # Transfer to NumPy
+    t0 = time.time()
+    F_numpy = F_cu.toarray().get()  # GPU → CPU
+    t1 = time.time()
+    print(f" Transfer GPU→CPU: {t1 - t0:.3f} s")
+
+    import jax.dlpack
+
+    # Direct transfer CuPy → JAX on GPU
+    t0 = time.time()
+    F_jax = jax.dlpack.from_dlpack(F_cu.toDlpack())
+    cp.cuda.Stream.null.synchronize()  # ensure kernel + transfer finished
+    t1 = time.time()
+    print(f" Transfer CuPy→JAX (DLPack, zero-copy): {t1 - t0:.3f} s")
+
+    return F_sparse, F_cu
+
+
+F_sparse, F_cu = benchmark_with_real_data(
+    mapping_matrix, dataset.w_tilde.w_matrix, curvature_matrix_w_tilde
+)

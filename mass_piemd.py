@@ -2,8 +2,6 @@ import numpy as np
 import math
 
 
-
-
 class MassProfile:
     """Parent class for mass profiles used in gravitational lensing"""
 
@@ -48,7 +46,7 @@ class MassProfile:
         e = self.ellipticity
         if abs(e) < 1e-6:  # Handle circular case
             return 0
-        return (1 - np.sqrt(1 - e ** 2)) / e
+        return (1 - np.sqrt(1 - e**2)) / e
 
     def kappa(self, x, y):
         """Calculate the convergence at the given coordinates
@@ -111,7 +109,16 @@ class Matrix:
 
 class PIEMD(MassProfile):
 
-    def __init__(self, ellipticity : float = 0, rcut : float = 1.0, rc : float = 0.1, sigma : float = 200.0, position_angle : float = 0, cx : float = 0, cy : float = 0):
+    def __init__(
+        self,
+        ellipticity: float = 0,
+        rcut: float = 1.0,
+        rc: float = 0.1,
+        sigma: float = 200.0,
+        position_angle: float = 0,
+        cx: float = 0,
+        cy: float = 0,
+    ):
         """Initialize PIEMD profile with either new or old parameter format
 
         Parameters:
@@ -141,14 +148,14 @@ class PIEMD(MassProfile):
         self.rc = rc
         self.pia_c2 = 7.209970e-06
         self.sigma = sigma
-        self.b0 = 6.0 * self.pia_c2 * sigma ** 2
+        self.b0 = 6.0 * self.pia_c2 * sigma**2
 
         # Maintain theta for backward compatibility
         self.theta = position_angle
 
     def update(self):
         self.epot = self.get_piemd_epot()
-        self.b0 = 6.0 * self.pia_c2 * self.sigma ** 2
+        self.b0 = 6.0 * self.pia_c2 * self.sigma**2
 
     def mdci05(self, x, y, eps, rc, b0, res):
         # Convert inputs to numpy arrays if they aren't already
@@ -156,24 +163,41 @@ class PIEMD(MassProfile):
         y = np.asarray(y)
 
         sqe = np.sqrt(eps)
-        cx1 = (1. - eps) / (1. + eps)
-        cx1inv = 1. / cx1
-        cxro = (1. + eps) * (1. + eps)  # rem^2 = x^2 / (1+e^2) + y^2 / (1-e^2) Eq 2.3.6
-        cyro = (1. - eps) * (1. - eps)
-        ci = 0.5 * (1. - eps * eps) / sqe
-        wrem = np.sqrt(rc * rc + x * x / cxro + y * y / cyro)  # wrem^2 = w^2 + rem^2 with w core radius
+        cx1 = (1.0 - eps) / (1.0 + eps)
+        cx1inv = 1.0 / cx1
+        cxro = (1.0 + eps) * (
+            1.0 + eps
+        )  # rem^2 = x^2 / (1+e^2) + y^2 / (1-e^2) Eq 2.3.6
+        cyro = (1.0 - eps) * (1.0 - eps)
+        ci = 0.5 * (1.0 - eps * eps) / sqe
+        wrem = np.sqrt(
+            rc * rc + x * x / cxro + y * y / cyro
+        )  # wrem^2 = w^2 + rem^2 with w core radius
 
         # Calculate denominators and numerators
-        den1 = 2. * sqe * wrem - y * cx1inv
+        den1 = 2.0 * sqe * wrem - y * cx1inv
         den1 = cx1 * cx1 * x * x + den1 * den1
-        num2 = 2. * rc * sqe - y
+        num2 = 2.0 * rc * sqe - y
         den2 = x * x + num2 * num2
 
         # Calculate derivatives
-        didxre = ci * (cx1 * (2. * sqe * x * x / cxro / wrem - 2. * sqe * wrem + y * cx1inv) / den1 + num2 / den2)
-        didyre = ci * ((2. * sqe * x * y * cx1 / cyro / wrem - x) / den1 + x / den2)
-        didyim = ci * ((2. * sqe * wrem * cx1inv - y * cx1inv * cx1inv - 4 * eps * y / cyro +
-                        2. * sqe * y * y / cyro / wrem * cx1inv) / den1 - num2 / den2)
+        didxre = ci * (
+            cx1
+            * (2.0 * sqe * x * x / cxro / wrem - 2.0 * sqe * wrem + y * cx1inv)
+            / den1
+            + num2 / den2
+        )
+        didyre = ci * ((2.0 * sqe * x * y * cx1 / cyro / wrem - x) / den1 + x / den2)
+        didyim = ci * (
+            (
+                2.0 * sqe * wrem * cx1inv
+                - y * cx1inv * cx1inv
+                - 4 * eps * y / cyro
+                + 2.0 * sqe * y * y / cyro / wrem * cx1inv
+            )
+            / den1
+            - num2 / den2
+        )
 
         # Update res matrix
         res.a = b0 * didxre
@@ -192,8 +216,8 @@ class PIEMD(MassProfile):
 
         # Handle very small ellipticity
         epot = self.get_piemd_epot()
-        if epot < 2E-4:
-            epot = 2E-4
+        if epot < 2e-4:
+            epot = 2e-4
 
         if epot > 0:
             t05 = self.rcut / (self.rcut - self.rc)
@@ -206,7 +230,7 @@ class PIEMD(MassProfile):
             g2.d = t05 * (g05c.d - g05cut.d)
         else:
             # Using vectorized operations for array support
-            RR = x_rot ** 2 + y_rot ** 2
+            RR = x_rot**2 + y_rot**2
 
             # Create arrays to store results
             g2.a = np.zeros_like(RR)
@@ -215,7 +239,7 @@ class PIEMD(MassProfile):
             g2.d = np.zeros_like(RR)
 
             # Handle the case where RR > 0
-            mask = RR > 0.
+            mask = RR > 0.0
             if np.any(mask):
                 X = self.rc
                 Y = self.rcut
@@ -225,8 +249,9 @@ class PIEMD(MassProfile):
                 z = np.sqrt(RR[mask] + X * X) - X - np.sqrt(RR[mask] + Y * Y) + Y
                 X_val = RR[mask] / X
                 Y_val = RR[mask] / Y
-                p = (1. - 1. / np.sqrt(1. + X_val / self.rc)) / X_val - (
-                            1. - 1. / np.sqrt(1. + Y_val / self.rcut)) / Y_val
+                p = (1.0 - 1.0 / np.sqrt(1.0 + X_val / self.rc)) / X_val - (
+                    1.0 - 1.0 / np.sqrt(1.0 + Y_val / self.rcut)
+                ) / Y_val
                 X_val = x_rot[mask] ** 2 / RR[mask]
                 Y_val = y_rot[mask] ** 2 / RR[mask]
 
@@ -240,8 +265,8 @@ class PIEMD(MassProfile):
             # Handle the case where RR == 0
             mask_zero = ~mask
             if np.any(mask_zero):
-                g2.a[mask_zero] = self.b0 / self.rc / 2.
-                g2.c[mask_zero] = self.b0 / self.rc / 2.
+                g2.a[mask_zero] = self.b0 / self.rc / 2.0
+                g2.c[mask_zero] = self.b0 / self.rc / 2.0
                 # g2.b and g2.d are already zeros
 
         return g2
@@ -255,7 +280,7 @@ class PIEMD(MassProfile):
         grad2 = self.main(x, y)
         gamma1 = 0.5 * (grad2.a - grad2.c)
         gamma2 = grad2.b
-        return {'gamma1': gamma1, 'gamma2': gamma2}
+        return {"gamma1": gamma1, "gamma2": gamma2}
 
     def ci05f(self, x, y):
         """Complex calculation method that now takes x, y as parameters"""
@@ -274,33 +299,37 @@ class PIEMD(MassProfile):
 
         # Ensure epot is not too small
         epot = self.get_piemd_epot()
-        if epot < 2E-4:
-            epot = 2E-4
+        if epot < 2e-4:
+            epot = 2e-4
 
         sqe = np.sqrt(epot)
-        cx1 = (1. - epot) / (1. + epot)
-        cxro = (1. + epot) ** 2
-        cyro = (1. - epot) ** 2
+        cx1 = (1.0 - epot) / (1.0 + epot)
+        cxro = (1.0 + epot) ** 2
+        cyro = (1.0 - epot) ** 2
         rem2 = x_arr * x_arr / cxro + y_arr * y_arr / cyro
 
-        zci = complex(0, -0.5 * (1. - epot ** 2) / sqe)
+        zci = complex(0, -0.5 * (1.0 - epot**2) / sqe)
 
         # rc:
-        znum_rc = cx1 * x_arr + 1j * (2. * sqe * np.sqrt(self.rc * self.rc + rem2) - y_arr / cx1)
-        zden_rc = x_arr + 1j * (2. * self.rc * sqe - y_arr)
+        znum_rc = cx1 * x_arr + 1j * (
+            2.0 * sqe * np.sqrt(self.rc * self.rc + rem2) - y_arr / cx1
+        )
+        zden_rc = x_arr + 1j * (2.0 * self.rc * sqe - y_arr)
 
         # rcut:
-        znum_rcut = znum_rc.real + 1j * (2. * sqe * np.sqrt(self.rcut * self.rcut + rem2) - y_arr / cx1)
-        zden_rcut = zden_rc.real + 1j * (2. * self.rcut * sqe - y_arr)
+        znum_rcut = znum_rc.real + 1j * (
+            2.0 * sqe * np.sqrt(self.rcut * self.rcut + rem2) - y_arr / cx1
+        )
+        zden_rcut = zden_rc.real + 1j * (2.0 * self.rcut * sqe - y_arr)
 
         # Compute the ratio zis_rc / zis_rcut
-        aa = (znum_rc.real * zden_rc.real - znum_rc.imag * zden_rcut.imag)
-        bb = (znum_rc.real * zden_rcut.imag + znum_rc.imag * zden_rc.real)
-        cc = (znum_rc.real * zden_rc.real - zden_rc.imag * znum_rcut.imag)
-        dd = (znum_rc.real * zden_rc.imag + zden_rc.real * znum_rcut.imag)
+        aa = znum_rc.real * zden_rc.real - znum_rc.imag * zden_rcut.imag
+        bb = znum_rc.real * zden_rcut.imag + znum_rc.imag * zden_rc.real
+        cc = znum_rc.real * zden_rc.real - zden_rc.imag * znum_rcut.imag
+        dd = znum_rc.real * zden_rc.imag + zden_rc.real * znum_rcut.imag
 
         # Compute the norm
-        norm = (cc * cc + dd * dd)
+        norm = cc * cc + dd * dd
         aaa = (aa * cc + bb * dd) / norm
         bbb = (bb * cc - aa * dd) / norm
 
@@ -309,7 +338,9 @@ class PIEMD(MassProfile):
         zr = np.log(np.sqrt(norm2)) + 1j * (np.arctan2(bbb, aaa))
 
         # Compute the final result
-        zres = (zci.real * zr.real - zci.imag * zr.imag) + 1j * (zci.imag * zr.real + zci.real * zr.imag)
+        zres = (zci.real * zr.real - zci.imag * zr.imag) + 1j * (
+            zci.imag * zr.real + zci.real * zr.imag
+        )
 
         # Return scalar if input was scalar
         if is_scalar:

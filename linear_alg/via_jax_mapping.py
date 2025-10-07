@@ -15,6 +15,15 @@ instrument = "hst"
 folder = Path("linear_alg") / "arrs" / instrument
 
 mapping_matrix = np.load(f"{folder}/mapping_matrix.npy")
+
+# print(mapping_matrix.shape)
+#
+# for i in range(mapping_matrix.shape[1]):
+#
+#     print(i, np.count_nonzero(mapping_matrix[:,i]))
+#
+# fff
+
 curvature_matrix = np.load(f"{folder}/curvature_matrix.npy")
 
 pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
@@ -42,6 +51,8 @@ This speeds up JAX calculations as the PSF convolution is done on a smaller arra
 
 This will be put in the source code soon during `apply_mask`.
 """
+
+
 def false_span(mask: np.ndarray):
     """
     Given a boolean mask with False marking valid pixels,
@@ -90,7 +101,11 @@ print("Curvature Matrix Shape: ", curvature_matrix.shape)
 
 def blurred_mapping_matrix_from(psf, mapping_matrix):
     return jnp.hstack(
-        [psf.convolve_mapping_matrix(mapping_matrix=mapping_matrix, mask=mask, jax_method="direct")]
+        [
+            psf.convolve_mapping_matrix(
+                mapping_matrix=mapping_matrix, mask=mask, jax_method="direct"
+            )
+        ]
     )
 
 
@@ -103,6 +118,7 @@ def curvature_matrix_via_mapping_matrix_from(
     curvature_matrix = jnp.dot(array.T, array)
 
     return curvature_matrix
+
 
 jitted_blurred_mapping_matrix_from = jax.jit(blurred_mapping_matrix_from)
 jitted_curvature_matrix_via_mapping_matrix_from = jax.jit(
@@ -143,8 +159,6 @@ print(curvature_matrix_calc[0, 0])
 
 
 print(f"Time JAX jit curvature_matrix: {time.time() - start}")
-
-
 
 
 """

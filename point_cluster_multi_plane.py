@@ -206,7 +206,9 @@ source_galaxies = {}
 
 for i in range(len(centre_list)):
 
-    source_galaxies[f"source_{i}"] = af.Model(al.Galaxy, redshift=1.0, **{f"point_{i}": points[f"point_{i}"]})
+    source_galaxies[f"source_{i}"] = af.Model(
+        al.Galaxy, redshift=1.0, **{f"point_{i}": points[f"point_{i}"]}
+    )
 
 # Overall Lens Model:
 
@@ -240,9 +242,7 @@ for i in range(len(centre_list)):
     instance = model.instance_from_prior_medians()
     tracer = analysis.tracer_via_instance_from(instance=instance)
 
-    positions = solver.solve(
-        tracer=tracer, source_plane_coordinate=centre_list[i]
-    )
+    positions = solver.solve(tracer=tracer, source_plane_coordinate=centre_list[i])
 
     print(positions)
 

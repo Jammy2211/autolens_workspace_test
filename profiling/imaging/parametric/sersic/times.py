@@ -13,6 +13,8 @@ from os import path
 import time
 import json
 
+from autoconf import conf
+
 import autolens as al
 import autolens.plot as aplt
 
@@ -160,14 +162,11 @@ __Profiling Dict__
 
 Apply mask, settings and profiling dict to fit, such that timings of every individiual function are provided.
 """
-run_time_dict = {}
 
-tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time_dict)
+tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
-fit = al.FitImaging(dataset=masked_dataset, tracer=tracer, run_time_dict=run_time_dict)
+fit = al.FitImaging(dataset=masked_dataset, tracer=tracer)
 fit.figure_of_merit
-
-run_time_dict = fit.run_time_dict
 
 """
 __Results__
@@ -177,49 +176,10 @@ These two numbers are the primary driver of run time. More pixels = longer run t
 
 print(f"Fit run times for image type {instrument} \n")
 print(f"Number of pixels = {masked_dataset.grid.shape_slim} \n")
-print(f"Number of sub-pixels = {masked_dataset.grid.sub_shape_slim} \n")
-
-"""
-Print the profiling results of every step of the fit for command line output when running profiling scripts.
-"""
-for key, value in run_time_dict.items():
-    print(key, value)
-
-"""
-__Predicted And Exccess Time__
-
-The predicted time is how long we expect the fit should take, based on the individual profiling of functions above.
-
-The excess time is the difference of this value from the fit time, and it indicates whether the break-down above
-has missed expensive steps.
-"""
-predicted_time = 0.0
-predicted_time = sum(run_time_dict.values())
-excess_time = fit_time - predicted_time
-
-print(f"\nExcess Time = {excess_time} \n")
 
 """
 __Output__
 
-Output the profiling run times as a dictionary so they can be used in `profiling/graphs.py` to create graphs of the
-profile run times.
-
-This is stored in a folder using the **PyAutoLens** version number so that profiling run times can be tracked through
-**PyAutoLens** development.
-"""
-if not os.path.exists(file_path):
-    os.makedirs(file_path)
-
-filename = f"{instrument}_run_time_dict.json"
-
-if os.path.exists(path.join(file_path, filename)):
-    os.remove(path.join(file_path, filename))
-
-with open(path.join(file_path, filename), "w") as outfile:
-    json.dump(run_time_dict, outfile)
-
-"""
 Output the profiling run time of the entire fit.
 """
 filename = f"{instrument}_fit_time.json"
@@ -254,14 +214,12 @@ The `info_dict` contains all the key information of the analysis which describes
 """
 info_dict = {}
 info_dict["repeats"] = repeats
-info_dict["image_pixels"] = masked_dataset.grid.sub_shape_slim
 info_dict["grid_class"] = str(grid_class)
 info_dict["sub_size"] = sub_size
 info_dict["sub_steps"] = sub_steps
 info_dict["fractional_accuracy"] = fractional_accuracy
 info_dict["mask_radius"] = mask_radius
 info_dict["psf_shape_2d"] = psf_shape_2d
-info_dict["excess_time"] = excess_time
 
 print(info_dict)
 

@@ -41,8 +41,8 @@ from autoconf import conf
 
 conf.instance["general"]["model"]["ignore_prior_limits"] = True
 
-sub_size = 4
-mask_radius = 3.0
+sub_size = 1
+mask_radius = 1.0
 psf_shape_2d = (21, 21)
 
 """
@@ -60,8 +60,8 @@ hst_up: pixel_scale = 0.03", slow run times.
 ao: pixel_scale = 0.01", very slow :(
 """
 # instrument = "vro"
-# instrument = "euclid"
-instrument = "hst"
+instrument = "euclid"
+# instrument = "hst"
 # instrument = "hst_up"
 # instrument = "ao"
 
@@ -131,7 +131,9 @@ bulge = af.Model(al.lp.Sersic)
 
 bulge.centre.centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 bulge.centre.centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-bulge.ell_comps.ell_comps_0 = af.UniformPrior(lower_limit=0.0526316, upper_limit=0.0526318)
+bulge.ell_comps.ell_comps_0 = af.UniformPrior(
+    lower_limit=0.0526316, upper_limit=0.0526318
+)
 bulge.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=-0.01, upper_limit=0.01)
 bulge.effective_radius = af.UniformPrior(lower_limit=0.5, upper_limit=0.7)
 bulge.sersic_index = af.UniformPrior(lower_limit=2.0, upper_limit=4.0)
@@ -143,8 +145,12 @@ disk = af.Model(al.lp.Exponential)
 
 disk.centre.centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 disk.centre.centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-disk.ell_comps.ell_comps_0 = af.UniformPrior(lower_limit=0.152828012432548, upper_limit=0.1528280124325482)
-disk.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=0.0882352, upper_limit=0.0882353)
+disk.ell_comps.ell_comps_0 = af.UniformPrior(
+    lower_limit=0.152828012432548, upper_limit=0.1528280124325482
+)
+disk.ell_comps.ell_comps_1 = af.UniformPrior(
+    lower_limit=0.0882352, upper_limit=0.0882353
+)
 disk.effective_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.7)
 disk.intensity = af.UniformPrior(lower_limit=1.0, upper_limit=3.0)
 
@@ -153,7 +159,9 @@ mass = af.Model(al.mp.Isothermal)
 mass.centre.centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 mass.centre.centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 mass.einstein_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.7)
-mass.ell_comps.ell_comps_0 = af.UniformPrior(lower_limit=0.11111111111111108, upper_limit=0.1111111111111111)
+mass.ell_comps.ell_comps_0 = af.UniformPrior(
+    lower_limit=0.11111111111111108, upper_limit=0.1111111111111111
+)
 mass.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=-0.01, upper_limit=0.01)
 
 shear = af.Model(al.mp.ExternalShear)
@@ -177,9 +185,9 @@ total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
 mesh = al.mesh.Rectangular(shape=mesh_shape)
 # regularization = al.reg.Constant(coefficient=1.0)
 
-regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
+# regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
 
-# regularization = al.reg.AdaptiveBrightness()
+regularization = al.reg.Constant()
 
 pixelization = al.Pixelization(
     image_mesh=None, mesh=mesh, regularization=regularization
@@ -247,12 +255,12 @@ if not use_vmap:
 
     start = time.time()
     print()
-    print(fitness.call_numpy_wrapper(param_vector))
+    print(fitness._call(param_vector))
     print("JAX Time To JIT Function:", time.time() - start)
 
     start = time.time()
     print()
-    print(fitness.call_numpy_wrapper(param_vector))
+    print(fitness._call(param_vector))
     print("JAX Time taken using JIT:", time.time() - start)
 
 else:
@@ -266,14 +274,14 @@ else:
 
     start = time.time()
     print()
-    func = jax.vmap(jax.jit(fitness.call_numpy_wrapper))
-    print(func(parameters))
+    print(fitness._vmap(parameters))
     print("JAX Time To VMAP + JIT Function", time.time() - start)
 
     start = time.time()
     print()
-    print(func(parameters))
+    print(fitness._vmap(parameters))
     print("JAX Time Taken using VMAP:", time.time() - start)
+    print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
 
 """
