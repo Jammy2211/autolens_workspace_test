@@ -86,14 +86,16 @@ dataset = al.Imaging.from_fits(
 """
 __Mask__
 
-The model-fit requires a `Mask2D` defining the regions of the image we fit the model to the data, which we define
+The model-fit requires a 2D mask defining the regions of the image we fit the model to the data, which we define
 and use to set up the `Imaging` object that the model fits.
 """
-mask_2d = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
+mask_radius = 3.0
+
+mask = al.Mask2D.circular(
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
 )
 
-dataset = dataset.apply_mask(mask=mask_2d)
+dataset = dataset.apply_mask(mask=mask)
 
 # dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
 
@@ -103,16 +105,13 @@ dataset = dataset.apply_mask(mask=mask_2d)
 
 # over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
 #     grid=dataset.grid,
-#     sub_size_list=[8, 4, 1],
+#     sub_size_list=[4, 2, 1],
 #     radial_list=[0.3, 0.6],
 #     centre_list=[(0.0, 0.0)],
 # )
 #
 # dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
 #
-dataset.convolver
-dataset.w_tilde.w_matrix
-dataset.w_tilde.psf_operator_matrix_dense
 
 """
 __Model__
@@ -257,12 +256,12 @@ if not use_vmap:
 
     start = time.time()
     print()
-    print(fitness._call(param_vector))
+    print(fitness._jit(param_vector))
     print("JAX Time To JIT Function:", time.time() - start)
 
     start = time.time()
     print()
-    print(fitness._call(param_vector))
+    print(fitness._jit(param_vector))
     print("JAX Time taken using JIT:", time.time() - start)
 
 else:

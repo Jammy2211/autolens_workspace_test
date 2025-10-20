@@ -41,7 +41,7 @@ __Dataset Paths__
 The `dataset_type` describes the type of data being simulated and `dataset_name` gives it a descriptive name. 
 """
 dataset_type = "instruments"
-dataset_instrument = "hst"
+dataset_instrument = "hst_with_lens_light"
 dataset_path = Path("dataset", "imaging", dataset_type, dataset_instrument)
 
 """
@@ -62,6 +62,7 @@ over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
 )
 
 grid = grid.apply_over_sampling(over_sample_size=over_sample_size)
+
 """
 Simulate a simple Gaussian PSF for the image.
 """
@@ -85,8 +86,27 @@ __Ray Tracing__
 
 Setup the lens galaxy's mass (SIE+Shear) and source galaxy light (elliptical Sersic) for this simulated lens.
 """
+bulge = al.lp.Sersic(
+    centre=(0.0, 0.0),
+    ell_comps=(0.0526317, 0.0),
+    effective_radius=0.6,
+    sersic_index=3.0,
+    intensity=4.0,
+)
+
+
+disk = al.lp.Sersic(
+    centre=(0.0, 0.0),
+    ell_comps=(0.152828, 0.0882352),
+    effective_radius=1.6,
+    sersic_index=1.0,
+    intensity=2.0,
+)
+
 lens_galaxy = al.Galaxy(
     redshift=0.5,
+    bulge=bulge,
+    disk=disk,
     mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,

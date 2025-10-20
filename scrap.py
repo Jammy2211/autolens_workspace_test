@@ -410,11 +410,11 @@
 #         pixel_scales=0.1,
 #     )
 #
-#     mask_2d = al.Mask2D.circular(
+#     mask = al.Mask2D.circular(
 #         shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
 #     )
 #
-#     dataset = dataset.apply_mask(mask=mask_2d)
+#     dataset = dataset.apply_mask(mask=mask)
 #
 #     dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
 #
@@ -461,7 +461,7 @@
 #         unique_tag=dataset_name,
 #         n_live=150,
 #         vectorized=False,
-#         iterations_per_update=1000,
+#         iterations_per_full_update=1000,
 #         number_of_cores=4,
 #     )
 #

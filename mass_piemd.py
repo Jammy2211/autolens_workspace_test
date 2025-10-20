@@ -34,14 +34,14 @@ class MassProfile:
         """
         return self.ellipticity
 
-    def get_piemd_epot(self):
-        """Convert unified ellipticity to PIEMD epot parameter
+    def get_PIEMass_epot(self):
+        """Convert unified ellipticity to PIEMass epot parameter
 
-        PIEMD internally uses epot=(1-sqrt(1-e²))/e
+        PIEMass internally uses epot=(1-sqrt(1-e²))/e
 
         Returns:
         --------
-        float : epot parameter for PIEMD
+        float : epot parameter for PIEMass
         """
         e = self.ellipticity
         if abs(e) < 1e-6:  # Handle circular case
@@ -107,7 +107,7 @@ class Matrix:
         self.d = d
 
 
-class PIEMD(MassProfile):
+class PIEMass(MassProfile):
 
     def __init__(
         self,
@@ -119,7 +119,7 @@ class PIEMD(MassProfile):
         cx: float = 0,
         cy: float = 0,
     ):
-        """Initialize PIEMD profile with either new or old parameter format
+        """Initialize PIEMass profile with either new or old parameter format
 
         Parameters:
         -----------
@@ -143,7 +143,7 @@ class PIEMD(MassProfile):
 
         super().__init__(ellipticity, position_angle, cx, cy)
 
-        self.epot = self.get_piemd_epot()
+        self.epot = self.get_PIEMass_epot()
         self.rcut = rcut
         self.rc = rc
         self.pia_c2 = 7.209970e-06
@@ -154,7 +154,7 @@ class PIEMD(MassProfile):
         self.theta = position_angle
 
     def update(self):
-        self.epot = self.get_piemd_epot()
+        self.epot = self.get_PIEMass_epot()
         self.b0 = 6.0 * self.pia_c2 * self.sigma**2
 
     def mdci05(self, x, y, eps, rc, b0, res):
@@ -215,7 +215,7 @@ class PIEMD(MassProfile):
         x_rot, y_rot = self._get_rotated_coords(x, y)
 
         # Handle very small ellipticity
-        epot = self.get_piemd_epot()
+        epot = self.get_PIEMass_epot()
         if epot < 2e-4:
             epot = 2e-4
 
@@ -298,7 +298,7 @@ class PIEMD(MassProfile):
             y_arr = y_rot.flatten()
 
         # Ensure epot is not too small
-        epot = self.get_piemd_epot()
+        epot = self.get_PIEMass_epot()
         if epot < 2e-4:
             epot = 2e-4
 
@@ -348,7 +348,7 @@ class PIEMD(MassProfile):
         return zres
 
     def deflections_yx_2d_from(self, grid, **kwargs):
-        """Calculate deflection angle for PIEMD profile
+        """Calculate deflection angle for PIEMass profile
 
         For scalar inputs, we use the matrix approach
         For array inputs, we use the complex number approach

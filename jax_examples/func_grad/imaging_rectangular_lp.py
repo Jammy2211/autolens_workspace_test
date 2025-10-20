@@ -60,11 +60,11 @@ ao: pixel_scale = 0.01", very slow :(
 """
 # instrument = "vro"
 # instrument = "euclid"
-instrument = "hst"
+instrument = "hst_with_lens_light"
 # instrument = "hst_up"
 # instrument = "ao"
 
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst_with_lens_light": 0.05, "hst_up": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
 
 """
@@ -135,13 +135,16 @@ image_mesh = None
 mesh_shape = (20, 20)
 total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
 
+total_linear_light_profiles = 2
+
 preloads = al.Preloads(
     mapper_indices=al.mapper_indices_from(
-        total_linear_light_profiles=0,
+        total_linear_light_profiles=total_linear_light_profiles,
         total_mapper_pixels=total_mapper_pixels
     ),
     source_pixel_zeroed_indices=al.util.mesh.rectangular_edge_pixel_list_from(
-        mesh_shape
+        total_linear_light_profiles=total_linear_light_profiles,
+        shape_native=mesh_shape,
     ),
 )
 
@@ -157,6 +160,31 @@ example we fit a model where:
 The number of free parameters and therefore the dimensionality of non-linear parameter space is N=11.
 """
 # # Lens:
+
+bulge = af.Model(al.lp_linear.Sersic)
+
+bulge.centre.centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+bulge.centre.centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+bulge.ell_comps.ell_comps_0 = af.UniformPrior(
+    lower_limit=0.0526316, upper_limit=0.0526318
+)
+bulge.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=-0.01, upper_limit=0.01)
+bulge.effective_radius = af.UniformPrior(lower_limit=0.5, upper_limit=0.7)
+bulge.sersic_index = af.UniformPrior(lower_limit=2.0, upper_limit=4.0)
+# bulge.intensity = af.UniformPrior(lower_limit=3.0, upper_limit=5.0)
+
+disk = af.Model(al.lp_linear.Exponential)
+
+disk.centre.centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+disk.centre.centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+disk.ell_comps.ell_comps_0 = af.UniformPrior(
+    lower_limit=0.152828012432548, upper_limit=0.1528280124325482
+)
+disk.ell_comps.ell_comps_1 = af.UniformPrior(
+    lower_limit=0.0882352, upper_limit=0.0882353
+)
+disk.effective_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.7)
+# disk.intensity = af.UniformPrior(lower_limit=1.0, upper_limit=3.0)
 
 mass = af.Model(al.mp.Isothermal)
 
@@ -242,7 +270,7 @@ This is the function on which JAX gradients are computed, so we create this clas
 from autofit.non_linear.fitness import Fitness
 import time
 
-use_vmap = True
+use_vmap = False
 batch_size = 10
 
 fitness = Fitness(

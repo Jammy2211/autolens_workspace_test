@@ -73,6 +73,10 @@ mask = al.Mask2D.circular(
 
 dataset = dataset.apply_mask(mask=mask)
 
+print(dataset.grids.lp.over_sampled.shape)
+print(dataset.grids.pixelization.over_sampled.shape)
+print(dataset.grids.blurring.over_sampled.shape)
+
 # dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
 
 # positions = al.Grid2DIrregular(

@@ -28,18 +28,16 @@ def fit():
     """
     __Mask__
 
-    The model-fit requires a `Mask2D` defining the regions of the image we fit the model to the data, which we define
+    The model-fit requires a 2D mask defining the regions of the image we fit the model to the data, which we define
     and use to set up the `Imaging` object that the model fits.
     """
-    mask_2d = al.Mask2D.circular(
+    mask = al.Mask2D.circular(
         shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.5
     )
 
-    dataset = dataset.apply_mask(mask=mask_2d)
+    dataset = dataset.apply_mask(mask=mask)
 
     dataset = dataset.apply_over_sampling(over_sample_size_lp=4)
-
-    dataset.convolver
 
     """
     __Model__

@@ -105,7 +105,7 @@ Precompute functions so compute tile not printed
 from autoarray.inversion.inversion import inversion_util
 from autoarray.inversion.inversion.imaging import inversion_imaging_numba_util
 
-# blurred_mapping_matrix_calc = dataset.convolver.convolve_mapping_matrix(
+# blurred_mapping_matrix_calc = dataset.convolver.convolved_mapping_matrix_from(
 #     mapping_matrix=mapping_matrix
 # )
 #
@@ -150,7 +150,7 @@ __Time__
 """
 # start = time.time()
 #
-# blurred_mapping_matrix_calc = dataset.convolver.convolve_mapping_matrix(
+# blurred_mapping_matrix_calc = dataset.convolver.convolved_mapping_matrix_from(
 #     mapping_matrix=mapping_matrix
 # )
 #

@@ -30,6 +30,7 @@ discussed above shows the PSF features.
 # %cd $workspace_path
 # print(f"Working Directory has been set to `{workspace_path}`")
 
+import numpy as np
 import jax
 import jax.numpy as jnp
 from os import path
@@ -57,20 +58,41 @@ the model.
 """
 dataset_name = "simple"
 dataset_path = path.join("dataset", "interferometer", dataset_name)
+#
+# dataset = al.Interferometer.from_fits(
+#     data_path=path.join(dataset_path, "data.fits"),
+#     noise_map_path=path.join(dataset_path, "noise_map.fits"),
+#     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
+#     real_space_mask=real_space_mask,
+#     transformer_class=al.TransformerDFT,
+# )
 
-dataset = al.Interferometer.from_fits(
-    data_path=path.join(dataset_path, "data.fits"),
-    noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
+total_visibilities = 50000
+
+data = al.Visibilities(np.random.normal(loc=0.0, scale=1.0, size=total_visibilities) + 1j * np.random.normal(
+    loc=0.0, scale=1.0, size=total_visibilities
+))
+
+noise_map = al.VisibilitiesNoiseMap(np.ones(total_visibilities) + 1j * np.ones(total_visibilities))
+
+uv_wavelengths = np.random.uniform(
+    low=-300.0, high=300.0, size=(total_visibilities, 2)
+)
+
+dataset = al.Interferometer(
+    data=data,
+    noise_map=noise_map,
+    uv_wavelengths=uv_wavelengths,
     real_space_mask=real_space_mask,
     transformer_class=al.TransformerDFT,
-    #    dft_preload_transform=False
 )
+
+print(f"Total Visiblities: {dataset.uv_wavelengths.shape[0]}")
 
 """
 __Mask__
 
-The model-fit requires a `Mask2D` defining the regions of the image we fit the model to the data, which we define
+The model-fit requires a 2D mask defining the regions of the image we fit the model to the data, which we define
 and use to set up the `Imaging` object that the model fits.
 """
 positions = al.Grid2DIrregular(
@@ -79,7 +101,7 @@ positions = al.Grid2DIrregular(
 
 # over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
 #     grid=dataset.grid,
-#     sub_size_list=[8, 4, 1],
+#     sub_size_list=[4, 2, 1],
 #     radial_list=[0.3, 0.6],
 #     centre_list=[(0.0, 0.0)],
 # )
@@ -102,36 +124,43 @@ The number of free parameters and therefore the dimensionality of non-linear par
 
 mass = af.Model(al.mp.Isothermal)
 
-mass.centre.centre_0 = af.UniformPrior(lower_limit=0.01, upper_limit=0.03)
-mass.centre.centre_1 = af.UniformPrior(lower_limit=0.01, upper_limit=0.03)
-
-mass.ell_comps.ell_comps_0 = af.UniformPrior(lower_limit=0.01, upper_limit=0.1)
-mass.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=0.01, upper_limit=0.1)
-
-mass.einstein_radius = af.UniformPrior(lower_limit=1.0, upper_limit=2.2)
-
 shear = af.Model(al.mp.ExternalShear)
-
-shear.gamma_1 = af.UniformPrior(lower_limit=0.0, upper_limit=0.1)
-shear.gamma_2 = af.UniformPrior(lower_limit=0.0, upper_limit=0.1)
 
 lens = af.Model(al.Galaxy, redshift=0.5, mass=mass, shear=shear)
 
 # Source:
 
-bulge = af.Model(al.lp_linear.Sersic)
+total_gaussians = 10
+gaussian_per_basis = 1
 
-bulge.centre.centre_0 = af.UniformPrior(lower_limit=0.01, upper_limit=0.03)
-bulge.centre.centre_1 = af.UniformPrior(lower_limit=0.01, upper_limit=0.03)
+# By defining the centre here, it creates two free parameters that are assigned to the source Gaussians.
 
-bulge.ell_comps.ell_comps_0 = af.UniformPrior(lower_limit=0.01, upper_limit=0.1)
-bulge.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=0.01, upper_limit=0.1)
+centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 
-# bulge.intensity = af.UniformPrior(lower_limit=0.0, upper_limit=8.0)
-bulge.effective_radius = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
-bulge.sersic_index = af.UniformPrior(lower_limit=0.5, upper_limit=1.5)
+log10_sigma_list = np.linspace(-2, np.log10(1.0), total_gaussians)
 
-source = af.Model(al.Galaxy, redshift=1.0, bulge=bulge)
+bulge_gaussian_list = []
+
+for j in range(gaussian_per_basis):
+    gaussian_list = af.Collection(
+        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
+
+    for i, gaussian in enumerate(gaussian_list):
+        gaussian.centre.centre_0 = centre_0
+        gaussian.centre.centre_1 = centre_1
+        gaussian.ell_comps = gaussian_list[0].ell_comps
+        gaussian.sigma = 10 ** log10_sigma_list[i]
+
+    bulge_gaussian_list += gaussian_list
+
+source_bulge = af.Model(
+    al.lp_basis.Basis,
+    profile_list=bulge_gaussian_list,
+)
+
+source = af.Model(al.Galaxy, redshift=1.0, bulge=source_bulge)
 
 # Overall Lens Model:
 
@@ -164,8 +193,8 @@ This is the function on which JAX gradients are computed, so we create this clas
 from autofit.non_linear.fitness import Fitness
 import time
 
-use_vmap = False
-batch_size = 30
+use_vmap = True
+batch_size = 50
 
 fitness = Fitness(
     model=model,
@@ -180,12 +209,12 @@ if not use_vmap:
 
     start = time.time()
     print()
-    print(fitness._call(param_vector))
+    print(fitness._jit(param_vector))
     print("JAX Time To JIT Function:", time.time() - start)
 
     start = time.time()
     print()
-    print(fitness._call(param_vector))
+    print(fitness._jit(param_vector))
     print("JAX Time taken using JIT:", time.time() - start)
 
 else:

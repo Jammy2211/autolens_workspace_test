@@ -26,10 +26,11 @@ dataset = al.Imaging.from_fits(
 
 # dataset = dataset.resized_from()
 
-mask = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
-)
+mask_radius = 3.0
 
+mask = al.Mask2D.circular(
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
+)
 
 def make_mask_rectangular(mask, dataset):
     ys, xs = np.where(~mask)
@@ -43,8 +44,8 @@ def make_mask_rectangular(mask, dataset):
     return z
 
 
-new_mask_array = make_mask_rectangular(mask, dataset)
-mask._array = new_mask_array
+# new_mask_array = make_mask_rectangular(mask, dataset)
+# mask._array = new_mask_array
 
 dataset = dataset.apply_mask(mask=mask)
 

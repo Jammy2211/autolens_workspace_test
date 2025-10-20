@@ -289,13 +289,13 @@ __Lens Light Convolution__
 
 Convolves the lens light image above with the PSF and subtracts this from the observed image.
 
-This uses the methods in `Convolver.__init__` and `Convolver.convolve_image`:
+This uses the methods in `Convolver.__init__` and `Convolver.convolved_image_from`:
 
 https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/operators/convolver.py
 """
 start = time.time()
 for i in range(repeats):
-    convolved_image = masked_dataset.convolver.convolve_image(
+    convolved_image = masked_dataset.convolver.convolved_image_from(
         image=image, blurring_image=blurring_image
     )
 
@@ -539,13 +539,13 @@ This therefore creates a 'image' of the source pixel (which corresponds to a set
 1's where mappings occur).
 
 Before reconstructing the source, we blur every one of these source pixel images with the Point Spread Function of our 
-dataset via 2D convolution. This uses the methods in `Convolver.__init__` and `Convolver.convolve_mapping_matrix`:
+dataset via 2D convolution. This uses the methods in `Convolver.__init__` and `Convolver.convolved_mapping_matrix_from`:
 
 https://github.com/Jammy2211/PyAutoArray/blob/main/autoarray/operators/convolver.py
 """
 start = time.time()
 for i in range(repeats):
-    blurred_mapping_matrix = masked_dataset.convolver.convolve_mapping_matrix(
+    blurred_mapping_matrix = masked_dataset.convolver.convolved_mapping_matrix_from(
         mapping_matrix=mapping_matrix
     )
 run_time_dict["Blurred Mapping Matrix (f_blur)"] = (time.time() - start) / repeats

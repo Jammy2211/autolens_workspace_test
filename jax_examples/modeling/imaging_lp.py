@@ -42,14 +42,14 @@ def fit():
     """
     __Mask__
     
-    The model-fit requires a `Mask2D` defining the regions of the image we fit the model to the data, which we define
+    The model-fit requires a 2D mask defining the regions of the image we fit the model to the data, which we define
     and use to set up the `Imaging` object that the model fits.
     """
-    mask_2d = al.Mask2D.circular(
+    mask = al.Mask2D.circular(
         shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
     )
 
-    dataset = dataset.apply_mask(mask=mask_2d)
+    dataset = dataset.apply_mask(mask=mask)
 
     dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
 
@@ -59,14 +59,13 @@ def fit():
 
     # over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
     #     grid=dataset.grid,
-    #     sub_size_list=[8, 4, 1],
+    #     sub_size_list=[4, 2, 1],
     #     radial_list=[0.3, 0.6],
     #     centre_list=[(0.0, 0.0)],
     # )
     #
     # dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
     #
-    dataset.convolver
 
     """
     __Model__
@@ -121,7 +120,7 @@ def fit():
         unique_tag=dataset_name,
         n_live=150,
         vectorized=False,
-        iterations_per_update=100000,
+        iterations_per_full_update=100000,
         #   force_x1_cpu=True,
         number_of_cores=4,
         batch_size=4 * 75,

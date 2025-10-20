@@ -159,8 +159,10 @@ __Mask__
 
 Define a 3.0" circular mask, which includes the emission of the lens and source galaxies.
 """
+mask_radius = 3.0
+
 mask = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
 )
 
 dataset = dataset.apply_mask(mask=mask)
@@ -176,7 +178,7 @@ in more detail via the `autogalaxy_workspace/*/guides/over_sampling.ipynb` noteb
 """
 # over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
 #     grid=dataset.grid,
-#     sub_size_list=[8, 4, 1],
+#     sub_size_list=[4, 2, 1],
 #     radial_list=[0.3, 0.6],
 #     centre_list=[(0.0, 0.0)],
 # )
@@ -185,8 +187,6 @@ in more detail via the `autogalaxy_workspace/*/guides/over_sampling.ipynb` noteb
 
 dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
 dataset_plotter.subplot_dataset()
-
-dataset.convolver
 
 """
 __Basis__
@@ -468,7 +468,7 @@ search = af.DynestyStatic(
     nlive=75,
     maxcall=5000,
     maxiter=5000,
-    #  iterations_per_update=10000
+    #  iterations_per_full_update=10000
 )
 
 # search = af.Nautilus(

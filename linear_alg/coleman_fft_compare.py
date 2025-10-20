@@ -25,54 +25,26 @@ dataset = al.Imaging.from_fits(
     over_sample_size_pixelization=4,
 )
 
+mask_radius = 3.0
+
 mask = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
 )
 
-"""
-Reshape Dataset so that its exactly paired to the extent PSF convolution goes over including the blurring mask edge.
+def make_mask_rectangular(mask, dataset):
+    ys, xs = np.where(~mask)
+    y_min, y_max = ys.min(), ys.max()
+    x_min, x_max = xs.min(), xs.max()
+    (pad_y, pad_x) = dataset.psf.shape_native
+    z = np.ones(mask.shape, dtype=bool)
+    shape = ((y_max + pad_y // 2) - (y_min - pad_y // 2), (x_max + pad_x // 2) - (x_min - pad_x // 2))
+    return z, shape
 
-This speeds up JAX calculations as the PSF convolution is done on a smaller array with fewer zero entries.
+new_mask_array, mask_shape = make_mask_rectangular(mask, dataset)
 
-This will be put in the source code soon during `apply_mask`.
-"""
-# def false_span(mask: np.ndarray):
-#     """
-#     Given a boolean mask with False marking valid pixels,
-#     return the (y_min, y_max), (x_min, x_max) spans of False entries.
-#     """
-#     # Find coordinates of False pixels
-#     ys, xs = np.where(~mask)
-#
-#     if ys.size == 0 or xs.size == 0:
-#         raise ValueError("No False entries in mask!")
-#
-#     y_min, y_max = ys.min(), ys.max()
-#     x_min, x_max = xs.min(), xs.max()
-#
-#     return (y_max - y_min, x_max - x_min)
-#
-#
-# y_distance, x_distance = false_span(mask=mask.mask)
-#
-# (pad_y, pad_x) = dataset.psf.shape_native
-#
-# new_shape = (y_distance + pad_y, x_distance + pad_x)
-#
-# mask = mask.resized_from(new_shape=new_shape)
-# data = dataset.data.resized_from(new_shape=new_shape)
-# noise_map = dataset.noise_map.resized_from(new_shape=new_shape)
-#
-# dataset = al.Imaging(
-#     data=data,
-#     noise_map=noise_map,
-#     psf=dataset.psf,
-#     over_sample_size_pixelization=4,
-# )
-#
+# mask._array = new_mask_array
 
 dataset = dataset.apply_mask(mask=mask)
-
 
 lens_galaxy = al.Galaxy(
     redshift=0.5,
@@ -106,99 +78,135 @@ source_galaxy = al.Galaxy(redshift=1.0, pixelization=pixelization)
 
 tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
+
+image_2d = tracer.image_2d_from(grid=dataset.grids.lp)
+blurring_image_2d = tracer.image_2d_from(grid=dataset.grids.blurring)
+
 import scipy
 
-# Data shape is (180, 180), this is based on the .fits file and currently does not change or resize.
-# The FFT size is (160, 160) which is the next fast length for FFTs greater than (180+15, 180+15) where (15, 15) is the PSF shape.
-# The mask_shape is (139, 139) which is the rectangular region enclosing the non-masked data.
-
-# Is the right code implementation to internally resize the data and noise map to the next fast length for FFTs?
-
-
-def make_mask_rectangular(mask, dataset):
-    ys, xs = np.where(~mask)
-    y_min, y_max = ys.min(), ys.max()
-    x_min, x_max = xs.min(), xs.max()
-    (pad_y, pad_x) = dataset.psf.shape_native
-    z = np.ones(mask.shape, dtype=bool)
-    z[
-        y_min - pad_y // 2 : y_max + pad_y // 2, x_min - pad_x // 2 : x_max + pad_x // 2
-    ] = False
-    shape = (
-        (y_max + pad_y // 2) - (y_min - pad_y // 2),
-        (x_max + pad_x // 2) - (x_min - pad_x // 2),
-    )
-    return z, shape
-
-
-new_mask_array, mask_shape = make_mask_rectangular(mask, dataset)
 psf_native = jnp.array(dataset.psf.native.array)
 
 full_shape = tuple(s1 + s2 - 1 for s1, s2 in zip(mask_shape, psf_native.shape))
 fft_shape = tuple(scipy.fft.next_fast_len(s, real=True) for s in full_shape)
 
-# ALSO CHECK RULES FOR CENTERING
-
-fft_shape = (180, 180)
-
 fft_psf = jnp.fft.rfft2(psf_native, s=fft_shape)
 
-mask = mask.resized_from(new_shape=fft_shape, pad_value=True)
-data = dataset.data.resized_from(new_shape=fft_shape)
-noise_map = dataset.noise_map.resized_from(new_shape=fft_shape)
-
-dataset = al.Imaging(
-    data=data,
-    noise_map=noise_map,
-    psf=dataset.psf,
-    over_sample_size_pixelization=4,
-    check_noise_map=False,
-)
-
-image_2d = tracer.image_2d_from(grid=dataset.grids.lp)
-blurring_image_2d = tracer.image_2d_from(grid=dataset.grids.blurring)
-
-
 def blurred_image_from(fft_psf, image, blurring_image):
+    
+    slim_to_native_tuple = dataset.psf.slim_to_native_tuple
+    slim_to_native_blurring_tuple = dataset.psf.slim_to_native_blurring_tuple
 
-    image_native = image + blurring_image
-
-    fft_image_native = jnp.fft.rfft2(image_native, s=fft_shape, axes=(0, 1))
-    blurred_image_full = jnp.fft.irfft2(
-        fft_psf * fft_image_native, s=fft_shape, axes=(0, 1)
+    # make sure dtype matches what you want
+    image_both_native = jnp.zeros(
+        mask.shape, dtype=image.dtype
     )
 
-    return blurred_image_full
+    # set using a tuple of index arrays
+    image_both_native = image_both_native.at[slim_to_native_tuple].set(
+        jnp.asarray(image)
+    )
+    image_both_native = image_both_native.at[
+        slim_to_native_blurring_tuple
+    ].set(jnp.asarray(blurring_image))
 
-    # out_shape = full_shape
-    # start_indices = tuple(
-    #     (full_size - out_size) // 2
-    #     for full_size, out_size in zip(blurred_image_full.shape, out_shape)
-    # )
-    # blurred_image_native = jax.lax.dynamic_slice(blurred_image_full, start_indices, out_shape)
-    # return blurred_image_native
+    # FFT the combined image
+    fft_image_native = jnp.fft.rfft2(image_both_native, s=fft_shape, axes=(0, 1))
 
+    # Multiply by PSF in Fourier space and invert
+    blurred_image_full = jnp.fft.irfft2(fft_psf * fft_image_native, s=fft_shape, axes=(0, 1))
 
-blurred_image_2d_via_fft = blurred_image_from(
-    fft_psf, jnp.array(image_2d.native.array), jnp.array(blurring_image_2d.native.array)
+    # Crop back to mask_shape
+    start_indices = tuple((full_size - out_size) // 2 for full_size, out_size in zip(full_shape, mask_shape))
+    out_shape_full = mask_shape
+    blurred_image_native = jax.lax.dynamic_slice(blurred_image_full, start_indices, out_shape_full)
+
+    # Return only unmasked pixels (slim form)
+    return blurred_image_native[slim_to_native_tuple]
+
+import time
+
+start = time.time()
+
+blurred_image_from_jit = jax.jit(blurred_image_from)
+
+print(f"JIT FFT compile time: {time.time() - start}")
+
+start = time.time()
+
+blurred_image_2d_via_fft = blurred_image_from_jit(
+    fft_psf, jnp.array(image_2d.array), jnp.array(blurring_image_2d.array)
 )
 
 
 blurred_image_2d_via_fft = al.Array2D(
     values=blurred_image_2d_via_fft, mask=image_2d.mask
 )
+print(blurred_image_2d_via_fft[0])
+print(f"JIT FFT run time: {time.time() - start}")
 
 
-image_2d = tracer.image_2d_from(grid=dataset.grids.lp)
-blurring_image_2d = tracer.image_2d_from(grid=dataset.grids.blurring)
 
-blurred_image_2d_via_real_space = dataset.psf.convolve_image_via_real_space(
+def convolved_image_from(image, blurring_image, jax_method="direct"):
+    """
+    For a given 1D array and blurring array, convolve the two using this psf.
+
+    Parameters
+    ----------
+    image
+        1D array of the values which are to be blurred with the psf's PSF.
+    blurring_image
+        1D array of the blurring values which blur into the array after PSF convolution.
+    jax_method
+        If JAX is enabled this keyword will indicate what method is used for the PSF
+        convolution. Can be either `direct` to calculate it in real space or `fft`
+        to calculated it via a fast Fourier transform. `fft` is typically faster for
+        kernels that are more than about 5x5. Default is `fft`.
+    """
+
+    slim_to_native_tuple = dataset.psf.slim_to_native_tuple
+    slim_to_native_blurring_tuple = dataset.psf.slim_to_native_blurring_tuple
+
+    # make sure dtype matches what you want
+    expanded_array_native = jnp.zeros(
+        image.mask.shape, dtype=jnp.asarray(image.array).dtype
+    )
+
+    # set using a tuple of index arrays
+    expanded_array_native = expanded_array_native.at[slim_to_native_tuple].set(
+        jnp.asarray(image.array)
+    )
+    expanded_array_native = expanded_array_native.at[
+        slim_to_native_blurring_tuple
+    ].set(jnp.asarray(blurring_image.array))
+
+    kernel = dataset.psf.stored_native.array
+
+    convolve_native = jax.scipy.signal.convolve(
+        expanded_array_native, kernel, mode="same", method=jax_method
+    )
+
+    convolved_array_1d = convolve_native[slim_to_native_tuple]
+
+    return convolved_array_1d
+
+
+start = time.time()
+
+convolve_image_jit = jax.jit(convolved_image_from)
+print(f"JIT compile time real space: {time.time() - start}")
+
+start = time.time()
+
+blurred_image_2d_via_real_space = convolve_image_jit(
     image=image_2d,
     blurring_image=blurring_image_2d,
 )
+blurred_image_2d_via_real_space = al.Array2D(values=blurred_image_2d_via_real_space, mask=dataset.mask)
+print(blurred_image_2d_via_real_space[0])
+print(f"JIT run time real space: {time.time() - start}")
 
-print(blurred_image_2d_via_real_space.shape)
-print(blurred_image_2d_via_fft.shape)
+print(blurred_image_2d_via_fft.native.shape)
+print(blurred_image_2d_via_real_space.native.shape)
 
 residuals = (
     blurred_image_2d_via_fft.native.array - blurred_image_2d_via_real_space.native.array
@@ -211,3 +219,24 @@ plt.savefig("residuals.png")
 
 
 print(f"Max diff {np.max(blurred_image_2d_via_fft - blurred_image_2d_via_real_space)}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

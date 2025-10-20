@@ -41,8 +41,7 @@ from autoconf import conf
 
 conf.instance["general"]["model"]["ignore_prior_limits"] = True
 
-sub_size = 1
-mask_radius = 1.0
+sub_size = 4
 psf_shape_2d = (21, 21)
 
 """
@@ -60,8 +59,8 @@ hst_up: pixel_scale = 0.03", slow run times.
 ao: pixel_scale = 0.01", very slow :(
 """
 # instrument = "vro"
-instrument = "euclid"
-# instrument = "hst"
+# instrument = "euclid"
+instrument = "hst"
 # instrument = "hst_up"
 # instrument = "ao"
 
@@ -86,14 +85,16 @@ dataset = al.Imaging.from_fits(
 """
 __Mask__
 
-The model-fit requires a `Mask2D` defining the regions of the image we fit the model to the data, which we define
+The model-fit requires a 2D mask defining the regions of the image we fit the model to the data, which we define
 and use to set up the `Imaging` object that the model fits.
 """
-mask_2d = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
+mask_radius = 3.0
+
+mask = al.Mask2D.circular(
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
 )
 
-dataset = dataset.apply_mask(mask=mask_2d)
+dataset = dataset.apply_mask(mask=mask)
 
 # dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
 
@@ -103,14 +104,46 @@ dataset = dataset.apply_mask(mask=mask_2d)
 
 # over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
 #     grid=dataset.grid,
-#     sub_size_list=[8, 4, 1],
+#     sub_size_list=[4, 2, 1],
 #     radial_list=[0.3, 0.6],
 #     centre_list=[(0.0, 0.0)],
 # )
 #
 # dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
 #
-dataset.convolver
+
+"""
+__JAX & Preloads__
+
+In JAX, calculations must use static shaped arrays with known and fixed indexes. For certain calculations in the
+pixelization, this information has to be passed in before the pixelization is performed. Below, we do this for 3
+inputs:
+
+- `total_linear_light_profiles`: The number of linear light profiles in the model. This is 0 because we are not
+  fitting any linear light profiles to the data, primarily because the lens light is omitted.
+
+- `total_mapper_pixels`: The number of source pixels in the rectangular pixelization mesh. This is required to set up 
+  the arrays that perform the linear algebra of the pixelization.
+
+- `source_pixel_zeroed_indices`: The indices of source pixels on its edge, which when the source is reconstructed 
+  are forced to values of zero, a technique tests have shown are required to give accruate lens models.
+
+The `image_mesh` can be ignored, it is legacy API from previous versions which may or may not be reintegrated in future
+versions.
+"""
+image_mesh = None
+mesh_shape = (20, 20)
+total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
+
+preloads = al.Preloads(
+    mapper_indices=al.mapper_indices_from(
+        total_linear_light_profiles=0,
+        total_mapper_pixels=total_mapper_pixels
+    ),
+    source_pixel_zeroed_indices=al.util.mesh.rectangular_edge_pixel_list_from(
+        mesh_shape
+    ),
+)
 
 """
 __Model__
@@ -125,35 +158,6 @@ The number of free parameters and therefore the dimensionality of non-linear par
 """
 # # Lens:
 
-# bulge = af.Model(al.lp_linear.Sersic)
-
-bulge = af.Model(al.lp.Sersic)
-
-bulge.centre.centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-bulge.centre.centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-bulge.ell_comps.ell_comps_0 = af.UniformPrior(
-    lower_limit=0.0526316, upper_limit=0.0526318
-)
-bulge.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=-0.01, upper_limit=0.01)
-bulge.effective_radius = af.UniformPrior(lower_limit=0.5, upper_limit=0.7)
-bulge.sersic_index = af.UniformPrior(lower_limit=2.0, upper_limit=4.0)
-bulge.intensity = af.UniformPrior(lower_limit=3.0, upper_limit=5.0)
-
-# disk = af.Model(al.lp_linear.Exponential)
-
-disk = af.Model(al.lp.Exponential)
-
-disk.centre.centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-disk.centre.centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-disk.ell_comps.ell_comps_0 = af.UniformPrior(
-    lower_limit=0.152828012432548, upper_limit=0.1528280124325482
-)
-disk.ell_comps.ell_comps_1 = af.UniformPrior(
-    lower_limit=0.0882352, upper_limit=0.0882353
-)
-disk.effective_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.7)
-disk.intensity = af.UniformPrior(lower_limit=1.0, upper_limit=3.0)
-
 mass = af.Model(al.mp.Isothermal)
 
 mass.centre.centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
@@ -165,29 +169,24 @@ mass.ell_comps.ell_comps_0 = af.UniformPrior(
 mass.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=-0.01, upper_limit=0.01)
 
 shear = af.Model(al.mp.ExternalShear)
-shear.gamma_1 = af.UniformPrior(lower_limit=0.000, upper_limit=0.002)
-shear.gamma_2 = af.UniformPrior(lower_limit=0.000, upper_limit=0.002)
+shear.gamma_1 = af.UniformPrior(lower_limit=-0.001, upper_limit=0.001)
+shear.gamma_2 = af.UniformPrior(lower_limit=-0.001, upper_limit=0.001)
 
 lens = af.Model(
     al.Galaxy,
     redshift=0.5,
-    bulge=bulge,
-    disk=disk,
     mass=mass,
     shear=shear,
 )
 
 # Source:
 
-mesh_shape = (32, 32)
-total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
-
 mesh = al.mesh.Rectangular(shape=mesh_shape)
 # regularization = al.reg.Constant(coefficient=1.0)
 
 # regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
 
-regularization = al.reg.Constant()
+regularization = al.reg.AdaptiveBrightness()
 
 pixelization = al.Pixelization(
     image_mesh=None, mesh=mesh, regularization=regularization
@@ -198,6 +197,11 @@ source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
 # Overall Lens Model:
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
+
+galaxy_name_image_dict = {
+    "('galaxies', 'lens')": dataset.data,
+    "('galaxies', 'source')": dataset.data
+}
 
 """
 The `info` attribute shows the model in a readable format.
@@ -219,15 +223,12 @@ analysis = al.AnalysisImaging(
         use_w_tilde=False,
         force_edge_pixels_to_zeros=True,
     ),
-    preloads=al.Preloads(
-        mapper_indices=al.mapper_indices_from(
-            total_linear_light_profiles=0, total_mapper_pixels=total_mapper_pixels
-        ),
-        source_pixel_zeroed_indices=al.util.mesh.rectangular_edge_pixel_list_from(
-            mesh_shape
-        ),
-    ),
+    preloads=preloads,
     raise_inversion_positions_likelihood_exception=False,
+)
+
+analysis._adapt_images = al.AdaptImages(
+    galaxy_name_image_dict=galaxy_name_image_dict
 )
 
 """
@@ -240,7 +241,7 @@ from autofit.non_linear.fitness import Fitness
 import time
 
 use_vmap = False
-batch_size = 30
+batch_size = 10
 
 fitness = Fitness(
     model=model,
@@ -255,12 +256,12 @@ if not use_vmap:
 
     start = time.time()
     print()
-    print(fitness._call(param_vector))
+    print(fitness._jit(param_vector))
     print("JAX Time To JIT Function:", time.time() - start)
 
     start = time.time()
     print()
-    print(fitness._call(param_vector))
+    print(fitness._jit(param_vector))
     print("JAX Time taken using JIT:", time.time() - start)
 
 else:

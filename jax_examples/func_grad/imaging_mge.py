@@ -61,14 +61,16 @@ dataset = al.Imaging.from_fits(
 """
 __Mask__
 
-The model-fit requires a `Mask2D` defining the regions of the image we fit the model to the data, which we define
+The model-fit requires a 2D mask defining the regions of the image we fit the model to the data, which we define
 and use to set up the `Imaging` object that the model fits.
 """
-mask_2d = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.5
+mask_radius = 3.5
+
+mask = al.Mask2D.circular(
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
 )
 
-dataset = dataset.apply_mask(mask=mask_2d)
+dataset = dataset.apply_mask(mask=mask)
 
 dataset = dataset.apply_over_sampling(over_sample_size_lp=4)
 
@@ -76,16 +78,15 @@ dataset = dataset.apply_over_sampling(over_sample_size_lp=4)
 #     al.from_json(file_path=path.join(dataset_path, "positions.json"))
 # )
 
-# over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
-#     grid=dataset.grid,
-#     sub_size_list=[8, 4, 1],
-#     radial_list=[0.3, 0.6],
-#     centre_list=[(0.0, 0.0)],
-# )
-#
-# dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
-#
-dataset.convolver
+over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
+    grid=dataset.grid,
+    sub_size_list=[4, 2, 1],
+    radial_list=[0.3, 0.6],
+    centre_list=[(0.0, 0.0)],
+)
+
+dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
+
 
 """
 __Model__
@@ -100,46 +101,8 @@ The number of free parameters and therefore the dimensionality of non-linear par
 """
 # Lens:
 
-total_gaussians = 30
-gaussian_per_basis = 2
-
-# The sigma values of the Gaussians will be fixed to values spanning 0.01 to the mask radius, 3.0".
-mask_radius = 3.0
-log10_sigma_list = np.linspace(-2, np.log10(mask_radius), total_gaussians)
-
-# By defining the centre here, it creates two free parameters that are assigned below to all Gaussians.
-
-centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-
-bulge_gaussian_list = []
-
-for j in range(gaussian_per_basis):
-    # A list of Gaussian model components whose parameters are customized belows.
-
-    gaussian_list = af.Collection(
-        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
-    )
-
-    # Iterate over every Gaussian and customize its parameters.
-
-    for i, gaussian in enumerate(gaussian_list):
-        gaussian.centre.centre_0 = centre_0  # All Gaussians have same y centre.
-        gaussian.centre.centre_1 = centre_1  # All Gaussians have same x centre.
-        gaussian.ell_comps = gaussian_list[
-            0
-        ].ell_comps  # All Gaussians have same elliptical components.
-        gaussian.sigma = (
-            10 ** log10_sigma_list[i]
-        )  # All Gaussian sigmas are fixed to values above.
-
-    bulge_gaussian_list += gaussian_list
-
-# The Basis object groups many light profiles together into a single model component.
-
-bulge = af.Model(
-    al.lp_basis.Basis,
-    profile_list=bulge_gaussian_list,
+bulge = al.model_util.mge_model_from(
+    mask_radius=mask_radius, total_gaussians=20, centre_prior_is_uniform=True
 )
 
 mass = af.Model(al.mp.Isothermal)
@@ -155,32 +118,11 @@ gaussian_per_basis = 1
 
 # By defining the centre here, it creates two free parameters that are assigned to the source Gaussians.
 
-centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-
-log10_sigma_list = np.linspace(-2, np.log10(1.0), total_gaussians)
-
-bulge_gaussian_list = []
-
-for j in range(gaussian_per_basis):
-    gaussian_list = af.Collection(
-        af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
-    )
-
-    for i, gaussian in enumerate(gaussian_list):
-        gaussian.centre.centre_0 = centre_0
-        gaussian.centre.centre_1 = centre_1
-        gaussian.ell_comps = gaussian_list[0].ell_comps
-        gaussian.sigma = 10 ** log10_sigma_list[i]
-
-    bulge_gaussian_list += gaussian_list
-
-source_bulge = af.Model(
-    al.lp_basis.Basis,
-    profile_list=bulge_gaussian_list,
+bulge = al.model_util.mge_model_from(
+    mask_radius=mask_radius, total_gaussians=20, centre_prior_is_uniform=False
 )
 
-source = af.Model(al.Galaxy, redshift=1.0, bulge=source_bulge)
+source = af.Model(al.Galaxy, redshift=1.0, bulge=bulge)
 
 # Overall Lens Model:
 
@@ -213,7 +155,7 @@ This is the function on which JAX gradients are computed, so we create this clas
 from autofit.non_linear.fitness import Fitness
 import time
 
-use_vmap = False
+use_vmap = True
 batch_size = 50
 
 fitness = Fitness(
@@ -229,12 +171,12 @@ if not use_vmap:
 
     start = time.time()
     print()
-    print(fitness._call(param_vector))
+    print(fitness._jit(param_vector))
     print("JAX Time To JIT Function:", time.time() - start)
 
     start = time.time()
     print()
-    print(fitness._call(param_vector))
+    print(fitness._jit(param_vector))
     print("JAX Time taken using JIT:", time.time() - start)
 
 else:

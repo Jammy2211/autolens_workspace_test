@@ -52,7 +52,7 @@ dataset_plotter.subplot_dataset()
 """
 __Mask__
 
-The model-fit requires a `Mask2D` defining the regions of the image we fit the lens model to the data, which we define
+The model-fit requires a 2D mask defining the regions of the image we fit the lens model to the data, which we define
 and use to set up the `Imaging` object that the lens model fits.
 """
 mask = al.Mask2D.circular_annular(

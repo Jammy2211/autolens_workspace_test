@@ -102,7 +102,7 @@ print("Curvature Matrix Shape: ", curvature_matrix.shape)
 def blurred_mapping_matrix_from(psf, mapping_matrix):
     return jnp.hstack(
         [
-            psf.convolve_mapping_matrix(
+            psf.convolved_mapping_matrix_from(
                 mapping_matrix=mapping_matrix, mask=mask, jax_method="direct"
             )
         ]

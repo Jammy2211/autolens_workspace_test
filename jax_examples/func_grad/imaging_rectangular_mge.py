@@ -88,27 +88,27 @@ __Mask__
 The model-fit requires a 2D mask defining the regions of the image we fit the model to the data, which we define
 and use to set up the `Imaging` object that the model fits.
 """
-mask_2d = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
+mask_radius = 3.0
+
+mask = al.Mask2D.circular(
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
 )
 
-dataset = dataset.apply_mask(mask=mask_2d)
-
-# dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
+dataset = dataset.apply_mask(mask=mask)
 
 # positions = al.Grid2DIrregular(
 #     al.from_json(file_path=path.join(dataset_path, "positions.json"))
 # )
 
-# over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
-#     grid=dataset.grid,
-#     sub_size_list=[8, 4, 1],
-#     radial_list=[0.3, 0.6],
-#     centre_list=[(0.0, 0.0)],
-# )
-#
-# dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
-#
+over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
+    grid=dataset.grid,
+    sub_size_list=[4, 2, 1],
+    radial_list=[0.3, 0.6],
+    centre_list=[(0.0, 0.0)],
+)
+
+dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
+
 
 """
 __JAX & Preloads__
@@ -135,7 +135,7 @@ total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
 
 preloads = al.Preloads(
     mapper_indices=al.mapper_indices_from(
-        total_linear_light_profiles=0,
+        total_linear_light_profiles=40,
         total_mapper_pixels=total_mapper_pixels
     ),
     source_pixel_zeroed_indices=al.util.mesh.rectangular_edge_pixel_list_from(
@@ -154,36 +154,20 @@ example we fit a model where:
 
 The number of free parameters and therefore the dimensionality of non-linear parameter space is N=11.
 """
-# # Lens:
+# Lens:
 
-# bulge = af.Model(al.lp_linear.Sersic)
-
-bulge = af.Model(al.lp.Sersic)
-
-bulge.centre.centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-bulge.centre.centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-bulge.ell_comps.ell_comps_0 = af.UniformPrior(
-    lower_limit=0.0526316, upper_limit=0.0526318
+bulge = al.model_util.mge_model_from(
+    mask_radius=mask_radius,
+    total_gaussians=20,
+    gaussian_per_basis=2,
+    centre_prior_is_uniform=True
 )
-bulge.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=-0.01, upper_limit=0.01)
-bulge.effective_radius = af.UniformPrior(lower_limit=0.5, upper_limit=0.7)
-bulge.sersic_index = af.UniformPrior(lower_limit=2.0, upper_limit=4.0)
-bulge.intensity = af.UniformPrior(lower_limit=3.0, upper_limit=5.0)
 
-# disk = af.Model(al.lp_linear.Exponential)
+mass = af.Model(al.mp.Isothermal)
 
-disk = af.Model(al.lp.Exponential)
+shear = af.Model(al.mp.ExternalShear)
 
-disk.centre.centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-disk.centre.centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-disk.ell_comps.ell_comps_0 = af.UniformPrior(
-    lower_limit=0.152828012432548, upper_limit=0.1528280124325482
-)
-disk.ell_comps.ell_comps_1 = af.UniformPrior(
-    lower_limit=0.0882352, upper_limit=0.0882353
-)
-disk.effective_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.7)
-disk.intensity = af.UniformPrior(lower_limit=1.0, upper_limit=3.0)
+lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass, shear=shear)
 
 mass = af.Model(al.mp.Isothermal)
 
@@ -203,7 +187,6 @@ lens = af.Model(
     al.Galaxy,
     redshift=0.5,
     bulge=bulge,
-    disk=disk,
     mass=mass,
     shear=shear,
 )
@@ -247,15 +230,7 @@ analysis = al.AnalysisImaging(
         use_w_tilde=False,
         force_edge_pixels_to_zeros=True,
     ),
-    preloads=al.Preloads(
-        mapper_indices=al.mapper_indices_from(
-            total_linear_light_profiles=0,
-            total_mapper_pixels=total_mapper_pixels
-        ),
-        source_pixel_zeroed_indices=al.util.mesh.rectangular_edge_pixel_list_from(
-            mesh_shape
-        ),
-    ),
+    preloads=preloads,
     raise_inversion_positions_likelihood_exception=False,
 )
 
@@ -268,7 +243,7 @@ This is the function on which JAX gradients are computed, so we create this clas
 from autofit.non_linear.fitness import Fitness
 import time
 
-use_vmap = True
+use_vmap = False
 batch_size = 10
 
 fitness = Fitness(
