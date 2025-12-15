@@ -81,8 +81,10 @@ for i in range(2):
         pixel_scales=0.1,
     )
 
+    mask_radius = 3.0
+
     mask = al.Mask2D.circular(
-        shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
+        shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
     )
 
     dataset = dataset.apply_mask(mask=mask)
@@ -143,7 +145,7 @@ Extract the `AggregateCSV` object, which has specific functions for outputting r
 agg_csv = af.AggregateCSV(aggregator=agg)
 
 """
-__Adding CSV Columns_
+__Adding CSV Columns__
 
 We first make a simple .csv which contains two columns, corresponding to the inferred median PDF values for
 the y centre of the mass of the lens galaxy and its einstein radius.

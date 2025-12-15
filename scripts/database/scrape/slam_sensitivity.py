@@ -22,7 +22,7 @@ def fit():
     import autofit as af
     import autolens as al
     import autolens.plot as aplt
-    import slam
+    import slam_pipeline
 
     """
     __Dataset + Masking__

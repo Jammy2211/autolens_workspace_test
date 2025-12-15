@@ -186,8 +186,7 @@ Call FitImaging once to get all numba functions initialized.
 fit = al.FitInterferometer(
     dataset=dataset,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(
-        use_w_tilde=use_w_tilde, use_w_tilde_numpy=use_w_tilde_numpy
+    settings_inversion=al.SettingsInversion( use_w_tilde_numpy=use_w_tilde_numpy
     ),
 )
 print(fit.figure_of_merit)
@@ -202,8 +201,7 @@ for i in range(repeats):
     fit = al.FitInterferometer(
         dataset=dataset,
         tracer=tracer,
-        settings_inversion=al.SettingsInversion(
-            use_w_tilde=use_w_tilde, use_w_tilde_numpy=use_w_tilde_numpy
+        settings_inversion=al.SettingsInversion( use_w_tilde_numpy=use_w_tilde_numpy
         ),
     )
     fit.figure_of_merit
@@ -222,8 +220,7 @@ tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time
 fit = al.FitInterferometer(
     dataset=dataset,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(
-        use_w_tilde=use_w_tilde, use_w_tilde_numpy=use_w_tilde_numpy
+    settings_inversion=al.SettingsInversion( use_w_tilde_numpy=use_w_tilde_numpy
     ),
     run_time_dict=run_time_dict,
 )

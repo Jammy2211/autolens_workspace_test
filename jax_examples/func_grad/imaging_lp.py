@@ -40,8 +40,6 @@ import autofit as af
 import autolens as al
 from autoconf import conf
 
-conf.instance["general"]["model"]["ignore_prior_limits"] = True
-
 """
 __Dataset__
 
@@ -114,8 +112,14 @@ mass_0.ra = 1.0
 
 shear = af.Model(al.mp.ExternalShear)
 
+#nfw = af.Model(al.mp.NFWSph)
 
-lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass, mass_0=mass_0, shear=shear)
+nfw = af.Model(al.mp.NFWMCRLudlowSph)
+
+lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge,
+          #      mass=mass, mass_0=mass_0,
+                nfw=nfw,
+                shear=shear)
 
 # Source:
 
@@ -125,7 +129,10 @@ source = af.Model(al.Galaxy, redshift=1.0, bulge=bulge)
 
 # Overall Lens Model:
 
-model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
+model = af.Collection(galaxies=af.Collection(
+    lens=lens,
+    source=source
+))
 
 """
 The `info` attribute shows the model in a readable format.

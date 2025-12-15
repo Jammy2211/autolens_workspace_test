@@ -95,8 +95,10 @@ for i in range(2):
         pixel_scales=0.1,
     )
 
+    mask_radius = 3.0
+
     mask = al.Mask2D.circular(
-        shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
+        shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
     )
 
     dataset = dataset.apply_mask(mask=mask)
@@ -181,7 +183,7 @@ is a single row of 3 subplots.
 image = agg_image.extract_image(
     subplots=[
         al.agg.subplot_fit.data,
-        al.agg.subplot_fit.model_image,
+        al.agg.subplot_fit.model_data,
         al.agg.subplot_fit.normalized_residual_map,
     ],
 )
@@ -223,7 +225,7 @@ agg_image.output_to_folder(
     name="unique_tag",
     subplots=[
         al.agg.subplot_fit.data,
-        al.agg.subplot_fit.model_image,
+        al.agg.subplot_fit.model_data,
         al.agg.subplot_fit.normalized_residual_map,
     ],
 )
@@ -244,7 +246,7 @@ agg_image.output_to_folder(
     name="unique_tag",
     subplots=[
         al.agg.subplot_fit.data,
-        al.agg.subplot_fit.model_image,
+        al.agg.subplot_fit.model_data,
         al.agg.subplot_fit.normalized_residual_map,
     ],
 )
@@ -265,7 +267,7 @@ image = agg_image.extract_image(
     subplots=[
         al.agg.subplot_dataset.data,
         al.agg.subplot_dataset.psf_log_10,
-        al.agg.subplot_fit.model_image,
+        al.agg.subplot_fit.model_data,
         al.agg.subplot_fit.chi_squared_map,
     ]
     # subplot_shape=(2, 2),

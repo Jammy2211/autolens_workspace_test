@@ -39,22 +39,45 @@ import autofit as af
 import autolens as al
 from autoconf import conf
 
-conf.instance["general"]["model"]["ignore_prior_limits"] = True
+
+sub_size = 4
+psf_shape_2d = (21, 21)
 
 """
 __Dataset__
 
 Load and plot the galaxy dataset `operated` via .fits files, which we will fit with 
 the model.
+
+The simulated data comes at five resolution corresponding to five telescopes:
+
+vro: pixel_scale = 0.2", fastest run times.
+euclid: pixel_scale = 0.1", fast run times
+hst: pixel_scale = 0.05", normal run times, represents the type of data we do most our fitting on currently.
+hst_up: pixel_scale = 0.03", slow run times.
+ao: pixel_scale = 0.01", very slow :(
 """
-dataset_name = "no_lens_light"
-dataset_path = path.join("dataset", "imaging", dataset_name)
+# instrument = "vro"
+# instrument = "euclid"
+instrument = "hst"
+# instrument = "hst_up"
+# instrument = "ao"
+
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_offset_centre": 0.05, "hst_offset_centre_and_mass": 0.05,  "hst_up": 0.03, "ao": 0.01}
+pixel_scale = pixel_scales_dict[instrument]
+
+"""
+Load the dataset for this instrument / resolution.
+"""
+dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    pixel_scales=0.1,
+    pixel_scales=pixel_scale,
+    over_sample_size_lp=sub_size,
+    over_sample_size_pixelization=sub_size,
 )
 
 
@@ -64,7 +87,7 @@ __Mask__
 The model-fit requires a 2D mask defining the regions of the image we fit the model to the data, which we define
 and use to set up the `Imaging` object that the model fits.
 """
-mask_radius = 3.0
+mask_radius = 2.6
 
 mask = al.Mask2D.circular(
     shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
@@ -72,21 +95,84 @@ mask = al.Mask2D.circular(
 
 dataset = dataset.apply_mask(mask=mask)
 
-dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
+# dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
 
-positions = al.Grid2DIrregular(
-    al.from_json(file_path=path.join(dataset_path, "positions.json"))
+# positions = al.Grid2DIrregular(
+#     al.from_json(file_path=path.join(dataset_path, "positions.json"))
+# )
+
+over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
+    grid=dataset.grid,
+    sub_size_list=[4, 2, 1],
+    radial_list=[0.3, 0.6],
+    centre_list=[(0.0, 0.0)],
 )
 
-# over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
-#     grid=dataset.grid,
-#     sub_size_list=[4, 2, 1],
-#     radial_list=[0.3, 0.6],
-#     centre_list=[(0.0, 0.0)],
-# )
-#
-# dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
-#
+dataset = dataset.apply_over_sampling(
+    over_sample_size_lp=over_sample_size,
+    over_sample_size_pixelization=1,
+)
+
+
+"""
+__JAX & Preloads__
+
+In JAX, calculations must use static shaped arrays with known and fixed indexes. For certain calculations in the
+pixelization, this information has to be passed in before the pixelization is performed. Below, we do this for 3
+inputs:
+
+- `total_linear_light_profiles`: The number of linear light profiles in the model. This is 0 because we are not
+  fitting any linear light profiles to the data, primarily because the lens light is omitted.
+
+- `total_mapper_pixels`: The number of source pixels in the rectangular pixelization mesh. This is required to set up 
+  the arrays that perform the linear algebra of the pixelization.
+
+- `source_pixel_zeroed_indices`: The indices of source pixels on its edge, which when the source is reconstructed 
+  are forced to values of zero, a technique tests have shown are required to give accruate lens models.
+
+The `image_mesh` can be ignored, it is legacy API from previous versions which may or may not be reintegrated in future
+versions.
+"""
+image_mesh = al.image_mesh.Overlay(shape=(22, 22))
+
+image_plane_mesh_grid = image_mesh.image_plane_mesh_grid_from(
+    mask=dataset.mask,
+)
+
+image_plane_mesh_grid_edge_pixels = 30
+
+print(image_plane_mesh_grid.shape[0])
+
+image_plane_mesh_grid = al.image_mesh.append_with_circle_edge_points(
+    image_plane_mesh_grid=image_plane_mesh_grid,
+    centre=mask.mask_centre,
+    radius=mask_radius + mask.pixel_scale / 2.0,
+    n_points=image_plane_mesh_grid_edge_pixels,
+)
+
+total_mapper_pixels = image_plane_mesh_grid.shape[0]
+
+total_linear_light_profiles = 0
+
+mapper_indices = al.mapper_indices_from(
+    total_linear_light_profiles=total_linear_light_profiles,
+    total_mapper_pixels=total_mapper_pixels,
+)
+
+print(total_mapper_pixels)
+
+# Extract the last `image_plane_mesh_grid_edge_pixels` indices, which correspond to the circle edge points we added
+
+source_pixel_zeroed_indices = mapper_indices[-image_plane_mesh_grid_edge_pixels:]
+
+print(source_pixel_zeroed_indices)
+
+preloads = al.Preloads(
+    mapper_indices=mapper_indices,
+    source_pixel_zeroed_indices=source_pixel_zeroed_indices,
+    use_voronoi_areas=False,
+    areas_factor=0.5
+)
 
 """
 __Model__
@@ -101,23 +187,41 @@ The number of free parameters and therefore the dimensionality of non-linear par
 """
 # # Lens:
 
-bulge = af.Model(al.lp_linear.Sersic)
-
 mass = af.Model(al.mp.Isothermal)
 
-shear = af.Model(al.mp.ExternalShear)
+mass.centre.centre_0 = af.UniformPrior(lower_limit=0.2, upper_limit=0.4)
+mass.centre.centre_1 = af.UniformPrior(lower_limit=-0.4, upper_limit=-0.2)
+mass.einstein_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.7)
+mass.ell_comps.ell_comps_0 = af.UniformPrior(
+    lower_limit=0.11111111111111108, upper_limit=0.1111111111111111
+)
+mass.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=-0.01, upper_limit=0.01)
 
-lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass, shear=shear)
+shear = af.Model(al.mp.ExternalShear)
+shear.gamma_1 = af.UniformPrior(lower_limit=-0.001, upper_limit=0.001)
+shear.gamma_2 = af.UniformPrior(lower_limit=-0.001, upper_limit=0.001)
+
+lens = af.Model(
+    al.Galaxy,
+    redshift=0.5,
+    mass=mass,
+    shear=shear,
+)
 
 # Source:
 
-mesh = al.mesh.Rectangular(shape=(30, 30))
+# mesh = al.mesh.RectangularMagnification(shape=mesh_shape)
 regularization = al.reg.Constant(coefficient=1.0)
 
-pixelization = al.Pixelization(
-    image_mesh=al.image_mesh.Overlay(shape=(30, 30)),
+# regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
+
+# regularization = al.reg.AdaptiveBrightnessSplit()
+
+
+pixelization = af.Model(
+    al.Pixelization,
     mesh=al.mesh.Delaunay(),
-    regularization=regularization,
+    regularization=regularization
 )
 
 source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
@@ -125,6 +229,19 @@ source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
 # Overall Lens Model:
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
+
+galaxy_name_image_dict = {
+    "('galaxies', 'lens')": dataset.data,
+    "('galaxies', 'source')": dataset.data
+}
+
+
+adapt_images = al.AdaptImages(
+    galaxy_name_image_dict=galaxy_name_image_dict,
+    galaxy_name_image_plane_mesh_grid_dict={
+        "('galaxies', 'source')": image_plane_mesh_grid
+    },
+)
 
 """
 The `info` attribute shows the model in a readable format.
@@ -141,14 +258,11 @@ import jax.numpy as jnp
 
 analysis = al.AnalysisImaging(
     dataset=dataset,
-    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
-    settings_inversion=al.SettingsInversion(
-        use_w_tilde=False, force_edge_pixels_to_zeros=False
-    ),
-    preloads=al.Preloads(
-        mapper_indices=al.mapper_indices_from(model=model),
-        source_pixel_zeroed_indices=jnp.array([0]),
-    ),
+    #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
+    adapt_images=adapt_images,
+    preloads=preloads,
+    raise_inversion_positions_likelihood_exception=False,
+   # settings_inversion=al.SettingsInversion(use_border_relocator=False)
 )
 
 """
@@ -158,6 +272,10 @@ the model with likelihood.
 This is the function on which JAX gradients are computed, so we create this class here.
 """
 from autofit.non_linear.fitness import Fitness
+import time
+
+use_vmap = True
+batch_size = 3
 
 fitness = Fitness(
     model=model,
@@ -166,12 +284,106 @@ fitness = Fitness(
     resample_figure_of_merit=-1.0e99,
 )
 
+param_vector = jnp.array(model.physical_values_from_prior_medians)
+
+if not use_vmap:
+
+    func = jax.jit(fitness.call)
+
+    start = time.time()
+    print()
+    print(fitness._jit(param_vector))
+    print("JAX Time To JIT Function:", time.time() - start)
+
+    start = time.time()
+    print()
+    print(fitness._jit(param_vector))
+    print("JAX Time taken using JIT:", time.time() - start)
+
+    lowered = fitness._jit.lower(param_vector)
+    compiled = lowered.compile()
+    memory_analysis = compiled.memory_analysis()
+    print(f'Memory {(memory_analysis.output_size_in_bytes + memory_analysis.temp_size_in_bytes) / 1024**2:.3} MB')
+
+else:
+
+    parameters = np.zeros((batch_size, model.total_free_parameters))
+
+    for i in range(batch_size):
+        parameters[i, :] = model.physical_values_from_prior_medians
+
+    parameters = jnp.array(parameters)
+
+    start = time.time()
+    print()
+    print(fitness._vmap(parameters))
+    print("JAX Time To VMAP + JIT Function", time.time() - start)
+
+    start = time.time()
+    print()
+    print(fitness._vmap(parameters))
+    print("JAX Time Taken using VMAP:", time.time() - start)
+    print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
+
+    batched_call = jax.jit(jax.vmap(fitness.call))
+    lowered = batched_call.lower(parameters)
+    compiled = lowered.compile()
+    memory_analysis = compiled.memory_analysis()
+    print(f'Memory {(memory_analysis.output_size_in_bytes + memory_analysis.temp_size_in_bytes) / 1024**2:.3} MB')
+
 
 """
-We now test the JAX-ing of this LH function.
+Output an image of the fit, so that we can inspect that it fits the data as expected.
 """
-parameters = model.physical_values_from_prior_medians
-# print(fitness(parameters))
-# dddd
-func = jax.jit(fitness)
-print(func(parameters))
+import autolens.plot as aplt
+import os
+
+file_path = os.path.join(al.__version__)
+
+instance = model.instance_from_prior_medians()
+
+# analysis = al.AnalysisImaging(
+#     dataset=dataset,
+#     #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
+#     adapt_images=adapt_images,
+#     preloads=preloads,
+#     raise_inversion_positions_likelihood_exception=False,
+#     use_jax=False
+# )
+
+fit = analysis.fit_from(instance)
+
+print(f"Figure of Merit = {fit.figure_of_merit}")
+
+
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_source", format="png"
+    )
+)
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.figures_2d_of_planes(plane_index=1, plane_image=True)
+
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_fit", format="png"
+    )
+)
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_fit()
+
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"
+    )
+)
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_of_planes(plane_index=1)
+
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_inversion_0", format="png"
+    )
+)
+fit_plotter = aplt.InversionPlotter(inversion=fit.inversion, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_of_mapper(mapper_index=0)

@@ -23,24 +23,20 @@ Operated light profiles offer an alternative approach, whereby the light profile
 convolved with the PSF. This operated light profile is then fitted directly to the point-source emission, which as
 discussed above shows the PSF features.
 """
-
 # %matplotlib inline
 # from pyprojroot import here
 # workspace_path = str(here())
 # %cd $workspace_path
 # print(f"Working Directory has been set to `{workspace_path}`")
 
-import numpy as np
-import jax.numpy as jnp
-import jax
-from jax import grad
-from os import path
-
 import autofit as af
 import autolens as al
 from autoconf import conf
 
-conf.instance["general"]["model"]["ignore_prior_limits"] = True
+import numpy as np
+import jax.numpy as jnp
+from os import path
+
 
 """
 __Dataset__

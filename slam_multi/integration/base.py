@@ -41,7 +41,7 @@ def fit():
     import autofit as af
     import autolens as al
     import autolens.plot as aplt
-    import slam_multi
+    import slam_pipeline_multi
 
     """
     __Dataset__ 
@@ -213,7 +213,7 @@ def fit():
     __Adapt Images / Image Mesh Settings__
 
     If you are unclear what the `adapt_images` and `SettingsInversion` inputs are doing below, refer to the 
-    `autolens_workspace/*/imaging/advanced/chaining/pix_adapt/start_here.py` example script.
+    `autolens_workspace/*/guides/modeling/chaining/pix_adapt/start_here.py` example script.
 
     __Settings__:
 

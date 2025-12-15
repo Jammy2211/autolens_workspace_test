@@ -41,7 +41,6 @@ import autofit as af
 import autolens as al
 from autoconf import conf
 
-conf.instance["general"]["model"]["ignore_prior_limits"] = True
 
 
 """
@@ -262,133 +261,49 @@ the model with likelihood.
 
 This is the function on which JAX gradients are computed, so we create this class here.
 """
-import time
 from autofit.non_linear.fitness import Fitness
+import time
+
+use_vmap = False
+batch_size = 50
 
 fitness = Fitness(
-    model=factor_graph.global_prior_model,
-    analysis=factor_graph,
+    model=model,
+    analysis=analysis,
     fom_is_log_likelihood=True,
     resample_figure_of_merit=-1.0e99,
 )
 
-"""
-We now test the JAX-ing of this LH function.
-"""
-start = time.time()
-
 param_vector = jnp.array(model.physical_values_from_prior_medians)
-print(fitness.call_numpy_wrapper(param_vector))
 
-print("JAX Tracing (And LH) Time:", time.time() - start)
+if not use_vmap:
 
+    start = time.time()
+    print()
+    print(fitness._jit(param_vector))
+    print("JAX Time To JIT Function:", time.time() - start)
 
-print()
+    start = time.time()
+    print()
+    print(fitness._jit(param_vector))
+    print("JAX Time taken using JIT:", time.time() - start)
 
-start = time.time()
+else:
 
-# profiler.start_trace("profiler_output")
+    parameters = np.zeros((batch_size, model.total_free_parameters))
 
-print(fitness.call_numpy_wrapper(param_vector))
+    for i in range(batch_size):
+        parameters[i, :] = model.physical_values_from_prior_medians
 
-print("JAX JIT LOOP Time taken:", time.time() - start)
+    parameters = jnp.array(parameters)
 
+    start = time.time()
+    print()
+    print(fitness._vmap(parameters))
+    print("JAX Time To VMAP + JIT Function", time.time() - start)
 
-# """
-# __Analysis__
-#
-# The `AnalysisImaging` object defines the `log_likelihood_function` which will be used to determine if JAX
-# can compute its gradient.
-# """
-#
-#
-# analysis_factor_list = []
-#
-# for i in range(len(centre_list)):
-#
-#     dataset.name = f"point_{i}"
-#
-#     model_analysis = model.copy()
-#     analysis = al.AnalysisPoint(dataset=dataset, solver=solver)
-#
-#     instance = model.instance_from_prior_medians()
-#     tracer = analysis.tracer_via_instance_from(instance=instance)
-#
-#     positions = solver.solve(
-#         tracer=tracer, source_plane_coordinate=centre_list[i]
-#     )
-#
-#     print(positions)
-#
-#     analysis_factor = af.AnalysisFactor(prior_model=model_analysis, analysis=analysis)
-#
-#     analysis_factor_list.append(analysis_factor)
-#
-# factor_graph = af.FactorGraphModel(*analysis_factor_list)
-#
-# from autofit.non_linear.fitness import Fitness
-# import time
-#
-# fitness = Fitness(
-#     model=model,
-#     analysis=analysis,
-#     fom_is_log_likelihood=True,
-#     resample_figure_of_merit=-1.0e99,
-# )
-#
-# batch_size = 30
-#
-# parameters = np.zeros((batch_size, model.total_free_parameters))
-#
-# for i in range(batch_size):
-#     parameters[i, :] = model.random_unit_vector_within_limits()
-#
-# param_vector = model.physical_values_from_prior_medians
-#
-# result_list = []
-#
-# # func = fitness
-# # func.call(param_vector)
-# # start = time.time()
-# # for i in range(batch_size):
-# #
-# #     result = func.call(parameters[i, :])
-# #
-# #     result_list.append(result)
-# #
-# # print(result_list)
-# # print("NO JAX Time taken:", time.time() - start)
-#
-# # func = jax.vmap(fitness)
-# # print(func(parameters))
-# #
-# # start = time.time()
-# # print(func(jnp.array(parameters)))
-# # print("JAX Vmap Time taken:", time.time() - start)
-#
-# fitness = Fitness(
-#     model=model,
-#     analysis=analysis,
-#     fom_is_log_likelihood=True,
-#     resample_figure_of_merit=-1.0e99,
-# )
-#
-# parameters2 = np.array(parameters)
-#
-# param_vector = np.array(model.physical_values_from_prior_medians)
-#
-# result_list = []
-#
-# vectorized_fitness = jax.jit(jax.vmap(fitness.call))
-# result = vectorized_fitness(parameters)
-#
-# # jax.vmap(fitness.call_numpy_wrapper(param_vector)
-# start = time.time()
-# # for i in range(batch_size):
-# #    result = fitness.call_numpy_wrapper(np.array(parameters2[i, :]))
-# result = vectorized_fitness(parameters)
-#
-# result_list.append(result)
-#
-# print(result)
-# print("JAX JIT LOOP Time taken:", time.time() - start)
+    start = time.time()
+    print()
+    print(fitness._vmap(parameters))
+    print("JAX Time Taken using VMAP:", time.time() - start)
+    print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)

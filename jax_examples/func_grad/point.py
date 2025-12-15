@@ -40,7 +40,6 @@ import autofit as af
 import autolens as al
 from autoconf import conf
 
-conf.instance["general"]["model"]["ignore_prior_limits"] = True
 
 
 """
@@ -182,8 +181,11 @@ the model with likelihood.
 
 This is the function on which JAX gradients are computed, so we create this class here.
 """
-import time
 from autofit.non_linear.fitness import Fitness
+import time
+
+use_vmap = False
+batch_size = 50
 
 fitness = Fitness(
     model=model,
@@ -192,16 +194,36 @@ fitness = Fitness(
     resample_figure_of_merit=-1.0e99,
 )
 
-"""
-We now test the JAX-ing of this LH function.
-"""
 param_vector = jnp.array(model.physical_values_from_prior_medians)
-print(fitness.call_numpy_wrapper(param_vector))
 
-start = time.time()
+if not use_vmap:
 
-# profiler.start_trace("profiler_output")
+    start = time.time()
+    print()
+    print(fitness._jit(param_vector))
+    print("JAX Time To JIT Function:", time.time() - start)
 
-print(fitness.call_numpy_wrapper(param_vector))
+    start = time.time()
+    print()
+    print(fitness._jit(param_vector))
+    print("JAX Time taken using JIT:", time.time() - start)
 
-print("JAX JIT LOOP Time taken:", time.time() - start)
+else:
+
+    parameters = np.zeros((batch_size, model.total_free_parameters))
+
+    for i in range(batch_size):
+        parameters[i, :] = model.physical_values_from_prior_medians
+
+    parameters = jnp.array(parameters)
+
+    start = time.time()
+    print()
+    print(fitness._vmap(parameters))
+    print("JAX Time To VMAP + JIT Function", time.time() - start)
+
+    start = time.time()
+    print()
+    print(fitness._vmap(parameters))
+    print("JAX Time Taken using VMAP:", time.time() - start)
+    print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)

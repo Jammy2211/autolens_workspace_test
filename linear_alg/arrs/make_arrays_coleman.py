@@ -73,7 +73,7 @@ lens_galaxy = al.Galaxy(
 )
 
 pixelization = al.Pixelization(
-    mesh=al.mesh.Rectangular(shape=mesh_shape),
+    mesh=al.mesh.RectangularMagnification(shape=mesh_shape),
     regularization=al.reg.Constant(coefficient=1.0),
 )
 

@@ -6,8 +6,8 @@ import time
 import autoarray as aa
 
 # instrument = "vro"
-# instrument = "euclid"
-instrument = "hst"
+instrument = "euclid"
+# instrument = "hst"
 # instrument = "hst_up"
 # instrument = "ao"
 

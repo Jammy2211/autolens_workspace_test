@@ -164,7 +164,6 @@ fit = al.FitImaging(
     dataset=masked_dataset,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(
-        use_w_tilde=use_w_tilde,
         use_positive_only_solver=use_positive_only_solver,
         positive_only_maxiter=positive_only_maxiter,
     ),
@@ -182,7 +181,6 @@ for i in range(repeats):
         dataset=masked_dataset,
         tracer=tracer,
         settings_inversion=al.SettingsInversion(
-            use_w_tilde=use_w_tilde,
             use_positive_only_solver=use_positive_only_solver,
             positive_only_maxiter=positive_only_maxiter,
         ),
@@ -205,7 +203,6 @@ fit = al.FitImaging(
     dataset=masked_dataset,
     tracer=tracer,
     settings_inversion=al.SettingsInversion(
-        use_w_tilde=use_w_tilde,
         use_positive_only_solver=use_positive_only_solver,
         positive_only_maxiter=positive_only_maxiter,
     ),

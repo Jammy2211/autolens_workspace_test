@@ -43,12 +43,11 @@ print()
 These settings control various aspects of how long a fit takes. The values below are default PyAutoLens values.
 """
 sub_size = 4
-mask_radius = 4.0
+mask_radius = 3.5
 psf_shape_2d = (21, 21)
 pixels = 1000
 
 use_positive_only_solver = True
-maxiter = 5000
 
 print(f"sub grid size = {sub_size}")
 print(f"circular mask mask_radius = {mask_radius}")
@@ -60,19 +59,19 @@ The lens galaxy used to fit the data, which is identical to the lens galaxy used
 """
 lens_galaxy = al.Galaxy(
     redshift=0.5,
-    bulge=al.lp.Sersic(
-        centre=(0.0, 0.0),
-        ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
-        intensity=4.0,
-        effective_radius=0.6,
-        sersic_index=3.0,
-    ),
-    disk=al.lp.Exponential(
-        centre=(0.0, 0.0),
-        ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
-        intensity=2.0,
-        effective_radius=1.6,
-    ),
+    # bulge=al.lp.Sersic(
+    #     centre=(0.0, 0.0),
+    #     ell_comps=al.convert.ell_comps_from(axis_ratio=0.9, angle=45.0),
+    #     intensity=4.0,
+    #     effective_radius=0.6,
+    #     sersic_index=3.0,
+    # ),
+    # disk=al.lp.Exponential(
+    #     centre=(0.0, 0.0),
+    #     ell_comps=al.convert.ell_comps_from(axis_ratio=0.7, angle=30.0),
+    #     intensity=2.0,
+    #     effective_radius=1.6,
+    # ),
     mass=al.mp.Isothermal(
         centre=(0.0, 0.0),
         einstein_radius=1.6,
@@ -159,16 +158,53 @@ ADAPTIVE OVER SAMPLING, DO NOT USE
 
 masked_dataset = dataset.apply_mask(mask=mask)
 
+masked_dataset = masked_dataset.apply_w_tilde()
+
+
+"""
+__JAX & Preloads__
+
+In earlier examples (`imaging/features/pixelization/modeling`), we used JAX, which requires *preloading* array shapes
+before compilation. In contrast, CPU modeling with `w_tilde` does **not** require JAX, allowing us to use larger meshes.
+
+Below, notice how the `mesh_shape` is increased to **30 × 30**. Because CPU computation exploits sparse matrices and
+benefits from larger system memory, we can now use higher-resolution pixelizations than were practical with JAX GPU
+acceleration.
+"""
+image_mesh = None
+mesh_shape = (30, 30)
+total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
+
+total_linear_light_profiles = 0
+
+preloads = al.Preloads(
+    mapper_indices=al.mapper_indices_from(
+        total_linear_light_profiles=total_linear_light_profiles,
+        total_mapper_pixels=total_mapper_pixels,
+    ),
+    source_pixel_zeroed_indices=al.util.mesh.rectangular_edge_pixel_list_from(
+        total_linear_light_profiles=total_linear_light_profiles,
+        shape_native=mesh_shape,
+    ),
+)
+
 """
 The source galaxy whose `VoronoiBrightness` `Pixelization` fits the data.
 """
+# pixelization = al.Pixelization(
+#     image_mesh=al.image_mesh.Hilbert(pixels=total_mapper_pixels, weight_floor=0.2, weight_power=3.0),
+#     mesh=al.mesh.Delaunay(),
+#     regularization=al.reg.AdaptiveBrightnessSplit(
+#         inner_coefficient=0.01, outer_coefficient=100.0, signal_scale=0.05
+#     ),
+# )
+
 pixelization = al.Pixelization(
-    image_mesh=al.image_mesh.Hilbert(pixels=pixels, weight_floor=0.2, weight_power=3.0),
-    mesh=al.mesh.Voronoi(),
-    regularization=al.reg.AdaptiveBrightnessSplit(
-        inner_coefficient=0.01, outer_coefficient=100.0, signal_scale=0.05
+    image_mesh=None,
+    mesh=al.mesh.RectangularMagnification(shape=mesh_shape),
+    regularization=al.reg.Constant(
+        coefficient=1.0,
     ),
-    # regularization=al.reg.MaternKernel(coefficient=1.0, scale=0.5, nu=2.0),
 )
 
 source_galaxy = al.Galaxy(
@@ -196,12 +232,11 @@ fit = al.FitImaging(
     tracer=tracer,
     adapt_images=adapt_images,
     settings_inversion=al.SettingsInversion(
-        use_w_tilde=use_w_tilde,
         use_positive_only_solver=use_positive_only_solver,
-        maxiter=maxiter,
     ),
 )
 print(f"Figure of Merit = {fit.figure_of_merit}")
+
 
 """
 __Fit Time__
@@ -209,45 +244,33 @@ __Fit Time__
 Time FitImaging by itself, to compare to profiling dict call.
 """
 start = time.time()
+
+print("")
+print("")
+print("")
+print("")
+
+repeats = 10
+
 for i in range(repeats):
     fit = al.FitImaging(
         dataset=masked_dataset,
         tracer=tracer,
         adapt_images=adapt_images,
         settings_inversion=al.SettingsInversion(
-            use_w_tilde=use_w_tilde,
             use_positive_only_solver=use_positive_only_solver,
-            maxiter=maxiter,
         ),
     )
     fit.log_evidence
+
 fit_time = (time.time() - start) / repeats
 print(f"Fit Time = {fit_time} \n")
 
 
-"""
-__Profiling Dict__
-
-Apply mask, settings and profiling dict to fit, such that timings of every individiual function are provided.
-"""
-run_time_dict = {}
-
-tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time_dict)
-
-fit = al.FitImaging(
-    dataset=masked_dataset,
-    tracer=tracer,
-    adapt_images=adapt_images,
-    settings_inversion=al.SettingsInversion(
-        use_w_tilde=use_w_tilde,
-        use_positive_only_solver=use_positive_only_solver,
-        maxiter=maxiter,
-    ),
-    run_time_dict=run_time_dict,
-)
-fit.figure_of_merit
-
-run_time_dict = fit.run_time_dict
+print("")
+print("")
+print("")
+print("")
 
 """
 __Results__
@@ -260,26 +283,8 @@ print(f"Number of pixels = {masked_dataset.grid.shape_slim} \n")
 print(
     f"Number of sub-pixels = {masked_dataset.grids.pixelization.over_sampler.sub_total} \n"
 )
+fff
 
-"""
-Print the profiling results of every step of the fit for command line output when running profiling scripts.
-"""
-for key, value in run_time_dict.items():
-    print(key, value)
-
-"""
-__Predicted And Exccess Time__
-
-The predicted time is how long we expect the fit should take, based on the individual profiling of functions above.
-
-The excess time is the difference of this value from the fit time, and it indicates whether the break-down above
-has missed expensive steps.
-"""
-predicted_time = 0.0
-predicted_time = sum(run_time_dict.values())
-excess_time = fit_time - predicted_time
-
-print(f"\nExcess Time = {excess_time} \n")
 
 """
 __Output__
@@ -297,9 +302,6 @@ filename = f"{instrument}_run_time_dict.json"
 
 if os.path.exists(path.join(file_path, filename)):
     os.remove(path.join(file_path, filename))
-
-with open(path.join(file_path, filename), "w") as outfile:
-    json.dump(run_time_dict, outfile)
 
 """
 Output the profiling run time of the entire fit.
@@ -341,25 +343,4 @@ mat_plot_2d = aplt.MatPlot2D(
 fit_plotter = aplt.InversionPlotter(inversion=fit.inversion, mat_plot_2d=mat_plot_2d)
 fit_plotter.subplot_of_mapper(mapper_index=0)
 
-"""
-The `info_dict` contains all the key information of the analysis which describes its run times.
-"""
-info_dict = {}
-info_dict["repeats"] = repeats
-info_dict["image_pixels"] = masked_dataset.grid.shape_slim
-info_dict["sub_total"] = masked_dataset.grids.pixelization.over_sampler.sub_total
-info_dict["mask_radius"] = mask_radius
-info_dict["psf_shape_2d"] = psf_shape_2d
-try:
-    info_dict["w_tilde_curvature_preload_size"] = (
-        fit.inversion.leq.w_tilde.curvature_preload.shape[0]
-    )
-except AttributeError:
-    pass
-info_dict["source_pixels"] = len(fit.inversion.reconstruction)
-info_dict["excess_time"] = excess_time
 
-print(info_dict)
-
-with open(path.join(file_path, f"{instrument}_info.json"), "w+") as outfile:
-    json.dump(info_dict, outfile, indent=4)

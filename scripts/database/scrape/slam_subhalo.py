@@ -22,7 +22,7 @@ def fit():
     import autofit as af
     import autolens as al
     import autolens.plot as aplt
-    import slam
+    import slam_pipeline
 
     """
     __Dataset + Masking__
@@ -37,8 +37,10 @@ def fit():
         pixel_scales=0.2,
     )
 
+    mask_radius = 3.0
+
     mask = al.Mask2D.circular(
-        shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=3.0
+        shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
     )
 
     dataset = dataset.apply_mask(mask=mask)

@@ -39,7 +39,6 @@ import autofit as af
 import autolens as al
 from autoconf import conf
 
-conf.instance["general"]["model"]["ignore_prior_limits"] = True
 
 """
 __Mask__
@@ -67,7 +66,7 @@ dataset_path = path.join("dataset", "interferometer", dataset_name)
 #     transformer_class=al.TransformerDFT,
 # )
 
-total_visibilities = 50000
+total_visibilities = 500
 
 data = al.Visibilities(np.random.normal(loc=0.0, scale=1.0, size=total_visibilities) + 1j * np.random.normal(
     loc=0.0, scale=1.0, size=total_visibilities
@@ -180,7 +179,6 @@ can compute its gradient.
 analysis = al.AnalysisInterferometer(
     dataset=dataset,
     positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
-    settings_inversion=al.SettingsInversion(use_w_tilde=False),
 )
 
 

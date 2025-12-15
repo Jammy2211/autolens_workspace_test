@@ -113,4 +113,4 @@ def benchmark(image_pixels=5000, source_pixels=1000, nnz_per_col=20, nnz_per_row
 if __name__ == "__main__":
     # Example benchmark (adjust sizes carefully — GPU memory is the limit!)
 
-    benchmark(image_pixels=11304, source_pixels=1024, nnz_per_col=66, nnz_per_row=730)
+    benchmark(image_pixels=23040, source_pixels=1024, nnz_per_col=66, nnz_per_row=730)

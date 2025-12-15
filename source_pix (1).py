@@ -60,7 +60,7 @@ def run_1(
 
     - The lens galaxy light is modeled using light profiles [parameters fixed to result of SOURCE LP PIPELINE].
 
-     - The lens galaxy mass is modeled using a total mass distribution [parameters initialized from the results of the 
+     - The lens galaxy mass is modeled using a total mass distribution [model initialized from the results of the 
      SOURCE LP PIPELINE].
 
      - The source galaxy's light is the input initialization image mesh, mesh and regularization scheme [parameters of 
@@ -219,10 +219,10 @@ def run_2(
     image. In all other searches, the source pixelization parameters are fixed, ensuring that the likelihood function
     is smooth.
     """
-    search = af.DynestyStatic(
+    search = af.Nautilus(
         name="source_pix[2]",
         **settings_search.search_dict,
-        nlive=100,
+        n_live=75,
     )
 
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)

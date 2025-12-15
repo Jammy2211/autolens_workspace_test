@@ -39,7 +39,6 @@ import autofit as af
 import autolens as al
 from autoconf import conf
 
-conf.instance["general"]["model"]["ignore_prior_limits"] = True
 
 sub_size = 4
 psf_shape_2d = (21, 21)
@@ -193,7 +192,7 @@ lens = af.Model(
 
 # Source:
 
-mesh = al.mesh.Rectangular(shape=mesh_shape)
+mesh = al.mesh.RectangularMagnification(shape=mesh_shape)
 # regularization = al.reg.Constant(coefficient=1.0)
 
 # regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
@@ -201,7 +200,7 @@ mesh = al.mesh.Rectangular(shape=mesh_shape)
 regularization = al.reg.Constant()
 
 pixelization = al.Pixelization(
-    image_mesh=None, mesh=mesh, regularization=regularization
+    mesh=mesh, regularization=regularization
 )
 
 source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
@@ -226,10 +225,6 @@ import jax.numpy as jnp
 analysis = al.AnalysisImaging(
     dataset=dataset,
     #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
-    settings_inversion=al.SettingsInversion(
-        use_w_tilde=False,
-        force_edge_pixels_to_zeros=True,
-    ),
     preloads=preloads,
     raise_inversion_positions_likelihood_exception=False,
 )
