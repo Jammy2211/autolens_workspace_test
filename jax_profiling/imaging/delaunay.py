@@ -39,6 +39,7 @@ import autofit as af
 import autolens as al
 from autoconf import conf
 
+
 sub_size = 4
 psf_shape_2d = (21, 21)
 
@@ -86,7 +87,7 @@ __Mask__
 The model-fit requires a 2D mask defining the regions of the image we fit the model to the data, which we define
 and use to set up the `Imaging` object that the model fits.
 """
-mask_radius = 3.5
+mask_radius = 2.6
 
 mask = al.Mask2D.circular(
     shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
@@ -107,7 +108,10 @@ over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
     centre_list=[(0.0, 0.0)],
 )
 
-dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
+dataset = dataset.apply_over_sampling(
+    over_sample_size_lp=over_sample_size,
+    over_sample_size_pixelization=1,
+)
 
 
 """
@@ -129,18 +133,45 @@ inputs:
 The `image_mesh` can be ignored, it is legacy API from previous versions which may or may not be reintegrated in future
 versions.
 """
-image_mesh = None
-mesh_shape = (30, 30)
-total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
+image_mesh = al.image_mesh.Overlay(shape=(22, 22))
+
+image_plane_mesh_grid = image_mesh.image_plane_mesh_grid_from(
+    mask=dataset.mask,
+)
+
+image_plane_mesh_grid_edge_pixels = 30
+
+print(image_plane_mesh_grid.shape[0])
+
+image_plane_mesh_grid = al.image_mesh.append_with_circle_edge_points(
+    image_plane_mesh_grid=image_plane_mesh_grid,
+    centre=mask.mask_centre,
+    radius=mask_radius + mask.pixel_scale / 2.0,
+    n_points=image_plane_mesh_grid_edge_pixels,
+)
+
+total_mapper_pixels = image_plane_mesh_grid.shape[0]
+
+total_linear_light_profiles = 0
+
+mapper_indices = al.mapper_indices_from(
+    total_linear_light_profiles=total_linear_light_profiles,
+    total_mapper_pixels=total_mapper_pixels,
+)
+
+print(total_mapper_pixels)
+
+# Extract the last `image_plane_mesh_grid_edge_pixels` indices, which correspond to the circle edge points we added
+
+source_pixel_zeroed_indices = mapper_indices[-image_plane_mesh_grid_edge_pixels:]
+
+print(source_pixel_zeroed_indices)
 
 preloads = al.Preloads(
-    mapper_indices=al.mapper_indices_from(
-        total_linear_light_profiles=0,
-        total_mapper_pixels=total_mapper_pixels
-    ),
-    source_pixel_zeroed_indices=al.util.mesh.rectangular_edge_pixel_list_from(
-        mesh_shape
-    ),
+    mapper_indices=mapper_indices,
+    source_pixel_zeroed_indices=source_pixel_zeroed_indices,
+    use_voronoi_areas=False,
+    areas_factor=0.5
 )
 
 """
@@ -179,16 +210,18 @@ lens = af.Model(
 
 # Source:
 
-mesh = al.mesh.RectangularAdaptDensity(shape=mesh_shape)
-# mesh = al.mesh.RectangularAdaptImage(shape=mesh_shape, weight_power=1.0)
-# regularization = al.reg.Constant(coefficient=1.0)
+# mesh = al.mesh.RectangularAdaptDensity(shape=mesh_shape)
+regularization = al.reg.Constant(coefficient=1.0)
 
 # regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
 
-regularization = al.reg.AdaptiveBrightness()
+# regularization = al.reg.AdaptiveBrightnessSplit()
 
-pixelization = al.Pixelization(
-    mesh=mesh, regularization=regularization
+
+pixelization = af.Model(
+    al.Pixelization,
+    mesh=al.mesh.Delaunay(),
+    regularization=regularization
 )
 
 source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
@@ -202,8 +235,12 @@ galaxy_name_image_dict = {
     "('galaxies', 'source')": dataset.data
 }
 
+
 adapt_images = al.AdaptImages(
-    galaxy_name_image_dict=galaxy_name_image_dict
+    galaxy_name_image_dict=galaxy_name_image_dict,
+    galaxy_name_image_plane_mesh_grid_dict={
+        "('galaxies', 'source')": image_plane_mesh_grid
+    },
 )
 
 """
@@ -225,7 +262,53 @@ analysis = al.AnalysisImaging(
     adapt_images=adapt_images,
     preloads=preloads,
     raise_inversion_positions_likelihood_exception=False,
+   # settings_inversion=al.SettingsInversion(use_border_relocator=False)
 )
+
+"""
+The analysis and `log_likelihood_function` are internally wrapped into a `Fitness` class in **PyAutoFit**, which pairs
+the model with likelihood.
+
+This is the function on which JAX gradients are computed, so we create this class here.
+"""
+from autofit.non_linear.fitness import Fitness
+import time
+
+batch_size = 3
+
+fitness = Fitness(
+    model=model,
+    analysis=analysis,
+    fom_is_log_likelihood=True,
+    resample_figure_of_merit=-1.0e99,
+)
+
+param_vector = jnp.array(model.physical_values_from_prior_medians)
+
+
+parameters = np.zeros((batch_size, model.total_free_parameters))
+
+for i in range(batch_size):
+    parameters[i, :] = model.physical_values_from_prior_medians
+
+parameters = jnp.array(parameters)
+
+start = time.time()
+print()
+print(fitness._vmap(parameters))
+print("JAX Time To VMAP + JIT Function", time.time() - start)
+
+start = time.time()
+print()
+print(fitness._vmap(parameters))
+print("JAX Time Taken using VMAP:", time.time() - start)
+print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
+
+batched_call = jax.jit(jax.vmap(fitness.call))
+lowered = batched_call.lower(parameters)
+compiled = lowered.compile()
+memory_analysis = compiled.memory_analysis()
+print(f'Memory {(memory_analysis.output_size_in_bytes + memory_analysis.temp_size_in_bytes) / 1024**2:.3} MB')
 
 
 """
@@ -238,27 +321,48 @@ file_path = os.path.join(al.__version__)
 
 instance = model.instance_from_prior_medians()
 
+# analysis = al.AnalysisImaging(
+#     dataset=dataset,
+#     #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
+#     adapt_images=adapt_images,
+#     preloads=preloads,
+#     raise_inversion_positions_likelihood_exception=False,
+#     use_jax=False
+# )
+
 fit = analysis.fit_from(instance)
 
-inversion = fit.inversion
+print(f"Figure of Merit = {fit.figure_of_merit}")
 
-mapping_matrix = inversion.mapping_matrix
 
-import psutil, os
-
-import jax
-
-func = jax.jit(dataset.psf.convolved_mapping_matrix_from)
-
-process = psutil.Process(os.getpid())
-before = process.memory_info().rss
-
-operated_mapping_matrix = func(
-    mapping_matrix=mapping_matrix,
-    mask=mask
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_source", format="png"
+    )
 )
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.figures_2d_of_planes(plane_index=1, plane_image=True)
 
-after = process.memory_info().rss
-print(f"Memory used: {(after - before)/1e6:.2f} MB")
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_fit", format="png"
+    )
+)
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_fit()
 
-# print(operated_mapping_matrix)
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"
+    )
+)
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_of_planes(plane_index=1)
+
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_inversion_0", format="png"
+    )
+)
+fit_plotter = aplt.InversionPlotter(inversion=fit.inversion, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_of_mapper(mapper_index=0)

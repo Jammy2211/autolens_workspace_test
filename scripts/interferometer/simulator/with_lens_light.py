@@ -38,7 +38,7 @@ __Simulate__
 For simulating interferometer data of a strong lens, we recommend using a Grid2D object with a `sub_size` of 1. This
 simplifies the generation of the strong lens image in real space before it is transformed to Fourier space.
 """
-grid_2d = al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.2)
+grid = al.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.2)
 
 """
 To perform the Fourier transform we need the wavelengths of the baselines, which we'll load from the fits file below.
@@ -106,14 +106,14 @@ tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 """
 Lets look at the tracer`s image, this is the image we'll be simulating.
 """
-tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid_2d)
+tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
 tracer_plotter.figures_2d(image=True)
 
 """
 We can now pass this simulator a tracer, which creates the ray-traced image plotted above and simulates it as an
 interferometer dataset.
 """
-dataset = simulator.via_tracer_from(tracer=tracer, grid=grid_2d)
+dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
 
 """
 Lets plot the simulated interferometer dataset before we output it to fits.
@@ -154,7 +154,7 @@ dataset_plotter.subplot_dirty_images()
 dataset_plotter.figures_2d(data=True)
 
 tracer_plotter = aplt.TracerPlotter(
-    tracer=tracer, grid=grid_2d, mat_plot_2d=mat_plot_2d
+    tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d
 )
 tracer_plotter.subplot_tracer()
 tracer_plotter.subplot_galaxies_images()

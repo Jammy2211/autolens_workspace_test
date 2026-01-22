@@ -48,23 +48,25 @@ sub-size of the grid is iteratively increased (in steps of 2, 4, 8, 16, 24) unti
 This ensures that the divergent and bright central regions of the source galaxy are fully resolved when determining the
 total flux emitted within a pixel.
 """
-# grid_2d = al.Grid2DIterate.uniform(
-#     shape_native=(100, 100),
-#     pixel_scales=0.1,
-#     fractional_accuracy=0.9999,
-#     sub_steps=[2, 4, 8, 16],
-# )
-
-grid_2d = al.Grid2D.uniform(
+grid = al.Grid2D.uniform(
     shape_native=(100, 100),
     pixel_scales=0.2,
 )
+
+over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
+    grid=grid,
+    sub_size_list=[32, 8, 2],
+    radial_list=[0.3, 0.6],
+    centre_list=[(0.0, 0.0)],
+)
+
+grid = grid.apply_over_sampling(over_sample_size=over_sample_size)
 
 """
 Simulate a simple Gaussian PSF for the image.
 """
 psf = al.Kernel2D.from_gaussian(
-    shape_native=(11, 11), sigma=0.1, pixel_scales=grid_2d.pixel_scales
+    shape_native=(11, 11), sigma=0.1, pixel_scales=grid.pixel_scales
 )
 
 """
@@ -136,13 +138,13 @@ tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 """
 Lets look at the tracer`s image, this is the image we'll be simulating.
 """
-tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid_2d)
+tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
 tracer_plotter.figures_2d(image=True)
 
 """
 Pass the simulator a tracer, which creates the image which is simulated as an imaging dataset.
 """
-dataset = simulator.via_tracer_from(tracer=tracer, grid=grid_2d)
+dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
 
 """
 Plot the simulated `Imaging` dataset before outputting it to fits.
@@ -174,7 +176,7 @@ dataset_plotter.subplot_dataset()
 dataset_plotter.figures_2d(data=True)
 
 tracer_plotter = aplt.TracerPlotter(
-    tracer=tracer, grid=grid_2d.binned, mat_plot_2d=mat_plot_2d
+    tracer=tracer, grid=grid.binned, mat_plot_2d=mat_plot_2d
 )
 tracer_plotter.subplot_tracer()
 tracer_plotter.subplot_galaxies_images()
@@ -191,6 +193,20 @@ al.output_to_json(
     obj=tracer,
     file_path=path.join(dataset_path, "tracer.json"),
 )
+
+solver = al.PointSolver.for_grid(
+    grid=grid, pixel_scale_precision=0.001, magnification_threshold=0.1
+)
+
+positions = solver.solve(
+    tracer=tracer, source_plane_coordinate=source_galaxy.bulge.centre
+)
+
+al.output_to_json(
+    file_path=dataset_path / "positions.json",
+    obj=positions,
+)
+
 
 """
 The dataset can be viewed in the folder `autolens_workspace/imaging/with_lens_light/light_sersic__mass_sie__source_sersic`.

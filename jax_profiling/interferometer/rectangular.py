@@ -39,46 +39,59 @@ import autofit as af
 import autolens as al
 from autoconf import conf
 
-sub_size = 4
-psf_shape_2d = (21, 21)
+"""
+__Mask__
+
+We define the ‘real_space_mask’ which defines the grid the image the strong lens is evaluated using.
+"""
+mask_radius = 3.5
+
+real_space_mask = al.Mask2D.circular(
+    shape_native=(800, 800),
+    pixel_scales=0.02,
+    radius=mask_radius,
+)
 
 """
 __Dataset__
 
 Load and plot the galaxy dataset `operated` via .fits files, which we will fit with 
 the model.
-
-The simulated data comes at five resolution corresponding to five telescopes:
-
-vro: pixel_scale = 0.2", fastest run times.
-euclid: pixel_scale = 0.1", fast run times
-hst: pixel_scale = 0.05", normal run times, represents the type of data we do most our fitting on currently.
-hst_up: pixel_scale = 0.03", slow run times.
-ao: pixel_scale = 0.01", very slow :(
 """
-# instrument = "vro"
-# instrument = "euclid"
-instrument = "hst"
-# instrument = "hst_up"
-# instrument = "ao"
+dataset_name = "simple"
+dataset_path = path.join("dataset", "interferometer", dataset_name)
+#
+# dataset = al.Interferometer.from_fits(
+#     data_path=path.join(dataset_path, "data.fits"),
+#     noise_map_path=path.join(dataset_path, "noise_map.fits"),
+#     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
+#     real_space_mask=real_space_mask,
+#     transformer_class=al.TransformerDFT,
+# )
 
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_offset_centre": 0.05, "hst_offset_centre_and_mass": 0.05,  "hst_up": 0.03, "ao": 0.01}
-pixel_scale = pixel_scales_dict[instrument]
+total_visibilities = 100
 
-"""
-Load the dataset for this instrument / resolution.
-"""
-dataset_path = path.join("dataset", "imaging", "instruments", instrument)
+data = al.Visibilities(np.random.normal(loc=0.0, scale=1.0, size=total_visibilities) + 1j * np.random.normal(
+    loc=0.0, scale=1.0, size=total_visibilities
+))
 
-dataset = al.Imaging.from_fits(
-    data_path=path.join(dataset_path, "data.fits"),
-    psf_path=path.join(dataset_path, "psf.fits"),
-    noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    pixel_scales=pixel_scale,
-    over_sample_size_lp=sub_size,
-    over_sample_size_pixelization=sub_size,
+noise_map = al.VisibilitiesNoiseMap(np.ones(total_visibilities) + 1j * np.ones(total_visibilities))
+
+uv_wavelengths = np.random.uniform(
+    low=-300.0, high=300.0, size=(total_visibilities, 2)
 )
 
+dataset = al.Interferometer(
+    data=data,
+    noise_map=noise_map,
+    uv_wavelengths=uv_wavelengths,
+    real_space_mask=real_space_mask,
+    transformer_class=al.TransformerNUFFT,
+)
+
+dataset = dataset.apply_w_tilde()
+
+print(f"Total Visiblities: {dataset.uv_wavelengths.shape[0]}")
 
 """
 __Mask__
@@ -86,29 +99,18 @@ __Mask__
 The model-fit requires a 2D mask defining the regions of the image we fit the model to the data, which we define
 and use to set up the `Imaging` object that the model fits.
 """
-mask_radius = 3.5
-
-mask = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
+positions = al.Grid2DIrregular(
+    al.from_json(file_path=path.join(dataset_path, "positions.json"))
 )
 
-dataset = dataset.apply_mask(mask=mask)
-
-# dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
-
-# positions = al.Grid2DIrregular(
-#     al.from_json(file_path=path.join(dataset_path, "positions.json"))
+# over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
+#     grid=dataset.grid,
+#     sub_size_list=[4, 2, 1],
+#     radial_list=[0.3, 0.6],
+#     centre_list=[(0.0, 0.0)],
 # )
-
-over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
-    grid=dataset.grid,
-    sub_size_list=[4, 2, 1],
-    radial_list=[0.3, 0.6],
-    centre_list=[(0.0, 0.0)],
-)
-
-dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
-
+#
+# dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
 
 """
 __JAX & Preloads__
@@ -158,8 +160,8 @@ The number of free parameters and therefore the dimensionality of non-linear par
 
 mass = af.Model(al.mp.Isothermal)
 
-mass.centre.centre_0 = af.UniformPrior(lower_limit=0.2, upper_limit=0.4)
-mass.centre.centre_1 = af.UniformPrior(lower_limit=-0.4, upper_limit=-0.2)
+mass.centre.centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+mass.centre.centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 mass.einstein_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.7)
 mass.ell_comps.ell_comps_0 = af.UniformPrior(
     lower_limit=0.11111111111111108, upper_limit=0.1111111111111111
@@ -180,7 +182,6 @@ lens = af.Model(
 # Source:
 
 mesh = al.mesh.RectangularAdaptDensity(shape=mesh_shape)
-# mesh = al.mesh.RectangularAdaptImage(shape=mesh_shape, weight_power=1.0)
 # regularization = al.reg.Constant(coefficient=1.0)
 
 # regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
@@ -197,10 +198,17 @@ source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
+
+
+bulge = al.lp.Sersic()
+
+image = bulge.image_2d_from(grid=dataset.grid)
+
 galaxy_name_image_dict = {
-    "('galaxies', 'lens')": dataset.data,
-    "('galaxies', 'source')": dataset.data
+    "('galaxies', 'lens')": image,
+    "('galaxies', 'source')": image
 }
+
 
 adapt_images = al.AdaptImages(
     galaxy_name_image_dict=galaxy_name_image_dict
@@ -219,13 +227,53 @@ can compute its gradient.
 """
 import jax.numpy as jnp
 
-analysis = al.AnalysisImaging(
+analysis = al.AnalysisInterferometer(
     dataset=dataset,
     #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
     adapt_images=adapt_images,
     preloads=preloads,
     raise_inversion_positions_likelihood_exception=False,
 )
+
+"""
+The analysis and `log_likelihood_function` are internally wrapped into a `Fitness` class in **PyAutoFit**, which pairs
+the model with likelihood.
+
+This is the function on which JAX gradients are computed, so we create this class here.
+"""
+from autofit.non_linear.fitness import Fitness
+import time
+
+batch_size = 1
+
+fitness = Fitness(
+    model=model,
+    analysis=analysis,
+    fom_is_log_likelihood=True,
+    resample_figure_of_merit=-1.0e99,
+)
+
+param_vector = jnp.array(model.physical_values_from_prior_medians)
+
+parameters = np.zeros((batch_size, model.total_free_parameters))
+
+for i in range(batch_size):
+    parameters[i, :] = model.physical_values_from_prior_medians
+
+parameters = jnp.array(parameters)
+
+start = time.time()
+print()
+print(fitness._vmap(parameters))
+print("JAX Time To VMAP + JIT Function", time.time() - start)
+
+start = time.time()
+print()
+print(fitness._vmap(parameters))
+print("JAX Time Taken using VMAP:", time.time() - start)
+print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
+
+analysis.print_vram_use(model=model, batch_size=batch_size)
 
 
 """
@@ -240,25 +288,21 @@ instance = model.instance_from_prior_medians()
 
 fit = analysis.fit_from(instance)
 
-inversion = fit.inversion
+print(f"Figure of Merit = {fit.figure_of_merit}")
 
-mapping_matrix = inversion.mapping_matrix
-
-import psutil, os
-
-import jax
-
-func = jax.jit(dataset.psf.convolved_mapping_matrix_from)
-
-process = psutil.Process(os.getpid())
-before = process.memory_info().rss
-
-operated_mapping_matrix = func(
-    mapping_matrix=mapping_matrix,
-    mask=mask
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"interferometer_subplot_fit", format="png"
+    )
 )
+fit_plotter = aplt.FitInterferometerPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_fit()
 
-after = process.memory_info().rss
-print(f"Memory used: {(after - before)/1e6:.2f} MB")
 
-# print(operated_mapping_matrix)
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"interferometer_subplot_inversion_0", format="png"
+    )
+)
+fit_plotter = aplt.InversionPlotter(inversion=fit.inversion, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_of_mapper(mapper_index=0)

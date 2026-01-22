@@ -159,5 +159,5 @@ plotter = aplt.NestPlotter(samples=result.samples)
 plotter.corner_cornerpy()
 
 """
-Checkout `autolens_workspace/*/results` for a full description of analysing results in **PyAutoLens**.
+Checkout `autolens_workspace/*/guides/results` for a full description of analysing results.
 """

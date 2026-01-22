@@ -112,7 +112,7 @@ def fit():
     disk = af.Model(al.lp.Exponential)
     bulge.centre = disk.centre
 
-    source_lp_result = slam.source_lp.run(
+    source_lp_result = slam_pipeline.source_lp.run(
         settings_search=settings_search,
         analysis=analysis,
         lens_bulge=bulge,
@@ -145,7 +145,7 @@ def fit():
     disk = af.Model(al.lp.Exponential)
     bulge.centre = disk.centre
 
-    light_result = slam.light_lp.run(
+    light_result = slam_pipeline.light_lp.run(
         settings_search=settings_search,
         analysis=analysis,
         source_result_for_lens=source_lp_result,
@@ -176,7 +176,7 @@ def fit():
         dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
     )
 
-    mass_result = slam.mass_total.run(
+    mass_result = slam_pipeline.mass_total.run(
         settings_search=settings_search,
         analysis=analysis,
         source_result_for_lens=source_lp_result,
@@ -207,13 +207,13 @@ def fit():
         dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
     )
 
-    subhalo_result_1 = slam.subhalo.detection.run_1_no_subhalo(
+    subhalo_result_1 = slam_pipeline.subhalo.detection.run_1_no_subhalo(
         settings_search=settings_search,
         analysis=analysis,
         mass_result=mass_result,
     )
 
-    subhalo_grid_search_result_2 = slam.subhalo.detection.run_2_grid_search(
+    subhalo_grid_search_result_2 = slam_pipeline.subhalo.detection.run_2_grid_search(
         settings_search=settings_search,
         analysis=analysis,
         mass_result=mass_result,
@@ -223,7 +223,7 @@ def fit():
         number_of_steps=2,
     )
 
-    subhalo_result_3 = slam.subhalo.detection.run_3_subhalo(
+    subhalo_result_3 = slam_pipeline.subhalo.detection.run_3_subhalo(
         settings_search=settings_search,
         analysis=analysis,
         subhalo_result_1=subhalo_result_1,

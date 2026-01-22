@@ -201,7 +201,7 @@ The source galaxy whose `VoronoiBrightness` `Pixelization` fits the data.
 
 pixelization = al.Pixelization(
     image_mesh=None,
-    mesh=al.mesh.RectangularMagnification(shape=mesh_shape),
+    mesh=al.mesh.RectangularAdaptDensity(shape=mesh_shape),
     regularization=al.reg.Constant(
         coefficient=1.0,
     ),

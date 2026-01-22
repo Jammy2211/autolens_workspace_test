@@ -42,7 +42,7 @@ dataset_path = path.join("dataset", dataset_type, dataset_name)
 """
 __Simulate__
 
-Simulate the image using a `Grid2D` with the adaptive over sampling scheme.
+Simulate the image using a (y,x) grid with the adaptive over sampling scheme.
 """
 grid = al.Grid2DIterate.lp(
     shape_native=(150, 150),

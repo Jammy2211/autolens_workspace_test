@@ -39,6 +39,7 @@ import autofit as af
 import autolens as al
 from autoconf import conf
 
+
 sub_size = 4
 psf_shape_2d = (21, 21)
 
@@ -57,12 +58,12 @@ hst_up: pixel_scale = 0.03", slow run times.
 ao: pixel_scale = 0.01", very slow :(
 """
 # instrument = "vro"
-# instrument = "euclid"
-instrument = "hst"
+instrument = "euclid"
+# instrument = "hst"
 # instrument = "hst_up"
 # instrument = "ao"
 
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_offset_centre": 0.05, "hst_offset_centre_and_mass": 0.05,  "hst_up": 0.03, "ao": 0.01}
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
 
 """
@@ -86,15 +87,13 @@ __Mask__
 The model-fit requires a 2D mask defining the regions of the image we fit the model to the data, which we define
 and use to set up the `Imaging` object that the model fits.
 """
-mask_radius = 3.5
+mask_radius = 3.0
 
 mask = al.Mask2D.circular(
     shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
 )
 
 dataset = dataset.apply_mask(mask=mask)
-
-# dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
 
 # positions = al.Grid2DIrregular(
 #     al.from_json(file_path=path.join(dataset_path, "positions.json"))
@@ -130,12 +129,12 @@ The `image_mesh` can be ignored, it is legacy API from previous versions which m
 versions.
 """
 image_mesh = None
-mesh_shape = (30, 30)
+mesh_shape = (20, 20)
 total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
 
 preloads = al.Preloads(
     mapper_indices=al.mapper_indices_from(
-        total_linear_light_profiles=0,
+        total_linear_light_profiles=40,
         total_mapper_pixels=total_mapper_pixels
     ),
     source_pixel_zeroed_indices=al.util.mesh.rectangular_edge_pixel_list_from(
@@ -154,12 +153,25 @@ example we fit a model where:
 
 The number of free parameters and therefore the dimensionality of non-linear parameter space is N=11.
 """
-# # Lens:
+# Lens:
+
+bulge = al.model_util.mge_model_from(
+    mask_radius=mask_radius,
+    total_gaussians=20,
+    gaussian_per_basis=2,
+    centre_prior_is_uniform=True
+)
 
 mass = af.Model(al.mp.Isothermal)
 
-mass.centre.centre_0 = af.UniformPrior(lower_limit=0.2, upper_limit=0.4)
-mass.centre.centre_1 = af.UniformPrior(lower_limit=-0.4, upper_limit=-0.2)
+shear = af.Model(al.mp.ExternalShear)
+
+lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass, shear=shear)
+
+mass = af.Model(al.mp.Isothermal)
+
+mass.centre.centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+mass.centre.centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
 mass.einstein_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.7)
 mass.ell_comps.ell_comps_0 = af.UniformPrior(
     lower_limit=0.11111111111111108, upper_limit=0.1111111111111111
@@ -167,12 +179,13 @@ mass.ell_comps.ell_comps_0 = af.UniformPrior(
 mass.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=-0.01, upper_limit=0.01)
 
 shear = af.Model(al.mp.ExternalShear)
-shear.gamma_1 = af.UniformPrior(lower_limit=-0.001, upper_limit=0.001)
-shear.gamma_2 = af.UniformPrior(lower_limit=-0.001, upper_limit=0.001)
+shear.gamma_1 = af.UniformPrior(lower_limit=0.000, upper_limit=0.002)
+shear.gamma_2 = af.UniformPrior(lower_limit=0.000, upper_limit=0.002)
 
 lens = af.Model(
     al.Galaxy,
     redshift=0.5,
+    bulge=bulge,
     mass=mass,
     shear=shear,
 )
@@ -180,12 +193,11 @@ lens = af.Model(
 # Source:
 
 mesh = al.mesh.RectangularAdaptDensity(shape=mesh_shape)
-# mesh = al.mesh.RectangularAdaptImage(shape=mesh_shape, weight_power=1.0)
 # regularization = al.reg.Constant(coefficient=1.0)
 
 # regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
 
-regularization = al.reg.AdaptiveBrightness()
+regularization = al.reg.Constant()
 
 pixelization = al.Pixelization(
     mesh=mesh, regularization=regularization
@@ -196,15 +208,6 @@ source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
 # Overall Lens Model:
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
-
-galaxy_name_image_dict = {
-    "('galaxies', 'lens')": dataset.data,
-    "('galaxies', 'source')": dataset.data
-}
-
-adapt_images = al.AdaptImages(
-    galaxy_name_image_dict=galaxy_name_image_dict
-)
 
 """
 The `info` attribute shows the model in a readable format.
@@ -222,10 +225,48 @@ import jax.numpy as jnp
 analysis = al.AnalysisImaging(
     dataset=dataset,
     #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
-    adapt_images=adapt_images,
     preloads=preloads,
     raise_inversion_positions_likelihood_exception=False,
 )
+
+"""
+The analysis and `log_likelihood_function` are internally wrapped into a `Fitness` class in **PyAutoFit**, which pairs
+the model with likelihood.
+
+This is the function on which JAX gradients are computed, so we create this class here.
+"""
+from autofit.non_linear.fitness import Fitness
+import time
+
+batch_size = 10
+
+fitness = Fitness(
+    model=model,
+    analysis=analysis,
+    fom_is_log_likelihood=True,
+    resample_figure_of_merit=-1.0e99,
+)
+
+param_vector = jnp.array(model.physical_values_from_prior_medians)
+
+
+parameters = np.zeros((batch_size, model.total_free_parameters))
+
+for i in range(batch_size):
+    parameters[i, :] = model.physical_values_from_prior_medians
+
+parameters = jnp.array(parameters)
+
+start = time.time()
+print()
+print(fitness._vmap(parameters))
+print("JAX Time To VMAP + JIT Function", time.time() - start)
+
+start = time.time()
+print()
+print(fitness._vmap(parameters))
+print("JAX Time Taken using VMAP:", time.time() - start)
+print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
 
 """
@@ -239,26 +280,28 @@ file_path = os.path.join(al.__version__)
 instance = model.instance_from_prior_medians()
 
 fit = analysis.fit_from(instance)
+print(f"Figure of Merit = {fit.figure_of_merit}")
 
-inversion = fit.inversion
-
-mapping_matrix = inversion.mapping_matrix
-
-import psutil, os
-
-import jax
-
-func = jax.jit(dataset.psf.convolved_mapping_matrix_from)
-
-process = psutil.Process(os.getpid())
-before = process.memory_info().rss
-
-operated_mapping_matrix = func(
-    mapping_matrix=mapping_matrix,
-    mask=mask
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_fit", format="png"
+    )
 )
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_fit()
 
-after = process.memory_info().rss
-print(f"Memory used: {(after - before)/1e6:.2f} MB")
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"
+    )
+)
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_of_planes(plane_index=1)
 
-# print(operated_mapping_matrix)
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_inversion_0", format="png"
+    )
+)
+fit_plotter = aplt.InversionPlotter(inversion=fit.inversion, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_of_mapper(mapper_index=0)

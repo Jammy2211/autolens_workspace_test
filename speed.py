@@ -3,7 +3,7 @@ Modeling Features: Multi Gaussian Expansion
 ===========================================
 
 A multi Gaussian expansion (MGE) decomposes the lens light into ~15-100 Gaussians, where the `intensity` of every
-Gaussian is solved for via a linear algebra using a process called an "inversion" (see the `light_parametric_linear.py`
+Gaussian is solved for via a linear algebra using a process called an "inversion" (see the `linear_light_profiles.py`
 feature for a full description of this).
 
 This script fits a lens light model which uses an MGE consisting of 60 Gaussians. It is fitted to simulated data
@@ -521,7 +521,7 @@ print(result.info)
 """
 We plot the maximum likelihood fit, tracer images and posteriors inferred via Nautilus.
 
-Checkout `autolens_workspace/*/results` for a full description of analysing results in **PyAutoLens**.
+Checkout `autolens_workspace/*/guides/results` for a full description of analysing results.
 
 In particular, checkout the results example `linear.py` which details how to extract all information about linear
 light profiles from a fit.

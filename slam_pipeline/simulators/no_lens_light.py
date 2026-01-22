@@ -47,7 +47,7 @@ sub-size of the grid is iteratively increased (in steps of 2, 4, 8, 16, 24) unti
 This ensures that the divergent and bright central regions of the source galaxy are fully resolved when determining the
 total flux emitted within a pixel.
 """
-grid_2d = al.Grid2DIterate.lp(
+grid = al.Grid2DIterate.lp(
     shape_native=(100, 100),
     pixel_scales=0.1,
     fractional_accuracy=0.9999,
@@ -58,7 +58,7 @@ grid_2d = al.Grid2DIterate.lp(
 Simulate a simple Gaussian PSF for the image.
 """
 psf = al.Kernel2D.from_gaussian(
-    shape_native=(11, 11), sigma=0.1, pixel_scales=grid_2d.pixel_scales
+    shape_native=(11, 11), sigma=0.1, pixel_scales=grid.pixel_scales
 )
 
 """
@@ -114,13 +114,13 @@ tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 """
 Lets look at the tracer`s image, this is the image we'll be simulating.
 """
-tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid_2d)
+tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
 tracer_plotter.figures_2d(image=True)
 
 """
 Pass the simulator a tracer, which creates the image which is simulated as an imaging dataset.
 """
-dataset = simulator.via_tracer_from(tracer=tracer, grid=grid_2d)
+dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
 
 """
 Plot the simulated `Imaging` dataset before outputting it to fits.
@@ -152,7 +152,7 @@ dataset_plotter.subplot_dataset()
 dataset_plotter.figures_2d(data=True)
 
 tracer_plotter = aplt.TracerPlotter(
-    tracer=tracer, grid=grid_2d.binned, mat_plot_2d=mat_plot_2d
+    tracer=tracer, grid=grid.binned, mat_plot_2d=mat_plot_2d
 )
 tracer_plotter.subplot_tracer()
 tracer_plotter.subplot_galaxies_images()

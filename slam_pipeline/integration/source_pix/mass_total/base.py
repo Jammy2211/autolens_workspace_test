@@ -164,7 +164,7 @@ def fit():
     - `source_pixel_zeroed_indices`: The indices of source pixels on its edge, which when the source is reconstructed 
       are forced to values of zero, a technique tests have shown are required to give accruate lens models.
     """
-    image_mesh = al.image_mesh.Overlay(shape=(26, 26))
+    image_mesh = al.image_mesh.Overlay(shape=(10, 10))
 
     image_plane_mesh_grid = image_mesh.image_plane_mesh_grid_from(
         mask=dataset.mask,
@@ -235,7 +235,7 @@ def fit():
         dataset=dataset,
         adapt_images=adapt_images,
         positions_likelihood_list=[source_lp_result.positions_likelihood_from(
-            factor=2.0, minimum_threshold=0.3,
+            factor=200.0, minimum_threshold=0.3,
         )],
         preloads=preloads,
         use_jax=True,

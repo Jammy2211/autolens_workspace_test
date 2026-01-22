@@ -10,7 +10,7 @@ This script fits an `Imaging` dataset of a 'galaxy-scale' strong lens with a mod
 
 An `Inversion` reconstructs the source's light using a pixel-grid, which is regularized using a prior that forces
 this reconstruction to be smooth. This uses `Pixelization`  objects and in this example we will
-use their simplest forms, a `RectangularMagnification` `Pixelization` and `Constant` `Regularization`.scheme.
+use their simplest forms, a `RectangularAdaptDensity` `Pixelization` and `Constant` `Regularization`.scheme.
 
 Inversions are covered in detail in chapter 4 of the **HowToLens** lectures.
 """
@@ -168,5 +168,5 @@ plotter = aplt.NestPlotter(samples=result.samples)
 plotter.corner_cornerpy()
 
 """
-Checkout `autolens_workspace/*/results` for a full description of analysing results in **PyAutoLens**.
+Checkout `autolens_workspace/*/guides/results` for a full description of analysing results.
 """

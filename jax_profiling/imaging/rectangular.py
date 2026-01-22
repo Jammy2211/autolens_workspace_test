@@ -39,6 +39,7 @@ import autofit as af
 import autolens as al
 from autoconf import conf
 
+
 sub_size = 4
 psf_shape_2d = (21, 21)
 
@@ -107,7 +108,10 @@ over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
     centre_list=[(0.0, 0.0)],
 )
 
-dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
+dataset = dataset.apply_over_sampling(
+    over_sample_size_lp=over_sample_size,
+    over_sample_size_pixelization=4,
+)
 
 
 """
@@ -179,13 +183,15 @@ lens = af.Model(
 
 # Source:
 
-mesh = al.mesh.RectangularAdaptDensity(shape=mesh_shape)
-# mesh = al.mesh.RectangularAdaptImage(shape=mesh_shape, weight_power=1.0)
+# mesh = al.mesh.RectangularAdaptDensity(shape=mesh_shape)
+mesh = al.mesh.RectangularAdaptImage(shape=mesh_shape, weight_power=1.0)
 # regularization = al.reg.Constant(coefficient=1.0)
 
 # regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
 
 regularization = al.reg.AdaptiveBrightness()
+
+# regularization = al.reg.MaternKernel()
 
 pixelization = al.Pixelization(
     mesh=mesh, regularization=regularization
@@ -225,7 +231,52 @@ analysis = al.AnalysisImaging(
     adapt_images=adapt_images,
     preloads=preloads,
     raise_inversion_positions_likelihood_exception=False,
+#    settings_inversion=al.SettingsInversion(use_border_relocator=False)
 )
+
+"""
+The analysis and `log_likelihood_function` are internally wrapped into a `Fitness` class in **PyAutoFit**, which pairs
+the model with likelihood.
+
+This is the function on which JAX gradients are computed, so we create this class here.
+"""
+from autofit.non_linear.fitness import Fitness
+import time
+
+batch_size = 1
+
+fitness = Fitness(
+    model=model,
+    analysis=analysis,
+    fom_is_log_likelihood=True,
+    resample_figure_of_merit=-1.0e99,
+)
+
+param_vector = jnp.array(model.physical_values_from_prior_medians)
+
+parameters = np.zeros((batch_size, model.total_free_parameters))
+
+for i in range(batch_size):
+    parameters[i, :] = model.physical_values_from_prior_medians
+
+parameters = jnp.array(parameters)
+
+start = time.time()
+print()
+print(fitness._vmap(parameters))
+print("JAX Time To VMAP + JIT Function", time.time() - start)
+
+start = time.time()
+print()
+print(fitness._vmap(parameters))
+print("JAX Time Taken using VMAP:", time.time() - start)
+print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
+
+batched_call = jax.jit(jax.vmap(fitness.call))
+lowered = batched_call.lower(parameters)
+compiled = lowered.compile()
+memory_analysis = compiled.memory_analysis()
+print(f'Memory {(memory_analysis.output_size_in_bytes + memory_analysis.temp_size_in_bytes) / 1024**2:.3} MB')
 
 
 """
@@ -240,25 +291,37 @@ instance = model.instance_from_prior_medians()
 
 fit = analysis.fit_from(instance)
 
-inversion = fit.inversion
+print(f"Figure of Merit = {fit.figure_of_merit}")
 
-mapping_matrix = inversion.mapping_matrix
 
-import psutil, os
-
-import jax
-
-func = jax.jit(dataset.psf.convolved_mapping_matrix_from)
-
-process = psutil.Process(os.getpid())
-before = process.memory_info().rss
-
-operated_mapping_matrix = func(
-    mapping_matrix=mapping_matrix,
-    mask=mask
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_source", format="png"
+    )
 )
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.figures_2d_of_planes(plane_index=1, plane_image=True)
 
-after = process.memory_info().rss
-print(f"Memory used: {(after - before)/1e6:.2f} MB")
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_fit", format="png"
+    )
+)
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_fit()
 
-# print(operated_mapping_matrix)
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"
+    )
+)
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_of_planes(plane_index=1)
+
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_inversion_0", format="png"
+    )
+)
+fit_plotter = aplt.InversionPlotter(inversion=fit.inversion, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_of_mapper(mapper_index=0)

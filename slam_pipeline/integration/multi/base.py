@@ -412,7 +412,7 @@ def fit():
     The SLaM pipeline above outputs the model-fitting results to the `output` folder of the workspace, which includes
     the usual model results, visualization, and .json files.
     
-    As described in the `autolens_workspace/*/results` package there is an API for loading these results from hard disk
+    As described in the `autolens_workspace/*/guides/results` package there is an API for loading these results from hard disk
     to Python, for example so they can be manipulated in a Juypter notebook.
     
     However, it is also often useful to output the results to the dataset folder of each lens in standard formats, for
