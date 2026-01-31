@@ -187,7 +187,7 @@ The number of free parameters and therefore the dimensionality of non-linear par
 """
 # # Lens:
 
-mass = af.Model(al.mp.Isothermal)
+mass = af.Model(al.mp.PowerLaw)
 
 mass.centre.centre_0 = af.UniformPrior(lower_limit=0.2, upper_limit=0.4)
 mass.centre.centre_1 = af.UniformPrior(lower_limit=-0.4, upper_limit=-0.2)
@@ -211,7 +211,7 @@ lens = af.Model(
 # Source:
 
 # mesh = al.mesh.RectangularAdaptDensity(shape=mesh_shape)
-regularization = al.reg.Constant(coefficient=1.0)
+regularization = al.reg.ConstantSplit(coefficient=1.0)
 
 # regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
 
@@ -281,7 +281,10 @@ fitness = Fitness(
     analysis=analysis,
     fom_is_log_likelihood=True,
     resample_figure_of_merit=-1.0e99,
+    batch_size=batch_size
 )
+
+batch_size = fitness.batch_size
 
 param_vector = jnp.array(model.physical_values_from_prior_medians)
 

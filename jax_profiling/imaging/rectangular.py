@@ -95,12 +95,6 @@ mask = al.Mask2D.circular(
 
 dataset = dataset.apply_mask(mask=mask)
 
-# dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
-
-# positions = al.Grid2DIrregular(
-#     al.from_json(file_path=path.join(dataset_path, "positions.json"))
-# )
-
 over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
     grid=dataset.grid,
     sub_size_list=[4, 2, 1],
@@ -183,15 +177,9 @@ lens = af.Model(
 
 # Source:
 
-# mesh = al.mesh.RectangularAdaptDensity(shape=mesh_shape)
 mesh = al.mesh.RectangularAdaptImage(shape=mesh_shape, weight_power=1.0)
-# regularization = al.reg.Constant(coefficient=1.0)
-
-# regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
 
 regularization = al.reg.AdaptiveBrightness()
-
-# regularization = al.reg.MaternKernel()
 
 pixelization = al.Pixelization(
     mesh=mesh, regularization=regularization

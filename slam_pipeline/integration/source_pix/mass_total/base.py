@@ -164,132 +164,60 @@ def fit():
     - `source_pixel_zeroed_indices`: The indices of source pixels on its edge, which when the source is reconstructed 
       are forced to values of zero, a technique tests have shown are required to give accruate lens models.
     """
-    image_mesh = al.image_mesh.Overlay(shape=(10, 10))
-
-    image_plane_mesh_grid = image_mesh.image_plane_mesh_grid_from(
-        mask=dataset.mask,
-    )
-
-    image_plane_mesh_grid_edge_pixels = 30
-
-    image_plane_mesh_grid = al.image_mesh.append_with_circle_edge_points(
-        image_plane_mesh_grid=image_plane_mesh_grid,
-        centre=mask.mask_centre,
-        radius=mask_radius + mask.pixel_scale / 2.0,
-        n_points=image_plane_mesh_grid_edge_pixels,
-    )
-
-    total_mapper_pixels = image_plane_mesh_grid.shape[0]
+    mesh_shape = (20, 20)
+    total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
 
     total_linear_light_profiles = 60
 
-    mapper_indices = al.mapper_indices_from(
-        total_linear_light_profiles=total_linear_light_profiles,
-        total_mapper_pixels=total_mapper_pixels,
-    )
-
-    # Extract the last `image_plane_mesh_grid_edge_pixels` indices, which correspond to the circle edge points we added
-
-    source_pixel_zeroed_indices = mapper_indices[
-                                  -image_plane_mesh_grid_edge_pixels:
-                                  ]
-
     preloads = al.Preloads(
-        mapper_indices=mapper_indices,
-        source_pixel_zeroed_indices=source_pixel_zeroed_indices
+        mapper_indices=al.mapper_indices_from(
+            total_linear_light_profiles=total_linear_light_profiles,
+            total_mapper_pixels=total_mapper_pixels,
+        ),
+        source_pixel_zeroed_indices=al.util.mesh.rectangular_edge_pixel_list_from(
+            total_linear_light_profiles=total_linear_light_profiles,
+            shape_native=mesh_shape,
+        ),
     )
 
     """
-    __SOURCE PIX PIPELINE (with lens light)__
+    __SOURCE PIX PIPELINE__
 
-    The SOURCE PIX PIPELINE (with lens light) uses four searches to initialize a robust model for the `Inversion` 
-    that reconstructs the source galaxy's light. It begins by fitting a `VoronoiMagnification` pixelization with `Constant` 
-    regularization, to set up the model and hyper images, and then:
-
-     - Uses a `VoronoiBrightnessImage` pixelization.
-     - Uses an `AdaptiveBrightness` regularization.
-     - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
-     SOURCE PIX PIPELINE.
+    The SOURCE PIX PIPELINE is identical to the `slam_start_here.ipynb` example.
     """
     galaxy_image_name_dict = al.galaxy_name_image_dict_via_result_from(
         result=source_lp_result
     )
 
-    adapt_images = al.AdaptImages(
-        galaxy_name_image_dict=galaxy_image_name_dict,
-        galaxy_name_image_plane_mesh_grid_dict={
-            "('galaxies', 'source')": image_plane_mesh_grid
-        },
-    )
-
-    signal_to_noise_threshold = 3.0
-    over_sample_size_pixelization = np.where(galaxy_image_name_dict["('galaxies', 'source')"] > signal_to_noise_threshold, 4, 2)
-    over_sample_size_pixelization = al.Array2D(values=over_sample_size_pixelization, mask=mask)
-
-    dataset = dataset.apply_over_sampling(
-        over_sample_size_lp=over_sample_size,
-        over_sample_size_pixelization=over_sample_size_pixelization
-    )
+    adapt_images = al.AdaptImages(galaxy_name_image_dict=galaxy_image_name_dict)
 
     analysis = al.AnalysisImaging(
         dataset=dataset,
         adapt_images=adapt_images,
-        positions_likelihood_list=[source_lp_result.positions_likelihood_from(
-            factor=200.0, minimum_threshold=0.3,
-        )],
         preloads=preloads,
-        use_jax=True,
+        positions_likelihood_list=[
+            source_lp_result.positions_likelihood_from(factor=3.0, minimum_threshold=0.2)
+        ],
     )
 
     source_pix_result_1 = slam_pipeline.source_pix.run_1(
         settings_search=settings_search,
         analysis=analysis,
         source_lp_result=source_lp_result,
-        mesh_init=al.mesh.Delaunay(),
-        regularization_init=af.Model(al.reg.AdaptiveBrightnessSplit),
+        mesh_init=af.Model(al.mesh.RectangularAdaptDensity, shape=mesh_shape),
+        regularization_init=al.reg.AdaptiveBrightness,
     )
 
+    """
+    __SOURCE PIX PIPELINE 2__
 
-    galaxy_image_name_dict = al.galaxy_name_image_dict_via_result_from(result=source_pix_result_1)
-
-    image_mesh = al.image_mesh.Hilbert(pixels=1000, weight_power=1.0, weight_floor=0.0001)
-
-    image_plane_mesh_grid = image_mesh.image_plane_mesh_grid_from(
-        mask=dataset.mask, adapt_data=galaxy_image_name_dict["('galaxies', 'source')"]
+    The SOURCE PIX PIPELINE 2 is identical to the `slam_start_here.ipynb` example.
+    """
+    galaxy_image_name_dict = al.galaxy_name_image_dict_via_result_from(
+        result=source_pix_result_1
     )
 
-    image_plane_mesh_grid_edge_pixels = 30
-
-    image_plane_mesh_grid = al.image_mesh.append_with_circle_edge_points(
-        image_plane_mesh_grid=image_plane_mesh_grid,
-        centre=mask.mask_centre,
-        radius=mask_radius + mask.pixel_scale / 2.0,
-        n_points=image_plane_mesh_grid_edge_pixels,
-    )
-
-    total_mapper_pixels = image_plane_mesh_grid.shape[0]
-
-    mapper_indices = al.mapper_indices_from(
-        total_linear_light_profiles=total_linear_light_profiles,
-        total_mapper_pixels=total_mapper_pixels,
-    )
-
-    source_pixel_zeroed_indices = mapper_indices[
-                                  -image_plane_mesh_grid_edge_pixels:
-                                  ]
-
-    preloads = al.Preloads(
-        mapper_indices=mapper_indices,
-        source_pixel_zeroed_indices=source_pixel_zeroed_indices
-    )
-
-    adapt_images = al.AdaptImages(
-        galaxy_name_image_dict=galaxy_image_name_dict,
-        galaxy_name_image_plane_mesh_grid_dict={
-            "('galaxies', 'source')": image_plane_mesh_grid
-        },
-    )
-
+    adapt_images = al.AdaptImages(galaxy_name_image_dict=galaxy_image_name_dict)
 
     analysis = al.AnalysisImaging(
         dataset=dataset,
@@ -303,8 +231,8 @@ def fit():
         analysis=analysis,
         source_lp_result=source_lp_result,
         source_pix_result_1=source_pix_result_1,
-        mesh=al.mesh.Delaunay(),
-        regularization=af.Model(al.reg.AdaptiveBrightnessSplit),
+        mesh=af.Model(al.mesh.RectangularAdaptImage, shape=mesh_shape),
+        regularization=al.reg.AdaptiveBrightness,
     )
 
     """

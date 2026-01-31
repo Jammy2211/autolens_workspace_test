@@ -124,7 +124,8 @@ multipole_1.einstein_radius = mass.einstein_radius
 multipole_1.slope = mass.slope
 
 lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge,
-          #      mass=mass, mass_0=mass_0,
+                mass=mass,
+                #      mass_0=mass_0,
                 nfw=nfw,
                 multipole_1=multipole_1,
                 shear=shear)

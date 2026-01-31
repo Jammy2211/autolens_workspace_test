@@ -95,7 +95,7 @@ grid = al.Grid2D.uniform(
 )
 
 solver = al.PointSolver.for_grid(
-    grid=grid, pixel_scale_precision=0.001, magnification_threshold=0.1
+    grid=grid, pixel_scale_precision=0.001, magnification_threshold=0.1, xp=jnp
 )
 
 """
@@ -155,7 +155,16 @@ source = af.Model(al.Galaxy, redshift=1.0, point_0=point_0)
 
 # Overall Lens Model:
 
-model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
+# Cosmology
+
+cosmology = af.Model(al.cosmo.FlatLambdaCDM)
+
+cosmology.H0 = af.UniformPrior(lower_limit=0.0, upper_limit=150.0)
+
+model = af.Collection(
+    galaxies=af.Collection(lens=lens, source=source),
+    cosmology=cosmology
+)
 
 """
 The `info` attribute shows the model in a readable format.
@@ -184,7 +193,7 @@ This is the function on which JAX gradients are computed, so we create this clas
 from autofit.non_linear.fitness import Fitness
 import time
 
-batch_size = 50
+batch_size = 1
 
 fitness = Fitness(
     model=model,
