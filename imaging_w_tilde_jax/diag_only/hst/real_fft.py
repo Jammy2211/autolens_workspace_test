@@ -5,21 +5,12 @@ import autolens as al
 
 jax.config.update("jax_enable_x64", True)
 
-# ============================================================
-# Utilities
-# ============================================================
-
-
 def build_inv_noise_var(noise):
     inv = np.zeros_like(noise, dtype=np.float64)
     good = np.isfinite(noise) & (noise > 0)
     inv[good] = 1.0 / noise[good]**2
     return inv
 
-
-# ============================================================
-# FFT PSF curvature kernel
-# ============================================================
 
 def precompute_Khat_rfft(kernel_2d: jnp.ndarray, fft_shape):
     """
@@ -52,12 +43,6 @@ def rfft_convolve2d_same(images: jnp.ndarray, Khat_r: jnp.ndarray, Ky: int, Kx: 
     return out_pad[:, cy:cy + Hy, cx:cx + Hx]
 
 
-
-# ============================================================
-# Curvature matrix builder (UNCHANGED)
-# ============================================================
-
-from jax.ops import segment_sum
 
 from jax.ops import segment_sum
 from jax import lax
