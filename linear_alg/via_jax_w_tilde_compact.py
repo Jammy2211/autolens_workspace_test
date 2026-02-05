@@ -12,12 +12,12 @@ import autolens as al
 # instrument = "vro"
 # instrument = "euclid"
 instrument = "hst"
-# instrument = "hst_up"
+# instrument = "jwst"
 # instrument = "ao"
 
 folder = Path("linear_alg") / "arrs" / instrument
 
-w_matrix = np.load(f"{folder}/w_matrix.npy")
+psf_precision_operator = np.load(f"{folder}/psf_precision_operator.npy")
 w_indexes = np.load(f"{folder}/w_indexes.npy")
 w_lengths = np.load(f"{folder}/w_lengths.npy")
 curvature_preload = np.load(f"{folder}/curvature_preload.npy")
@@ -28,7 +28,7 @@ data_weights = np.load(f"{folder}/data_weights.npy")
 pix_lengths = np.load(f"{folder}/pix_lengths.npy")
 pixels = np.load(f"{folder}/pixels.npy")
 
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "jwst": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
 
 dataset_path = Path("dataset") / "imaging" / "instruments" / instrument
@@ -78,7 +78,7 @@ def make_curvature_fn(
     lengths = tuple(int(l) for l in curvature_lengths)
     n_data = len(lengths)
 
-    def curvature_matrix_via_w_tilde_curvature_preload_imaging_from(
+    def curvature_matrix_diag_via_sparse_linalg_from(
         curvature_preload: jnp.ndarray,
         data_to_pix_unique: jnp.ndarray,
         data_weights: jnp.ndarray,
@@ -130,16 +130,16 @@ def make_curvature_fn(
         return cm
 
     return jax.jit(
-        curvature_matrix_via_w_tilde_curvature_preload_imaging_from, static_argnums=(4,)
+        curvature_matrix_diag_via_sparse_linalg_from, static_argnums=(4,)
     )
 
 
 # jitted_curvature_matrix_via_w_tilde_from = jax.jit(
-#     curvature_matrix_via_w_tilde_curvature_preload_imaging_from,
+#     curvature_matrix_diag_via_sparse_linalg_from,
 #     static_argnums=(1, 2, 6),
 # )
 
-# jitted_curvature_matrix_via_w_tilde_from = curvature_matrix_via_w_tilde_curvature_preload_imaging_from
+# jitted_curvature_matrix_via_w_tilde_from = curvature_matrix_diag_via_sparse_linalg_from
 
 """
 Precompute functions so compute tile not printed.
@@ -156,7 +156,7 @@ start = time.time()
 
 print("Begun JAX jit compile curvature_matrix w_tilde...")
 
-curv_fn = make_curvature_fn(w_indexes, w_lengths)
+curvature_matrix_diag_from = make_curvature_fn(w_indexes, w_lengths)
 
 print(f"Time JAX jit compile curvature_matrix w_tilde: {time.time() - start}")
 
@@ -164,7 +164,7 @@ start = time.time()
 
 print("Calling function...")
 
-curvature_matrix_w_tilde = curv_fn(
+curvature_matrix_w_tilde = curvature_matrix_diag_from(
     curvature_preload=curvature_preload,
     data_to_pix_unique=data_to_pix_unique,
     data_weights=data_weights,

@@ -124,7 +124,7 @@ dataset = dataset.apply_mask(mask=mask)
 dataset = dataset.apply_over_sampling(over_sample_size_pixelization=4)
 
 image_mesh = None
-mesh_shape = (30, 30)
+mesh_shape = (32, 32)
 total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
 
 preloads = al.Preloads(

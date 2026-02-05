@@ -1,11 +1,10 @@
 """
-Simulator: HST Up
-=================
+Simulator: HST
+==============
 
 This script simulates `Imaging` of a strong lens where:
 
- - The resolution, PSF and S/N are representative of Hubble Space Telescope `Imaging` that has been multidrizzled to
-   higher resolution.
+ - The resolution, PSF and S/N are representative of Hubble Space Telescope imaging.
 """
 
 # %matplotlib inline
@@ -26,11 +25,12 @@ The `dataset_type` describes the type of data being simulated and `dataset_name`
  - The psf will be output to `/autolens_workspace/dataset/dataset_type/dataset_label/dataset_name/psf.fits`.
 """
 dataset_type = "instruments"
-dataset_instrument = "jwst"
+dataset_instrument = "hst"
+# dataset_instrument = "jwst"
 
 """
 The path where the dataset will be output, which in this case is:
-`/autolens_workspace/dataset/imaging/instruments/hst_up/mass_sie__source_sersic`
+`/autolens_workspace/dataset/imaging/instruments/hst/mass_sie__source_sersic`
 """
 dataset_path = path.join("dataset", "imaging", dataset_type, dataset_instrument)
 
@@ -43,9 +43,7 @@ sub-size of the grid is iteratively increased (in steps of 2, 4, 8, 16, 24) unti
 This ensures that the divergent and bright central regions of the source galaxy are fully resolved when determining the
 total flux emitted within a pixel.
 """
-grid = al.Grid2DIterate.lp(
-    shape_native=(260, 260), pixel_scales=0.03, fractional_accuracy=0.9999
-)
+grid = al.Grid2D.uniform(shape_native=(180, 180), pixel_scales=0.05)
 
 """
 Simulate a simple Gaussian PSF for the image.
@@ -98,7 +96,7 @@ source_galaxy = al.Galaxy(
         ell_comps=al.convert.ell_comps_from(axis_ratio=0.8, angle=60.0),
         intensity=0.3,
         effective_radius=1.0,
-        sersic_index=2.5,
+        sersic_index=1.0,
     ),
 )
 
@@ -139,7 +137,7 @@ Output a subplot of the simulated dataset, the image and a subplot of the `Trace
 as .png files.
 """
 mat_plot_2d = aplt.MatPlot2D(
-    title=aplt.Title(label="Hubble Space Telescope Upscaled Image"),
+    title=aplt.Title(label="Hubble Space Telescope Image"),
     output=aplt.Output(path=dataset_path, format="png"),
 )
 
@@ -161,6 +159,28 @@ al.output_to_json(
     file_path=path.join(dataset_path, "tracer.json"),
 )
 
+
 """
-The dataset can be viewed in the folder `autolens_workspace/imaging/instruments/hst_up`.
+Produce the no lens light data.
+"""
+lens_image = lens_galaxy.padded_image_2d_from(
+    grid=grid, psf_shape_2d=psf.shape_native,
+)
+
+lens_image = psf.convolved_image_from(image=lens_image, blurring_image=None)
+
+lens_image = lens_image.trimmed_after_convolution_from(kernel_shape=psf.shape_native)
+
+snr_no_lens = (dataset.data - lens_image) / dataset.noise_map
+
+plotter = aplt.Array2DPlotter(
+    array=snr_no_lens, mat_plot_2d=mat_plot_2d
+)
+plotter.set_filename("snr_no_lens")
+plotter.figure_2d()
+
+snr_no_lens.output_to_fits(file_path=path.join(dataset_path, "snr_no_lens.fits"), overwrite=True)
+
+"""
+The dataset can be viewed in the folder `autolens_workspace/imaging/instruments/hst`.
 """

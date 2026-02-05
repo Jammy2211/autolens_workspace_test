@@ -98,7 +98,7 @@ Call the dataset cached properties once to get all numba functions initialized.
 masked_dataset.convolver
 del masked_dataset.__dict__["convolver"]
 
-masked_dataset.w_tilde
+masked_dataset.sparse_operator
 del masked_dataset.__dict__["w_tilde"]
 
 """
@@ -118,8 +118,8 @@ caching_dict["convolver"] = time_calc
 
 start = time.time()
 for i in range(repeats):
-    masked_dataset.w_tilde
-    print(masked_dataset.w_tilde.curvature_preload.shape)
+    masked_dataset.sparse_operator
+    print(masked_dataset.sparse_operator.curvature_preload.shape)
     del masked_dataset.__dict__["w_tilde"]
 time_calc = (time.time() - start) / repeats
 

@@ -29,10 +29,10 @@ file_path = os.path.join(profiling_path, "times", al.__version__)
 """
 Whether w_tilde is used dictates the output folder.
 """
-# use_w_tilde = True
-use_w_tilde = False
+# use_sparse_linalg = True
+use_sparse_linalg = False
 
-if use_w_tilde:
+if use_sparse_linalg:
     file_path = os.path.join(file_path, "w_tilde")
 else:
     file_path = os.path.join(file_path, "mapping")
@@ -126,10 +126,10 @@ ao: pixel_scale = 0.01", very slow :(
 # instrument = "vro"
 # instrument = "euclid"
 instrument = "hst"
-# instrument = "hst_up"
+# instrument = "jwst"
 # instrument = "ao"
 
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "jwst": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
 
 """
@@ -178,7 +178,7 @@ tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 fit = al.FitImaging(
     dataset=masked_dataset,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
+    settings_inversion=al.SettingsInversion(use_sparse_linalg=use_sparse_linalg),
 )
 print(f"Figure of Merit = {fit.figure_of_merit}")
 
@@ -192,7 +192,7 @@ for i in range(repeats):
     fit = al.FitImaging(
         dataset=masked_dataset,
         tracer=tracer,
-        settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
+        settings_inversion=al.SettingsInversion(use_sparse_linalg=use_sparse_linalg),
     )
     fit.log_evidence
 fit_time = (time.time() - start) / repeats
@@ -211,7 +211,7 @@ tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time
 fit = al.FitImaging(
     dataset=masked_dataset,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
+    settings_inversion=al.SettingsInversion(use_sparse_linalg=use_sparse_linalg),
     run_time_dict=run_time_dict,
 )
 fit.figure_of_merit

@@ -3,6 +3,8 @@ import numpy as np
 import jax
 import jax.numpy as jnp
 from jax.ops import segment_sum
+from functools import partial
+
 import autolens as al
 
 jax.config.update("jax_enable_x64", True)
@@ -11,7 +13,7 @@ jax.config.update("jax_enable_x64", True)
 # Utilities
 # ============================================================
 
-def build_inv_noise_var(noise):
+def inverse_noise_variances_from(noise):
     inv = np.zeros_like(noise, dtype=np.float64)
     good = np.isfinite(noise) & (noise > 0)
     inv[good] = 1.0 / noise[good] ** 2
@@ -50,7 +52,7 @@ def rfft_convolve2d_same(images: jnp.ndarray, Khat_r: jnp.ndarray, Ky: int, Kx: 
 # ============================================================
 
 @jax.jit
-def pixel_triplets_from_subpixel_arrays_jax(
+def sparse_triplets_from_subpixel_arrays_jax(
     pix_indexes_for_sub,          # (M_sub, P)
     pix_weights_for_sub,          # (M_sub, P)
     slim_index_for_sub,           # (M_sub,)
@@ -71,11 +73,7 @@ def pixel_triplets_from_subpixel_arrays_jax(
     return rows, cols, vals
 
 
-# ============================================================
-# Core: sparse mapper × dense linear funcs off-diagonal using triplets
-# ============================================================
-
-def sparse_dense_offdiag_from_triplets_operated_rfft_jax(
+def curvature_matrix_off_diag_with_light_profiles_via_w_tilde_from(
     curvature_weights_slim,      # (M_pix, n_funcs) = (H B) / noise^2  on slim grid
     fft_index_for_masked_pixel,  # (M_pix,) slim -> rect(flat) indices
     rows, cols, vals,            # triplets for sparse mapper A
@@ -119,16 +117,7 @@ def sparse_dense_offdiag_from_triplets_operated_rfft_jax(
     return off_diag
 
 
-
-# ============================================================
-# Builder: precompute PSF rFFT once (same style as your API)
-# ============================================================
-
-from functools import partial
-
-from functools import partial
-
-def build_sparse_dense_offdiag_operated_rfft_fn(psf_np: np.ndarray, y_shape: int, x_shape: int):
+def build_curvature_matrix_off_diag_with_light_profiles_via_w_tilde_from_func(psf_np: np.ndarray, y_shape: int, x_shape: int):
     psf = jnp.asarray(psf_np, dtype=jnp.float64)
     Ky, Kx = psf.shape
     fft_shape = (y_shape + Ky - 1, x_shape + Kx - 1)
@@ -138,7 +127,7 @@ def build_sparse_dense_offdiag_operated_rfft_fn(psf_np: np.ndarray, y_shape: int
 
     fn_jit = jax.jit(
         partial(
-            sparse_dense_offdiag_from_triplets_operated_rfft_jax,
+            curvature_matrix_off_diag_with_light_profiles_via_w_tilde_from,
             Khat_flip_r=Khat_flip_r,
             Ky=Ky,
             Kx=Kx,
@@ -168,13 +157,13 @@ def main():
     )
 
     dataset = dataset.apply_mask(mask)
-    dataset = dataset.apply_w_tilde()
+    dataset = dataset.apply_sparse_operator()
 
     y_shape, x_shape = dataset.mask.shape
     psf_np = np.array(dataset.psf.native, dtype=np.float64)
 
     # inv noise (for constructing curvature_weights_slim if needed)
-    inv_noise_var = build_inv_noise_var(np.array(dataset.noise_map.native, dtype=np.float64))
+    inv_noise_var = inverse_noise_variances_from(np.array(dataset.noise_map.native, dtype=np.float64))
     inv_noise_var[np.array(dataset.mask)] = 0.0
 
     # -----------------------
@@ -191,11 +180,11 @@ def main():
     # -----------------------
     # Build sparse mapper triplets (A)
     # -----------------------
-    rows, cols, vals = pixel_triplets_from_subpixel_arrays_jax(
+    rows, cols, vals = sparse_triplets_from_subpixel_arrays_jax(
         jnp.asarray(pix_indexes_for_sub, dtype=jnp.int32),
         jnp.asarray(pix_weights_for_sub, dtype=jnp.float64),
         jnp.asarray(slim_index_for_sub, dtype=jnp.int32),
-        jnp.asarray(dataset.w_tilde.fft_index_for_masked_pixel, dtype=jnp.int32),
+        jnp.asarray(dataset.mask.fft_index_for_masked_pixel, dtype=jnp.int32),
         jnp.asarray(sub_fraction_slim, dtype=jnp.float64),
     )
 
@@ -224,12 +213,12 @@ def main():
     curvature_weights_slim = jnp.asarray(curvature_weights, dtype=jnp.float64)
 
     # Mapping slim->rect(flat) (length M_pix)
-    fft_index_for_masked_pixel = jnp.asarray(dataset.w_tilde.fft_index_for_masked_pixel, dtype=jnp.int32)
+    fft_index_for_masked_pixel = jnp.asarray(dataset.mask.fft_index_for_masked_pixel, dtype=jnp.int32)
 
     # -----------------------
     # Build + run
     # -----------------------
-    offdiag_fn = build_sparse_dense_offdiag_operated_rfft_fn(psf_np=psf_np, y_shape=y_shape, x_shape=x_shape)
+    offdiag_fn = build_curvature_matrix_off_diag_with_light_profiles_via_w_tilde_from_func(psf_np=psf_np, y_shape=y_shape, x_shape=x_shape)
 
     # warm-up
     off = offdiag_fn(

@@ -27,14 +27,14 @@ native_index_for_slim_index = np.array(
 )
 
 
-w_tilde_curvature = aa.util.inversion_imaging_numba.w_tilde_curvature_imaging_from(
+w_tilde_curvature = aa.util.inversion_imaging_numba.psf_precision_operator_from(
     noise_map_native=noise_map_native.array,
     kernel_native=kernel_native.array,
     native_index_for_slim_index=native_index_for_slim_index,
 )
 
 curvature_preload, curvature_indexes, curvature_lengths = (
-    aa.util.inversion_imaging_numba.w_tilde_curvature_preload_imaging_from(
+    aa.util.inversion_imaging_numba.psf_precision_operator_sparse_from(
         noise_map_native=noise_map_native.array,
         kernel_native=kernel_native.array,
         native_index_for_slim_index=native_index_for_slim_index,

@@ -37,7 +37,7 @@ dataset = al.Interferometer(
 #
 # start = time.time()
 #
-# dataset = dataset.apply_w_tilde()
+# dataset = dataset.apply_sparse_operator()
 #
 # print(f"Time to compute W-Tilde: {time.time() - start} seconds")
 #

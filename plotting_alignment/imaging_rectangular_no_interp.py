@@ -224,7 +224,7 @@ analysis = al.AnalysisImaging(
     dataset=dataset,
     #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
     settings_inversion=al.SettingsInversion(
-        use_w_tilde=False,
+        use_sparse_linalg=False,
         force_edge_pixels_to_zeros=True,
     ),
     preloads=preloads,

@@ -9,15 +9,15 @@ import autoarray as aa
 # instrument = "vro"
 # instrument = "euclid"
 instrument = "hst"
-# instrument = "hst_up"
+# instrument = "jwst"
 # instrument = "ao"
 
 folder = Path("linear_alg") / "arrs" / instrument
 
-w_matrix = np.load(f"{folder}/w_matrix.npy")
+psf_precision_operator = np.load(f"{folder}/psf_precision_operator.npy")
 mapping_matrix = np.load(f"{folder}/mapping_matrix.npy")
 curvature_matrix = np.load(f"{folder}/curvature_matrix.npy")
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "jwst": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
 
 dataset_path = Path("dataset") / "imaging" / "instruments" / instrument
@@ -103,7 +103,7 @@ Precompute functions so compute tile not printed.
 mapping_matrix = jnp.array(mapping_matrix)
 
 curvature_matrix_w_tilde = jitted_curvature_matrix_via_w_tilde_from(
-    w_tilde=w_matrix, mapping_matrix=mapping_matrix
+    w_tilde=psf_precision_operator, mapping_matrix=mapping_matrix
 )
 print(np.max(curvature_matrix_w_tilde))
 print(np.min(curvature_matrix_w_tilde))
@@ -114,7 +114,7 @@ __Time JIT__
 start = time.time()
 
 curvature_matrix_w_tilde = jitted_curvature_matrix_via_w_tilde_from(
-    w_tilde=w_matrix, mapping_matrix=mapping_matrix
+    w_tilde=psf_precision_operator, mapping_matrix=mapping_matrix
 )
 print(np.max(curvature_matrix_w_tilde))
 print(np.min(curvature_matrix_w_tilde))

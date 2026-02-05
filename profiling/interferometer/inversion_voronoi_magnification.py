@@ -28,13 +28,13 @@ file_path = os.path.join(
 """
 Whether w_tilde is used dictates the output folder.
 """
-use_w_tilde = False
+use_sparse_linalg = False
 use_linear_operators = False
-if use_w_tilde and not use_linear_operators:
+if use_sparse_linalg and not use_linear_operators:
     file_path = os.path.join(file_path, "w_tilde")
-elif not use_w_tilde and not use_linear_operators:
+elif not use_sparse_linalg and not use_linear_operators:
     file_path = os.path.join(file_path, "mapping")
-elif not use_w_tilde and use_linear_operators:
+elif not use_sparse_linalg and use_linear_operators:
     file_path = os.path.join(file_path, "lop")
 
 """

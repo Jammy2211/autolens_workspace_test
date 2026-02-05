@@ -80,7 +80,7 @@ def curvature_matrix_from_preload_jax(
     # -------------------------
     Khat = jnp.fft.fft2(w)                            # (2y,2x) complex
 
-    def apply_W_fft_batch(Fbatch_flat):
+    def apply_operator_fft_batch(Fbatch_flat):
         """
         Fbatch_flat: (M, B)
         returns:     (M, B)
@@ -113,7 +113,7 @@ def curvature_matrix_from_preload_jax(
         Fbatch = jnp.zeros((M, batch_size), dtype=eps_dtype)
         Fbatch = Fbatch.at[rows, bc].add(v)
 
-        Gbatch = apply_W_fft_batch(Fbatch)
+        Gbatch = apply_operator_fft_batch(Fbatch)
 
         G_at_rows = Gbatch[rows, :]
         contrib = vals[:, None] * G_at_rows

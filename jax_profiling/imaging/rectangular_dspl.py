@@ -39,59 +39,47 @@ import autofit as af
 import autolens as al
 from autoconf import conf
 
-"""
-__Mask__
 
-We define the ‘real_space_mask’ which defines the grid the image the strong lens is evaluated using.
-"""
-mask_radius = 3.5
-
-real_space_mask = al.Mask2D.circular(
-    shape_native=(800, 800),
-    pixel_scales=0.02,
-    radius=mask_radius,
-)
+sub_size = 4
+psf_shape_2d = (21, 21)
 
 """
 __Dataset__
 
 Load and plot the galaxy dataset `operated` via .fits files, which we will fit with 
 the model.
+
+The simulated data comes at five resolution corresponding to five telescopes:
+
+vro: pixel_scale = 0.2", fastest run times.
+euclid: pixel_scale = 0.1", fast run times
+hst: pixel_scale = 0.05", normal run times, represents the type of data we do most our fitting on currently.
+hst_up: pixel_scale = 0.03", slow run times.
+ao: pixel_scale = 0.01", very slow :(
 """
-dataset_name = "simple"
-dataset_path = path.join("dataset", "interferometer", dataset_name)
-#
-# dataset = al.Interferometer.from_fits(
-#     data_path=path.join(dataset_path, "data.fits"),
-#     noise_map_path=path.join(dataset_path, "noise_map.fits"),
-#     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
-#     real_space_mask=real_space_mask,
-#     transformer_class=al.TransformerDFT,
-# )
+# instrument = "vro"
+# instrument = "euclid"
+instrument = "hst"
+# instrument = "jwst"
+# instrument = "ao"
 
-total_visibilities = 100
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_offset_centre": 0.05, "hst_offset_centre_and_mass": 0.05,  "jwst": 0.03, "ao": 0.01}
+pixel_scale = pixel_scales_dict[instrument]
 
-data = al.Visibilities(np.random.normal(loc=0.0, scale=1.0, size=total_visibilities) + 1j * np.random.normal(
-    loc=0.0, scale=1.0, size=total_visibilities
-))
+"""
+Load the dataset for this instrument / resolution.
+"""
+dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
-noise_map = al.VisibilitiesNoiseMap(np.ones(total_visibilities) + 1j * np.ones(total_visibilities))
-
-uv_wavelengths = np.random.uniform(
-    low=-300.0, high=300.0, size=(total_visibilities, 2)
+dataset = al.Imaging.from_fits(
+    data_path=path.join(dataset_path, "data.fits"),
+    psf_path=path.join(dataset_path, "psf.fits"),
+    noise_map_path=path.join(dataset_path, "noise_map.fits"),
+    pixel_scales=pixel_scale,
+    over_sample_size_lp=sub_size,
+    over_sample_size_pixelization=sub_size,
 )
 
-dataset = al.Interferometer(
-    data=data,
-    noise_map=noise_map,
-    uv_wavelengths=uv_wavelengths,
-    real_space_mask=real_space_mask,
-    transformer_class=al.TransformerNUFFT,
-)
-
-dataset = dataset.apply_sparse_operator()
-
-print(f"Total Visiblities: {dataset.uv_wavelengths.shape[0]}")
 
 """
 __Mask__
@@ -99,18 +87,28 @@ __Mask__
 The model-fit requires a 2D mask defining the regions of the image we fit the model to the data, which we define
 and use to set up the `Imaging` object that the model fits.
 """
-positions = al.Grid2DIrregular(
-    al.from_json(file_path=path.join(dataset_path, "positions.json"))
+mask_radius = 3.5
+
+mask = al.Mask2D.circular(
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
 )
 
-# over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
-#     grid=dataset.grid,
-#     sub_size_list=[4, 2, 1],
-#     radial_list=[0.3, 0.6],
-#     centre_list=[(0.0, 0.0)],
-# )
-#
-# dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
+dataset = dataset.apply_mask(mask=mask)
+
+over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
+    grid=dataset.grid,
+    sub_size_list=[4, 2, 1],
+    radial_list=[0.3, 0.6],
+    centre_list=[(0.0, 0.0)],
+)
+
+dataset = dataset.apply_over_sampling(
+    over_sample_size_lp=over_sample_size,
+    over_sample_size_pixelization=4,
+)
+
+dataset = dataset.apply_sparse_operator()
+
 
 """
 __JAX & Preloads__
@@ -160,8 +158,8 @@ The number of free parameters and therefore the dimensionality of non-linear par
 
 mass = af.Model(al.mp.Isothermal)
 
-mass.centre.centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-mass.centre.centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+mass.centre.centre_0 = af.UniformPrior(lower_limit=0.2, upper_limit=0.4)
+mass.centre.centre_1 = af.UniformPrior(lower_limit=-0.4, upper_limit=-0.2)
 mass.einstein_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.7)
 mass.ell_comps.ell_comps_0 = af.UniformPrior(
     lower_limit=0.11111111111111108, upper_limit=0.1111111111111111
@@ -172,19 +170,37 @@ shear = af.Model(al.mp.ExternalShear)
 shear.gamma_1 = af.UniformPrior(lower_limit=-0.001, upper_limit=0.001)
 shear.gamma_2 = af.UniformPrior(lower_limit=-0.001, upper_limit=0.001)
 
-lens = af.Model(
+lens_0 = af.Model(
     al.Galaxy,
     redshift=0.5,
     mass=mass,
     shear=shear,
 )
 
+mass = af.Model(al.mp.Isothermal)
+
+mass.centre.centre_0 = af.UniformPrior(lower_limit=0.2, upper_limit=0.4)
+mass.centre.centre_1 = af.UniformPrior(lower_limit=-0.4, upper_limit=-0.2)
+mass.einstein_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.7)
+mass.ell_comps.ell_comps_0 = af.UniformPrior(
+    lower_limit=0.11111111111111108, upper_limit=0.1111111111111111
+)
+mass.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=-0.01, upper_limit=0.01)
+
+shear = af.Model(al.mp.ExternalShear)
+shear.gamma_1 = af.UniformPrior(lower_limit=-0.001, upper_limit=0.001)
+shear.gamma_2 = af.UniformPrior(lower_limit=-0.001, upper_limit=0.001)
+
+lens_1 = af.Model(
+    al.Galaxy,
+    redshift=1.0,
+    mass=mass,
+    shear=shear,
+)
+
 # Source:
 
-mesh = al.mesh.RectangularAdaptDensity(shape=mesh_shape)
-# regularization = al.reg.Constant(coefficient=1.0)
-
-# regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
+mesh = al.mesh.RectangularAdaptImage(shape=mesh_shape, weight_power=1.0)
 
 regularization = al.reg.AdaptiveBrightness()
 
@@ -192,23 +208,17 @@ pixelization = al.Pixelization(
     mesh=mesh, regularization=regularization
 )
 
-source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
+source = af.Model(al.Galaxy, redshift=2.0, pixelization=pixelization)
 
 # Overall Lens Model:
 
-model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
-
-
-
-bulge = al.lp.Sersic()
-
-image = bulge.image_2d_from(grid=dataset.grid)
+model = af.Collection(galaxies=af.Collection(lens=lens_0, lens_1=lens_1, source=source))
 
 galaxy_name_image_dict = {
-    "('galaxies', 'lens')": image,
-    "('galaxies', 'source')": image
+    "('galaxies', 'lens_0')": dataset.data,
+    "('galaxies', 'lens_1')": dataset.data,
+    "('galaxies', 'source')": dataset.data
 }
-
 
 adapt_images = al.AdaptImages(
     galaxy_name_image_dict=galaxy_name_image_dict
@@ -227,12 +237,13 @@ can compute its gradient.
 """
 import jax.numpy as jnp
 
-analysis = al.AnalysisInterferometer(
+analysis = al.AnalysisImaging(
     dataset=dataset,
     #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
     adapt_images=adapt_images,
     preloads=preloads,
     raise_inversion_positions_likelihood_exception=False,
+#    settings_inversion=al.SettingsInversion(use_border_relocator=False)
 )
 
 """
@@ -273,7 +284,11 @@ print(fitness._vmap(parameters))
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
-analysis.print_vram_use(model=model, batch_size=batch_size)
+batched_call = jax.jit(jax.vmap(fitness.call))
+lowered = batched_call.lower(parameters)
+compiled = lowered.compile()
+memory_analysis = compiled.memory_analysis()
+print(f'Memory {(memory_analysis.output_size_in_bytes + memory_analysis.temp_size_in_bytes) / 1024**2:.3} MB')
 
 
 """
@@ -290,18 +305,34 @@ fit = analysis.fit_from(instance)
 
 print(f"Figure of Merit = {fit.figure_of_merit}")
 
+
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
-        path=file_path, filename=f"interferometer_subplot_fit", format="png"
+        path=file_path, filename=f"{instrument}_source", format="png"
     )
 )
-fit_plotter = aplt.FitInterferometerPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_plotter.subplot_fit()
-
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.figures_2d_of_planes(plane_index=1, plane_image=True)
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
-        path=file_path, filename=f"interferometer_subplot_inversion_0", format="png"
+        path=file_path, filename=f"{instrument}_subplot_fit", format="png"
+    )
+)
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_fit()
+
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"
+    )
+)
+fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
+fit_plotter.subplot_of_planes(plane_index=1)
+
+mat_plot_2d = aplt.MatPlot2D(
+    output=aplt.Output(
+        path=file_path, filename=f"{instrument}_subplot_inversion_0", format="png"
     )
 )
 fit_plotter = aplt.InversionPlotter(inversion=fit.inversion, mat_plot_2d=mat_plot_2d)

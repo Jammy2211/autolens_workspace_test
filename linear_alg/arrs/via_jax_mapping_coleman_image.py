@@ -12,7 +12,7 @@ import scipy
 # instrument = "vro"
 # instrument = "euclid"
 instrument = "hst"
-# instrument = "hst_up"
+# instrument = "jwst"
 # instrument = "ao"
 
 # folder = Path("linear_alg") / "arrs" / instrument
@@ -22,7 +22,7 @@ mapping_matrix = np.load(f"{folder}/mapping_matrix.npy")
 blurred_mapping_matrix_orig = np.load(f"{folder}/blurred_mapping_matrix.npy")
 curvature_matrix = np.load(f"{folder}/curvature_matrix.npy")
 
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "jwst": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
 
 # dataset_path = Path("dataset") / "imaging" / "instruments" / instrument

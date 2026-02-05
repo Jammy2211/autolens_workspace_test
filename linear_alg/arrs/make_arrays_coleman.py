@@ -5,10 +5,10 @@ import autolens as al
 # instrument = "vro"
 # instrument = "euclid"
 instrument = "hst"
-# instrument = "hst_up"
+# instrument = "jwst"
 # instrument = "ao"
 
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "jwst": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
 
 mesh_shape = (32, 32)
@@ -84,7 +84,7 @@ tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 fit = al.FitImaging(
     dataset=dataset,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(use_w_tilde=True),
+    settings_inversion=al.SettingsInversion(use_sparse_linalg=True),
 )
 
 inversion = fit.inversion
@@ -115,9 +115,9 @@ np.save(
 np.save(f"{folder}/data_to_pix_unique", mapper.unique_mappings.data_to_pix_unique)
 np.save(f"{folder}/data_weights", mapper.unique_mappings.data_weights)
 np.save(f"{folder}/pix_lengths", mapper.unique_mappings.pix_lengths)
-np.save(f"{folder}/w_matrix", dataset.w_tilde.w_matrix)
+np.save(f"{folder}/psf_precision_operator", dataset.sparse_operator.psf_precision_operator)
 np.save(
-    f"{folder}/psf_operator_matrix_dense", dataset.w_tilde.psf_operator_matrix_dense
+    f"{folder}/psf_operator_matrix_dense", dataset.sparse_operator.psf_operator_matrix_dense
 )
 np.save(f"{folder}/mapping_matrix", inversion.mapping_matrix)
 np.save(f"{folder}/blurred_mapping_matrix", inversion.operated_mapping_matrix)

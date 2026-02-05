@@ -8,7 +8,7 @@ import autoarray as aa
 # instrument = "vro"
 # instrument = "euclid"
 instrument = "hst"
-# instrument = "hst_up"
+# instrument = "jwst"
 # instrument = "ao"
 
 folder = Path("linear_alg") / "arrs" / instrument
@@ -24,7 +24,7 @@ folder = Path("linear_alg") / "arrs" / instrument
 data_to_pix_unique = np.load(f"{folder}/data_to_pix_unique.npy")
 data_weights = np.load(f"{folder}/data_weights.npy")
 pix_lengths = np.load(f"{folder}/pix_lengths.npy")
-# w_matrix = np.load(f"{folder}/w_matrix.npy")
+# psf_precision_operator = np.load(f"{folder}/psf_precision_operator.npy")
 # psf_operator_matrix_dense = np.load(f"{folder}/psf_operator_matrix_dense.npy")
 mapping_matrix = np.load(f"{folder}/mapping_matrix.npy")
 # blurred_mapping_matrix = np.load(f"{folder}/blurred_mapping_matrix.npy")
@@ -36,7 +36,7 @@ curvature_matrix = np.load(f"{folder}/curvature_matrix.npy")
 # mapped_reconstructed_image = np.load(f"{folder}/mapped_reconstructed_image.npy")
 # log_evidence = np.load(f"{folder}/log_evidence.npy")
 
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "jwst": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
 
 dataset_path = Path("dataset") / "imaging" / "instruments" / instrument
@@ -113,10 +113,10 @@ from autoarray.inversion.inversion.imaging import inversion_imaging_numba_util
 #     mapping_matrix=blurred_mapping_matrix_calc, noise_map=dataset.noise_map
 # )
 
-curvature_matrix_w_tilde = inversion_imaging_numba_util.curvature_matrix_via_w_tilde_curvature_preload_imaging_from(
-    curvature_preload=dataset.w_tilde.curvature_preload,
-    curvature_indexes=dataset.w_tilde.indexes,
-    curvature_lengths=dataset.w_tilde.lengths,
+curvature_matrix_w_tilde = inversion_imaging_numba_util.curvature_matrix_diag_via_sparse_linalg_from(
+    curvature_preload=dataset.sparse_operator.curvature_preload,
+    curvature_indexes=dataset.sparse_operator.indexes,
+    curvature_lengths=dataset.sparse_operator.lengths,
     data_to_pix_unique=np.array(data_to_pix_unique),
     data_weights=np.array(data_weights),
     pix_lengths=np.array(pix_lengths),
@@ -138,10 +138,10 @@ print(
     f"Mapping Matrix non zero per row {np.count_nonzero(mapping_matrix, axis=1).mean()}"
 )
 print(
-    f"W Matrix non zero per column {np.count_nonzero(dataset.w_tilde.w_matrix, axis=0).mean()}"
+    f"W Matrix non zero per column {np.count_nonzero(dataset.sparse_operator.psf_precision_operator, axis=0).mean()}"
 )
 print(
-    f"W Matrix non zero per row {np.count_nonzero(dataset.w_tilde.w_matrix, axis=1).mean()}"
+    f"W Matrix non zero per row {np.count_nonzero(dataset.sparse_operator.psf_precision_operator, axis=1).mean()}"
 )
 ffff
 
@@ -168,10 +168,10 @@ __Time__
 
 start = time.time()
 
-curvature_matrix_w_tilde = inversion_imaging_numba_util.curvature_matrix_via_w_tilde_curvature_preload_imaging_from(
-    curvature_preload=dataset.w_tilde.curvature_preload,
-    curvature_indexes=dataset.w_tilde.indexes,
-    curvature_lengths=dataset.w_tilde.lengths,
+curvature_matrix_w_tilde = inversion_imaging_numba_util.curvature_matrix_diag_via_sparse_linalg_from(
+    curvature_preload=dataset.sparse_operator.curvature_preload,
+    curvature_indexes=dataset.sparse_operator.indexes,
+    curvature_lengths=dataset.sparse_operator.lengths,
     data_to_pix_unique=np.array(data_to_pix_unique),
     data_weights=np.array(data_weights),
     pix_lengths=np.array(pix_lengths),

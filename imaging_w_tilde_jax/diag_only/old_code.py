@@ -28,7 +28,7 @@ def curvature_matrix_from_psf_preload_rfft_jax(
     M = y_shape * x_shape
     fft_shape = (y_shape + Ky - 1, x_shape + Kx - 1)
 
-    def apply_W(Fbatch_flat: jnp.ndarray) -> jnp.ndarray:
+    def apply_operator(Fbatch_flat: jnp.ndarray) -> jnp.ndarray:
         B = Fbatch_flat.shape[1]
         Fimg = Fbatch_flat.T.reshape((B, y_shape, x_shape))  # (B,Hy,Hx)
 
@@ -50,7 +50,7 @@ def curvature_matrix_from_psf_preload_rfft_jax(
         F = jnp.zeros((M, batch_size), dtype=jnp.float64)
         F = F.at[rows, bc].add(v)
 
-        G = apply_W(F)
+        G = apply_operator(F)
         contrib = vals[:, None] * G[rows, :]
         Cblock = segment_sum(contrib, cols, num_segments=S)
 

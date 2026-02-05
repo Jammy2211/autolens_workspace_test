@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 # instrument = "vro"
 instrument = "euclid"
 # instrument = "hst"
-# instrument = "hst_up"
+# instrument = "jwst"
 # instrument = "ao"
 
 

@@ -11,7 +11,7 @@ jax.config.update("jax_enable_x64", True)
 # ============================================================
 
 
-def build_inv_noise_var(noise):
+def inverse_noise_variances_from(noise):
     inv = np.zeros_like(noise, dtype=np.float64)
     good = np.isfinite(noise) & (noise > 0)
     inv[good] = 1.0 / noise[good]**2
@@ -67,7 +67,7 @@ def curvature_matrix_from_psf_preload_jax__real_space_conv(
     Ky, Kx = psf.shape
     fft_shape = (y_shape+Ky-1, x_shape+Kx-1)
 
-    def apply_W_batch_spatial(Fbatch_flat, psf, inv_noise_var, y_shape, x_shape):
+    def apply_operator_batch_spatial(Fbatch_flat, psf, inv_noise_var, y_shape, x_shape):
         """
         W = H^T N^{-1} H using *spatial* convolutions.
         Fbatch_flat: (M, B) where M=y_shape*x_shape
@@ -120,7 +120,7 @@ def curvature_matrix_from_psf_preload_jax__real_space_conv(
         F = jnp.zeros((M, batch_size), dtype=jnp.float64)
         F = F.at[rows, bc].add(v)
 
-        G = apply_W_batch_spatial(F, psf, inv_noise_var, y_shape, x_shape)
+        G = apply_operator_batch_spatial(F, psf, inv_noise_var, y_shape, x_shape)
 
         contrib = vals[:,None] * G[rows,:]
         Cblock = segment_sum(contrib, cols, num_segments=S)
@@ -133,7 +133,7 @@ def curvature_matrix_from_psf_preload_jax__real_space_conv(
 
 
 @jax.jit
-def pixel_triplets_from_subpixel_arrays_jax(
+def sparse_triplets_from_subpixel_arrays_jax(
     pix_indexes_for_sub,          # (M_sub, P)
     pix_weights_for_sub,          # (M_sub, P)
     slim_index_for_sub,           # (M_sub,)
@@ -200,14 +200,14 @@ def main():
     )
 
     dataset = dataset.apply_mask(mask)
-    dataset = dataset.apply_w_tilde()
+    dataset = dataset.apply_sparse_operator()
 
     y_shape, x_shape = dataset.mask.shape
     M_pix = y_shape * x_shape
 
     psf = jnp.asarray(dataset.psf.native, dtype=jnp.float64)
 
-    inv_noise_var = build_inv_noise_var(dataset.noise_map.native)
+    inv_noise_var = inverse_noise_variances_from(dataset.noise_map.native)
     inv_noise_var[dataset.mask] = 0.0
     inv_noise_var = jnp.asarray(inv_noise_var, dtype=jnp.float64)
 
@@ -228,11 +228,11 @@ def main():
     # BUILD SUBPIXEL COO → COLLAPSE TO PIXELS
     # ========================================================
 
-    rows, cols, vals = pixel_triplets_from_subpixel_arrays_jax(
+    rows, cols, vals = sparse_triplets_from_subpixel_arrays_jax(
         pix_indexes_for_sub,
         pix_weights_for_sub,
         slim_index_for_sub,
-        dataset.w_tilde.fft_index_for_masked_pixel,
+        dataset.sparse_operator.fft_index_for_masked_pixel,
         sub_fraction_slim,
     )
 

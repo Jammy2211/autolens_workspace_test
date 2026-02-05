@@ -59,10 +59,10 @@ ao: pixel_scale = 0.01", very slow :(
 # instrument = "vro"
 # instrument = "euclid"
 instrument = "hst"
-# instrument = "hst_up"
+# instrument = "jwst"
 # instrument = "ao"
 
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_offset_centre": 0.05, "hst_offset_centre_and_mass": 0.05,  "hst_up": 0.03, "ao": 0.01}
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_offset_centre": 0.05, "hst_offset_centre_and_mass": 0.05,  "jwst": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
 
 """

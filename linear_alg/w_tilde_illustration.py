@@ -36,7 +36,7 @@ pix_lengths = np.load(f"{folder}/pix_lengths.npy")
 mapping_matrix = np.load(f"{folder}/mapping_matrix.npy")
 curvature_matrix = np.load(f"{folder}/curvature_matrix.npy")
 
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "jwst": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
 
 dataset_path = Path("dataset") / "imaging" / "instruments" / instrument
@@ -55,7 +55,7 @@ mask = aa.Mask2D.circular(
 
 
 @aa.numba_util.jit()
-def w_tilde_curvature_imaging_from(
+def psf_precision_operator_from(
     noise_map_native: np.ndarray, kernel_native: np.ndarray, native_index_for_slim_index
 ) -> np.ndarray:
     """
@@ -67,7 +67,7 @@ def w_tilde_curvature_imaging_from(
 
     The limitation of this matrix is that the dimensions of [image_pixels, image_pixels] can exceed many 10s of GB's,
     making it impossible to store in memory and its use in linear algebra calculations extremely. The method
-    `w_tilde_curvature_preload_imaging_from` describes a compressed representation that overcomes this hurdles. It is
+    `psf_precision_operator_sparse_from` describes a compressed representation that overcomes this hurdles. It is
     advised `w_tilde` and this method are only used for testing.
 
     Parameters
@@ -97,7 +97,7 @@ def w_tilde_curvature_imaging_from(
 
             w_tilde_curvature[
                 ip0, ip1
-            ] += aa.util.inversion_imaging_numba.w_tilde_curvature_value_from(
+            ] += aa.util.inversion_imaging_numba.psf_precision_value_from(
                 value_native=noise_map_native,
                 kernel_native=kernel_native,
                 ip0_y=ip0_y,
@@ -114,7 +114,7 @@ def w_tilde_curvature_imaging_from(
 
 
 @aa.numba_util.jit()
-def w_tilde_curvature_preload_imaging_from(
+def psf_precision_operator_sparse_from(
     noise_map_native: np.ndarray, kernel_native: np.ndarray, native_index_for_slim_index
 ):
     """
@@ -188,7 +188,7 @@ def w_tilde_curvature_preload_imaging_from(
         for ip1 in range(ip0, curvature_preload_tmp.shape[0]):
             ip1_y, ip1_x = native_index_for_slim_index[ip1]
 
-            noise_value = aa.util.inversion_imaging_numba.w_tilde_curvature_value_from(
+            noise_value = aa.util.inversion_imaging_numba.psf_precision_value_from(
                 value_native=noise_map_native,
                 kernel_native=kernel_native,
                 ip0_y=ip0_y,
@@ -224,7 +224,7 @@ def w_tilde_curvature_preload_imaging_from(
     return (curvature_preload, curvature_indexes, curvature_lengths)
 
 
-w_tilde_curvature = w_tilde_curvature_imaging_from(
+w_tilde_curvature = psf_precision_operator_from(
     noise_map_native=dataset.noise_map.native.array,
     kernel_native=dataset.psf.native.array,
     native_index_for_slim_index=np.array(mask.derive_indexes.native_for_slim).astype(
@@ -233,7 +233,7 @@ w_tilde_curvature = w_tilde_curvature_imaging_from(
 )
 
 curvature_preload, curvature_indexes, curvature_lengths = (
-    w_tilde_curvature_preload_imaging_from(
+    psf_precision_operator_sparse_from(
         noise_map_native=dataset.noise_map.native.array,
         kernel_native=dataset.psf.native.array,
         native_index_for_slim_index=np.array(
@@ -251,7 +251,7 @@ print("Numba is using", numba.get_num_threads(), "threads")
 
 
 @njit(parallel=True, fastmath=True)
-def curvature_matrix_via_w_tilde_curvature_preload_imaging_from(
+def curvature_matrix_diag_via_sparse_linalg_from(
     curvature_preload,
     curvature_indexes,
     curvature_lengths,
@@ -293,7 +293,7 @@ def curvature_matrix_via_w_tilde_curvature_preload_imaging_from(
     return curvature_matrix
 
 
-curvature_matrix = curvature_matrix_via_w_tilde_curvature_preload_imaging_from(
+curvature_matrix = curvature_matrix_diag_via_sparse_linalg_from(
     curvature_preload=curvature_preload,
     curvature_indexes=curvature_indexes.astype("int"),
     curvature_lengths=curvature_lengths.astype("int"),
@@ -307,7 +307,7 @@ import time
 
 start = time.time()
 
-curvature_matrix = curvature_matrix_via_w_tilde_curvature_preload_imaging_from(
+curvature_matrix = curvature_matrix_diag_via_sparse_linalg_from(
     curvature_preload=curvature_preload,
     curvature_indexes=curvature_indexes.astype("int"),
     curvature_lengths=curvature_lengths.astype("int"),

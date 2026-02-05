@@ -10,7 +10,7 @@ import numpy as np
 
 
 @numba_util.jit()
-def w_tilde_curvature_preload_imaging_from(
+def psf_precision_operator_sparse_from(
     noise_map_native: np.ndarray, kernel_native: np.ndarray, native_index_for_slim_index
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
@@ -84,7 +84,7 @@ def w_tilde_curvature_preload_imaging_from(
         for ip1 in range(ip0, curvature_preload_tmp.shape[0]):
             ip1_y, ip1_x = native_index_for_slim_index[ip1]
 
-            noise_value = w_tilde_curvature_value_from(
+            noise_value = psf_precision_value_from(
                 value_native=noise_map_native,
                 kernel_native=kernel_native,
                 ip0_y=ip0_y,
@@ -111,7 +111,7 @@ def w_tilde_curvature_preload_imaging_from(
 
 
 @numba_util.jit()
-def w_tilde_curvature_value_from(
+def psf_precision_value_from(
     value_native: np.ndarray,
     kernel_native: np.ndarray,
     ip0_y,

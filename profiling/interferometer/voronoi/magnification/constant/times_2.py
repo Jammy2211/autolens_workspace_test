@@ -24,13 +24,13 @@ file_path = os.path.join(profiling_path, "times", al.__version__)
 """
 Whether w_tilde is used dictates the output folder.
 """
-use_w_tilde = True
-use_w_tilde_numpy = False
+use_sparse_linalg = True
+use_sparse_linalg_numpy = False
 
-if use_w_tilde and not use_w_tilde_numpy:
+if use_sparse_linalg and not use_sparse_linalg_numpy:
     file_path = os.path.join(file_path, "w_tilde")
     print("Using W tilde - no numpy")
-elif use_w_tilde and use_w_tilde_numpy:
+elif use_sparse_linalg and use_sparse_linalg_numpy:
     file_path = os.path.join(file_path, "w_tilde_numpy")
     print("Using W tilde - with numpy")
 else:
@@ -186,7 +186,7 @@ Call FitImaging once to get all numba functions initialized.
 fit = al.FitInterferometer(
     dataset=dataset,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion( use_w_tilde_numpy=use_w_tilde_numpy
+    settings_inversion=al.SettingsInversion( use_sparse_linalg_numpy=use_sparse_linalg_numpy
     ),
 )
 print(dir(al.SettingsInversion))
@@ -201,7 +201,7 @@ for i in range(repeats):
     fit = al.FitInterferometer(
         dataset=dataset,
         tracer=tracer,
-        settings_inversion=al.SettingsInversion( use_w_tilde_numpy=use_w_tilde_numpy
+        settings_inversion=al.SettingsInversion( use_sparse_linalg_numpy=use_sparse_linalg_numpy
         ),
     )
     fit.figure_of_merit
@@ -220,7 +220,7 @@ tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy], run_time_dict=run_time
 fit = al.FitInterferometer(
     dataset=dataset,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion( use_w_tilde_numpy=use_w_tilde_numpy
+    settings_inversion=al.SettingsInversion( use_sparse_linalg_numpy=use_sparse_linalg_numpy
     ),
     run_time_dict=run_time_dict,
 )

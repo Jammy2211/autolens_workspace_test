@@ -17,7 +17,7 @@ DTYPE_ACC = jnp.float64   # accumulation / curvature
 # Utilities
 # ============================================================
 
-def build_inv_noise_var(noise):
+def inverse_noise_variances_from(noise):
     inv = np.zeros_like(noise, dtype=np.float64)
     good = np.isfinite(noise) & (noise > 0)
     inv[good] = 1.0 / noise[good]**2
@@ -88,7 +88,7 @@ def curvature_matrix_from_psf_preload_rfft_mixed_jax(
     M = y_shape * x_shape
     fft_shape = (y_shape + Ky - 1, x_shape + Kx - 1)
 
-    def apply_W(Fbatch_acc: jnp.ndarray) -> jnp.ndarray:
+    def apply_operator(Fbatch_acc: jnp.ndarray) -> jnp.ndarray:
         """
         Fbatch_acc: (M,B) float64
         returns:    (M,B) float32
@@ -115,7 +115,7 @@ def curvature_matrix_from_psf_preload_rfft_mixed_jax(
         F = jnp.zeros((M, batch_size), dtype=DTYPE_ACC)
         F = F.at[rows, bc].add(v)
 
-        G32 = apply_W(F)               # float32
+        G32 = apply_operator(F)               # float32
         G = G32.astype(DTYPE_ACC)      # float64 for accumulation
 
         contrib = vals[:, None] * G[rows, :]                      # float64
@@ -158,7 +158,7 @@ def build_curvature_rfft_mixed_fn(psf_np: np.ndarray, y_shape: int, x_shape: int
 # ============================================================
 
 @jax.jit
-def pixel_triplets_from_subpixel_arrays_jax(
+def sparse_triplets_from_subpixel_arrays_jax(
     pix_indexes_for_sub,          # (M_sub, P)
     pix_weights_for_sub,          # (M_sub, P)
     slim_index_for_sub,           # (M_sub,)
@@ -197,13 +197,13 @@ def main():
     )
 
     dataset = dataset.apply_mask(mask)
-    dataset = dataset.apply_w_tilde()
+    dataset = dataset.apply_sparse_operator()
 
     y_shape, x_shape = dataset.mask.shape
     M_pix = y_shape * x_shape
 
     # Noise inverse variance: compute in float64 then cast to float32 for FFT path
-    inv_noise_var = build_inv_noise_var(np.array(dataset.noise_map.native, dtype=np.float64))
+    inv_noise_var = inverse_noise_variances_from(np.array(dataset.noise_map.native, dtype=np.float64))
     inv_noise_var[np.array(dataset.mask)] = 0.0
     inv_noise_var = jnp.asarray(inv_noise_var, dtype=DTYPE_FFT)
 
@@ -216,11 +216,11 @@ def main():
     sub_fraction_slim   = np.load("sub_fraction.npy")  # shape (M_pix,)
     S = int(np.load("pix_pixels.npy"))
 
-    rows, cols, vals = pixel_triplets_from_subpixel_arrays_jax(
+    rows, cols, vals = sparse_triplets_from_subpixel_arrays_jax(
         jnp.asarray(pix_indexes_for_sub, dtype=jnp.int32),
         jnp.asarray(pix_weights_for_sub, dtype=DTYPE_ACC),
         jnp.asarray(slim_index_for_sub, dtype=jnp.int32),
-        jnp.asarray(dataset.w_tilde.fft_index_for_masked_pixel, dtype=jnp.int32),
+        jnp.asarray(dataset.sparse_operator.fft_index_for_masked_pixel, dtype=jnp.int32),
         jnp.asarray(sub_fraction_slim, dtype=DTYPE_ACC),
     )
 
@@ -229,20 +229,20 @@ def main():
     vals = jnp.asarray(vals, dtype=DTYPE_ACC)
 
     # Build mixed-precision curvature fn (Khat precomputed in float32)
-    curv_fn = build_curvature_rfft_mixed_fn(
+    curvature_matrix_diag_from = build_curvature_rfft_mixed_fn(
         psf_np=np.array(dataset.psf.native, dtype=np.float32),  # PSF stored as float32 for FFT speed
         y_shape=y_shape,
         x_shape=x_shape,
     )
 
     # warm up
-    C = curv_fn(inv_noise_var, rows, cols, vals, y_shape=y_shape, x_shape=x_shape, S=S, batch_size=300)
+    C = curvature_matrix_diag_from(inv_noise_var, rows, cols, vals, y_shape=y_shape, x_shape=x_shape, S=S, batch_size=300)
     jax.block_until_ready(C)
 
     # timed
     import time
     start = time.time()
-    C = curv_fn(inv_noise_var, rows, cols, vals, y_shape=y_shape, x_shape=x_shape, S=S, batch_size=300)
+    C = curvature_matrix_diag_from(inv_noise_var, rows, cols, vals, y_shape=y_shape, x_shape=x_shape, S=S, batch_size=300)
     jax.block_until_ready(C)
     print(f"JAX Curvature Matrix Time (mixed): {time.time() - start:.3f} seconds")
 

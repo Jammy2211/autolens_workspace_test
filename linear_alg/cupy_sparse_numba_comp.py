@@ -8,7 +8,7 @@ import autoarray as aa
 # instrument = "vro"
 instrument = "euclid"
 # instrument = "hst"
-# instrument = "hst_up"
+# instrument = "jwst"
 # instrument = "ao"
 
 folder = Path("linear_alg") / "arrs" / instrument
@@ -19,7 +19,7 @@ pix_lengths = np.load(f"{folder}/pix_lengths.npy")
 mapping_matrix = np.load(f"{folder}/mapping_matrix.npy")
 curvature_matrix = np.load(f"{folder}/curvature_matrix.npy")
 
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "jwst": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
 
 dataset_path = Path("dataset") / "imaging" / "instruments" / instrument
@@ -55,10 +55,10 @@ from autoarray.inversion.inversion.imaging import inversion_imaging_numba_util
 #     mapping_matrix=blurred_mapping_matrix_calc, noise_map=dataset.noise_map
 # )
 
-curvature_matrix_w_tilde = inversion_imaging_numba_util.curvature_matrix_via_w_tilde_curvature_preload_imaging_from(
-    curvature_preload=dataset.w_tilde.curvature_preload,
-    curvature_indexes=dataset.w_tilde.indexes,
-    curvature_lengths=dataset.w_tilde.lengths,
+curvature_matrix_w_tilde = inversion_imaging_numba_util.curvature_matrix_diag_via_sparse_linalg_from(
+    curvature_preload=dataset.sparse_operator.curvature_preload,
+    curvature_indexes=dataset.sparse_operator.indexes,
+    curvature_lengths=dataset.sparse_operator.lengths,
     data_to_pix_unique=np.array(data_to_pix_unique),
     data_weights=np.array(data_weights),
     pix_lengths=np.array(pix_lengths),
@@ -75,8 +75,8 @@ print("Curvature Matrix Shape: ", curvature_matrix.shape)
 
 # print(f"Mapping Matrix non zero per column {np.count_nonzero(mapping_matrix, axis=0).mean()}")
 # print(f"Mapping Matrix non zero per row {np.count_nonzero(mapping_matrix, axis=1).mean()}")
-# print(f"W Matrix non zero per column {np.count_nonzero(dataset.w_tilde.w_matrix, axis=0).mean()}")
-# print(f"W Matrix non zero per row {np.count_nonzero(dataset.w_tilde.w_matrix, axis=1).mean()}")
+# print(f"W Matrix non zero per column {np.count_nonzero(dataset.sparse_operator.psf_precision_operator, axis=0).mean()}")
+# print(f"W Matrix non zero per row {np.count_nonzero(dataset.sparse_operator.psf_precision_operator, axis=1).mean()}")
 # ffff
 
 """
@@ -102,10 +102,10 @@ __Time__
 
 start = time.time()
 
-curvature_matrix_w_tilde = inversion_imaging_numba_util.curvature_matrix_via_w_tilde_curvature_preload_imaging_from(
-    curvature_preload=dataset.w_tilde.curvature_preload,
-    curvature_indexes=dataset.w_tilde.indexes,
-    curvature_lengths=dataset.w_tilde.lengths,
+curvature_matrix_w_tilde = inversion_imaging_numba_util.curvature_matrix_diag_via_sparse_linalg_from(
+    curvature_preload=dataset.sparse_operator.curvature_preload,
+    curvature_indexes=dataset.sparse_operator.indexes,
+    curvature_lengths=dataset.sparse_operator.lengths,
     data_to_pix_unique=np.array(data_to_pix_unique),
     data_weights=np.array(data_weights),
     pix_lengths=np.array(pix_lengths),
@@ -122,11 +122,11 @@ import cupy as cp
 import cupyx.scipy.sparse as cpx_sparse
 
 
-def benchmark_with_real_data(mapping_matrix, w_matrix, F_numba):
+def benchmark_with_real_data(mapping_matrix, psf_precision_operator, F_numba):
     """
     Benchmark curvature matrix construction using real saved arrays.
     mapping_matrix : np.ndarray [image_pixels, source_pixels]
-    w_matrix       : np.ndarray [image_pixels, image_pixels]
+    psf_precision_operator       : np.ndarray [image_pixels, image_pixels]
     """
     image_pixels, source_pixels = mapping_matrix.shape
     print(f"\nBenchmarking with image={image_pixels}, source={source_pixels}")
@@ -135,7 +135,7 @@ def benchmark_with_real_data(mapping_matrix, w_matrix, F_numba):
     print("Building sparse matrices...")
     t0 = time.time()
     M_sparse = sp.csr_matrix(mapping_matrix)
-    W_sparse = sp.csr_matrix(w_matrix)
+    W_sparse = sp.csr_matrix(psf_precision_operator)
     t1 = time.time()
     print(
         f" SciPy sparse build: {t1 - t0:.3f}s | nnz M={M_sparse.nnz}, W={W_sparse.nnz}"
@@ -153,7 +153,7 @@ def benchmark_with_real_data(mapping_matrix, w_matrix, F_numba):
     print("Sending to GPU...")
     t0 = time.time()
     M_cu = cpx_sparse.csr_matrix(cp.asarray(mapping_matrix))
-    W_cu = cpx_sparse.csr_matrix(cp.asarray(w_matrix))
+    W_cu = cpx_sparse.csr_matrix(cp.asarray(psf_precision_operator))
     cp.cuda.Stream.null.synchronize()
     t1 = time.time()
     print(f" CuPy sparse build: {t1 - t0:.3f}s | nnz M={M_cu.nnz}, W={W_cu.nnz}")
@@ -197,5 +197,5 @@ def benchmark_with_real_data(mapping_matrix, w_matrix, F_numba):
 
 
 F_sparse, F_cu = benchmark_with_real_data(
-    mapping_matrix, dataset.w_tilde.w_matrix, curvature_matrix_w_tilde
+    mapping_matrix, dataset.sparse_operator.psf_precision_operator, curvature_matrix_w_tilde
 )

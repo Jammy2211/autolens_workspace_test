@@ -9,15 +9,15 @@ import autoarray as aa
 # instrument = "vro"
 # instrument = "euclid"
 instrument = "hst"
-# instrument = "hst_up"
+# instrument = "jwst"
 # instrument = "ao"
 
 folder = Path("linear_alg") / "arrs" / instrument
 
-w_matrix = np.load(f"{folder}/w_matrix.npy")
+psf_precision_operator = np.load(f"{folder}/psf_precision_operator.npy")
 mapping_matrix = np.load(f"{folder}/mapping_matrix.npy")
 curvature_matrix = np.load(f"{folder}/curvature_matrix.npy")
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "jwst": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
 
 dataset_path = Path("dataset") / "imaging" / "instruments" / instrument
@@ -91,7 +91,7 @@ print("Curvature Matrix Shape: ", curvature_matrix.shape)
 import via_jax_spike_util as util
 
 curvature_preload_tmp, curvature_indexes, curvature_lengths = (
-    util.w_tilde_curvature_preload_imaging_from(
+    util.psf_precision_operator_sparse_from(
         noise_map_native=dataset.noise_map.native.array,
         kernel_native=dataset.psf.native.array,
         native_index_for_slim_index=np.array(

@@ -39,7 +39,6 @@ import autofit as af
 import autolens as al
 from autoconf import conf
 
-
 sub_size = 4
 psf_shape_2d = (21, 21)
 
@@ -58,12 +57,13 @@ hst_up: pixel_scale = 0.03", slow run times.
 ao: pixel_scale = 0.01", very slow :(
 """
 # instrument = "vro"
-instrument = "euclid"
-# instrument = "hst"
-# instrument = "hst_up"
+# instrument = "euclid"
+instrument = "hst"
+# instrument = "hst_41x41"
+# instrument = "jwst"
 # instrument = "ao"
 
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_up": 0.03, "ao": 0.01}
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_41x41": 0.05,  "jwst": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
 
 """
@@ -87,7 +87,7 @@ __Mask__
 The model-fit requires a 2D mask defining the regions of the image we fit the model to the data, which we define
 and use to set up the `Imaging` object that the model fits.
 """
-mask_radius = 3.0
+mask_radius = 3.5
 
 mask = al.Mask2D.circular(
     shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
@@ -106,7 +106,24 @@ over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
     centre_list=[(0.0, 0.0)],
 )
 
-dataset = dataset.apply_over_sampling(over_sample_size_lp=over_sample_size)
+snr_no_lens = al.Array2D.from_fits(file_path=path.join(dataset_path, "snr_no_lens.fits"), pixel_scales=pixel_scale)
+
+signal_to_noise_threshold = 3.0
+over_sample_size_pixelization = np.where(
+    snr_no_lens.native > signal_to_noise_threshold,
+    4,
+    2,
+)
+over_sample_size_pixelization = al.Array2D(
+    values=over_sample_size_pixelization, mask=mask
+)
+
+dataset = dataset.apply_over_sampling(
+    over_sample_size_lp=over_sample_size,
+    over_sample_size_pixelization=over_sample_size_pixelization,
+)
+
+dataset = dataset.apply_sparse_operator(batch_size=128)
 
 
 """
@@ -129,7 +146,7 @@ The `image_mesh` can be ignored, it is legacy API from previous versions which m
 versions.
 """
 image_mesh = None
-mesh_shape = (20, 20)
+mesh_shape = (32, 32)
 total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
 
 preloads = al.Preloads(
@@ -227,6 +244,7 @@ analysis = al.AnalysisImaging(
     #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
     preloads=preloads,
     raise_inversion_positions_likelihood_exception=False,
+    use_jax=True
 )
 
 """
@@ -238,7 +256,7 @@ This is the function on which JAX gradients are computed, so we create this clas
 from autofit.non_linear.fitness import Fitness
 import time
 
-batch_size = 10
+batch_size = 3
 
 fitness = Fitness(
     model=model,
@@ -248,7 +266,6 @@ fitness = Fitness(
 )
 
 param_vector = jnp.array(model.physical_values_from_prior_medians)
-
 
 parameters = np.zeros((batch_size, model.total_free_parameters))
 
@@ -268,6 +285,11 @@ print(fitness._vmap(parameters))
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
+batched_call = jax.jit(jax.vmap(fitness.call))
+lowered = batched_call.lower(parameters)
+compiled = lowered.compile()
+memory_analysis = compiled.memory_analysis()
+print(f'Memory {(memory_analysis.output_size_in_bytes + memory_analysis.temp_size_in_bytes) / 1024**2:.3} MB')
 
 """
 Output an image of the fit, so that we can inspect that it fits the data as expected.

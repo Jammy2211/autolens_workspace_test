@@ -76,7 +76,7 @@ def fit():
         over_sample_size_lp=over_sample_size,
     )
 
-    # dataset = dataset.apply_w_tilde()
+    # dataset = dataset.apply_sparse_operator()
     
     """
     __Settings AutoFit__

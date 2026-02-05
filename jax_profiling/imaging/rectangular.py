@@ -32,13 +32,10 @@ discussed above shows the PSF features.
 
 import numpy as np
 import jax
-from jax import grad
 from os import path
 
 import autofit as af
 import autolens as al
-from autoconf import conf
-
 
 sub_size = 4
 psf_shape_2d = (21, 21)
@@ -60,10 +57,10 @@ ao: pixel_scale = 0.01", very slow :(
 # instrument = "vro"
 # instrument = "euclid"
 instrument = "hst"
-# instrument = "hst_up"
+# instrument = "jwst"
 # instrument = "ao"
 
-pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_offset_centre": 0.05, "hst_offset_centre_and_mass": 0.05,  "hst_up": 0.03, "ao": 0.01}
+pixel_scales_dict = {"vro": 0.2, "euclid": 0.1, "hst": 0.05, "hst_offset_centre": 0.05, "hst_offset_centre_and_mass": 0.05,  "jwst": 0.03, "ao": 0.01}
 pixel_scale = pixel_scales_dict[instrument]
 
 """
@@ -102,10 +99,24 @@ over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
     centre_list=[(0.0, 0.0)],
 )
 
+snr_no_lens = al.Array2D.from_fits(file_path=path.join(dataset_path, "snr_no_lens.fits"), pixel_scales=pixel_scale)
+
+signal_to_noise_threshold = 3.0
+over_sample_size_pixelization = np.where(
+    snr_no_lens.native > signal_to_noise_threshold,
+    4,
+    2,
+)
+over_sample_size_pixelization = al.Array2D(
+    values=over_sample_size_pixelization, mask=mask
+)
+
 dataset = dataset.apply_over_sampling(
     over_sample_size_lp=over_sample_size,
-    over_sample_size_pixelization=4,
+    over_sample_size_pixelization=over_sample_size_pixelization,
 )
+
+# dataset = dataset.apply_sparse_operator(batch_size=64)
 
 
 """
@@ -128,7 +139,7 @@ The `image_mesh` can be ignored, it is legacy API from previous versions which m
 versions.
 """
 image_mesh = None
-mesh_shape = (30, 30)
+mesh_shape = (32, 32)
 total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
 
 preloads = al.Preloads(
@@ -215,11 +226,9 @@ import jax.numpy as jnp
 
 analysis = al.AnalysisImaging(
     dataset=dataset,
-    #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
     adapt_images=adapt_images,
     preloads=preloads,
     raise_inversion_positions_likelihood_exception=False,
-#    settings_inversion=al.SettingsInversion(use_border_relocator=False)
 )
 
 """
@@ -231,7 +240,7 @@ This is the function on which JAX gradients are computed, so we create this clas
 from autofit.non_linear.fitness import Fitness
 import time
 
-batch_size = 1
+batch_size = 5
 
 fitness = Fitness(
     model=model,

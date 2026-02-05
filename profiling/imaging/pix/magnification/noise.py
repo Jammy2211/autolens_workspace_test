@@ -33,7 +33,7 @@ file_path = os.path.join(
 """
 Whether w_tilde is used dictates the output folder.
 """
-use_w_tilde = True
+use_sparse_linalg = True
 
 """
 These settings control various aspects of how long a fit takes. The values below are default PyAutoLens values.
@@ -154,7 +154,7 @@ Time FitImaging by itself, to compare to profiling dict call.
 fit = al.FitImaging(
     dataset=masked_dataset,
     tracer=tracer,
-    settings_inversion=al.SettingsInversion(use_w_tilde=use_w_tilde),
+    settings_inversion=al.SettingsInversion(use_sparse_linalg=use_sparse_linalg),
 )
 
 
