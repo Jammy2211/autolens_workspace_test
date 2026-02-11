@@ -330,7 +330,7 @@ def fit():
         settings_search=settings_search
     )
 
-    dark = af.Model(al.mp.NFWMCRLudlow)
+    dark = af.Model(al.mp.NFWMCRLudlowSph)
 
     mass_result = slam_pipeline.mass_light_dark.run(
         settings_search=settings_search,

@@ -240,7 +240,7 @@ This is the function on which JAX gradients are computed, so we create this clas
 from autofit.non_linear.fitness import Fitness
 import time
 
-batch_size = 5
+batch_size = 3
 
 fitness = Fitness(
     model=model,

@@ -120,7 +120,7 @@ over_sample_size_pixelization = al.Array2D(
 
 dataset = dataset.apply_over_sampling(
     over_sample_size_lp=over_sample_size,
-    over_sample_size_pixelization=4,
+    over_sample_size_pixelization=over_sample_size_pixelization,
 )
 
 # dataset = dataset.apply_sparse_operator(batch_size=128)
@@ -145,19 +145,49 @@ inputs:
 The `image_mesh` can be ignored, it is legacy API from previous versions which may or may not be reintegrated in future
 versions.
 """
-image_mesh = None
-mesh_shape = (32, 32)
-total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
+galaxy_image_name_dict = {
+    "('galaxies', 'lens')": dataset.data,
+    "('galaxies', 'source')" : dataset.data
+}
+
+image_mesh = al.image_mesh.Hilbert(pixels=500, weight_power=1.0, weight_floor=0.0001)
+
+image_plane_mesh_grid = image_mesh.image_plane_mesh_grid_from(
+    mask=dataset.mask, adapt_data=galaxy_image_name_dict["('galaxies', 'source')"]
+)
+
+image_plane_mesh_grid_edge_pixels = 30
+
+image_plane_mesh_grid = al.image_mesh.append_with_circle_edge_points(
+    image_plane_mesh_grid=image_plane_mesh_grid,
+    centre=mask.mask_centre,
+    radius=mask_radius + mask.pixel_scale / 2.0,
+    n_points=image_plane_mesh_grid_edge_pixels,
+)
+
+total_mapper_pixels = image_plane_mesh_grid.shape[0]
+
+total_linear_light_profiles = 40
+
+mapper_indices = al.mapper_indices_from(
+    total_linear_light_profiles=total_linear_light_profiles,
+    total_mapper_pixels=total_mapper_pixels,
+)
+
+source_pixel_zeroed_indices = mapper_indices[-image_plane_mesh_grid_edge_pixels:]
 
 preloads = al.Preloads(
-    mapper_indices=al.mapper_indices_from(
-        total_linear_light_profiles=40,
-        total_mapper_pixels=total_mapper_pixels
-    ),
-    source_pixel_zeroed_indices=al.util.mesh.rectangular_edge_pixel_list_from(
-        mesh_shape
-    ),
+    mapper_indices=mapper_indices,
+    source_pixel_zeroed_indices=source_pixel_zeroed_indices,
 )
+
+adapt_images = al.AdaptImages(
+    galaxy_name_image_dict=galaxy_image_name_dict,
+    galaxy_name_image_plane_mesh_grid_dict={
+        "('galaxies', 'source')": image_plane_mesh_grid
+    },
+)
+
 
 """
 __Model__
@@ -195,15 +225,15 @@ mass.ell_comps.ell_comps_0 = af.UniformPrior(
 )
 mass.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=-0.01, upper_limit=0.01)
 
-shear = af.Model(al.mp.ExternalShear)
-shear.gamma_1 = af.UniformPrior(lower_limit=0.000, upper_limit=0.002)
-shear.gamma_2 = af.UniformPrior(lower_limit=0.000, upper_limit=0.002)
-
 dark = af.Model(al.mp.IsothermalSph)
 
 dark.centre.centre_0 = af.UniformPrior(lower_limit=2.0, upper_limit=2.1)
 dark.centre.centre_1 = af.UniformPrior(lower_limit=2.0, upper_limit=2.1)
-dark.einstein_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.7)
+dark.einstein_radius = af.UniformPrior(lower_limit=0.0, upper_limit=0.1)
+
+shear = af.Model(al.mp.ExternalShear)
+shear.gamma_1 = af.UniformPrior(lower_limit=0.000, upper_limit=0.002)
+shear.gamma_2 = af.UniformPrior(lower_limit=0.000, upper_limit=0.002)
 
 lens = af.Model(
     al.Galaxy,
@@ -216,15 +246,10 @@ lens = af.Model(
 
 # Source:
 
-mesh = al.mesh.RectangularAdaptDensity(shape=mesh_shape)
-# regularization = al.reg.Constant(coefficient=1.0)
-
-# regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
-
-regularization = al.reg.Constant()
-
-pixelization = al.Pixelization(
-    mesh=mesh, regularization=regularization
+pixelization = af.Model(
+    al.Pixelization,
+    mesh=al.mesh.Delaunay(),
+    regularization=al.reg.ConstantSplit,
 )
 
 source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
@@ -232,6 +257,7 @@ source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
 # Overall Lens Model:
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
+
 
 """
 The `info` attribute shows the model in a readable format.
@@ -249,14 +275,15 @@ import jax.numpy as jnp
 analysis = al.AnalysisImaging(
     dataset=dataset,
     #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
+    adapt_images=adapt_images,
     preloads=preloads,
     raise_inversion_positions_likelihood_exception=False,
     settings_inversion=al.SettingsInversion(
-        use_border_relocator=True,
-        use_positive_only_solver=True,
+        use_border_relocator=False,
+        use_positive_only_solver=False,
         use_mixed_precision=True
     ),
-    use_jax=True,
+    use_jax=True
 )
 
 """
@@ -291,20 +318,11 @@ print()
 print(fitness._vmap(parameters))
 print("JAX Time To VMAP + JIT Function", time.time() - start)
 
-import jax
-# from jax import profiler
-#
-# logdir = "/tmp/jax_prof"
-# profiler.start_trace(logdir)
-
 start = time.time()
 print()
 print(fitness._vmap(parameters))
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
-
-# profiler.stop_trace()
-# fff
 
 batched_call = jax.jit(jax.vmap(fitness.call))
 lowered = batched_call.lower(parameters)

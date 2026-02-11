@@ -198,6 +198,8 @@ def fit():
         positions_likelihood_list=[
             source_lp_result.positions_likelihood_from(factor=3.0, minimum_threshold=0.2)
         ],
+        settings_inversion=al.SettingsInversion(use_border_relocator=False),
+        use_jax=False
     )
 
     source_pix_result_1 = slam_pipeline.source_pix.run_1(
@@ -224,6 +226,7 @@ def fit():
         adapt_images=adapt_images,
         preloads=preloads,
         use_jax=True,
+        settings_inversion=al.SettingsInversion(use_border_relocator=False)
     )
 
     source_pix_result_2 = slam_pipeline.source_pix.run_2(
@@ -255,6 +258,7 @@ def fit():
         adapt_images=adapt_images,
         preloads=preloads,
         use_jax=True,
+        settings_inversion=al.SettingsInversion(use_border_relocator=False)
     )
 
     lens_bulge = al.model_util.mge_model_from(
@@ -308,6 +312,7 @@ def fit():
         ],
         preloads=preloads,
         use_jax=True,
+        settings_inversion=al.SettingsInversion(use_border_relocator=False)
     )
 
     mass_result = slam_pipeline.mass_total.run(
