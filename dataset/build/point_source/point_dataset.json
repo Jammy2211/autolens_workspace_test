@@ -2,15 +2,17 @@
     "type": "instance",
     "class_path": "autolens.point.dataset.PointDataset",
     "arguments": {
-        "fluxes": {
+        "time_delays": null,
+        "name": "point_0",
+        "positions_noise_map": {
             "type": "instance",
             "class_path": "autoarray.structures.arrays.irregular.ArrayIrregular",
             "arguments": {
                 "values": {
                     "type": "ndarray",
                     "array": [
-                        15.005336032337018,
-                        16.99529467841804
+                        0.05,
+                        0.05
                     ],
                     "dtype": "float64"
                 }
@@ -30,20 +32,6 @@
                 }
             }
         },
-        "positions_noise_map": {
-            "type": "instance",
-            "class_path": "autoarray.structures.arrays.irregular.ArrayIrregular",
-            "arguments": {
-                "values": {
-                    "type": "ndarray",
-                    "array": [
-                        0.05,
-                        0.05
-                    ],
-                    "dtype": "float64"
-                }
-            }
-        },
         "positions": {
             "type": "instance",
             "class_path": "autoarray.structures.grids.irregular_2d.Grid2DIrregular",
@@ -52,18 +40,32 @@
                     "type": "ndarray",
                     "array": [
                         [
-                            0.00013552278245065885,
-                            -1.5000000000000133
+                            0.0,
+                            -1.500208590097418
                         ],
                         [
-                            0.00013552278245065885,
-                            1.6999999999999753
+                            0.0,
+                            1.7004769647225697
                         ]
                     ],
                     "dtype": "float64"
                 }
             }
         },
-        "name": "point_0"
+        "fluxes": {
+            "type": "instance",
+            "class_path": "autoarray.structures.arrays.irregular.ArrayIrregular",
+            "arguments": {
+                "values": {
+                    "type": "ndarray",
+                    "array": [
+                        15.03880081445855,
+                        16.91938930938499
+                    ],
+                    "dtype": "float64"
+                }
+            }
+        },
+        "time_delays_noise_map": null
     }
 }

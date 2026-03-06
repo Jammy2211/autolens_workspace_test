@@ -209,11 +209,11 @@ def fit():
     model using a pixelization to create this adapt image.
     
     The first search, which is an initialization search, fits an `Overlay` image-mesh, `Delaunay` mesh 
-    and `AdaptiveBrightnessSplit` regularization.
+    and `AdaptSplit` regularization.
     
     __Adapt Images / Image Mesh Settings__
     
-    If you are unclear what the `adapt_images` and `SettingsInversion` inputs are doing below, refer to the 
+    If you are unclear what the `adapt_images` and `Settings` inputs are doing below, refer to the 
     `autolens_workspace/*/guides/modeling/chaining/pix_adapt/start_here.py` example script.
     
     __Settings__:
@@ -254,12 +254,12 @@ def fit():
     
     - Uses a `Delaunay` mesh.
     
-     - Uses an `AdaptiveBrightnessSplit` regularization.
+     - Uses an `AdaptSplit` regularization.
     
      - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
      SOURCE PIX PIPELINE.
     
-    The `Hilbert` image-mesh and `AdaptiveBrightness` regularization adapt the source pixels and regularization weights
+    The `Hilbert` image-mesh and `Adapt` regularization adapt the source pixels and regularization weights
     to the source's morphology.
     
     Below, we therefore set up the adapt image using this result.
@@ -268,7 +268,7 @@ def fit():
         al.AnalysisImaging(
             dataset=result.max_log_likelihood_fit.dataset,
             adapt_image_maker=al.AdaptImageMaker(result=result),
-            settings_inversion=al.SettingsInversion(
+            settings=al.Settings(
                 image_mesh_min_mesh_pixels_per_pixel=3,
                 image_mesh_min_mesh_number=5,
                 image_mesh_adapt_background_percent_threshold=0.1,
@@ -287,7 +287,7 @@ def fit():
         source_pix_result_1=source_pix_result_1,
         image_mesh=al.image_mesh.Hilbert,
         mesh=al.mesh.Delaunay,
-        regularization=al.reg.AdaptiveBrightnessSplit,
+        regularization=al.reg.AdaptSplit,
         dataset_model=af.Model(al.DatasetModel),
     )
 
@@ -477,27 +477,20 @@ def fit():
 
     analysis = sum([analysis, analysis])
 
-    subhalo_result_1 = slam.subhalo.detection.run_1_no_subhalo(
+    subhalo_grid_search_result_1 = slam.subhalo.detection.run_1_grid_search(
         settings_search=settings_search,
         analysis=analysis,
         mass_result=mass_result,
-    )
-
-    subhalo_grid_search_result_2 = slam.subhalo.detection.run_2_grid_search(
-        settings_search=settings_search,
-        analysis=analysis,
-        mass_result=mass_result,
-        subhalo_result_1=subhalo_result_1,
         subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
         grid_dimension_arcsec=3.0,
         number_of_steps=2,
     )
 
-    subhalo_result_3 = slam.subhalo.detection.run_3_subhalo(
+    slam.subhalo.detection.run_2_subhalo(
         settings_search=settings_search,
         analysis=analysis,
-        subhalo_result_1=subhalo_result_1,
-        subhalo_grid_search_result_2=subhalo_grid_search_result_2,
+        mass_result=mass_result,
+        subhalo_grid_search_result_1=subhalo_grid_search_result_1,
         subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     )
 

@@ -15,6 +15,7 @@ def run(
     extra_galaxies: Optional[af.Collection] = None,
     dataset_model: Optional[af.Model] = None,
     n_batch: int = 20,
+    n_like_max: int = 200000,
 ) -> af.Result:
     """
     The SlaM LIGHT LP PIPELINE, which fits a complex model for a lens galaxy's light with the mass and source models
@@ -86,8 +87,9 @@ def run(
     search = af.Nautilus(
         name="light[1]",
         **settings_search.search_dict,
-        n_live=150,
+        n_live=300,
         n_batch=n_batch,
+        n_like_max=n_like_max,
     )
 
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)

@@ -61,7 +61,9 @@ dataset = al.Imaging.from_fits(
 mask_radius = 3.0
 
 mask = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
+    shape_native=dataset.shape_native,
+    pixel_scales=dataset.pixel_scales,
+    radius=mask_radius,
 )
 
 dataset = dataset.apply_mask(mask=mask)
@@ -133,7 +135,7 @@ that reconstructs the source galaxy's light. It begins by fitting a `Voronoi` pi
 regularization, to set up the model and hyper images, and then:
 
  - Uses a `Voronoi` pixelization.
- - Uses an `AdaptiveBrightness` regularization.
+ - Uses an `Adapt` regularization.
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
 """
@@ -169,7 +171,7 @@ dataset = dataset.apply_over_sampling(
 analysis = al.AnalysisImaging(
     dataset=dataset,
     adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
-    settings_inversion=al.SettingsInversion(
+    settings=al.Settings(
         image_mesh_min_mesh_pixels_per_pixel=3,
         image_mesh_min_mesh_number=5,
         image_mesh_adapt_background_percent_threshold=0.1,
@@ -184,7 +186,7 @@ source_pix_result_2 = slam.source_pix.run_2(
     source_pix_result_1=source_pix_result_1,
     image_mesh=al.image_mesh.Hilbert,
     mesh=al.mesh.Voronoi,
-    regularization=al.reg.AdaptiveBrightnessSplit,
+    regularization=al.reg.AdaptSplit,
 )
 
 """

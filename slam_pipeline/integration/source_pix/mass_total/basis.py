@@ -220,7 +220,7 @@ that reconstructs the source galaxy's light. It begins by fitting a `Voronoi` pi
 regularization, to set up the model and hyper images, and then:
 
  - Uses a `Voronoi` pixelization.
- - Uses an `AdaptiveBrightness` regularization.
+ - Uses an `Adapt` regularization.
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
  SOURCE PIX PIPELINE.
 """
@@ -242,7 +242,7 @@ __SOURCE PIX PIPELINE 2 (with lens light)__
 analysis = al.AnalysisImaging(
     dataset=dataset,
     adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
-    settings_inversion=al.SettingsInversion(
+    settings=al.Settings(
         image_mesh_min_mesh_pixels_per_pixel=3,
         image_mesh_min_mesh_number=5,
         image_mesh_adapt_background_percent_threshold=0.1,
@@ -257,7 +257,7 @@ source_pix_result_2 = slam.source_pix.run_2(
     source_pix_result_1=source_pix_result_1,
     image_mesh=al.image_mesh.Hilbert,
     mesh=al.mesh.Voronoi,
-    regularization=al.reg.AdaptiveBrightnessSplit,
+    regularization=al.reg.AdaptSplit,
 )
 
 """
@@ -394,27 +394,20 @@ analysis = al.AnalysisImaging(
     adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
 )
 
-subhalo_result_1 = slam.subhalo.detection.run_1_no_subhalo(
+subhalo_grid_search_result_1 = slam.subhalo.detection.run_1_grid_search(
     settings_search=settings_search,
     analysis=analysis,
     mass_result=mass_result,
-)
-
-subhalo_grid_search_result_2 = slam.subhalo.detection.run_2_grid_search(
-    settings_search=settings_search,
-    analysis=analysis,
-    mass_result=mass_result,
-    subhalo_result_1=subhalo_result_1,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     grid_dimension_arcsec=3.0,
     number_of_steps=2,
 )
 
-subhalo_result_3 = slam.subhalo.detection.run_3_subhalo(
+slam.subhalo.detection.run_2_subhalo(
     settings_search=settings_search,
     analysis=analysis,
-    subhalo_result_1=subhalo_result_1,
-    subhalo_grid_search_result_2=subhalo_grid_search_result_2,
+    mass_result=mass_result,
+    subhalo_grid_search_result_1=subhalo_grid_search_result_1,
     subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
 )
 

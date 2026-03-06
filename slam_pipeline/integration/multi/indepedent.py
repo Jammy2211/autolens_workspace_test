@@ -217,7 +217,7 @@ def fit():
     analysis = al.AnalysisImaging(
         dataset=dataset,
         adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
-        settings_inversion=al.SettingsInversion(
+        settings=al.Settings(
             image_mesh_min_mesh_pixels_per_pixel=3,
             image_mesh_min_mesh_number=5,
             image_mesh_adapt_background_percent_threshold=0.1,
@@ -232,7 +232,7 @@ def fit():
         source_pix_result_1=source_pix_result_1,
         image_mesh=al.image_mesh.Hilbert,
         mesh=al.mesh.Delaunay,
-        regularization=al.reg.AdaptiveBrightnessSplit,
+        regularization=al.reg.AdaptSplit,
     )
 
     """
@@ -472,7 +472,7 @@ def fit():
         regularization, to set up the model and hyper images, and then:
 
          - Uses a `VoronoiBrightnessImage` pixelization.
-         - Uses an `AdaptiveBrightness` regularization.
+         - Uses an `Adapt` regularization.
          - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
          SOURCE PIX PIPELINE.
         """
@@ -499,13 +499,13 @@ def fit():
         )
 
         source_pix_result_1.max_log_likelihood_fit.inversion.cls_list_from(
-            cls=al.AbstractMapper
+            cls=al.Mapper
         )[0].extent_from()
 
         analysis = al.AnalysisImaging(
             dataset=dataset,
             adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
-            settings_inversion=al.SettingsInversion(
+            settings=al.Settings(
                 image_mesh_min_mesh_pixels_per_pixel=3,
                 image_mesh_min_mesh_number=5,
                 image_mesh_adapt_background_percent_threshold=0.1,
@@ -527,7 +527,7 @@ def fit():
             source_pix_result_1=source_pix_result_1,
             image_mesh=al.image_mesh.Hilbert,
             mesh=al.mesh.Delaunay,
-            regularization=al.reg.AdaptiveBrightnessSplit,
+            regularization=al.reg.AdaptSplit,
             dataset_model=dataset_model,
         )
 

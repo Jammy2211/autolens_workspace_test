@@ -103,7 +103,6 @@ def fit():
     redshift_lens = 0.5
     redshift_source = 1.0
 
-
     """
     __SOURCE LP PIPELINE (with lens light)__
     
@@ -155,36 +154,26 @@ def fit():
     )
 
     """
-    __JAX & Preloads__
-
-    In JAX, calculations must use static shaped arrays with known and fixed indexes. For certain calculations in the
-    pixelization, this information has to be passed in before the pixelization is performed. Below, we do this for 3
-    inputs:
-
-    - `total_linear_light_profiles`: The number of linear light profiles in the model. This is 0 because we are not
-      fitting any linear light profiles to the data, primarily because the lens light is omitted.
-
-    - `total_mapper_pixels`: The number of source pixels in the rectangular pixelization mesh. This is required to set up 
-      the arrays that perform the linear algebra of the pixelization.
-
-    - `source_pixel_zeroed_indices`: The indices of source pixels on its edge, which when the source is reconstructed 
-      are forced to values of zero, a technique tests have shown are required to give accruate lens models.
+    __Mesh Shape__
+    
+    The `mesh_shape` parameter defines number of pixels used by the rectangular mesh to reconstruct the source,
+    set below to 28 x 28. 
+    
+    The `mesh_shape` must be fixed before modeling and cannot be a free parameter of the model, because JAX uses the
+    mesh shape to define static shaped arrays which use the mesh to reconstruct the source. For a rectangular
+    mesh, the same number of pixels must be used in the y and x directions.
+    
+    __Edge Zeroing__
+    
+    By default, all pixels at the edge of the mesh in the source-plane are forced to solutions of zero brightness by 
+    the linear algebra solver. This prevents unphysical solutions where pixels at the edge of the mesh reconstruct 
+    bright surface brightnesses, often because they fit residuals from the lens light subtraction.
+    
+    For a rectangular mesh, the source code computes edge pixels internally using the known
+    pixels at the edge of the mesh. 
     """
-    mesh_shape = (20, 20)
-    total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
-
-    total_linear_light_profiles = 60
-
-    preloads = al.Preloads(
-        mapper_indices=al.mapper_indices_from(
-            total_linear_light_profiles=total_linear_light_profiles,
-            total_mapper_pixels=total_mapper_pixels,
-        ),
-        source_pixel_zeroed_indices=al.util.mesh.rectangular_edge_pixel_list_from(
-            total_linear_light_profiles=total_linear_light_profiles,
-            shape_native=mesh_shape,
-        ),
-    )
+    mesh_pixels_yx = 28
+    mesh_shape = (mesh_pixels_yx, mesh_pixels_yx)
 
     """
     __SOURCE PIX PIPELINE__
@@ -199,10 +188,11 @@ def fit():
 
     analysis = al.AnalysisImaging(
         dataset=dataset,
-        preloads=preloads,
         adapt_images=adapt_images,
         positions_likelihood_list=[
-            source_lp_result.positions_likelihood_from(factor=3.0, minimum_threshold=0.2)
+            source_lp_result.positions_likelihood_from(
+                factor=3.0, minimum_threshold=0.2
+            )
         ],
     )
 
@@ -211,7 +201,7 @@ def fit():
         analysis=analysis,
         source_lp_result=source_lp_result,
         mesh_init=af.Model(al.mesh.RectangularAdaptDensity, shape=mesh_shape),
-        regularization_init=al.reg.AdaptiveBrightness,
+        regularization_init=al.reg.Adapt,
     )
 
     """
@@ -227,7 +217,6 @@ def fit():
 
     analysis = al.AnalysisImaging(
         dataset=dataset,
-        preloads=preloads,
         adapt_images=adapt_images,
         use_jax=True,
     )
@@ -238,7 +227,7 @@ def fit():
         source_lp_result=source_lp_result,
         source_pix_result_1=source_pix_result_1,
         mesh=af.Model(al.mesh.RectangularAdaptImage, shape=mesh_shape),
-        regularization=al.reg.AdaptiveBrightness,
+        regularization=al.reg.Adapt,
     )
 
     """
@@ -262,13 +251,12 @@ def fit():
         mask_radius=mask_radius,
         total_gaussians=30,
         gaussian_per_basis=2,
-        centre_prior_is_uniform=True
+        centre_prior_is_uniform=True,
     )
 
     analysis = al.AnalysisImaging(
         dataset=dataset,
         adapt_images=adapt_images,
-        preloads=preloads,
         use_jax=True,
     )
 
@@ -280,7 +268,6 @@ def fit():
         lens_bulge=lens_bulge,
         lens_disk=None,
     )
-
 
     """
     __MASS LIGHT DARK PIPELINE (with lens light)__
@@ -304,9 +291,10 @@ def fit():
         dataset=dataset,
         adapt_images=adapt_images,
         positions_likelihood_list=[
-            source_pix_result_2.positions_likelihood_from(factor=3.0, minimum_threshold=0.2)
+            source_pix_result_2.positions_likelihood_from(
+                factor=3.0, minimum_threshold=0.2
+            )
         ],
-        preloads=preloads,
         use_jax=True,
     )
 
@@ -326,8 +314,8 @@ def fit():
     values are always used.
     """
     lp_chain_tracer = al.util.chaining.lp_chain_tracer_from(
-        light_result=light_result, # Links LIGHT PIPELINE MGE to MASS LIGHT DARK PIPELINE
-        settings_search=settings_search
+        light_result=light_result,  # Links LIGHT PIPELINE MGE to MASS LIGHT DARK PIPELINE
+        settings_search=settings_search,
     )
 
     dark = af.Model(al.mp.NFWMCRLudlowSph)
@@ -340,7 +328,8 @@ def fit():
         source_result_for_source=source_pix_result_2,
         light_result=light_result,
         dark=dark,
-        link_mass_to_light_ratios=True,
+        #        link_mass_to_light_ratios=True,
+        use_gradient=True,
     )
 
     mass_result = slam_pipeline.mass_light_dark.run(
@@ -379,7 +368,6 @@ def fit():
         dark=dark,
         link_mass_to_light_ratios=True,
     )
-
 
     dark = af.Model(al.mp.NFWMCRLudlowSph)
 
@@ -433,10 +421,10 @@ def fit():
         dark=dark,
     )
 
-
     """
     Finish.
     """
+
 
 if __name__ == "__main__":
     fit()

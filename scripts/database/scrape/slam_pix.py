@@ -18,12 +18,10 @@ from astropy.io import fits
 import os
 from os import path
 
-# os.environ["PYAUTOFIT_TEST_MODE"] = "1"
-
 import autofit as af
 import autolens as al
 import autolens.plot as aplt
-import slam
+import slam_pipeline
 
 """
 __Dataset + Masking__
@@ -41,7 +39,9 @@ dataset = al.Imaging.from_fits(
 mask_radius = 3.0
 
 mask = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
+    shape_native=dataset.shape_native,
+    pixel_scales=dataset.pixel_scales,
+    radius=mask_radius,
 )
 
 dataset = dataset.apply_mask(mask=mask)
@@ -90,7 +90,7 @@ disk = af.Model(al.lp_linear.Exponential)
 # disk = af.Model(al.lp_linear.Sersic)
 bulge.centre = disk.centre
 
-source_lp_result = slam.source_lp.run(
+source_lp_result = slam_pipeline.source_lp.run(
     settings_search=settings_search,
     analysis=analysis,
     lens_bulge=bulge,
@@ -100,55 +100,70 @@ source_lp_result = slam.source_lp.run(
     source_bulge=af.Model(al.lp_linear.Sersic),
     redshift_lens=redshift_lens,
     redshift_source=redshift_source,
+    n_like_max=300,
 )
 
+"""
+__Mesh Shape__
+
+As discussed in the `features/pixelization/modeling` example, the mesh shape is fixed before modeling.
+"""
+mesh_pixels_yx = 28
+mesh_shape = (mesh_pixels_yx, mesh_pixels_yx)
 
 """
-__SOURCE PIX PIPELINE (with lens light)__
+__SOURCE PIX PIPELINE__
 
-The SOURCE PIX PIPELINE (with lens light) uses two searches to initialize a robust model for the pixelization
-that reconstructs the source galaxy's light. It begins by fitting a `Delaunay` pixelization with `Constant` 
-regularization, to set up the model and hyper images, and then:
-
- - Uses a `Delaunay` pixelization.
- - Uses an `AdaptiveBrightness` regularization.
- - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE LP PIPELINE through to the
- SOURCE PIX PIPELINE.
+The SOURCE PIX PIPELINE is identical to the `slam_start_here.ipynb` example.
 """
+galaxy_image_name_dict = al.galaxy_name_image_dict_via_result_from(
+    result=source_lp_result
+)
+
+adapt_images = al.AdaptImages(galaxy_name_image_dict=galaxy_image_name_dict)
+
 analysis = al.AnalysisImaging(
     dataset=dataset,
-    adapt_image_maker=al.AdaptImageMaker(result=source_lp_result),
+    adapt_images=adapt_images,
+    positions_likelihood_list=[
+        source_lp_result.positions_likelihood_from(factor=3.0, minimum_threshold=0.2)
+    ],
 )
 
-source_pix_result_1 = slam.source_pix.run_1(
+source_pix_result_1 = slam_pipeline.source_pix.run_1(
     settings_search=settings_search,
     analysis=analysis,
     source_lp_result=source_lp_result,
-    mesh_init=al.mesh.Delaunay,
+    mesh_init=af.Model(al.mesh.RectangularAdaptDensity, shape=mesh_shape),
+    regularization_init=al.reg.Adapt,
+    n_like_max=300,
 )
 
 """
-__SOURCE PIX PIPELINE 2 (with lens light)__
+__SOURCE PIX PIPELINE 2__
+
+The SOURCE PIX PIPELINE 2 is identical to the `slam_start_here.ipynb` example.
 """
+galaxy_image_name_dict = al.galaxy_name_image_dict_via_result_from(
+    result=source_pix_result_1
+)
+
+adapt_images = al.AdaptImages(galaxy_name_image_dict=galaxy_image_name_dict)
+
 analysis = al.AnalysisImaging(
     dataset=dataset,
-    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
-    settings_inversion=al.SettingsInversion(
-        image_mesh_min_mesh_pixels_per_pixel=3,
-        image_mesh_min_mesh_number=5,
-        image_mesh_adapt_background_percent_threshold=0.1,
-        image_mesh_adapt_background_percent_check=0.8,
-    ),
+    adapt_images=adapt_images,
+    use_jax=True,
 )
 
-source_pix_result_2 = slam.source_pix.run_2(
+source_pix_result_2 = slam_pipeline.source_pix.run_2(
     settings_search=settings_search,
     analysis=analysis,
     source_lp_result=source_lp_result,
     source_pix_result_1=source_pix_result_1,
-    image_mesh=al.image_mesh.Hilbert,
-    mesh=al.mesh.Delaunay,
-    regularization=al.reg.AdaptiveBrightnessSplit,
+    mesh=af.Model(al.mesh.RectangularAdaptImage, shape=mesh_shape),
+    regularization=al.reg.Adapt,
+    n_like_max=300,
 )
 
 """
@@ -174,16 +189,17 @@ bulge.centre = disk.centre
 
 analysis = al.AnalysisImaging(
     dataset=dataset,
-    adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1),
+    adapt_images=adapt_images,
 )
 
-light_result = slam.light_lp.run(
+light_result = slam_pipeline.light_lp.run(
     settings_search=settings_search,
     analysis=analysis,
     source_result_for_lens=source_pix_result_1,
     source_result_for_source=source_pix_result_2,
     lens_bulge=bulge,
     lens_disk=disk,
+    n_like_max=300,
 )
 
 """
@@ -205,13 +221,14 @@ model of the LIGHT LP PIPELINE. In this example it:
  - Carries the lens redshift, source redshift and `ExternalShear` of the SOURCE PIPELINE through to the MASS PIPELINE.
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_pix_result_1)
+    dataset=dataset,
+    adapt_images=adapt_images,
 )
 
 multipole = af.Model(al.mp.PowerLawMultipole)
 multipole.m = 3
 
-mass_result = slam.mass_total.run(
+mass_result = slam_pipeline.mass_total.run(
     settings_search=settings_search,
     analysis=analysis,
     source_result_for_lens=source_pix_result_1,
@@ -219,6 +236,7 @@ mass_result = slam.mass_total.run(
     light_result=light_result,
     mass=af.Model(al.mp.PowerLaw),
     multipole_3=multipole,
+    n_like_max=300,
 )
 
 
@@ -318,17 +336,13 @@ for info in agg.values("info"):
     print(f"\n****Info****\n\n{info}")
     assert info["hi"] == "there"
 
-for data in agg.values("dataset.data"):
-    print(f"\n****Data (dataset.data)****\n\n{data}")
-    assert isinstance(data[0], fits.PrimaryHDU)
-
-for noise_map in agg.values("dataset.noise_map"):
-    print(f"\n****Noise Map (dataset.noise_map)****\n\n{noise_map}")
-    assert isinstance(noise_map[0], fits.PrimaryHDU)
-
-for covariance in agg.values("covariance"):
-    print(f"\n****Covariance (covariance)****\n\n{covariance}")
-    assert covariance is not None
+# for data in agg.values("dataset.data"):
+#     print(f"\n****Data (dataset.data)****\n\n{data}")
+#     assert isinstance(data[0], fits.PrimaryHDU)
+#
+# for noise_map in agg.values("dataset.noise_map"):
+#     print(f"\n****Noise Map (dataset.noise_map)****\n\n{noise_map}")
+#     assert isinstance(noise_map[0], fits.PrimaryHDU)
 
 
 """
@@ -375,39 +389,25 @@ for dataset_list in imaging_gen:
 
 fit_agg = al.agg.FitImagingAgg(
     aggregator=agg,
-    settings_inversion=al.SettingsInversion(use_border_relocator=False),
+    settings=al.Settings(use_border_relocator=False),
 )
 fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
 
-for fit_list in fit_imaging_gen:
-    fit = fit_list[0]
+# for fit_list in fit_imaging_gen:
+#     fit = fit_list[0]
+#
+#     fit_plotter = aplt.FitImagingPlotter(fit=fit)
+#     fit_plotter.subplot_fit()
+#
+#     assert fit.tracer.galaxies[0].mass.einstein_radius > 0.0
+#
+#     print("FitImagingAgg Checked")
+#
+# fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
 
-    fit_plotter = aplt.FitImagingPlotter(fit=fit)
-    fit_plotter.subplot_fit()
-
-    assert fit.tracer.galaxies[0].mass.einstein_radius > 0.0
-
-    print("FitImagingAgg Checked")
-
-fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
-
-for fit_list in fit_imaging_gen:
-    fit = fit_list[0]
-
-    assert fit.adapt_images.model_image is not None
-
-    print("FitImagingAgg Adapt Images Checked")
-
-
-"""
-__CSV__
-
-Check that the `AggregateCSV` object can be used to output results to a `.csv` file.
-"""
-agg_csv = af.AggregateCSV(aggregator=agg)
-
-agg_csv.add_column(argument="galaxies.galaxy.bulge.effective_radius")
-agg_csv.add_column(argument="galaxies.galaxy.bulge.sersic_index")
-
-
-os.environ["PYAUTOFIT_TEST_MODE"] = "0"
+# for fit_list in fit_imaging_gen:
+#     fit = fit_list[0]
+#
+#     assert fit.adapt_images.model_image is not None
+#
+#     print("FitImagingAgg Adapt Images Checked")

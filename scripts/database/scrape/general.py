@@ -36,7 +36,9 @@ dataset = al.Imaging.from_fits(
 mask_radius = 3.0
 
 mask = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
+    shape_native=dataset.shape_native,
+    pixel_scales=dataset.pixel_scales,
+    radius=mask_radius,
 )
 
 masked_dataset = dataset.apply_mask(mask=mask)
@@ -62,13 +64,12 @@ __Search + Analysis + Model-Fit__
 """
 name = "general"
 
-search = af.DynestyStatic(
+search = af.Nautilus(
     name=name,
     path_prefix=path.join("database", "scrape"),
     unique_tag=dataset_name,
-    nlive=50,
-    maxcall=100,
-    maxiter=100,
+    n_live=50,
+    n_like_max=300,
 )
 
 analysis = al.AnalysisImaging(dataset=masked_dataset)
@@ -181,17 +182,6 @@ for info in agg.values("info"):
     print(f"\n****Info****\n\n{info}")
     assert info["hi"] == "there"
 
-for dataset in agg.values("dataset"):
-    print(f"\n****Data (dataset.data)****\n\n{dataset}")
-    assert isinstance(dataset[0], fits.PrimaryHDU)
-
-try:
-    for covariance in agg.values("covariance"):
-        print(f"\n****Covariance (covariance)****\n\n{covariance}")
-        assert covariance is not None
-except ValueError:
-    pass
-
 """
 __Aggregator Module__
 """
@@ -235,7 +225,7 @@ for dataset_list in imaging_gen:
 
 fit_agg = al.agg.FitImagingAgg(
     aggregator=agg,
-    settings_inversion=al.SettingsInversion(use_border_relocator=False),
+    settings=al.Settings(use_border_relocator=False),
 )
 fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
 

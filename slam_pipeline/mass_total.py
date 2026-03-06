@@ -16,10 +16,10 @@ def run(
     multipole_4: Optional[af.Model] = None,
     smbh: Optional[af.Model] = None,
     mass_centre: Optional[Tuple[float, float]] = None,
-    reset_shear_prior: bool = False,
     extra_galaxies: Optional[af.Collection] = None,
     dataset_model: Optional[af.Model] = None,
     n_batch: int = 20,
+    n_like_max: int = 200000,
 ) -> af.Result:
     """
     The SLaM MASS TOTAL PIPELINE, which fits a lens model with a total mass distribution (e.g. a power-law).
@@ -55,10 +55,6 @@ def run(
     mass_centre
        If input, a fixed (y,x) centre of the mass profile is used which is not treated as a free parameter by the
        non-linear search.
-    reset_shear_prior
-        If `True`, the shear of the mass model is reset to the config priors (e.g. broad uniform). This is useful
-        when the mass model changes in a way that adds azimuthal structure (e.g. `PowerLawMultipole`) that the
-        shear in ass models in earlier pipelines may have absorbed some of the signal of.
     extra_galaxies
         Additional extra galaxies containing light and mass profiles, which model nearby line of sight galaxies.
     dataset_model
@@ -100,11 +96,6 @@ def run(
         disk = light_result.instance.galaxies.lens.disk
         point = light_result.instance.galaxies.lens.point
 
-    if not reset_shear_prior:
-        shear = source_result_for_lens.model.galaxies.lens.shear
-    else:
-        shear = al.mp.ExternalShear
-
     if multipole_1 is not None:
         multipole_1.m = 1
         multipole_1.centre = mass.centre
@@ -139,7 +130,7 @@ def run(
                 multipole_1=multipole_1,
                 multipole_3=multipole_3,
                 multipole_4=multipole_4,
-                shear=shear,
+                shear=source_result_for_lens.model.galaxies.lens.shear,
                 smbh=smbh,
             ),
             source=source,
@@ -153,6 +144,7 @@ def run(
         **settings_search.search_dict,
         n_live=150,
         n_batch=n_batch,
+        n_like_max=n_like_max,
     )
 
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
@@ -172,7 +164,6 @@ def run__multi(
     multipole_4: Optional[af.Model] = None,
     smbh: Optional[af.Model] = None,
     mass_centre: Optional[Tuple[float, float]] = None,
-    reset_shear_prior: bool = False,
     extra_galaxies: Optional[af.Collection] = None,
     dataset_model: Optional[af.Model] = None,
     n_batch: int = 20,
@@ -215,10 +206,6 @@ def run__multi(
     mass_centre
        If input, a fixed (y,x) centre of the mass profile is used which is not treated as a free parameter by the
        non-linear search.
-    reset_shear_prior
-        If `True`, the shear of the mass model is reset to the config priors (e.g. broad uniform). This is useful
-        when the mass model changes in a way that adds azimuthal structure (e.g. `PowerLawMultipole`) that the
-        shear in ass models in earlier pipelines may have absorbed some of the signal of.
     extra_galaxies
         Additional extra galaxies containing light and mass profiles, which model nearby line of sight galaxies.
     dataset_model
@@ -264,11 +251,6 @@ def run__multi(
             disk = light_result[i].instance.galaxies.lens.disk
             point = light_result[i].instance.galaxies.lens.point
 
-        if not reset_shear_prior:
-            shear = source_result_for_lens[i].model.galaxies.lens.shear
-        else:
-            shear = al.mp.ExternalShear
-
         if multipole_1 is not None:
             multipole_1.m = 1
             multipole_1.centre = mass.centre
@@ -303,7 +285,7 @@ def run__multi(
                     multipole_1=multipole_1,
                     multipole_3=multipole_3,
                     multipole_4=multipole_4,
-                    shear=shear,
+                    shear=source_result_for_lens[i].model.galaxies.lens.shear,
                     smbh=smbh,
                 ),
                 source=source,

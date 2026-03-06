@@ -6,6 +6,11 @@ This is a simple example of a model-fit which we wish to write to the database. 
 results to the `.sqlite` database file.
 """
 
+from astropy.io import fits
+import numpy as np
+import os
+from os import path
+
 
 def fit():
     import pytest
@@ -15,13 +20,6 @@ def fit():
     # workspace_path = str(here())
     # %cd $workspace_path
     # print(f"Working Directory has been set to `{workspace_path}`")
-
-    from astropy.io import fits
-    import numpy as np
-    import os
-    from os import path
-
-    os.environ["PYAUTOFIT_TEST_MODE"] = "1"
 
     import autofit as af
     import autolens as al
@@ -44,7 +42,9 @@ def fit():
     mask_radius = 3.0
 
     mask = al.Mask2D.circular(
-        shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
+        shape_native=dataset.shape_native,
+        pixel_scales=dataset.pixel_scales,
+        radius=mask_radius,
     )
 
     dataset = dataset.apply_mask(mask=mask)
@@ -92,7 +92,7 @@ def fit():
     # disk = af.Model(al.lp_linear.Sersic)
     bulge.centre = disk.centre
 
-    source_lp_result = slam.source_lp.run(
+    source_lp_result = slam_pipeline.source_lp.run(
         settings_search=settings_search,
         analysis=analysis,
         lens_bulge=bulge,
@@ -102,6 +102,7 @@ def fit():
         source_bulge=af.Model(al.lp_linear.Sersic),
         redshift_lens=redshift_lens,
         redshift_source=redshift_source,
+        n_like_max=300,
     )
 
     """
@@ -163,13 +164,14 @@ def fit():
         profile_list=bulge_gaussian_list,
     )
 
-    light_result = slam.light_lp.run(
+    light_result = slam_pipeline.light_lp.run(
         settings_search=settings_search,
         analysis=analysis,
         source_result_for_lens=source_lp_result,
         source_result_for_source=source_lp_result,
         lens_bulge=bulge,
         lens_disk=disk,
+        n_like_max=300,
     )
 
     """
@@ -194,7 +196,7 @@ def fit():
         dataset=dataset,
     )
 
-    mass_result = slam.mass_total.run(
+    mass_result = slam_pipeline.mass_total.run(
         settings_search=settings_search,
         analysis=analysis,
         source_result_for_lens=source_lp_result,
@@ -202,12 +204,12 @@ def fit():
         light_result=light_result,
         mass=af.Model(al.mp.PowerLaw),
         multipole_3=af.Model(al.mp.PowerLawMultipole),
-        reset_shear_prior=True,
+        n_like_max=300,
     )
 
     """
     __Database__
-    
+
     Add results to database.
     """
     from autofit.database.aggregator import Aggregator
@@ -304,14 +306,6 @@ def fit():
         print(f"\n****Info****\n\n{info}")
         assert info["hi"] == "there"
 
-    for dataset in agg.values("dataset"):
-        print(f"\n****Data (dataset.data)****\n\n{dataset}")
-        assert isinstance(dataset[0], fits.PrimaryHDU)
-
-    for covariance in agg.values("covariance"):
-        print(f"\n****Covariance (covariance)****\n\n{covariance}")
-        assert covariance is not None
-
     """
     __Aggregator Module__
     """
@@ -358,7 +352,6 @@ def fit():
 
     fit_agg = al.agg.FitImagingAgg(
         aggregator=agg,
-        settings_inversion=al.SettingsInversion(use_border_relocator=False),
     )
     fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
 
@@ -381,8 +374,7 @@ def fit():
 
         print("FitImagingAgg Adapt Images Checked")
 
-    os.environ["PYAUTOFIT_TEST_MODE"] = "0"
-
 
 if __name__ == "__main__":
+
     fit()

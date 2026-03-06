@@ -44,8 +44,8 @@ dataset_type = "plotting_alignment"
 
 # dataset_name = "mass_centre_source_right"
 dataset_name = "mass_centre_source_up_more"
-#dataset_name = "mass_centre_source_up_right"
-#dataset_name = "mass_centre_source_down"
+# dataset_name = "mass_centre_source_up_right"
+# dataset_name = "mass_centre_source_down"
 # dataset_name = "mass_centre_source_x2"
 
 # dataset_name = "mass_right_source_right"
@@ -76,7 +76,7 @@ grid = grid.apply_over_sampling(over_sample_size=over_sample_size)
 """
 Simulate a simple Gaussian PSF for the image.
 """
-psf = al.Kernel2D.from_gaussian(
+psf = al.Convolver.from_gaussian(
     shape_native=(21, 21), sigma=0.05, pixel_scales=grid.pixel_scales, normalize=True
 )
 
@@ -98,7 +98,11 @@ Setup the lens galaxy's mass (SIE+Shear) and source galaxy light (elliptical Ser
 """
 centre = (0.0, 0.0)
 
-if dataset_name == "mass_right_source_right" or dataset_name == "mass_right_source_up" or dataset_name == "mass_right_source_up_right":
+if (
+    dataset_name == "mass_right_source_right"
+    or dataset_name == "mass_right_source_up"
+    or dataset_name == "mass_right_source_up_right"
+):
     centre = (0.0, 0.3)
 
 lens_galaxy = al.Galaxy(

@@ -55,11 +55,12 @@ __Mask__
 The model-fit requires a 2D mask defining the regions of the image we fit the lens model to the data, which we define
 and use to set up the `Imaging` object that the lens model fits.
 """
-mask = al.Mask2D.circular_annular(
+mask_radius = 3.0
+
+mask = al.Mask2D.circular(
     shape_native=dataset.shape_native,
     pixel_scales=dataset.pixel_scales,
-    inner_radius=0.8,
-    outer_radius=2.6,
+    radius=mask_radius,
 )
 
 dataset = dataset.apply_mask(mask=mask)
@@ -91,10 +92,25 @@ mass.centre.centre_1 = 0.0
 
 lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass)
 
+image_mesh = al.image_mesh.Overlay(shape=(26, 26))
+
+image_plane_mesh_grid = image_mesh.image_plane_mesh_grid_from(
+    mask=dataset.mask,
+)
+
+edge_pixels_total = 30
+
+image_plane_mesh_grid = al.image_mesh.append_with_circle_edge_points(
+    image_plane_mesh_grid=image_plane_mesh_grid,
+    centre=mask.mask_centre,
+    radius=mask_radius + mask.pixel_scale / 2.0,
+    n_points=edge_pixels_total,
+)
+
+
 pixelization = af.Model(
     al.Pixelization,
-    image_mesh=al.image_mesh.Overlay(shape=(30, 30)),
-    mesh=al.mesh.Delaunay,
+    mesh=al.mesh.Delaunay(pixels=100),
     regularization=al.reg.ConstantSplit,
 )
 
@@ -102,17 +118,25 @@ source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
+adapt_images = al.AdaptImages(
+    galaxy_name_image_plane_mesh_grid_dict={
+        "('galaxies', 'source')": image_plane_mesh_grid
+    },
+)
+
+
 """
 __Search__
 
-The model is fitted to the data using a non-linear search. In this example, we use the nested sampling algorithm 
-Dynesty (https://dynesty.readthedocs.io/en/latest/).
+The model is fitted to the data using a non-linear search. In this example, we use the nested sampling algorithm
+Nautilus.
 
 A full description of the settings below is given in the beginner modeling scripts, if anything is unclear.
 """
-search = af.DynestyStatic(
+search = af.Nautilus(
     path_prefix=path.join("build", "model_fit", "imaging"),
-    nlive=50,
+    n_live=50,
+    n_like_max=300,
     number_of_cores=2,
 )
 
@@ -129,7 +153,9 @@ The `AnalysisImaging` object defines the `log_likelihood_function` used by the n
 the `Imaging` dataset. 
 """
 analysis = al.AnalysisImaging(
-    dataset=dataset, positions_likelihood_list=[positions_likelihood]
+    dataset=dataset,
+    positions_likelihood_list=[positions_likelihood],
+    adapt_images=adapt_images,
 )
 
 """

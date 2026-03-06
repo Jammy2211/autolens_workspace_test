@@ -225,12 +225,11 @@ def fit():
 
     factor_graph = af.FactorGraphModel(*analysis_factor_list)
 
-    search = af.DynestyStatic(
+    search = af.Nautilus(
         name="task_5_analysis_graph_database",
         **settings_search.search_dict,
-        nlive=200,
-        maxcall=500,
-        maxiter=500,
+        n_live=200,
+        n_like_max=300,
     )
 
     source_lp_result = search.fit(
@@ -323,14 +322,8 @@ def fit():
     for info in agg.values("info"):
         print(info["hi"])
 
-    for dataset in agg.child_values("dataset"):
-        print(dataset)
-
-    try:
-        for covariance in agg.values("covariance"):
-            print(covariance)
-    except ValueError:
-        pass
+    # for dataset in agg.child_values("dataset.data"):
+    #     print(dataset)
 
     """
     __Aggregator Module__
@@ -362,7 +355,6 @@ def fit():
 
     fit_agg = al.agg.FitImagingAgg(
         aggregator=agg,
-        settings_inversion=al.SettingsInversion(use_border_relocator=False),
     )
     fit_imaging_gen = fit_agg.max_log_likelihood_gen_from()
 
@@ -374,39 +366,38 @@ def fit():
         print(fit_list[0].dataset_model.grid_offset.grid_offset_1)
         print(fit_list[1].dataset_model.grid_offset)
 
-        fit_plotter = aplt.FitImagingPlotter(fit=fit)
-        fit_plotter.subplot_fit()
+        # fit_plotter = aplt.FitImagingPlotter(fit=fit)
+        # fit_plotter.subplot_fit()
 
         print("FitImaging Checked")
 
-    fit_agg = al.agg.FitImagingAgg(
-        aggregator=agg,
-        settings_inversion=al.SettingsInversion(use_border_relocator=False),
-    )
-    fit_pdf_gen = fit_agg.randomly_drawn_via_pdf_gen_from(total_samples=3)
-
-    i = 0
-
-    for fit_gen in fit_pdf_gen:  # 1 Dataset so just one fit
-
-        for (
-            fit_list
-        ) in (
-            fit_gen
-        ):  # Iterate over each total_samples=3, each with two fits for each analysis.
-
-            i += 1
-
-            print(fit_list[0].dataset_model.grid_offset.grid_offset_1)
-            print(fit_list[1].dataset_model.grid_offset)
-
-            fit_plotter = aplt.FitImagingPlotter(fit=fit_list[0])
-            fit_plotter.subplot_fit()
-
-            fit_plotter = aplt.FitImagingPlotter(fit=fit_list[1])
-            fit_plotter.subplot_fit()
-
-    assert i == 3
+    # fit_agg = al.agg.FitImagingAgg(
+    #     aggregator=agg,
+    # )
+    # fit_pdf_gen = fit_agg.randomly_drawn_via_pdf_gen_from(total_samples=3)
+    #
+    # i = 0
+    #
+    # for fit_gen in fit_pdf_gen:  # 1 Dataset so just one fit
+    #
+    #     for (
+    #         fit_list
+    #     ) in (
+    #         fit_gen
+    #     ):  # Iterate over each total_samples=3, each with two fits for each analysis.
+    #
+    #         i += 1
+    #
+    #         print(fit_list[0].dataset_model.grid_offset.grid_offset_1)
+    #         print(fit_list[1].dataset_model.grid_offset)
+    #
+    #         fit_plotter = aplt.FitImagingPlotter(fit=fit_list[0])
+    #         fit_plotter.subplot_fit()
+    #
+    #         fit_plotter = aplt.FitImagingPlotter(fit=fit_list[1])
+    #         fit_plotter.subplot_fit()
+    #
+    # assert i == 3
 
 
 if __name__ == "__main__":

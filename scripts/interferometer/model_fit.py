@@ -28,10 +28,12 @@ __Mask__
 
 We define the ‘real_space_mask’ which defines the grid the image the strong lens is evaluated using.
 """
+mask_radius = 3.0
+
 real_space_mask = al.Mask2D.circular(
     shape_native=(100, 100),
     pixel_scales=0.2,
-    radius=3.0,
+    radius=mask_radius,
 )
 
 """
@@ -58,7 +60,7 @@ dataset = al.Interferometer.from_fits(
 __Inversion Settings (Run Times)__
 
 """
-settings_inversion = al.SettingsInversion(use_linear_operators=False)
+
 
 """
 __Positions__
@@ -84,10 +86,24 @@ mass.centre.centre_1 = 0.0
 
 lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass)
 
+image_mesh = al.image_mesh.Overlay(shape=(26, 26))
+
+image_plane_mesh_grid = image_mesh.image_plane_mesh_grid_from(
+    mask=dataset.mask,
+)
+
+edge_pixels_total = 30
+
+image_plane_mesh_grid = al.image_mesh.append_with_circle_edge_points(
+    image_plane_mesh_grid=image_plane_mesh_grid,
+    centre=real_space_mask.mask_centre,
+    radius=mask_radius + real_space_mask.pixel_scale / 2.0,
+    n_points=edge_pixels_total,
+)
+
 pixelization = af.Model(
     al.Pixelization,
-    image_mesh=al.image_mesh.Overlay(shape=(30, 30)),
-    mesh=al.mesh.Delaunay,
+    mesh=al.mesh.Delaunay(pixels=100),
     regularization=al.reg.ConstantSplit,
 )
 
@@ -95,18 +111,26 @@ source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
+adapt_images = al.AdaptImages(
+    galaxy_name_image_plane_mesh_grid_dict={
+        "('galaxies', 'source')": image_plane_mesh_grid
+    },
+)
+
+
 """
 __Search__
 
-The model is fitted to the data using a non-linear search. In this example, we use the nested sampling algorithm 
-Dynesty (https://dynesty.readthedocs.io/en/latest/).
+The model is fitted to the data using a non-linear search. In this example, we use the nested sampling algorithm
+Nautilus.
 
 A full description of the settings below is given in the beginner modeling scripts, if anything is unclear.
 """
-search = af.DynestyStatic(
+search = af.Nautilus(
     path_prefix=path.join("build", "model_fit", "interferometer"),
     name=dataset_name,
-    nlive=50,
+    n_live=50,
+    n_like_max=300,
     number_of_cores=2,
 )
 
@@ -125,7 +149,7 @@ model to the `Interferometer`dataset.
 analysis = al.AnalysisInterferometer(
     dataset=dataset,
     positions_likelihood_list=[positions_likelihood],
-    settings_inversion=settings_inversion,
+    adapt_images=adapt_images,
 )
 
 """
@@ -154,9 +178,6 @@ tracer_plotter.subplot_tracer()
 fit_plotter = aplt.FitInterferometerPlotter(fit=result.max_log_likelihood_fit)
 fit_plotter.subplot_fit()
 fit_plotter.subplot_fit_dirty_images()
-
-plotter = aplt.NestPlotter(samples=result.samples)
-plotter.corner_cornerpy()
 
 """
 Checkout `autolens_workspace/*/guides/results` for a full description of analysing results.

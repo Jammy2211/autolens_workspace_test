@@ -1,0 +1,186 @@
+=== FAILED: scripts/database/scrape/slam_pix.py ===
+Exit code: 1
+
+/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoGalaxy/autogalaxy/operate/lens_calc.py:170: SyntaxWarning: invalid escape sequence '\['
+  \[\tau_{\text{geom}}(\boldsymbol{\theta}) = \frac{1}{2} |\boldsymbol{\theta} - \boldsymbol{\beta}|^2\]
+/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoGalaxy/autogalaxy/operate/lens_calc.py:866: SyntaxWarning: invalid escape sequence '\s'
+  density \sigma_cr to be converted to physical units like solar masses (see `autogalaxy.util.cosmology_util`).
+/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoGalaxy/autogalaxy/operate/lens_calc.py:902: SyntaxWarning: invalid escape sequence '\s'
+  density \sigma_cr to be converted to physical units like solar masses (see `autogalaxy.util.cosmology_util`).
+
+
+2026-03-06 16:16:29,306 - autoarray.dataset.imaging.dataset - INFO - IMAGING - Data masked, contains a total of 716 image-pixels
+2026-03-06 16:16:29,362 - autofit.non_linear.search.abstract_search - WARNING - TEST MODE ON: SEARCH WILL SKIP SAMPLING
+
+
+2026-03-06 16:16:29,364 - autofit.non_linear.search.abstract_search - INFO - Starting non-linear search with 1 cores.
+2026-03-06 16:16:30,181 - source_lp[1] - INFO - The output path of this fit is /mnt/c/Users/Jammy/Code/PyAutoJAX/autolens_workspace_test/output/database/scrape/slam_pix/source_lp[1]/27137c8eb06482ab65c3cbdbafb38569
+2026-03-06 16:16:30,183 - source_lp[1] - INFO - Outputting pre-fit files (e.g. model.info, visualization).
+2026-03-06 16:16:30,394 - source_lp[1] - INFO - Starting new Nautilus non-linear search (no previous samples found).
+2026-03-06 16:16:30,394 - autofit.non_linear.fitness - INFO - JAX: Applying vmap and jit to likelihood function -- may take a few seconds.
+2026-03-06 16:16:30,395 - autofit.non_linear.fitness - INFO - JAX: vmap and jit applied in 0.0004961490631103516 seconds.
+2026-03-06 16:16:30,395 - source_lp[1] - INFO - 
+            Running search where parallelization is disabled.
+            
+Starting the nautilus sampler...
+Please report issues at github.com/johannesulf/nautilus.
+Status    | Bounds | Ellipses | Networks | Calls    | f_live | N_eff | log Z    
+Sampling  | 1      | 0        | 0        | 0        | 1.0000 | 0     | N/A      Computing | 1      | 0        | 0        | 0        | 1.0000 | 0     | N/A      2026-03-06 16:16:33,756 - jax_plugins.xla_cuda12 - WARNING - cuda_plugin_extension is not found.
+Stopped   | 1      | 0        | 0        | 50       | 1.0000 | 1     | -137930.4
+2026-03-06 16:16:35,165 - source_lp[1] - INFO - Fit Running: Updating results (see output folder).
+Starting the nautilus sampler...
+Please report issues at github.com/johannesulf/nautilus.
+Status    | Bounds | Ellipses | Networks | Calls    | f_live | N_eff | log Z    
+Stopped   | 1      | 0        | 0        | 50       | 1.0000 | 1     | -137930.4
+2026-03-06 16:16:37,580 - source_lp[1] - INFO - Fit Running: Updating results (see output folder).
+2026-03-06 16:16:37,742 - autofit.non_linear.search.abstract_search - INFO - Creating latent samples by drawing 100 from the PDF.
+2026-03-06 16:16:37,742 - autofit.non_linear.analysis.analysis - INFO - JAX: Applying vmap and jit to likelihood function for latent variables -- may take a few seconds.
+2026-03-06 16:16:37,743 - autofit.non_linear.analysis.analysis - INFO - JAX: vmap and jit applied in 0.0008380413055419922 seconds.
+2026-03-06 16:16:42,613 - source_lp[1] - INFO - Removing search internal folder.
+2026-03-06 16:16:42,656 - source_lp[1] - INFO - Removing all files except for .zip file
+2026-03-06 16:16:42,929 - source_lp[1] - INFO - Search complete, returning result
+2026-03-06 16:16:44,299 - autofit.non_linear.search.abstract_search - WARNING - TEST MODE ON: SEARCH WILL SKIP SAMPLING
+
+
+2026-03-06 16:16:44,300 - autofit.non_linear.search.abstract_search - INFO - Starting non-linear search with 1 cores.
+2026-03-06 16:16:44,313 - source_pix[1] - INFO - The output path of this fit is /mnt/c/Users/Jammy/Code/PyAutoJAX/autolens_workspace_test/output/database/scrape/slam_pix/source_pix[1]/5df3003897da03dfb6955321dab308c5
+2026-03-06 16:16:44,315 - source_pix[1] - INFO - Outputting pre-fit files (e.g. model.info, visualization).
+2026-03-06 16:16:44,532 - source_pix[1] - INFO - Starting new Nautilus non-linear search (no previous samples found).
+2026-03-06 16:16:44,532 - autofit.non_linear.fitness - INFO - JAX: Applying vmap and jit to likelihood function -- may take a few seconds.
+2026-03-06 16:16:44,533 - autofit.non_linear.fitness - INFO - JAX: vmap and jit applied in 0.0005121231079101562 seconds.
+2026-03-06 16:16:44,533 - source_pix[1] - INFO - 
+            Running search where parallelization is disabled.
+            
+Starting the nautilus sampler...
+Please report issues at github.com/johannesulf/nautilus.
+Status    | Bounds | Ellipses | Networks | Calls    | f_live | N_eff | log Z    
+Sampling  | 1      | 0        | 0        | 0        | 1.0000 | 0     | N/A      Computing | 1      | 0        | 0        | 0        | 1.0000 | 0     | N/A      Stopped   | 1      | 0        | 0        | 20       | 1.0000 | 1     | -6022.34 
+2026-03-06 16:16:56,446 - source_pix[1] - INFO - Fit Running: Updating results (see output folder).
+Starting the nautilus sampler...
+Please report issues at github.com/johannesulf/nautilus.
+Status    | Bounds | Ellipses | Networks | Calls    | f_live | N_eff | log Z    
+Stopped   | 1      | 0        | 0        | 20       | 1.0000 | 1     | -6022.34 
+2026-03-06 16:16:59,714 - source_pix[1] - INFO - Fit Running: Updating results (see output folder).
+2026-03-06 16:16:59,771 - autofit.non_linear.search.abstract_search - INFO - Creating latent samples by drawing 100 from the PDF.
+2026-03-06 16:16:59,771 - autofit.non_linear.analysis.analysis - INFO - JAX: Applying vmap and jit to likelihood function for latent variables -- may take a few seconds.
+2026-03-06 16:16:59,772 - autofit.non_linear.analysis.analysis - INFO - JAX: vmap and jit applied in 0.0007698535919189453 seconds.
+2026-03-06 16:17:06,609 - source_pix[1] - INFO - Removing search internal folder.
+2026-03-06 16:17:06,645 - source_pix[1] - INFO - Removing all files except for .zip file
+2026-03-06 16:17:06,977 - source_pix[1] - INFO - Search complete, returning result
+2026-03-06 16:17:09,667 - autofit.non_linear.search.abstract_search - WARNING - TEST MODE ON: SEARCH WILL SKIP SAMPLING
+
+
+2026-03-06 16:17:09,667 - autofit.non_linear.search.abstract_search - INFO - Starting non-linear search with 1 cores.
+2026-03-06 16:17:09,678 - source_pix[2] - INFO - The output path of this fit is /mnt/c/Users/Jammy/Code/PyAutoJAX/autolens_workspace_test/output/database/scrape/slam_pix/source_pix[2]/4da62fd2a1442cf1d26dcce90d6ce278
+2026-03-06 16:17:09,680 - source_pix[2] - INFO - Outputting pre-fit files (e.g. model.info, visualization).
+2026-03-06 16:17:09,872 - source_pix[2] - INFO - Starting new Nautilus non-linear search (no previous samples found).
+2026-03-06 16:17:09,872 - autofit.non_linear.fitness - INFO - JAX: Applying vmap and jit to likelihood function -- may take a few seconds.
+2026-03-06 16:17:09,872 - autofit.non_linear.fitness - INFO - JAX: vmap and jit applied in 0.0005011558532714844 seconds.
+2026-03-06 16:17:09,873 - source_pix[2] - INFO - 
+            Running search where parallelization is disabled.
+            
+Starting the nautilus sampler...
+Please report issues at github.com/johannesulf/nautilus.
+Status    | Bounds | Ellipses | Networks | Calls    | f_live | N_eff | log Z    
+Sampling  | 1      | 0        | 0        | 0        | 1.0000 | 0     | N/A      Computing | 1      | 0        | 0        | 0        | 1.0000 | 0     | N/A      Traceback (most recent call last):
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/autolens_workspace_test/scripts/database/scrape/slam_pix.py", line 156, in <module>
+    source_pix_result_2 = slam_pipeline.source_pix.run_2(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/autolens_workspace_test/slam_pipeline/source_pix.py", line 213, in run_2
+    result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoFit/autofit/non_linear/search/abstract_search.py", line 493, in fit
+    result = self.start_resume_fit(
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoFit/autofit/non_linear/search/abstract_search.py", line 116, in decorated
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoFit/autofit/non_linear/search/abstract_search.py", line 641, in start_resume_fit
+    search_internal, fitness = self._fit(
+                               ^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoFit/autofit/non_linear/search/nest/nautilus/search.py", line 147, in _fit
+    search_internal = self.fit_x1_cpu(
+                      ^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoFit/autofit/non_linear/search/nest/nautilus/search.py", line 243, in fit_x1_cpu
+    return self.call_search(search_internal=search_internal, model=model, analysis=analysis, fitness=fitness)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoFit/autofit/non_linear/search/nest/nautilus/search.py", line 340, in call_search
+    search_internal.run(
+  File "/home/jammy/venv/PyAuto/lib/python3.12/site-packages/nautilus/sampler.py", line 441, in run
+    self.n_update_iter += self.add_samples(-1, verbose=verbose)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jammy/venv/PyAuto/lib/python3.12/site-packages/nautilus/sampler.py", line 1119, in add_samples
+    log_l, blobs = self.evaluate_likelihood(points)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jammy/venv/PyAuto/lib/python3.12/site-packages/nautilus/sampler.py", line 865, in evaluate_likelihood
+    result = self.likelihood(args)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoFit/autofit/non_linear/fitness.py", line 221, in call_wrap
+    figure_of_merit = self._call(parameters)
+                      ^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoFit/autofit/non_linear/fitness.py", line 163, in call
+    log_likelihood = self.analysis.log_likelihood_function(instance=instance)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoLens/autolens/imaging/model/analysis.py", line 65, in log_likelihood_function
+    return self.fit_from(instance=instance).figure_of_merit - log_likelihood_penalty
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/fit/fit_dataset.py", line 339, in figure_of_merit
+    return self.log_evidence
+           ^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/fit/fit_dataset.py", line 329, in log_evidence
+    chi_squared=self.chi_squared,
+                ^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/fit/fit_dataset.py", line 274, in chi_squared
+    return super().chi_squared
+           ^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/fit/fit_dataset.py", line 87, in chi_squared
+    chi_squared_map=self.chi_squared_map.array, xp=self._xp
+                    ^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/fit/fit_dataset.py", line 253, in chi_squared_map
+    return super().chi_squared_map
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/fit/fit_dataset.py", line 78, in chi_squared_map
+    residual_map=self.residual_map, noise_map=self.noise_map
+                 ^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/fit/fit_dataset.py", line 221, in residual_map
+    return super().residual_map
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/fit/fit_dataset.py", line 57, in residual_map
+    return fit_util.residual_map_from(data=self.data, model_data=self.model_data)
+                                                                 ^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoLens/autolens/imaging/fit_imaging.py", line 151, in model_data
+    return self.blurred_image + self.inversion.mapped_reconstructed_operated_data
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/inversion/inversion/abstract.py", line 641, in mapped_reconstructed_operated_data
+    return sum(self.mapped_reconstructed_operated_data_dict.values())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/inversion/inversion/imaging/mapping.py", line 195, in mapped_reconstructed_operated_data_dict
+    return self._mapped_reconstructed_data_dict_from(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/inversion/inversion/imaging/mapping.py", line 112, in _mapped_reconstructed_data_dict_from
+    source_quantity=self.reconstruction
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoConf/autoconf/tools/decorators.py", line 19, in __get__
+    obj.__dict__[self.func.__name__] = self.func(obj)
+                                       ^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/inversion/inversion/abstract.py", line 506, in reconstruction
+    curvature_reg_matrix = self.curvature_reg_matrix[
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/inversion/inversion/abstract.py", line 357, in curvature_reg_matrix
+    return self._xp.add(self.curvature_matrix, self.regularization_matrix)
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoConf/autoconf/tools/decorators.py", line 19, in __get__
+    obj.__dict__[self.func.__name__] = self.func(obj)
+                                       ^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/inversion/inversion/abstract.py", line 311, in regularization_matrix
+    linear_obj.regularization_matrix
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/inversion/linear_obj/linear_obj.py", line 160, in regularization_matrix
+    return self.regularization.regularization_matrix_from(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoArray/autoarray/inversion/regularization/adapt_split.py", line 97, in regularization_matrix_from
+    mappings, sizes, weights = linear_obj.interpolator._mappings_sizes_weights_split
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'InterpolatorRectangular' object has no attribute '_mappings_sizes_weights_split'. Did you mean: '_mappings_sizes_weights'?
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.

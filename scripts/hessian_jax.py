@@ -138,20 +138,24 @@ hessian_np = od.hessian_from(grid=grid_irregular)
 
 assert isinstance(hessian_np, tuple), "hessian_from (numpy): expected tuple"
 assert len(hessian_np) == 4, "hessian_from (numpy): expected 4 components"
-for component, name in zip(hessian_np, ("hessian_yy", "hessian_xy", "hessian_yx", "hessian_xx")):
-    assert isinstance(component, np.ndarray), (
-        f"hessian_from (numpy, irregular grid): {name} expected np.ndarray, got {type(component)}"
-    )
+for component, name in zip(
+    hessian_np, ("hessian_yy", "hessian_xy", "hessian_yx", "hessian_xx")
+):
+    assert isinstance(
+        component, np.ndarray
+    ), f"hessian_from (numpy, irregular grid): {name} expected np.ndarray, got {type(component)}"
 
 hessian_jax_fn = jax.jit(lambda: od.hessian_from(grid=grid_irregular, xp=jnp))
 hessian_jax = hessian_jax_fn()
 
 assert isinstance(hessian_jax, tuple), "hessian_from (jax): expected tuple"
 assert len(hessian_jax) == 4, "hessian_from (jax): expected 4 components"
-for component, name in zip(hessian_jax, ("hessian_yy", "hessian_xy", "hessian_yx", "hessian_xx")):
-    assert isinstance(component, jax.Array), (
-        f"hessian_from (jax, irregular grid): {name} expected jax.Array, got {type(component)}"
-    )
+for component, name in zip(
+    hessian_jax, ("hessian_yy", "hessian_xy", "hessian_yx", "hessian_xx")
+):
+    assert isinstance(
+        component, jax.Array
+    ), f"hessian_from (jax, irregular grid): {name} expected jax.Array, got {type(component)}"
 
 for component_np, component_jax, name in zip(
     hessian_np,
@@ -177,20 +181,28 @@ finite-difference truncation error above the typical `~1e-4` level.
 """
 hessian_np_uniform = od.hessian_from(grid=grid_uniform)
 
-assert isinstance(hessian_np_uniform, tuple), "hessian_from uniform (numpy): expected tuple"
-for component, name in zip(hessian_np_uniform, ("hessian_yy", "hessian_xy", "hessian_yx", "hessian_xx")):
-    assert isinstance(component, np.ndarray), (
-        f"hessian_from (numpy, uniform grid): {name} expected np.ndarray, got {type(component)}"
-    )
+assert isinstance(
+    hessian_np_uniform, tuple
+), "hessian_from uniform (numpy): expected tuple"
+for component, name in zip(
+    hessian_np_uniform, ("hessian_yy", "hessian_xy", "hessian_yx", "hessian_xx")
+):
+    assert isinstance(
+        component, np.ndarray
+    ), f"hessian_from (numpy, uniform grid): {name} expected np.ndarray, got {type(component)}"
 
 hessian_jax_uniform_fn = jax.jit(lambda: od.hessian_from(grid=grid_uniform, xp=jnp))
 hessian_jax_uniform = hessian_jax_uniform_fn()
 
-assert isinstance(hessian_jax_uniform, tuple), "hessian_from uniform (jax): expected tuple"
-for component, name in zip(hessian_jax_uniform, ("hessian_yy", "hessian_xy", "hessian_yx", "hessian_xx")):
-    assert isinstance(component, jax.Array), (
-        f"hessian_from (jax, uniform grid): {name} expected jax.Array, got {type(component)}"
-    )
+assert isinstance(
+    hessian_jax_uniform, tuple
+), "hessian_from uniform (jax): expected tuple"
+for component, name in zip(
+    hessian_jax_uniform, ("hessian_yy", "hessian_xy", "hessian_yx", "hessian_xx")
+):
+    assert isinstance(
+        component, jax.Array
+    ), f"hessian_from (jax, uniform grid): {name} expected jax.Array, got {type(component)}"
 
 for component_np, component_jax, name in zip(
     hessian_np_uniform,
@@ -216,18 +228,18 @@ supported:
 """
 convergence_np = od.convergence_2d_via_hessian_from(grid=grid_irregular)
 
-assert isinstance(convergence_np, aa.ArrayIrregular), (
-    f"convergence_2d_via_hessian_from (numpy): expected aa.ArrayIrregular, got {type(convergence_np)}"
-)
+assert isinstance(
+    convergence_np, aa.ArrayIrregular
+), f"convergence_2d_via_hessian_from (numpy): expected aa.ArrayIrregular, got {type(convergence_np)}"
 
 convergence_jax_fn = jax.jit(
     lambda: od.convergence_2d_via_hessian_from(grid=grid_irregular, xp=jnp)
 )
 convergence_jax = convergence_jax_fn()
 
-assert isinstance(convergence_jax, jax.Array), (
-    f"convergence_2d_via_hessian_from (jax): expected jax.Array, got {type(convergence_jax)}"
-)
+assert isinstance(
+    convergence_jax, jax.Array
+), f"convergence_2d_via_hessian_from (jax): expected jax.Array, got {type(convergence_jax)}"
 
 npt.assert_allclose(
     np.array(convergence_jax),
@@ -250,18 +262,18 @@ The `xp` parameter is threaded through into `hessian_from`:
 """
 shear_np = od.shear_yx_2d_via_hessian_from(grid=grid_irregular)
 
-assert isinstance(shear_np, ag.ShearYX2DIrregular), (
-    f"shear_yx_2d_via_hessian_from (numpy): expected ag.ShearYX2DIrregular, got {type(shear_np)}"
-)
+assert isinstance(
+    shear_np, ag.ShearYX2DIrregular
+), f"shear_yx_2d_via_hessian_from (numpy): expected ag.ShearYX2DIrregular, got {type(shear_np)}"
 
 shear_jax_fn = jax.jit(
     lambda: od.shear_yx_2d_via_hessian_from(grid=grid_irregular, xp=jnp)
 )
 shear_jax = shear_jax_fn()
 
-assert isinstance(shear_jax, jax.Array), (
-    f"shear_yx_2d_via_hessian_from (jax): expected jax.Array, got {type(shear_jax)}"
-)
+assert isinstance(
+    shear_jax, jax.Array
+), f"shear_yx_2d_via_hessian_from (jax): expected jax.Array, got {type(shear_jax)}"
 
 npt.assert_allclose(
     np.array(shear_jax),
@@ -283,16 +295,18 @@ When `xp=np` the result is an `aa.ArrayIrregular`. When `xp=jnp` the result is a
 """
 mag_np = od.magnification_2d_via_hessian_from(grid=grid_irregular)
 
-assert isinstance(mag_np, aa.ArrayIrregular), (
-    f"magnification_2d_via_hessian_from (numpy): expected aa.ArrayIrregular, got {type(mag_np)}"
-)
+assert isinstance(
+    mag_np, aa.ArrayIrregular
+), f"magnification_2d_via_hessian_from (numpy): expected aa.ArrayIrregular, got {type(mag_np)}"
 
-mag_jax_fn = jax.jit(lambda: od.magnification_2d_via_hessian_from(grid=grid_irregular, xp=jnp))
+mag_jax_fn = jax.jit(
+    lambda: od.magnification_2d_via_hessian_from(grid=grid_irregular, xp=jnp)
+)
 mag_jax = mag_jax_fn()
 
-assert isinstance(mag_jax, jax.Array), (
-    f"magnification_2d_via_hessian_from (jax): expected jax.Array, got {type(mag_jax)}"
-)
+assert isinstance(
+    mag_jax, jax.Array
+), f"magnification_2d_via_hessian_from (jax): expected jax.Array, got {type(mag_jax)}"
 
 npt.assert_allclose(
     np.array(mag_jax),
@@ -314,29 +328,29 @@ Hessian.
 """
 jacobian_np = od.jacobian_from(grid=grid_irregular)
 
-assert isinstance(jacobian_np, list) and len(jacobian_np) == 2, (
-    "jacobian_from (numpy): expected list of length 2"
-)
-assert len(jacobian_np[0]) == 2 and len(jacobian_np[1]) == 2, (
-    "jacobian_from (numpy): each row must have 2 elements"
-)
+assert (
+    isinstance(jacobian_np, list) and len(jacobian_np) == 2
+), "jacobian_from (numpy): expected list of length 2"
+assert (
+    len(jacobian_np[0]) == 2 and len(jacobian_np[1]) == 2
+), "jacobian_from (numpy): each row must have 2 elements"
 for i, j, name in ((0, 0, "a11"), (0, 1, "a12"), (1, 0, "a21"), (1, 1, "a22")):
-    assert isinstance(jacobian_np[i][j], np.ndarray), (
-        f"jacobian_from (numpy): {name} expected np.ndarray, got {type(jacobian_np[i][j])}"
-    )
+    assert isinstance(
+        jacobian_np[i][j], np.ndarray
+    ), f"jacobian_from (numpy): {name} expected np.ndarray, got {type(jacobian_np[i][j])}"
 
 jacobian_jax_fn = jax.jit(lambda: od.jacobian_from(grid=grid_irregular, xp=jnp))
 jacobian_jax = jacobian_jax_fn()
 
-assert isinstance(jacobian_jax, list) and len(jacobian_jax) == 2, (
-    "jacobian_from (jax): expected list of length 2"
-)
+assert (
+    isinstance(jacobian_jax, list) and len(jacobian_jax) == 2
+), "jacobian_from (jax): expected list of length 2"
 for i, j, name in ((0, 0, "a11"), (0, 1, "a12"), (1, 0, "a21"), (1, 1, "a22")):
-    assert isinstance(jacobian_jax[i][j], jax.Array), (
-        f"jacobian_from (jax): {name} expected jax.Array, got {type(jacobian_jax[i][j])}"
-    )
+    assert isinstance(
+        jacobian_jax[i][j], jax.Array
+    ), f"jacobian_from (jax): {name} expected jax.Array, got {type(jacobian_jax[i][j])}"
 
-for (i, j, name) in ((0, 0, "a11"), (0, 1, "a12"), (1, 0, "a21"), (1, 1, "a22")):
+for i, j, name in ((0, 0, "a11"), (0, 1, "a12"), (1, 0, "a21"), (1, 1, "a22")):
     npt.assert_allclose(
         np.array(jacobian_jax[i][j]),
         np.array(jacobian_np[i][j]),
@@ -360,18 +374,18 @@ require a uniform `Grid2D` (which carries a `mask`).
 """
 tangential_eigen_np = od.tangential_eigen_value_from(grid=grid_uniform)
 
-assert isinstance(tangential_eigen_np, aa.Array2D), (
-    f"tangential_eigen_value_from (numpy): expected aa.Array2D, got {type(tangential_eigen_np)}"
-)
+assert isinstance(
+    tangential_eigen_np, aa.Array2D
+), f"tangential_eigen_value_from (numpy): expected aa.Array2D, got {type(tangential_eigen_np)}"
 
 tangential_eigen_jax_fn = jax.jit(
     lambda: od.tangential_eigen_value_from(grid=grid_uniform, xp=jnp)
 )
 tangential_eigen_jax = tangential_eigen_jax_fn()
 
-assert isinstance(tangential_eigen_jax, jax.Array), (
-    f"tangential_eigen_value_from (jax): expected jax.Array, got {type(tangential_eigen_jax)}"
-)
+assert isinstance(
+    tangential_eigen_jax, jax.Array
+), f"tangential_eigen_value_from (jax): expected jax.Array, got {type(tangential_eigen_jax)}"
 
 npt.assert_allclose(
     np.array(tangential_eigen_jax),
@@ -389,18 +403,18 @@ identical to `tangential_eigen_value_from`: `aa.Array2D` for the NumPy path,
 """
 radial_eigen_np = od.radial_eigen_value_from(grid=grid_uniform)
 
-assert isinstance(radial_eigen_np, aa.Array2D), (
-    f"radial_eigen_value_from (numpy): expected aa.Array2D, got {type(radial_eigen_np)}"
-)
+assert isinstance(
+    radial_eigen_np, aa.Array2D
+), f"radial_eigen_value_from (numpy): expected aa.Array2D, got {type(radial_eigen_np)}"
 
 radial_eigen_jax_fn = jax.jit(
     lambda: od.radial_eigen_value_from(grid=grid_uniform, xp=jnp)
 )
 radial_eigen_jax = radial_eigen_jax_fn()
 
-assert isinstance(radial_eigen_jax, jax.Array), (
-    f"radial_eigen_value_from (jax): expected jax.Array, got {type(radial_eigen_jax)}"
-)
+assert isinstance(
+    radial_eigen_jax, jax.Array
+), f"radial_eigen_value_from (jax): expected jax.Array, got {type(radial_eigen_jax)}"
 
 npt.assert_allclose(
     np.array(radial_eigen_jax),
@@ -421,16 +435,16 @@ __magnification_2d_from__
 """
 mag2d_np = od.magnification_2d_from(grid=grid_uniform)
 
-assert isinstance(mag2d_np, aa.Array2D), (
-    f"magnification_2d_from (numpy): expected aa.Array2D, got {type(mag2d_np)}"
-)
+assert isinstance(
+    mag2d_np, aa.Array2D
+), f"magnification_2d_from (numpy): expected aa.Array2D, got {type(mag2d_np)}"
 
 mag2d_jax_fn = jax.jit(lambda: od.magnification_2d_from(grid=grid_uniform, xp=jnp))
 mag2d_jax = mag2d_jax_fn()
 
-assert isinstance(mag2d_jax, jax.Array), (
-    f"magnification_2d_from (jax): expected jax.Array, got {type(mag2d_jax)}"
-)
+assert isinstance(
+    mag2d_jax, jax.Array
+), f"magnification_2d_from (jax): expected jax.Array, got {type(mag2d_jax)}"
 
 npt.assert_allclose(
     np.array(mag2d_jax),

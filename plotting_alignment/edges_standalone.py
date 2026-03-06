@@ -2,9 +2,7 @@ import autoarray as aa
 
 shape_native = (10, 10)
 
-grid = aa.Grid2D.uniform(
-    shape_native=shape_native, pixel_scales=0.1
-)
+grid = aa.Grid2D.uniform(shape_native=shape_native, pixel_scales=0.1)
 
 mesh = aa.Mesh2DRectangularUniform.overlay_grid(
     shape_native=(5, 5), grid=grid, buffer=1e-8

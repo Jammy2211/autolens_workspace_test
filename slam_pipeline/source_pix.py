@@ -10,12 +10,13 @@ def run_1(
     source_lp_result: af.Result,
     mesh_init: af.Model(al.AbstractMesh) = af.Model(al.mesh.Delaunay),
     regularization_init: af.Model(al.AbstractRegularization) = af.Model(
-        al.reg.AdaptiveBrightnessSplit
+        al.reg.AdaptSplit
     ),
     extra_galaxies: Optional[af.Collection] = None,
     dataset_model: Optional[af.Model] = None,
     fixed_mass_model: bool = False,
     n_batch: int = 20,
+    n_like_max: int = 200000,
 ) -> af.Result:
     """
     The first SLaM SOURCE PIX PIPELINE, which initializes a lens model which uses a pixelized source for the source
@@ -114,6 +115,7 @@ def run_1(
         **settings_search.search_dict,
         n_live=150,
         n_batch=n_batch,
+        n_like_max=n_like_max,
     )
 
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
@@ -127,11 +129,10 @@ def run_2(
     source_lp_result: af.Result,
     source_pix_result_1: af.Result,
     mesh: af.Model(al.AbstractMesh) = af.Model(al.mesh.Delaunay),
-    regularization: af.Model(al.AbstractRegularization) = af.Model(
-        al.reg.AdaptiveBrightnessSplit
-    ),
+    regularization: af.Model(al.AbstractRegularization) = af.Model(al.reg.AdaptSplit),
     dataset_model: Optional[af.Model] = None,
     n_batch: int = 20,
+    n_like_max: int = 200000,
 ) -> af.Result:
     """
     The second SLaM SOURCE PIX PIPELINE, which fits a fixed lens model which uses a pixelized source for the source
@@ -208,6 +209,7 @@ def run_2(
         **settings_search.search_dict,
         n_live=75,
         n_batch=n_batch,
+        n_like_max=n_like_max,
     )
 
     result = search.fit(model=model, analysis=analysis, **settings_search.fit_dict)
@@ -359,9 +361,7 @@ def run_2__multi(
     source_lp_result: af.Result,
     source_pix_result_1: af.Result,
     mesh: af.Model(al.AbstractMesh) = af.Model(al.mesh.RectangularAdaptDensity),
-    regularization: af.Model(al.AbstractRegularization) = af.Model(
-        al.reg.AdaptiveBrightnessSplit
-    ),
+    regularization: af.Model(al.AbstractRegularization) = af.Model(al.reg.AdaptSplit),
     dataset_model: Optional[af.Model] = None,
     n_batch: int = 20,
 ) -> af.Result:

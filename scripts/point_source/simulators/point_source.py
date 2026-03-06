@@ -99,7 +99,9 @@ positions = solver.solve(
 """
 Use the positions to compute the magnification of the `Tracer` at every position.
 """
-magnifications = tracer.magnification_2d_via_hessian_from(grid=positions)
+magnifications = al.LensCalc.from_tracer(tracer).magnification_2d_via_hessian_from(
+    grid=positions
+)
 
 """
 We can now compute the observed fluxes of the `Point`, give we know how much each is magnified.

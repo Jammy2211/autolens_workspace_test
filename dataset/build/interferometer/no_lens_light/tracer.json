@@ -2,12 +2,6 @@
     "type": "instance",
     "class_path": "autolens.lens.tracer.Tracer",
     "arguments": {
-        "cosmology": {
-            "type": "instance",
-            "class_path": "autogalaxy.cosmology.wrap.Planck15",
-            "arguments": {}
-        },
-        "run_time_dict": null,
         "galaxies": {
             "type": "list",
             "values": [
@@ -21,14 +15,14 @@
                             "type": "instance",
                             "class_path": "autogalaxy.profiles.mass.total.isothermal.IsothermalSph",
                             "arguments": {
-                                "einstein_radius": 1.6,
                                 "centre": {
                                     "type": "tuple",
                                     "values": [
                                         0.0,
                                         0.0
                                     ]
-                                }
+                                },
+                                "einstein_radius": 1.6
                             }
                         }
                     }
@@ -57,6 +51,11 @@
                     }
                 }
             ]
+        },
+        "cosmology": {
+            "type": "instance",
+            "class_path": "autogalaxy.cosmology.model.Planck15",
+            "arguments": {}
         }
     }
 }

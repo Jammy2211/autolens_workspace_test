@@ -1,0 +1,183 @@
+=== FAILED: scripts/database/scrape/general.py ===
+Exit code: 1
+
+2026-03-06 16:12:04,100 - autoarray.dataset.imaging.dataset - INFO - IMAGING - Data masked, contains a total of 2828 image-pixels
+2026-03-06 16:12:06,470 - autofit.non_linear.search.abstract_search - WARNING - TEST MODE ON: SEARCH WILL SKIP SAMPLING
+
+
+2026-03-06 16:12:06,472 - autofit.non_linear.search.abstract_search - INFO - Starting non-linear search with 1 cores.
+2026-03-06 16:12:07,908 - general - INFO - The output path of this fit is /mnt/c/Users/Jammy/Code/PyAutoJAX/autolens_workspace_test/output/database/scrape/no_lens_light/general/9928105b74710f3bc26869aac2a71852
+2026-03-06 16:12:07,910 - general - INFO - Outputting pre-fit files (e.g. model.info, visualization).
+2026-03-06 16:12:08,146 - general - INFO - Starting new Nautilus non-linear search (no previous samples found).
+2026-03-06 16:12:08,146 - autofit.non_linear.fitness - INFO - JAX: Applying vmap and jit to likelihood function -- may take a few seconds.
+2026-03-06 16:12:08,147 - autofit.non_linear.fitness - INFO - JAX: vmap and jit applied in 0.0004892349243164062 seconds.
+2026-03-06 16:12:08,147 - general - INFO - 
+            Running search where parallelization is disabled.
+            
+Starting the nautilus sampler...
+Please report issues at github.com/johannesulf/nautilus.
+Status    | Bounds | Ellipses | Networks | Calls    | f_live | N_eff | log Z    
+Sampling  | 1      | 0        | 0        | 0        | 1.0000 | 0     | N/A      Computing | 1      | 0        | 0        | 0        | 1.0000 | 0     | N/A      2026-03-06 16:12:12,972 - jax_plugins.xla_cuda12 - WARNING - cuda_plugin_extension is not found.
+Stopped   | 1      | 0        | 0        | 100      | 1.0000 | 1     | -4121.28 
+2026-03-06 16:12:16,098 - general - INFO - Fit Running: Updating results (see output folder).
+Starting the nautilus sampler...
+Please report issues at github.com/johannesulf/nautilus.
+Status    | Bounds | Ellipses | Networks | Calls    | f_live | N_eff | log Z    
+Stopped   | 1      | 0        | 0        | 100      | 1.0000 | 1     | -4121.28 
+2026-03-06 16:12:19,080 - general - INFO - Fit Running: Updating results (see output folder).
+2026-03-06 16:12:19,261 - autofit.non_linear.search.abstract_search - INFO - Creating latent samples by drawing 100 from the PDF.
+2026-03-06 16:12:19,261 - autofit.non_linear.analysis.analysis - INFO - JAX: Applying vmap and jit to likelihood function for latent variables -- may take a few seconds.
+2026-03-06 16:12:19,262 - autofit.non_linear.analysis.analysis - INFO - JAX: vmap and jit applied in 0.0008728504180908203 seconds.
+2026-03-06 16:12:23,993 - general - INFO - Removing search internal folder.
+2026-03-06 16:12:24,035 - general - INFO - Removing all files except for .zip file
+2026-03-06 16:12:24,303 - general - INFO - Search complete, returning result
+Aggregator loading search_outputs... could take some time.
+
+ A total of 1 search_outputs and results were found.
+2026-03-06 16:12:24,742 - autofit.database.aggregator.scrape - INFO - Scraping directory output/database/scrape/no_lens_light/general
+2026-03-06 16:12:24,743 - autofit.database.aggregator.scrape - INFO - 1 searches found
+2026-03-06 16:12:24,748 - autofit.non_linear.search.abstract_search - WARNING - TEST MODE ON: SEARCH WILL SKIP SAMPLING
+
+
+
+
+
+2026-03-06 16:12:24,896 - autofit.database.aggregator.scrape - INFO - Creating fit for: database/scrape no_lens_light general 9928105b74710f3bc26869aac2a71852 
+/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoFit/autofit/database/aggregator/scrape.py:147: SAWarning: relationship 'Fit.arrays' will copy column fit.id to column array.fit_id, which conflicts with relationship(s): 'HDU.fit' (copies fit.id to array.fit_id). If this is not the intention, consider if these relationships should be linked with back_populates, or if viewonly=True should be applied to one or more if they are read-only. For the less common case that foreign key constraints are partially overlapping, the orm.foreign() annotation can be used to isolate the columns that should be written towards.   To silence this warning, add the parameter 'overlaps="fit"' to the 'Fit.arrays' relationship. (Background on this warning at: https://sqlalche.me/e/20/qzyx) (This warning originated from the `configure_mappers()` process, which was invoked automatically in response to a user-initiated operation.)
+  return self.session.query(m.Fit).filter(m.Fit.id == item.id).one()
+/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoFit/autofit/database/aggregator/scrape.py:147: SAWarning: relationship 'Fit.hdus' will copy column fit.id to column array.fit_id, which conflicts with relationship(s): 'Array.fit' (copies fit.id to array.fit_id), 'Fit.arrays' (copies fit.id to array.fit_id). If this is not the intention, consider if these relationships should be linked with back_populates, or if viewonly=True should be applied to one or more if they are read-only. For the less common case that foreign key constraints are partially overlapping, the orm.foreign() annotation can be used to isolate the columns that should be written towards.   To silence this warning, add the parameter 'overlaps="arrays,fit"' to the 'Fit.hdus' relationship. (Background on this warning at: https://sqlalche.me/e/20/qzyx) (This warning originated from the `configure_mappers()` process, which was invoked automatically in response to a user-initiated operation.)
+  return self.session.query(m.Fit).filter(m.Fit.id == item.id).one()
+2026-03-06 16:12:25,038 - autofit.database.aggregator.scrape - WARNING - Failed to load samples for 9928105b74710f3bc26869aac2a71852
+2026-03-06 16:12:25,041 - autofit.database.aggregator.scrape - WARNING - Failed to load latent variables for 9928105b74710f3bc26869aac2a71852
+2026-03-06 16:12:25,568 - autofit.database.aggregator.aggregator - INFO - 1 fit(s) found matching query
+
+
+***********************
+****RESULTS TESTING****
+***********************
+
+[]
+
+
+***********************
+****QUERIES TESTING****
+***********************
+
+2026-03-06 16:12:25,605 - autofit.database.aggregator.aggregator - INFO - 0 fit(s) found matching query
+2026-03-06 16:12:25,612 - autofit.database.aggregator.aggregator - INFO - 0 fit(s) found matching query
+2026-03-06 16:12:25,617 - autofit.database.aggregator.aggregator - INFO - 0 fit(s) found matching query
+Total Queried Results via search name =  0 
+
+
+2026-03-06 16:12:25,639 - autofit.database.aggregator.aggregator - INFO - 1 fit(s) found matching query
+Total Samples Objects via `Isothermal` model query =  1 
+
+2026-03-06 16:12:25,651 - autofit.database.aggregator.aggregator - INFO - 0 fit(s) found matching query
+Total Samples Objects via `Isothermal` model query =  0 
+
+2026-03-06 16:12:26,323 - autofit.database.aggregator.aggregator - INFO - 1 fit(s) found matching query
+Total Samples Objects In Query `Isothermal and einstein_radius > 3.0` =  1 
+
+2026-03-06 16:12:26,346 - autofit.database.aggregator.aggregator - INFO - 1 fit(s) found matching query
+Total Samples Objects via `Sersic` extra galaxy model query =  1 
+
+
+
+***********************
+*****FILES TESTING*****
+***********************
+
+
+
+
+
+****Model Info (model)****
+
+Total Free Parameters = 19
+
+model                                                                           Collection (N=19)
+    galaxies                                                                    Collection (N=13)
+        lens                                                                    Galaxy (N=7)
+            mass                                                                Isothermal (N=5)
+            shear                                                               ExternalShear (N=2)
+        source                                                                  Galaxy (N=6)
+            bulge                                                               Sersic (N=6)
+    extra_galaxies                                                              Collection (N=6)
+        extra_galaxy                                                            Galaxy (N=6)
+            bulge                                                               Sersic (N=6)
+
+galaxies
+    lens
+        redshift                                                                0.5
+        mass
+            centre
+                centre_0                                                        GaussianPrior [62], mean = 0.0, sigma = 0.1
+                centre_1                                                        GaussianPrior [63], mean = 0.0, sigma = 0.1
+            ell_comps
+                ell_comps_0                                                     TruncatedGaussianPrior [64], mean = 0.0, sigma = 0.3, lower_limit = -1.0, upper_limit = 1.0
+                ell_comps_1                                                     TruncatedGaussianPrior [65], mean = 0.0, sigma = 0.3, lower_limit = -1.0, upper_limit = 1.0
+            einstein_radius                                                     UniformPrior [66], lower_limit = 0.0, upper_limit = 8.0
+        shear
+            gamma_1                                                             UniformPrior [69], lower_limit = -0.3, upper_limit = 0.3
+            gamma_2                                                             UniformPrior [70], lower_limit = -0.3, upper_limit = 0.3
+    source
+        redshift                                                                1.0
+        bulge
+            centre
+                centre_0                                                        GaussianPrior [77], mean = 0.0, sigma = 0.3
+                centre_1                                                        GaussianPrior [78], mean = 0.0, sigma = 0.3
+            ell_comps
+                ell_comps_0                                                     TruncatedGaussianPrior [79], mean = 0.0, sigma = 0.3, lower_limit = -1.0, upper_limit = 1.0
+                ell_comps_1                                                     TruncatedGaussianPrior [80], mean = 0.0, sigma = 0.3, lower_limit = -1.0, upper_limit = 1.0
+            effective_radius                                                    UniformPrior [81], lower_limit = 0.0, upper_limit = 30.0
+            sersic_index                                                        UniformPrior [82], lower_limit = 0.8, upper_limit = 5.0
+extra_galaxies
+    extra_galaxy
+        redshift                                                                0.5
+        bulge
+            centre
+                centre_0                                                        GaussianPrior [89], mean = 0.0, sigma = 0.3
+                centre_1                                                        GaussianPrior [90], mean = 0.0, sigma = 0.3
+            ell_comps
+                ell_comps_0                                                     TruncatedGaussianPrior [91], mean = 0.0, sigma = 0.3, lower_limit = -1.0, upper_limit = 1.0
+                ell_comps_1                                                     TruncatedGaussianPrior [92], mean = 0.0, sigma = 0.3, lower_limit = -1.0, upper_limit = 1.0
+            effective_radius                                                    UniformPrior [93], lower_limit = 0.0, upper_limit = 30.0
+            sersic_index                                                        UniformPrior [94], lower_limit = 0.8, upper_limit = 5.0
+2026-03-06 16:12:26,534 - autofit.non_linear.search.abstract_search - WARNING - TEST MODE ON: SEARCH WILL SKIP SAMPLING
+
+
+
+****Search (search)****
+
+<autofit.non_linear.search.nest.nautilus.search.Nautilus object at 0x7fc9408d79e0>
+
+****Max Log Likelihood (samples_summary)****
+
+<autofit.mapper.model.ModelInstance object at 0x7fc940a57bc0>
+
+****Info****
+
+{'hi': 'there'}
+
+
+***********************
+***AGG MODULE TESTING***
+***********************
+
+
+TracerAgg with linear light profiles raises correct ProfileException
+TracerAgg Checked
+Traceback (most recent call last):
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/autolens_workspace_test/scripts/database/scrape/general.py", line 214, in <module>
+    for dataset_list in imaging_gen:
+                        ^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoFit/autofit/database/aggregator/aggregator.py", line 255, in map
+    yield func(fit)
+          ^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoGalaxy/autogalaxy/aggregator/imaging/imaging.py", line 48, in _imaging_from
+    mask, header = agg_util.mask_header_from(fit=fit)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/PyAutoGalaxy/autogalaxy/aggregator/agg_util.py", line 81, in mask_header_from
+    header = aa.Header(header_sci_obj=fit.value(name=name)[0].header)
+                                      ~~~~~~~~~~~~~~~~~~~~^^^
+TypeError: 'NoneType' object is not subscriptable

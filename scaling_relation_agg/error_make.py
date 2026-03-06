@@ -207,14 +207,12 @@ search = af.Nautilus(
     n_live=150,
     n_batch=50,  # GPU lens model fits are batched and run simultaneously, see VRAM section below.
     iterations_per_quick_update=1000000,
-    n_like_max=2500
+    n_like_max=2500,
 )
 
 analysis = al.AnalysisImaging(dataset=dataset)
 
 result = search.fit(model=model, analysis=analysis)
-
-
 
 
 from pathlib import Path
@@ -242,7 +240,7 @@ for fit_list in fit_gen:
 
     reconstruction = inversion.reconstruction
 
-    mapper = inversion.cls_list_from(cls=al.AbstractMapper)[
+    mapper = inversion.cls_list_from(cls=al.Mapper)[
         0
     ]  # Extract the mapper from the inversion
 

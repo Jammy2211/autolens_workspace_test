@@ -148,9 +148,7 @@ dataset_plotter.subplot_dataset()
 dataset_plotter.subplot_dirty_images()
 dataset_plotter.figures_2d(data=True)
 
-tracer_plotter = aplt.TracerPlotter(
-    tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d
-)
+tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d)
 tracer_plotter.subplot_tracer()
 tracer_plotter.subplot_galaxies_images()
 

@@ -96,7 +96,9 @@ and use to set up the `Imaging` object that the model fits.
 mask_radius = 3.5
 
 mask = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
+    shape_native=dataset.shape_native,
+    pixel_scales=dataset.pixel_scales,
+    radius=mask_radius,
 )
 
 dataset = dataset.apply_mask(mask=mask)
@@ -136,12 +138,9 @@ total_mapper_pixels = mesh_shape[0] * mesh_shape[1]
 
 preloads = al.Preloads(
     mapper_indices=al.mapper_indices_from(
-        total_linear_light_profiles=0,
-        total_mapper_pixels=total_mapper_pixels
+        total_linear_light_profiles=0, total_mapper_pixels=total_mapper_pixels
     ),
-    source_pixel_zeroed_indices=al.util.mesh.rectangular_edge_pixel_list_from(
-        mesh_shape
-    ),
+    source_pixel_zeroed_indices=al.rectangular_edge_pixel_list_from(mesh_shape),
 )
 
 """
@@ -161,11 +160,19 @@ mass = af.Model(al.mp.Isothermal)
 
 centre = (0.0, 0.0)
 
-if dataset_name == "mass_right_source_right" or dataset_name == "mass_right_source_up" or dataset_name == "mass_right_source_up_right":
+if (
+    dataset_name == "mass_right_source_right"
+    or dataset_name == "mass_right_source_up"
+    or dataset_name == "mass_right_source_up_right"
+):
     centre = (0.0, 0.3)
 
-mass.centre.centre_0 = af.UniformPrior(lower_limit=centre[0]-0.3, upper_limit=centre[0]+0.3)
-mass.centre.centre_1 = af.UniformPrior(lower_limit=centre[1]-0.3, upper_limit=centre[1]+0.3)
+mass.centre.centre_0 = af.UniformPrior(
+    lower_limit=centre[0] - 0.3, upper_limit=centre[0] + 0.3
+)
+mass.centre.centre_1 = af.UniformPrior(
+    lower_limit=centre[1] - 0.3, upper_limit=centre[1] + 0.3
+)
 mass.einstein_radius = af.UniformPrior(lower_limit=1.5, upper_limit=1.7)
 mass.ell_comps.ell_comps_0 = af.UniformPrior(
     lower_limit=0.11111111111111108, upper_limit=0.1111111111111111
@@ -190,11 +197,9 @@ regularization = al.reg.Constant(coefficient=1.0)
 
 # regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
 
-# regularization = al.reg.AdaptiveBrightness()
+# regularization = al.reg.Adapt()
 
-pixelization = al.Pixelization(
-    mesh=mesh, regularization=regularization
-)
+pixelization = al.Pixelization(mesh=mesh, regularization=regularization)
 
 source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
 
@@ -204,7 +209,7 @@ model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
 galaxy_name_image_dict = {
     "('galaxies', 'lens')": dataset.data,
-    "('galaxies', 'source')": dataset.data
+    "('galaxies', 'source')": dataset.data,
 }
 
 """
@@ -223,7 +228,7 @@ import jax.numpy as jnp
 analysis = al.AnalysisImaging(
     dataset=dataset,
     #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
-    settings_inversion=al.SettingsInversion(
+    settings=al.Settings(
         use_sparse_linalg=False,
         force_edge_pixels_to_zeros=True,
     ),
@@ -231,9 +236,7 @@ analysis = al.AnalysisImaging(
     raise_inversion_positions_likelihood_exception=False,
 )
 
-analysis._adapt_images = al.AdaptImages(
-    galaxy_name_image_dict=galaxy_name_image_dict
-)
+analysis._adapt_images = al.AdaptImages(galaxy_name_image_dict=galaxy_name_image_dict)
 
 """
 Output an image of the fit, so that we can inspect that it fits the data as expected.
@@ -256,7 +259,9 @@ mat_plot_2d = aplt.MatPlot2D(
     )
 )
 fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_plotter.figures_2d_of_planes(plane_index=1, plane_image=True, zoom_to_brightest=False)
+fit_plotter.figures_2d_of_planes(
+    plane_index=1, plane_image=True, zoom_to_brightest=False
+)
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(
@@ -264,4 +269,6 @@ mat_plot_2d = aplt.MatPlot2D(
     )
 )
 fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_plotter.figures_2d_of_planes(plane_index=1, plane_image=True, zoom_to_brightest=True)
+fit_plotter.figures_2d_of_planes(
+    plane_index=1, plane_image=True, zoom_to_brightest=True
+)

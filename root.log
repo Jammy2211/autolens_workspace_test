@@ -1,0 +1,6 @@
+2026-03-06 18:07:53,638 - autoarray.dataset.imaging.dataset - INFO - IMAGING - Data masked, contains a total of 15380 image-pixels
+2026-03-06 18:07:57,520 - jax_plugins.xla_cuda12 - WARNING - cuda_plugin_extension is not found.
+2026-03-06 18:09:31,225 - autoarray.inversion.plot.mapper_plotters - INFO - Could not plot the source-plane via the Mapper because of a ValueError.
+2026-03-06 18:11:02,016 - autoarray.dataset.imaging.dataset - INFO - IMAGING - Data masked, contains a total of 15380 image-pixels
+2026-03-06 18:11:05,699 - jax_plugins.xla_cuda12 - WARNING - cuda_plugin_extension is not found.
+2026-03-06 18:12:19,091 - autoarray.inversion.plot.mapper_plotters - INFO - Could not plot the source-plane via the Mapper because of a ValueError.

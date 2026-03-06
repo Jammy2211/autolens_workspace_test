@@ -61,7 +61,9 @@ def fit():
     mask_radius = 3.0
 
     mask = al.Mask2D.circular(
-        shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=mask_radius
+        shape_native=dataset.shape_native,
+        pixel_scales=dataset.pixel_scales,
+        radius=mask_radius,
     )
 
     dataset = dataset.apply_mask(mask=mask)
@@ -184,7 +186,6 @@ def fit():
         light_result=light_result,
         mass=af.Model(al.mp.PowerLaw),
         multipole_4=af.Model(al.mp.PowerLawMultipole),
-        reset_shear_prior=True,
     )
 
     """
@@ -207,27 +208,20 @@ def fit():
         dataset=dataset, adapt_image_maker=al.AdaptImageMaker(result=source_lp_result)
     )
 
-    subhalo_result_1 = slam_pipeline.subhalo.detection.run_1_no_subhalo(
+    subhalo_grid_search_result_1 = slam_pipeline.subhalo.detection.run_1_grid_search(
         settings_search=settings_search,
         analysis=analysis,
         mass_result=mass_result,
-    )
-
-    subhalo_grid_search_result_2 = slam_pipeline.subhalo.detection.run_2_grid_search(
-        settings_search=settings_search,
-        analysis=analysis,
-        mass_result=mass_result,
-        subhalo_result_1=subhalo_result_1,
         subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
         grid_dimension_arcsec=3.0,
         number_of_steps=2,
     )
 
-    subhalo_result_3 = slam_pipeline.subhalo.detection.run_3_subhalo(
+    slam_pipeline.subhalo.detection.run_2_subhalo(
         settings_search=settings_search,
         analysis=analysis,
-        subhalo_result_1=subhalo_result_1,
-        subhalo_grid_search_result_2=subhalo_grid_search_result_2,
+        mass_result=mass_result,
+        subhalo_grid_search_result_1=subhalo_grid_search_result_1,
         subhalo_mass=af.Model(al.mp.NFWMCRLudlowSph),
     )
 

@@ -18,6 +18,7 @@ def run(
     extra_galaxies: Optional[af.Collection] = None,
     dataset_model: Optional[af.Model] = None,
     n_batch: int = 20,
+    n_like_max: int = 200000,
 ) -> af.Result:
     """
     The SLaM MASS LIGHT DARK PIPELINE, which fits a mass model where the stellar mass is modeled in a way linked
