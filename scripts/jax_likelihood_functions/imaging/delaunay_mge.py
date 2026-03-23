@@ -222,40 +222,6 @@ mass.ell_comps.ell_comps_0 = af.UniformPrior(
     lower_limit=0.11111111111111108, upper_limit=0.1111111111111111
 )
 mass.ell_comps.ell_comps_1 = af.UniformPrior(lower_limit=-0.01, upper_limit=0.01)
-# mass.slope = af.UniformPrior(lower_limit=2.1, upper_limit=2.11)
-
-# multipole_1 = af.Model(al.mp.PowerLawMultipole)
-#
-# multipole_1.multipole_comps.multipole_comps_0 = af.UniformPrior(lower_limit=0.01, upper_limit=0.02)
-# multipole_1.multipole_comps.multipole_comps_1 = af.UniformPrior(lower_limit=0.01, upper_limit=0.02)
-#
-# multipole_3 = af.Model(al.mp.PowerLawMultipole)
-#
-# multipole_3.multipole_comps.multipole_comps_0 = af.UniformPrior(lower_limit=0.01, upper_limit=0.02)
-# multipole_3.multipole_comps.multipole_comps_1 = af.UniformPrior(lower_limit=0.01, upper_limit=0.02)
-#
-# multipole_4 = af.Model(al.mp.PowerLawMultipole)
-#
-# multipole_4.multipole_comps.multipole_comps_0 = af.UniformPrior(lower_limit=0.01, upper_limit=0.02)
-# multipole_4.multipole_comps.multipole_comps_1 = af.UniformPrior(lower_limit=0.01, upper_limit=0.02)
-#
-# if multipole_1 is not None:
-#     multipole_1.m = 1
-#     multipole_1.centre = mass.centre
-#     multipole_1.einstein_radius = mass.einstein_radius
-#     multipole_1.slope = mass.slope
-#
-# if multipole_3 is not None:
-#     multipole_3.m = 3
-#     multipole_3.centre = mass.centre
-#     multipole_3.einstein_radius = mass.einstein_radius
-#     multipole_3.slope = mass.slope
-#
-# if multipole_4 is not None:
-#     multipole_4.m = 4
-#     multipole_4.centre = mass.centre
-#     multipole_4.einstein_radius = mass.einstein_radius
-#     multipole_4.slope = mass.slope
 
 dark = af.Model(al.mp.IsothermalSph)
 
@@ -273,10 +239,6 @@ lens = af.Model(
     bulge=bulge,
     mass=mass,
     shear=shear,
-    #   multipole_1=multipole_1,
-    # multipole_3=multipole_3,
-    # multipole_4=multipole_4,
-    #   dark=dark
 )
 
 # Source:
@@ -284,8 +246,6 @@ lens = af.Model(
 pixelization = af.Model(
     al.Pixelization,
     mesh=al.mesh.Delaunay(pixels=pixels, zeroed_pixels=edge_pixels_total),
-    #  mesh=al.mesh.KNearestNeighbor(split_neighbor_division=1),
-    #  regularization=al.reg.AdaptSplit(1.0, 1.0, 1.0),
     regularization=al.reg.MaternAdaptKernel,
 )
 
@@ -356,9 +316,17 @@ print("JAX Time To VMAP + JIT Function", time.time() - start)
 
 start = time.time()
 print()
-print(fitness._vmap(parameters))
+result = fitness._vmap(parameters)
+print(result)
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
+
+np.testing.assert_allclose(
+    np.array(result),
+    -36833.58927976,
+    rtol=1e-4,
+    err_msg="delaunay_mge: JAX vmap likelihood mismatch",
+)
 
 batched_call = jax.jit(jax.vmap(fitness.call))
 lowered = batched_call.lower(parameters)
@@ -380,6 +348,13 @@ instance = model.instance_from_prior_medians()
 
 fit = analysis.fit_from(instance)
 print(f"Figure of Merit = {fit.figure_of_merit}")
+
+np.testing.assert_allclose(
+    fit.figure_of_merit,
+    -36833.589268219,
+    rtol=1e-4,
+    err_msg="delaunay_mge: figure_of_merit mismatch",
+)
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(

@@ -59,11 +59,6 @@ dataset = al.from_json(
     file_path=dataset_path / "point_dataset_positions_only.json",
 )
 
-# dataset = al.from_json(
-#     file_path=dataset_path / "point_dataset_with_fluxes_and_time_delays.json",
-# )
-
-
 """
 __Point Solver__
 
@@ -216,6 +211,14 @@ print("JAX Time To VMAP + JIT Function", time.time() - start)
 
 start = time.time()
 print()
-print(fitness._vmap(parameters))
+result = fitness._vmap(parameters)
+print(result)
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
+
+np.testing.assert_allclose(
+    np.array(result),
+    -343.22138984,
+    rtol=1e-4,
+    err_msg="point: JAX vmap likelihood mismatch",
+)

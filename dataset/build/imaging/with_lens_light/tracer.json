@@ -20,8 +20,8 @@
                             "type": "instance",
                             "class_path": "autogalaxy.profiles.light.standard.dev_vaucouleurs.DevVaucouleursSph",
                             "arguments": {
-                                "effective_radius": 0.8,
                                 "intensity": 0.1,
+                                "effective_radius": 0.8,
                                 "centre": {
                                     "type": "tuple",
                                     "values": [
@@ -57,8 +57,8 @@
                             "type": "instance",
                             "class_path": "autogalaxy.profiles.light.standard.exponential.ExponentialSph",
                             "arguments": {
-                                "effective_radius": 0.1,
                                 "intensity": 0.3,
+                                "effective_radius": 0.1,
                                 "centre": {
                                     "type": "tuple",
                                     "values": [

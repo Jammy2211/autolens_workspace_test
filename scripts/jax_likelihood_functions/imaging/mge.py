@@ -182,8 +182,6 @@ can compute its gradient.
 """
 analysis = al.AnalysisImaging(
     dataset=dataset,
-    #    positions_likelihood_list=[al.PositionsLH(threshold=0.4, positions=positions)],
-    #   settings=al.Settings(use_positive_only_solver=False)
 )
 
 
@@ -221,9 +219,17 @@ print("JAX Time To VMAP + JIT Function", time.time() - start)
 
 start = time.time()
 print()
-print(fitness._vmap(parameters))
+result = fitness._vmap(parameters)
+print(result)
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
+
+np.testing.assert_allclose(
+    np.array(result),
+    -93643.31852545,
+    rtol=1e-4,
+    err_msg="mge: JAX vmap likelihood mismatch",
+)
 
 batched_call = jax.jit(jax.vmap(fitness.call))
 lowered = batched_call.lower(parameters)

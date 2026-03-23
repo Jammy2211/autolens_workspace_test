@@ -226,9 +226,6 @@ lens = af.Model(
 # Source:
 
 mesh = al.mesh.RectangularAdaptImage(shape=mesh_shape)
-# regularization = al.reg.Constant(coefficient=1.0)
-
-# regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
 
 regularization = al.reg.Constant()
 
@@ -307,9 +304,17 @@ import jax
 
 start = time.time()
 print()
-print(fitness._vmap(parameters))
+result = fitness._vmap(parameters)
+print(result)
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
+
+np.testing.assert_allclose(
+    np.array(result),
+    -61520.24553679,
+    rtol=1e-4,
+    err_msg="rectangular_mge: JAX vmap likelihood mismatch",
+)
 
 # profiler.stop_trace()
 # fff
@@ -334,6 +339,13 @@ instance = model.instance_from_prior_medians()
 
 fit = analysis.fit_from(instance)
 print(f"Figure of Merit = {fit.figure_of_merit}")
+
+np.testing.assert_allclose(
+    fit.figure_of_merit,
+    -61520.24553679433,
+    rtol=1e-4,
+    err_msg="rectangular_mge: figure_of_merit mismatch",
+)
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(

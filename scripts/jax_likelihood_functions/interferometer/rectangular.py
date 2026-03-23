@@ -44,10 +44,10 @@ __Mask__
 
 We define the ‘real_space_mask’ which defines the grid the image the strong lens is evaluated using.
 """
-mask_radius = 3.5
+mask_radius = 3.0
 
 real_space_mask = al.Mask2D.circular(
-    shape_native=(800, 800),
+    shape_native=(256, 256),
     pixel_scales=0.1,
     radius=mask_radius,
 )
@@ -60,37 +60,14 @@ the model.
 """
 dataset_name = "simple"
 dataset_path = path.join("dataset", "interferometer", dataset_name)
-#
-# dataset = al.Interferometer.from_fits(
-#     data_path=path.join(dataset_path, "data.fits"),
-#     noise_map_path=path.join(dataset_path, "noise_map.fits"),
-#     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
-#     real_space_mask=real_space_mask,
-#     transformer_class=al.TransformerDFT,
-# )
 
-total_visibilities = 100
-
-data = al.Visibilities(
-    np.random.normal(loc=0.0, scale=1.0, size=total_visibilities)
-    + 1j * np.random.normal(loc=0.0, scale=1.0, size=total_visibilities)
-)
-
-noise_map = al.VisibilitiesNoiseMap(
-    np.ones(total_visibilities) + 1j * np.ones(total_visibilities)
-)
-
-uv_wavelengths = np.random.uniform(low=-300.0, high=300.0, size=(total_visibilities, 2))
-
-dataset = al.Interferometer(
-    data=data,
-    noise_map=noise_map,
-    uv_wavelengths=uv_wavelengths,
+dataset = al.Interferometer.from_fits(
+    data_path=path.join(dataset_path, "data.fits"),
+    noise_map_path=path.join(dataset_path, "noise_map.fits"),
+    uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
     real_space_mask=real_space_mask,
-    transformer_class=al.TransformerNUFFT,
+    transformer_class=al.TransformerDFT,
 )
-
-dataset = dataset.apply_sparse_operator()
 
 print(f"Total Visiblities: {dataset.uv_wavelengths.shape[0]}")
 
@@ -261,9 +238,17 @@ print("JAX Time To VMAP + JIT Function", time.time() - start)
 
 start = time.time()
 print()
-print(fitness._vmap(parameters))
+result = fitness._vmap(parameters)
+print(result)
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
+
+np.testing.assert_allclose(
+    np.array(result),
+    -3183.05450892,
+    rtol=1e-4,
+    err_msg="interferometer/rectangular: JAX vmap likelihood mismatch",
+)
 
 analysis.print_vram_use(model=model, batch_size=batch_size)
 
@@ -281,6 +266,13 @@ instance = model.instance_from_prior_medians()
 fit = analysis.fit_from(instance)
 
 print(f"Figure of Merit = {fit.figure_of_merit}")
+
+np.testing.assert_allclose(
+    fit.figure_of_merit,
+    -3183.054509186375,
+    rtol=1e-4,
+    err_msg="interferometer/rectangular: figure_of_merit mismatch",
+)
 
 mat_plot_2d = aplt.MatPlot2D(
     output=aplt.Output(

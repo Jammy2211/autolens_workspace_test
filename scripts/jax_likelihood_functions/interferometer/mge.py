@@ -61,34 +61,13 @@ the model.
 """
 dataset_name = "simple"
 dataset_path = path.join("dataset", "interferometer", dataset_name)
-#
-# dataset = al.Interferometer.from_fits(
-#     data_path=path.join(dataset_path, "data.fits"),
-#     noise_map_path=path.join(dataset_path, "noise_map.fits"),
-#     uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
-#     real_space_mask=real_space_mask,
-#     transformer_class=al.TransformerDFT,
-# )
 
-total_visibilities = 100000
-
-data = al.Visibilities(
-    np.random.normal(loc=0.0, scale=1.0, size=total_visibilities)
-    + 1j * np.random.normal(loc=0.0, scale=1.0, size=total_visibilities)
-)
-
-noise_map = al.VisibilitiesNoiseMap(
-    np.ones(total_visibilities) + 1j * np.ones(total_visibilities)
-)
-
-uv_wavelengths = np.random.uniform(low=-300.0, high=300.0, size=(total_visibilities, 2))
-
-dataset = al.Interferometer(
-    data=data,
-    noise_map=noise_map,
-    uv_wavelengths=uv_wavelengths,
+dataset = al.Interferometer.from_fits(
+    data_path=path.join(dataset_path, "data.fits"),
+    noise_map_path=path.join(dataset_path, "noise_map.fits"),
+    uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
     real_space_mask=real_space_mask,
-    transformer_class=al.TransformerNUFFT,
+    transformer_class=al.TransformerDFT,
 )
 
 print(f"Total Visiblities: {dataset.uv_wavelengths.shape[0]}")
@@ -189,8 +168,16 @@ print("JAX Time To VMAP + JIT Function", time.time() - start)
 
 start = time.time()
 print()
-print(fitness._vmap(parameters))
+result = fitness._vmap(parameters)
+print(result)
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
+
+np.testing.assert_allclose(
+    np.array(result),
+    -7.94439429e+08,
+    rtol=1e-4,
+    err_msg="interferometer/mge: JAX vmap likelihood mismatch",
+)
 
 analysis.print_vram_use(model=model, batch_size=batch_size)

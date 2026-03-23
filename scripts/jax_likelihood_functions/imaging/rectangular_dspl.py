@@ -281,9 +281,17 @@ print("JAX Time To VMAP + JIT Function", time.time() - start)
 
 start = time.time()
 print()
-print(fitness._vmap(parameters))
+result = fitness._vmap(parameters)
+print(result)
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
+
+np.testing.assert_allclose(
+    np.array(result),
+    2378.52317753,
+    rtol=1e-4,
+    err_msg="rectangular_dspl: JAX vmap likelihood mismatch",
+)
 
 batched_call = jax.jit(jax.vmap(fitness.call))
 lowered = batched_call.lower(parameters)
@@ -307,6 +315,13 @@ instance = model.instance_from_prior_medians()
 fit = analysis.fit_from(instance)
 
 print(f"Figure of Merit = {fit.figure_of_merit}")
+
+np.testing.assert_allclose(
+    fit.figure_of_merit,
+    2378.5231735459383,
+    rtol=1e-4,
+    err_msg="rectangular_dspl: figure_of_merit mismatch",
+)
 
 
 mat_plot_2d = aplt.MatPlot2D(

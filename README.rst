@@ -11,7 +11,7 @@ To run the pipelines in this project you must add the autolens_workspace_test di
 
 .. code-block:: bash
 
-    export PYTHONPATH=$PYTHONPATH:/mnt/c/Users/Jammy/Code/PyAuto/autolens_workspace_test
+    export PYTHONPATH=$PYTHONPATH:/mnt/c/Users/Jammy/Code/PyAutoJAX/autolens_workspace_test
 
 You can run an integration test as follows:
 

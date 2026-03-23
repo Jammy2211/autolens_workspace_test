@@ -1,8 +1,0 @@
-=== FAILED: scripts/interferometer/model_fit.py ===
-Exit code: 1
-
-Traceback (most recent call last):
-  File "/mnt/c/Users/Jammy/Code/PyAutoJAX/autolens_workspace_test/scripts/interferometer/model_fit.py", line 61, in <module>
-    settings = al.Settings(use_linear_operators=False)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-TypeError: Settings.__init__() got an unexpected keyword argument 'use_linear_operators'

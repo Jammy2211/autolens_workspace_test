@@ -210,13 +210,7 @@ lens = af.Model(
 
 # Source:
 
-# mesh = al.mesh.RectangularAdaptDensity(shape=mesh_shape)
-regularization = al.reg.ConstantSplit(coefficient=1.0)
-
-# regularization = al.reg.GaussianKernel(coefficient=1.0, scale=1.0)
-
-# regularization = al.reg.AdaptSplit()
-
+regularization = al.reg.AdaptSplit()
 
 pixelization = af.Model(
     al.Pixelization,
@@ -302,9 +296,17 @@ print("JAX Time To VMAP + JIT Function", time.time() - start)
 
 start = time.time()
 print()
-print(fitness._vmap(parameters))
+result = fitness._vmap(parameters)
+print(result)
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
+
+np.testing.assert_allclose(
+    np.array(result),
+    -3476661.24057484,
+    rtol=1e-4,
+    err_msg="delaunay: JAX vmap likelihood mismatch",
+)
 
 batched_call = jax.jit(jax.vmap(fitness.call))
 lowered = batched_call.lower(parameters)
@@ -337,6 +339,13 @@ instance = model.instance_from_prior_medians()
 fit = analysis.fit_from(instance)
 
 print(f"Figure of Merit = {fit.figure_of_merit}")
+
+np.testing.assert_allclose(
+    fit.figure_of_merit,
+    -3476661.2405748414,
+    rtol=1e-4,
+    err_msg="delaunay: figure_of_merit mismatch",
+)
 
 
 mat_plot_2d = aplt.MatPlot2D(

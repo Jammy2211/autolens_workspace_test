@@ -2,6 +2,11 @@
     "type": "instance",
     "class_path": "autolens.lens.tracer.Tracer",
     "arguments": {
+        "cosmology": {
+            "type": "instance",
+            "class_path": "autogalaxy.cosmology.model.Planck15",
+            "arguments": {}
+        },
         "galaxies": {
             "type": "list",
             "values": [
@@ -15,14 +20,14 @@
                             "type": "instance",
                             "class_path": "autogalaxy.profiles.mass.total.isothermal.IsothermalSph",
                             "arguments": {
+                                "einstein_radius": 1.6,
                                 "centre": {
                                     "type": "tuple",
                                     "values": [
                                         0.0,
                                         0.0
                                     ]
-                                },
-                                "einstein_radius": 1.6
+                                }
                             }
                         }
                     }
@@ -37,25 +42,20 @@
                             "type": "instance",
                             "class_path": "autogalaxy.profiles.light.standard.exponential.ExponentialSph",
                             "arguments": {
-                                "intensity": 0.3,
-                                "effective_radius": 0.1,
                                 "centre": {
                                     "type": "tuple",
                                     "values": [
                                         0.0,
                                         0.1
                                     ]
-                                }
+                                },
+                                "effective_radius": 0.1,
+                                "intensity": 0.3
                             }
                         }
                     }
                 }
             ]
-        },
-        "cosmology": {
-            "type": "instance",
-            "class_path": "autogalaxy.cosmology.model.Planck15",
-            "arguments": {}
         }
     }
 }

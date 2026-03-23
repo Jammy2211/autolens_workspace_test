@@ -330,10 +330,10 @@ def fit():
     """
     analysis = al.AnalysisImaging(
         dataset=dataset,
-        positions_likelihood=mass_result.positions_likelihood_from(
+        positions_likelihood_list=[mass_result.positions_likelihood_from(
             factor=2.0,
             minimum_threshold=0.2,
-        ),
+        )],
         adapt_images=adapt_images,
         use_jax=True,
     )

@@ -16,11 +16,19 @@ scripts/                     Integration test scripts run on the build server
   interferometer/            Interferometer model-fit tests
   point_source/              Point source model-fit tests
   jax_likelihood_functions/  JAX likelihood function tests (imaging, interferometer, point_source)
+  hessian_jax.py             JAX JIT tests for LensCalc hessian-derived lensing quantities
+  profiles_jit.py            JAX JIT tests for light and mass profile methods
+  tracer_multiplane.py       Multi-plane ray-tracing logic correctness tests (NumPy only)
+  tracer_jax.py              JAX JIT tests for Tracer ray-tracing methods
+  database/scrape/           Database scrape tests (see scripts/database/scrape/CLAUDE.md)
 failed/                      Failure logs written here when a script errors (one .txt per failure)
 dataset/                     Input .fits files and example data
 config/                      YAML configuration files
 output/                      Model-fit results written here at runtime
 ```
+
+For full coverage detail on each script see `scripts/CLAUDE.md`.
+For database scrape test detail see `scripts/database/scrape/CLAUDE.md`.
 
 ## Running Tests
 
@@ -47,14 +55,27 @@ Unlike `../autolens_workspace`, there is no resume/skip logic — every run exec
 - On failure: writes a log to `failed/<script_path_with_slashes_replaced>.txt`
 - Does not skip previously-run scripts (stateless, always runs all)
 
-## jax_likelihood_functions
+## JAX Testing
 
-`scripts/jax_likelihood_functions/` contains scripts that test JAX can successfully compute log-likelihood gradients for various model types:
-- `imaging/` — light parametric, MGE, Delaunay, rectangular pixelization tests
-- `interferometer/` — interferometer likelihood tests
-- `point_source/` — point source likelihood tests
+There are four layers of JAX integration testing, each targeting a different level of the stack:
 
-These were originally in `jax_profiling/` at the repo root and moved here so they are included in the standard `run_all_scripts.sh` test run.
+1. **`jax_likelihood_functions/`** — highest level.  Tests that JAX can compute
+   batched log-likelihood gradients via `fitness._vmap(parameters)` for the full
+   `AnalysisImaging` + `Tracer` pipeline.  One script per model type.
+
+2. **`hessian_jax.py`** — mid level.  Tests `LensCalc` hessian-derived quantities
+   (`convergence_2d_via_hessian_from`, `shear`, `magnification`, `jacobian`,
+   eigenvalues) using the three-step JAX pattern (NumPy / JAX outer / JAX JIT).
+   This is the **reference** for the JAX testing style.
+
+3. **`tracer_jax.py`** — mid level.  Tests `Tracer.traced_grid_2d_list_from`,
+   `image_2d_from`, `deflections_yx_2d_from`, `convergence_2d_from` under JAX JIT
+   for two-plane and three-plane systems.
+
+4. **`profiles_jit.py`** — lowest level.  Tests individual light profile
+   `image_2d_from` and mass profile `deflections_yx_2d_from` / `convergence_2d_from`
+   methods under JAX JIT.  Covers `lp.Sersic`, `lp.Exponential`, `lp.Gaussian`,
+   `lp.DevVaucouleurs`, `mp.Isothermal`, `mp.PowerLaw`, `mp.NFW`, `mp.ExternalShear`.
 
 ## Line Endings — Always Unix (LF)
 

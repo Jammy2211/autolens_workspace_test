@@ -105,47 +105,14 @@ The number of free parameters and therefore the dimensionality of non-linear par
 bulge = af.Model(al.lp_linear.Sersic)
 
 mass = af.Model(al.mp.PowerLaw)
-mass_0 = af.Model(al.mp.dPIEMass)
-
-mass_0.ell_comps = (0.1, 0.1)
-mass_0.b0 = 0.0001
-mass_0.rs = 5.0
-mass_0.ra = 1.0
 
 shear = af.Model(al.mp.ExternalShear)
-
-# nfw = af.Model(al.mp.NFWSph)
-
-# nfw = af.Model(al.mp.NFWMCRLudlowSph)
-
-subhalo_mass = af.Model(al.mp.gNFWVirialMassConcSph)
-
-# properties to fix
-subhalo_mass.overdens = 200
-subhalo_mass.redshift_object = 0.2
-subhalo_mass.redshift_source = 1.0
-
-# set priors
-# uses default Uniform priors [7,12] for log10m_vir
-subhalo_mass.centre_0 = af.GaussianPrior(mean=1.0, sigma=1.0)
-subhalo_mass.centre_1 = af.GaussianPrior(mean=1.0, sigma=1.0)
-
-multipole_1 = af.Model(al.mp.PowerLawMultipole)
-
-multipole_1.m = 1
-multipole_1.centre = mass.centre
-multipole_1.einstein_radius = mass.einstein_radius
-multipole_1.slope = mass.slope
 
 lens = af.Model(
     al.Galaxy,
     redshift=0.5,
     bulge=bulge,
     mass=mass,
-    #      mass_0=mass_0,
-    #  nfw=nfw,
-    nfw=subhalo_mass,
-    multipole_1=multipole_1,
     shear=shear,
 )
 
@@ -211,6 +178,14 @@ print("JAX Time To VMAP + JIT Function", time.time() - start)
 
 start = time.time()
 print()
-print(fitness._vmap(parameters))
+result = fitness._vmap(parameters)
+print(result)
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
+
+np.testing.assert_allclose(
+    np.array(result),
+    -1.33426939e+09,
+    rtol=1e-4,
+    err_msg="lp: JAX vmap likelihood mismatch",
+)
