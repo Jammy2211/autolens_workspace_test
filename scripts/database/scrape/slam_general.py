@@ -325,8 +325,8 @@ def fit():
         tracer = tracer_list[0]
 
         try:
-            tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
-            tracer_plotter.figures_2d(convergence=True, potential=True)
+            aplt.plot_array(array=tracer.convergence_2d_from(grid=grid))
+            aplt.plot_array(array=tracer.potential_2d_from(grid=grid))
 
         except al.exc.ProfileException:
             print(
@@ -343,8 +343,7 @@ def fit():
     for dataset_list in imaging_gen:
         dataset = dataset_list[0]
 
-        dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
-        dataset_plotter.subplot_dataset()
+        aplt.plot_array(array=dataset.data)
 
         assert dataset.pixel_scales[0] > 0.0
 
@@ -358,8 +357,7 @@ def fit():
     for fit_list in fit_imaging_gen:
         fit = fit_list[0]
 
-        fit_plotter = aplt.FitImagingPlotter(fit=fit)
-        fit_plotter.subplot_fit()
+        aplt.subplot_fit_imaging(fit=fit)
 
         assert fit.tracer.galaxies[0].mass.einstein_radius > 0.0
 

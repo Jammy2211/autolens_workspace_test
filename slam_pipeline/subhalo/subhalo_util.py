@@ -52,42 +52,18 @@ def visualize_subhalo_detect(
         format="png",
     )
 
-    evidence_max = 30.0
-    evidence_half = evidence_max / 2.0
-
-    colorbar = aplt.Colorbar(
-        manual_tick_values=[0.0, evidence_half, evidence_max],
-        manual_tick_labels=[
-            0.0,
-            np.round(evidence_half, 1),
-            np.round(evidence_max, 1),
-        ],
-    )
-    colorbar_tickparams = aplt.ColorbarTickParams(labelsize=22, labelrotation=90)
-
-    mat_plot = aplt.MatPlot2D(
-        axis=aplt.Axis(extent=result.extent),
-        #  colorbar=colorbar,
-        #  colorbar_tickparams=colorbar_tickparams,
-        output=output,
-    )
-
-    subhalo_plotter = al.subhalo.SubhaloPlotter(
+    aplt.subplot_detection_imaging(
         result=result,
         fit_imaging_no_subhalo=fit_no_subhalo,
         fit_imaging_with_subhalo=fit_imaging_with_subhalo,
-        mat_plot_2d=mat_plot,
+        output=output,
     )
-
-    subhalo_plotter.figure_figures_of_merit_grid(
-        use_log_evidences=True,
-        relative_to_value=result_no_subhalo.samples.log_evidence,
-        remove_zeros=True,
+    aplt.subplot_detection_fits(
+        result=result,
+        fit_imaging_no_subhalo=fit_no_subhalo,
+        fit_imaging_with_subhalo=fit_imaging_with_subhalo,
+        output=output,
     )
-
-    subhalo_plotter.figure_mass_grid()
-    subhalo_plotter.subplot_detection_imaging()
-    subhalo_plotter.subplot_detection_fits()
 
 
 def visualize_sensitivity(
@@ -134,13 +110,7 @@ def visualize_sensitivity(
 
     data_subtracted = data_subtracted.apply_mask(mask=mask)
 
-    mat_plot_2d = aplt.MatPlot2D(axis=aplt.Axis(extent=result.extent), output=output)
-
-    plotter = aplt.SubhaloSensitivityPlotter(
-        result=result, data_subtracted=data_subtracted, mat_plot_2d=mat_plot_2d
-    )
-
-    plotter.subplot_sensitivity()
+    aplt.subplot_sensitivity(result=result, data_subtracted=data_subtracted, output=output)
 
     # try:
     #     plotter.subplot_figures_of_merit_grid()
@@ -259,22 +229,8 @@ def visualize_sensitivity_mask(mass_result, sensitivity_mask, settings_search):
         format="png",
     )
 
-    plotter = aplt.Array2DPlotter(
-        array=sensitivity_mask_plot,
-        mat_plot_2d=aplt.MatPlot2D(output=output),
-    )
-    plotter.set_filename("sensitivity_mask")
-    plotter.figure_2d()
-
-    plotter = aplt.Array2DPlotter(
-        array=lensed_source_image,
-        mat_plot_2d=aplt.MatPlot2D(
-            axis=aplt.Axis(extent=sensitivity_mask.geometry.extent_square),
-            output=output,
-        ),
-    )
-    plotter.set_filename("sensitivity_masked_image")
-    plotter.figure_2d()
+    aplt.plot_array(array=sensitivity_mask_plot, output=output, filename="sensitivity_mask")
+    aplt.plot_array(array=lensed_source_image, output=output, filename="sensitivity_masked_image")
 
 
 class Visualizer:

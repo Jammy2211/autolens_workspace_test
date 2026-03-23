@@ -85,22 +85,4 @@ __Figures__
 We now pass the FitInterferometer to an `FitInterferometerPlotter` and call various `figure_*` methods 
 to plot different attributes.
 """
-fit_plotter = aplt.FitInterferometerPlotter(
-    fit=fit,
-    mat_plot_1d=aplt.MatPlot1D(output=output),
-    mat_plot_2d=aplt.MatPlot2D(output=output),
-)
-
-"""
-__Subplots__
-
-The `FitInterferometerPlotter` may also plot a subplot of these attributes.
-"""
-fit_plotter.subplot_fit()
-fit_plotter.subplot_fit_dirty_images()
-
-
-"""
-The plane images can be combined to plot the appearance of the galaxy in real-space.
-"""
-fit_plotter.subplot_fit_real_space()
+aplt.subplot_fit_interferometer(fit=fit, output=output)

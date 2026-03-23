@@ -169,15 +169,9 @@ __Result__
 """
 print(result.max_log_likelihood_instance)
 
-tracer_plotter = aplt.TracerPlotter(
-    tracer=result.max_log_likelihood_tracer,
-    grid=real_space_mask.derive_grid.all_false,
-)
-tracer_plotter.subplot_tracer()
+aplt.subplot_tracer(tracer=result.max_log_likelihood_tracer, grid=real_space_mask.derive_grid.all_false)
 
-fit_plotter = aplt.FitInterferometerPlotter(fit=result.max_log_likelihood_fit)
-fit_plotter.subplot_fit()
-fit_plotter.subplot_fit_dirty_images()
+aplt.subplot_fit_interferometer(fit=result.max_log_likelihood_fit)
 
 """
 Checkout `autolens_workspace/*/guides/results` for a full description of analysing results.

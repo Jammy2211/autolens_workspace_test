@@ -106,8 +106,7 @@ tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 """
 Lets look at the tracer`s image, this is the image we'll be simulating.
 """
-tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
-tracer_plotter.figures_2d(image=True)
+aplt.plot_array(array=tracer.image_2d_from(grid=grid))
 
 """
 We can now pass this simulator a tracer, which creates the ray-traced image plotted above and simulates it as an
@@ -118,10 +117,7 @@ dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
 """
 Lets plot the simulated interferometer dataset before we output it to fits.
 """
-dataset_plotter = aplt.InterferometerPlotter(dataset=dataset)
-dataset_plotter.figures_2d(dirty_image=True)
-dataset_plotter.subplot_dataset()
-dataset_plotter.subplot_dirty_images()
+aplt.plot_array(array=dataset.data)
 
 """
 __Output__
@@ -146,16 +142,8 @@ __Visualize__
 
 Output a subplot of the simulated dataset, the image and the tracer's quantities to the dataset path as .png files.
 """
-mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png"))
-
-dataset_plotter = aplt.InterferometerPlotter(dataset=dataset, mat_plot_2d=mat_plot_2d)
-dataset_plotter.subplot_dataset()
-dataset_plotter.subplot_dirty_images()
-dataset_plotter.figures_2d(data=True)
-
-tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d)
-tracer_plotter.subplot_tracer()
-tracer_plotter.subplot_galaxies_images()
+aplt.plot_array(array=dataset.data, output=aplt.Output(path=dataset_path, format="png"))
+aplt.subplot_tracer(tracer=tracer, grid=grid, output=aplt.Output(path=dataset_path, format="png"))
 
 """
 __Tracer json__

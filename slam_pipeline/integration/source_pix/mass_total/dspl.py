@@ -67,10 +67,7 @@ def fit():
 
     dataset = dataset.apply_mask(mask=mask)
 
-    dataset_plotter = aplt.ImagingPlotter(
-        dataset=dataset, visuals_2d=aplt.Visuals2D(mask=mask)
-    )
-    dataset_plotter.subplot_dataset()
+    aplt.plot_array(array=dataset.data)
 
     """
     __Settings AutoFit__

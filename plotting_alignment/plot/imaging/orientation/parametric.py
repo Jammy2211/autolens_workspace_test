@@ -87,12 +87,5 @@ __Figures__
 
 We now pass the FitImaging to an `FitImagingPlotter` and call various `figure_*` methods to plot different attributes.
 """
-fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=aplt.MatPlot2D(output=output))
-
-"""
-__Subplots__
-
-The `FitImagingPlotter` may also plot a subplot of these attributes.
-"""
-fit_plotter.subplot_fit()
-fit_plotter.subplot_of_planes(plane_index=1)
+aplt.subplot_fit_imaging(fit=fit, output=output)
+aplt.subplot_fit_imaging(fit=fit, output=output)

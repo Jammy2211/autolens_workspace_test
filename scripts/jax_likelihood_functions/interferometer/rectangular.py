@@ -274,19 +274,5 @@ np.testing.assert_allclose(
     err_msg="interferometer/rectangular: figure_of_merit mismatch",
 )
 
-mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(
-        path=file_path, filename=f"interferometer_subplot_fit", format="png"
-    )
-)
-fit_plotter = aplt.FitInterferometerPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_plotter.subplot_fit()
-
-
-mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(
-        path=file_path, filename=f"interferometer_subplot_inversion_0", format="png"
-    )
-)
-fit_plotter = aplt.InversionPlotter(inversion=fit.inversion, mat_plot_2d=mat_plot_2d)
-fit_plotter.subplot_of_mapper(mapper_index=0)
+aplt.subplot_fit_interferometer(fit=fit, output=aplt.Output(path=file_path, filename=f"interferometer_subplot_fit", format="png"))
+aplt.InversionPlotter(inversion=fit.inversion).subplot_of_mapper(mapper_index=0)

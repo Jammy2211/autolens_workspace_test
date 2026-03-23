@@ -117,8 +117,7 @@ tracer = al.Tracer(galaxies=[lens_galaxy, lens_galaxy_1, source_galaxy])
 """
 Lets look at the tracer`s image, this is the image we'll be simulating.
 """
-tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
-tracer_plotter.figures_2d(image=True)
+aplt.plot_array(array=tracer.image_2d_from(grid=grid))
 
 """
 Pass the simulator a tracer, which creates the image which is simulated as an imaging dataset.
@@ -138,24 +137,14 @@ dataset.output_to_fits(
 """
 Plot the simulated `Imaging` dataset before outputting it to fits.
 """
-dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
-dataset_plotter.subplot_dataset()
+aplt.plot_array(array=dataset.data)
 
 """
 Output a subplot of the simulated dataset, the image and a subplot of the `Tracer`'s quantities to the dataset path 
 as .png files.
 """
-mat_plot_2d = aplt.MatPlot2D(
-    title=aplt.Title(label="Hubble Space Telescope Image"),
-    output=aplt.Output(path=dataset_path, format="png"),
-)
-
-dataset_plotter = aplt.ImagingPlotter(dataset=dataset, mat_plot_2d=mat_plot_2d)
-dataset_plotter.subplot_dataset()
-dataset_plotter.figures_2d(data=True)
-
-tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d)
-tracer_plotter.subplot_tracer()
+aplt.plot_array(array=dataset.data, output=aplt.Output(path=dataset_path, format="png"))
+aplt.subplot_tracer(tracer=tracer, grid=grid, output=aplt.Output(path=dataset_path, format="png"))
 
 """
 Pickle the `Tracer` in the dataset folder, ensuring the true `Tracer` is safely stored and available if we need to 
@@ -185,9 +174,7 @@ lens_image = lens_image.trimmed_after_convolution_from(
 
 snr_no_lens = (dataset.data - lens_image) / dataset.noise_map
 
-plotter = aplt.Array2DPlotter(array=snr_no_lens, mat_plot_2d=mat_plot_2d)
-plotter.set_filename("snr_no_lens")
-plotter.figure_2d()
+aplt.plot_array(array=snr_no_lens, output=aplt.Output(path=dataset_path, format="png"), filename="snr_no_lens")
 
 snr_no_lens.output_to_fits(
     file_path=path.join(dataset_path, "snr_no_lens.fits"), overwrite=True

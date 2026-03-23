@@ -116,23 +116,8 @@ __Output__
 We now output the image of this strong lens to `.fits` which can be used for visualize when performing point-source 
 modeling and to `.png` for general inspection.
 """
-visuals_2d = aplt.Visuals2D(multiple_images=positions)
-
-tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, visuals_2d=visuals_2d)
-tracer_plotter.figures_2d(image=True)
-
-mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(path=dataset_path, filename="data", format="fits")
-)
-
-tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d)
-tracer_plotter.figures_2d(image=True)
-
-mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png"))
-
-tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d)
-tracer_plotter.subplot_tracer()
-tracer_plotter.subplot_galaxies_images()
+aplt.plot_array(array=tracer.image_2d_from(grid=grid))
+aplt.plot_array(array=tracer.image_2d_from(grid=grid), output=aplt.Output(path=dataset_path, format="png"))
 
 """
 Create a point-source dictionary data object and output this to a `.json` file, which is the format used to load and
@@ -158,17 +143,7 @@ __Visualize__
 
 Output a subplot of the simulated point source dataset and the tracer's quantities to the dataset path as .png files.
 """
-mat_plot_1d = aplt.MatPlot1D(output=aplt.Output(path=dataset_path, format="png"))
-mat_plot_2d = aplt.MatPlot2D(output=aplt.Output(path=dataset_path, format="png"))
-
-point_dataset_plotter = aplt.PointDatasetPlotter(
-    dataset=dataset, mat_plot_1d=mat_plot_1d, mat_plot_2d=mat_plot_2d
-)
-point_dataset_plotter.subplot_dataset()
-
-tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid, mat_plot_2d=mat_plot_2d)
-tracer_plotter.subplot_tracer()
-tracer_plotter.subplot_galaxies_images()
+aplt.subplot_tracer(tracer=tracer, grid=grid, output=aplt.Output(path=dataset_path, format="png"))
 
 """
 __Tracer json__

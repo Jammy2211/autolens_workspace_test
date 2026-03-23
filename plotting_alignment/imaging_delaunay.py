@@ -259,22 +259,5 @@ fit = analysis.fit_from(instance)
 print(f"Figure of Merit = {fit.figure_of_merit}")
 
 
-mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(
-        path=file_path, filename=f"{dataset_name}_source_delaunay", format="png"
-    )
-)
-fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_plotter.figures_2d_of_planes(
-    plane_index=1, plane_image=True, zoom_to_brightest=False
-)
-
-mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(
-        path=file_path, filename=f"{dataset_name}_source_zoom_delaunay", format="png"
-    )
-)
-fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_plotter.figures_2d_of_planes(
-    plane_index=1, plane_image=True, zoom_to_brightest=True
-)
+aplt.plot_array(array=fit.model_images_of_planes_list[1], output=aplt.Output(path=file_path, filename=f"{dataset_name}_source_delaunay", format="png"))
+aplt.plot_array(array=fit.model_images_of_planes_list[1], output=aplt.Output(path=file_path, filename=f"{dataset_name}_source_zoom_delaunay", format="png"))

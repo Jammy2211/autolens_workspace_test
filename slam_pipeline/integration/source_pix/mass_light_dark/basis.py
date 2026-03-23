@@ -79,10 +79,7 @@ def fit():
         over_sample_size_lp=over_sample_size,
     )
 
-    dataset_plotter = aplt.ImagingPlotter(
-        dataset=dataset, visuals_2d=aplt.Visuals2D(mask=mask)
-    )
-    dataset_plotter.subplot_dataset()
+    aplt.plot_array(array=dataset.data)
 
     """
     __Settings AutoFit__
