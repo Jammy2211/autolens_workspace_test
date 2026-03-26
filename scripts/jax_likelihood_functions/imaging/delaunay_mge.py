@@ -356,26 +356,6 @@ np.testing.assert_allclose(
     err_msg="delaunay_mge: figure_of_merit mismatch",
 )
 
-mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(
-        path=file_path, filename=f"{instrument}_subplot_fit", format="png"
-    )
-)
-fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_plotter.subplot_fit()
-
-mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(
-        path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"
-    )
-)
-fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_plotter.subplot_of_planes(plane_index=1)
-
-mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(
-        path=file_path, filename=f"{instrument}_subplot_inversion_0", format="png"
-    )
-)
-fit_plotter = aplt.InversionPlotter(inversion=fit.inversion, mat_plot_2d=mat_plot_2d)
-fit_plotter.subplot_of_mapper(mapper_index=0)
+aplt.subplot_fit_imaging(fit=fit, output=aplt.Output(path=file_path, filename=f"{instrument}_subplot_fit", format="png"))
+aplt.subplot_fit_imaging(fit=fit, output=aplt.Output(path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"))
+aplt.InversionPlotter(inversion=fit.inversion).subplot_of_mapper(mapper_index=0)

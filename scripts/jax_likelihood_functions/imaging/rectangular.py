@@ -309,32 +309,7 @@ np.testing.assert_allclose(
 )
 
 
-mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(path=file_path, filename=f"{instrument}_source", format="png")
-)
-fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_plotter.figures_2d_of_planes(plane_index=1, plane_image=True)
-
-mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(
-        path=file_path, filename=f"{instrument}_subplot_fit", format="png"
-    )
-)
-fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_plotter.subplot_fit()
-
-mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(
-        path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"
-    )
-)
-fit_plotter = aplt.FitImagingPlotter(fit=fit, mat_plot_2d=mat_plot_2d)
-fit_plotter.subplot_of_planes(plane_index=1)
-
-mat_plot_2d = aplt.MatPlot2D(
-    output=aplt.Output(
-        path=file_path, filename=f"{instrument}_subplot_inversion_0", format="png"
-    )
-)
-fit_plotter = aplt.InversionPlotter(inversion=fit.inversion, mat_plot_2d=mat_plot_2d)
-fit_plotter.subplot_of_mapper(mapper_index=0)
+aplt.plot_array(array=fit.model_images_of_planes_list[1], output=aplt.Output(path=file_path, filename=f"{instrument}_source", format="png"))
+aplt.subplot_fit_imaging(fit=fit, output=aplt.Output(path=file_path, filename=f"{instrument}_subplot_fit", format="png"))
+aplt.subplot_fit_imaging(fit=fit, output=aplt.Output(path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"))
+aplt.InversionPlotter(inversion=fit.inversion).subplot_of_mapper(mapper_index=0)

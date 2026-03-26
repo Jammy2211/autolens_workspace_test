@@ -337,8 +337,8 @@ def fit():
         # Only one `Analysis` so take first and only tracer.
         tracer = tracer_list[0]
 
-        tracer_plotter = aplt.TracerPlotter(tracer=tracer, grid=grid)
-        tracer_plotter.figures_2d(convergence=True, potential=True)
+        aplt.plot_array(array=tracer.convergence_2d_from(grid=grid))
+        aplt.plot_array(array=tracer.potential_2d_from(grid=grid))
 
         print("Tracer Checked")
 
@@ -348,8 +348,7 @@ def fit():
     for dataset_list in imaging_gen:
         dataset = dataset_list[0]
 
-        dataset_plotter = aplt.ImagingPlotter(dataset=dataset)
-        dataset_plotter.subplot_dataset()
+        aplt.plot_array(array=dataset.data)
 
         print("Imaging Checked")
 
