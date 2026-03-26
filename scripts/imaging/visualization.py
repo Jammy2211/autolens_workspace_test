@@ -11,10 +11,10 @@ every visualization toggle set to `true`, so all possible outputs are exercised.
 
 Expected outputs are derived directly from the source code of:
   - autolens/imaging/model/visualizer.py    (VisualizerImaging)
-  - autolens/imaging/model/plotter_interface.py   (PlotterInterfaceImaging)
-  - autolens/analysis/plotter_interface.py        (PlotterInterface: tracer, galaxies, inversion)
-  - autogalaxy/analysis/plotter_interface.py      (PlotterInterface: galaxies, inversion)
-  - autogalaxy/imaging/model/plotter_interface.py (fits_to_fits)
+  - autolens/imaging/model/plotter.py   (PlotterImaging)
+  - autolens/analysis/plotter.py        (Plotter: tracer, galaxies, inversion)
+  - autogalaxy/analysis/plotter.py      (Plotter: galaxies, inversion)
+  - autogalaxy/imaging/plot/fit_imaging_plots.py (fits_fit, fits_galaxy_images, fits_model_galaxy_images)
 """
 
 import os
@@ -170,9 +170,9 @@ paths = SimpleNamespace(
 """
 __Visualize Before Fit__
 
-Calls PlotterInterfaceImaging.imaging()          -> subplot_dataset.png, dataset.fits
-      PlotterInterface.image_with_positions()    -> image_with_positions.png
-      PlotterInterface.adapt_images()            -> subplot_adapt_images.png, adapt_images.fits
+Calls PlotterImaging.imaging()          -> dataset.png, dataset.fits
+      Plotter.image_with_positions()    -> image_with_positions.png
+      Plotter.adapt_images()            -> adapt_images.png, adapt_images.fits
 """
 
 VisualizerImaging.visualize_before_fit(
@@ -187,11 +187,11 @@ __Assertions: visualize_before_fit__
 """
 
 # ---- dataset.fits ----
-# Source: PlotterInterfaceImaging.imaging() -> hdu_list_for_output_from with ext_name_list:
+# Source: PlotterImaging.imaging() -> hdu_list_for_output_from with ext_name_list:
 #   ["mask", "data", "noise_map", "psf", "over_sample_size_lp", "over_sample_size_pixelization"]
 # HDU 0 is PrimaryHDU (first value), HDUs 1-5 are ImageHDU.
 
-assert (image_path / "subplot_dataset.png").exists(), "subplot_dataset.png missing"
+assert (image_path / "dataset.png").exists(), "dataset.png missing"
 
 with astropy_fits.open(image_path / "dataset.fits") as hdul:
     assert len(hdul) == 6, f"dataset.fits: expected 6 HDUs, got {len(hdul)}"
@@ -204,20 +204,20 @@ with astropy_fits.open(image_path / "dataset.fits") as hdul:
     assert hdul[1].data.ndim == 2, "DATA HDU should be 2D"
 
 # ---- image_with_positions.png ----
-# Source: PlotterInterface.image_with_positions() -> image_plotter.set_filename("image_with_positions")
+# Source: Plotter.image_with_positions() -> image_plotter.set_filename("image_with_positions")
 
 assert (
     image_path / "image_with_positions.png"
 ).exists(), "image_with_positions.png missing"
 
 # ---- adapt_images.fits ----
-# Source: PlotterInterface.adapt_images() -> hdu_list_for_output_from with ext_name_list:
+# Source: Plotter.adapt_images() -> hdu_list_for_output_from with ext_name_list:
 #   ["mask", "('galaxies', 'lens')", "('galaxies', 'source')"]
 # HDU 0 = MASK (Primary), HDU 1 = lens key (uppercased), HDU 2 = source key (uppercased).
 
 assert (
-    image_path / "subplot_adapt_images.png"
-).exists(), "subplot_adapt_images.png missing"
+    image_path / "adapt_images.png"
+).exists(), "adapt_images.png missing"
 
 with astropy_fits.open(image_path / "adapt_images.fits") as hdul:
     assert len(hdul) == 3, f"adapt_images.fits: expected 3 HDUs, got {len(hdul)}"
@@ -227,16 +227,17 @@ with astropy_fits.open(image_path / "adapt_images.fits") as hdul:
 """
 __Visualize__
 
-Calls PlotterInterfaceImaging.fit_imaging()  -> subplot_fit.png, subplot_tracer.png,
-                                                subplot_fit_log10.png,
-                                                subplot_of_plane_0.png, subplot_of_plane_1.png,
-                                                subplot_mappings_0.png,
+Calls PlotterImaging.fit_imaging()  -> fit.png, tracer.png,
+                                                fit_log10.png,
+                                                fit_of_plane_0.png, fit_of_plane_1.png,
+                                                mappings_0.png,
                                                 fit.fits, galaxy_images.fits, model_galaxy_images.fits
-      PlotterInterface.tracer()              -> tracer.fits, source_plane_images.fits,
-                                                subplot_galaxies_images.png
-      PlotterInterface.galaxies()            -> subplot_galaxy_images.png, subplot_galaxies.png,
+      Plotter.tracer()              -> fits_tracer -> tracer.fits,
+                                                fits_source_plane_images -> source_plane_images.fits,
+                                                galaxies_images.png
+      Plotter.galaxies()            -> galaxy_images.png, galaxies.png,
                                                 galaxy_images.fits (overwrites fit version)
-      PlotterInterface.inversion()           -> subplot_inversion_0.png,
+      Plotter.inversion()           -> inversion_0.png,
                                                 source_plane_reconstruction_0.csv
 """
 
@@ -253,30 +254,30 @@ __Assertions: visualize__
 """
 
 # ---- fit_imaging: PNG subplots ----
-# subplot_fit.png      <- FitImagingPlotter.subplot_fit()       auto_filename="subplot_fit"
-# subplot_tracer.png   <- FitImagingPlotter.subplot_tracer()    auto_filename="subplot_tracer"
-#                         (called inside fit_imaging when tracer.subplot_tracer=true)
-# subplot_fit_log10.png<- FitImagingPlotter.subplot_fit_log10() auto_filename="subplot_fit_log10"
-# subplot_of_plane_N.png <- FitImagingPlotter.subplot_of_planes() iterates range(len(tracer.planes))
-#                           auto_filename=f"subplot_of_plane_{plane_index}"
-# subplot_mappings_0.png <- FitImagingPlotter.subplot_mappings_of_plane()
-#                           auto_filename=f"subplot_mappings_{pixelization_index}"
+# fit.png          <- FitImaging.subplot_fit()       auto_filename="fit"
+# tracer.png       <- FitImaging.subplot_tracer()    auto_filename="tracer"
+#                     (called inside fit_imaging when tracer.subplot_tracer=true)
+# fit_log10.png    <- FitImaging.subplot_fit_log10() auto_filename="fit_log10"
+# fit_of_plane_N.png <- FitImaging.subplot_of_planes() iterates range(len(tracer.planes))
+#                       auto_filename=f"fit_of_plane_{plane_index}"
+# mappings_0.png   <- FitImaging.subplot_mappings_of_plane()
+#                     auto_filename=f"mappings_{pixelization_index}"
 
-assert (image_path / "subplot_fit.png").exists(), "subplot_fit.png missing"
-assert (image_path / "subplot_tracer.png").exists(), "subplot_tracer.png missing"
-assert (image_path / "subplot_fit_log10.png").exists(), "subplot_fit_log10.png missing"
+assert (image_path / "fit.png").exists(), "fit.png missing"
+assert (image_path / "tracer.png").exists(), "tracer.png missing"
+assert (image_path / "fit_log10.png").exists(), "fit_log10.png missing"
 assert (
-    image_path / "subplot_of_plane_0.png"
-).exists(), "subplot_of_plane_0.png missing"
+    image_path / "fit_of_plane_0.png"
+).exists(), "fit_of_plane_0.png missing"
 assert (
-    image_path / "subplot_of_plane_1.png"
-).exists(), "subplot_of_plane_1.png missing"
+    image_path / "fit_of_plane_1.png"
+).exists(), "fit_of_plane_1.png missing"
 assert (
-    image_path / "subplot_mappings_0.png"
-).exists(), "subplot_mappings_0.png missing"
+    image_path / "mappings_0.png"
+).exists(), "mappings_0.png missing"
 
 # ---- fit.fits ----
-# Source: fits_to_fits() -> hdu_list_for_output_from with ext_name_list:
+# Source: fits_fit() -> hdu_list_for_output_from with ext_name_list:
 #   ["mask", "model_data", "residual_map", "normalized_residual_map", "chi_squared_map"]
 
 with astropy_fits.open(image_path / "fit.fits") as hdul:
@@ -289,9 +290,8 @@ with astropy_fits.open(image_path / "fit.fits") as hdul:
     assert hdul[1].data.ndim == 2, "MODEL_DATA HDU should be 2D"
 
 # ---- model_galaxy_images.fits ----
-# Source: fits_to_fits() -> ext_name_list = ["mask"] + [f"galaxy_{i}" for i in range(number_plots)]
-# number_plots = len(galaxy_model_image_dict) + 1, but values_list has len(dict)+1 entries,
-# so only len(dict)+1 HDUs are written (loop over values_list). For 2 galaxies: MASK, GALAXY_0, GALAXY_1.
+# Source: fits_model_galaxy_images() -> ext_name_list = ["mask"] + [f"galaxy_{i}" for i in range(n)]
+# For 2 galaxies: MASK, GALAXY_0, GALAXY_1.
 
 with astropy_fits.open(image_path / "model_galaxy_images.fits") as hdul:
     assert len(hdul) == 3, f"model_galaxy_images.fits: expected 3 HDUs, got {len(hdul)}"
@@ -300,7 +300,7 @@ with astropy_fits.open(image_path / "model_galaxy_images.fits") as hdul:
     assert hdul[2].name == "GALAXY_1"
 
 # ---- tracer.fits ----
-# Source: PlotterInterface.tracer() -> hdu_list_for_output_from with ext_name_list:
+# Source: Plotter.tracer() -> hdu_list_for_output_from with ext_name_list:
 #   ["mask", "convergence", "potential", "deflections_y", "deflections_x"]
 
 with astropy_fits.open(image_path / "tracer.fits") as hdul:
@@ -313,7 +313,7 @@ with astropy_fits.open(image_path / "tracer.fits") as hdul:
     assert hdul[1].data.ndim == 2, "CONVERGENCE HDU should be 2D"
 
 # ---- source_plane_images.fits ----
-# Source: PlotterInterface.tracer() -> iterates tracer.planes[1:] (source plane only for 2-plane)
+# Source: Plotter.tracer() -> iterates tracer.planes[1:] (source plane only for 2-plane)
 # ext_name_list = ["mask", "source_plane_image_1"]
 # Source galaxy has no LightProfile (pixelization only) so image is zeros.
 
@@ -322,26 +322,26 @@ with astropy_fits.open(image_path / "source_plane_images.fits") as hdul:
     assert hdul[0].name == "MASK"
     assert hdul[1].name == "SOURCE_PLANE_IMAGE_1"
 
-# ---- tracer: subplot_galaxies_images.png ----
-# subplot_galaxies_images.png <- TracerPlotter.subplot_galaxies_images() auto_filename="subplot_galaxies_images"
-#                                (triggered by tracer.subplot_galaxies_images=true inside PlotterInterface.tracer())
+# ---- tracer: galaxies_images.png ----
+# galaxies_images.png <- Tracer.subplot_galaxies_images() auto_filename="galaxies_images"
+#                        (triggered by tracer.subplot_galaxies_images=true inside Plotter.tracer())
 
 assert (
-    image_path / "subplot_galaxies_images.png"
-).exists(), "subplot_galaxies_images.png missing"
+    image_path / "galaxies_images.png"
+).exists(), "galaxies_images.png missing"
 
 # ---- galaxies: PNG subplots ----
-# subplot_galaxy_images.png <- GalaxiesPlotter.subplot_galaxy_images() auto_filename="subplot_galaxy_images"
-# subplot_galaxies.png      <- GalaxiesPlotter.subplot()               auto_filename="subplot_galaxies"
+# galaxy_images.png <- Galaxies.subplot_galaxy_images() auto_filename="galaxy_images"
+# galaxies.png      <- Galaxies.subplot()               auto_filename="galaxies"
 
 assert (
-    image_path / "subplot_galaxy_images.png"
-).exists(), "subplot_galaxy_images.png missing"
-assert (image_path / "subplot_galaxies.png").exists(), "subplot_galaxies.png missing"
+    image_path / "galaxy_images.png"
+).exists(), "galaxy_images.png missing"
+assert (image_path / "galaxies.png").exists(), "galaxies.png missing"
 
 # ---- galaxy_images.fits ----
-# Written first by fits_to_fits() (fit.fits_galaxy_images), then overwritten by PlotterInterface.galaxies()
-# (galaxies.fits_galaxy_images). Final version is from galaxies(): ext_name_list = ["mask", "galaxy_0", "galaxy_1"].
+# Written first by fits_galaxy_images() (fit_imaging_plots), then overwritten by Plotter.galaxies()
+# (galaxies_plots.fits_galaxy_images). Final version is from galaxies(): ext_name_list = ["mask", "galaxy_0", "galaxy_1"].
 
 with astropy_fits.open(image_path / "galaxy_images.fits") as hdul:
     assert len(hdul) == 3, f"galaxy_images.fits: expected 3 HDUs, got {len(hdul)}"
@@ -350,13 +350,13 @@ with astropy_fits.open(image_path / "galaxy_images.fits") as hdul:
     assert hdul[2].name == "GALAXY_1"
 
 # ---- inversion outputs ----
-# subplot_inversion_0.png         <- InversionPlotter.subplot_of_mapper(mapper_index=0,
-#                                    auto_filename="subplot_inversion") — plotter appends _0
-# source_plane_reconstruction_0.csv <- PlotterInterface.inversion() csv_reconstruction
+# inversion_0.png                   <- InversionPlotter.subplot_of_mapper(mapper_index=0,
+#                                      auto_filename="inversion") — plotter appends _0
+# source_plane_reconstruction_0.csv <- Plotter.inversion() csv_reconstruction
 
 assert (
-    image_path / "subplot_inversion_0.png"
-).exists(), "subplot_inversion_0.png missing"
+    image_path / "inversion_0.png"
+).exists(), "inversion_0.png missing"
 
 assert (
     image_path / "source_plane_reconstruction_0.csv"
