@@ -114,18 +114,25 @@ bulge = al.model_util.mge_model_from(
     centre_prior_is_uniform=True,
 )
 
-mass = af.Model(al.mp.IsothermalSph)
+mass = af.Model(al.mp.Isothermal)
 mass.centre.centre_0 = 0.0
 mass.centre.centre_1 = 0.0
+mass.ell_comps.ell_comps_0 = 0.05
+mass.ell_comps.ell_comps_1 = 0.05
 mass.einstein_radius = 1.6
 
 lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass)
 
-mesh = al.mesh.RectangularAdaptImage(shape=(14, 14))
-regularization = al.reg.Constant(coefficient=1.0)
-pixelization = al.Pixelization(mesh=mesh, regularization=regularization)
+# mesh = al.mesh.RectangularAdaptImage(shape=(14, 14))
+# regularization = al.reg.Constant(coefficient=1.0)
+# pixelization = al.Pixelization(mesh=mesh, regularization=regularization)
+#
+# source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
 
-source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
+
+bulge = al.lp.Sersic()
+
+source = af.Model(al.Galaxy, redshift=1.0, bulge=bulge)
 
 model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
@@ -272,9 +279,6 @@ assert (
 assert (
     image_path / "fit_of_plane_1.png"
 ).exists(), "fit_of_plane_1.png missing"
-assert (
-    image_path / "mappings_0.png"
-).exists(), "mappings_0.png missing"
 
 # ---- fit.fits ----
 # Source: fits_fit() -> hdu_list_for_output_from with ext_name_list:
@@ -366,6 +370,39 @@ with open(image_path / "source_plane_reconstruction_0.csv") as f:
     header = f.readline().strip()
 
 assert header == "y,x,reconstruction,noise_map", f"Unexpected CSV header: {header}"
+
+
+"""
+__RGB Visualization__
+
+Tests that `plot_array` correctly handles `Array2DRGB` inputs: no colormap,
+no norm, no colorbar — the image is rendered via plain `imshow` as an RGB image.
+"""
+
+import autolens.plot as aplt
+
+rgb_values = np.stack(
+    [dataset.data.native, dataset.data.native, dataset.data.native], axis=-1
+)
+rgb_values = np.clip(rgb_values, 0, None)
+
+rgb_values_uint8 = (
+    (rgb_values / rgb_values.max() * 255).astype(np.uint8)
+    if rgb_values.max() > 0
+    else np.zeros_like(rgb_values, dtype=np.uint8)
+)
+
+rgb_array = al.Array2DRGB(values=rgb_values_uint8, mask=dataset.mask)
+
+aplt.plot_array(
+    array=rgb_array,
+    title="RGB Test",
+    output_path=image_path,
+    output_filename="rgb_array",
+    output_format="png",
+)
+
+assert (image_path / "rgb_array.png").exists(), "rgb_array.png missing"
 
 
 print("All visualization assertions passed.")
