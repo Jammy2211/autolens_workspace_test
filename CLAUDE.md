@@ -38,6 +38,14 @@ Scripts are run from the repository root **without** `PYAUTOFIT_TEST_MODE=1` —
 python scripts/imaging/model_fit.py
 ```
 
+**Codex / sandboxed runs**: when running from Codex or any restricted environment, set writable cache directories so `numba` and `matplotlib` do not fail on unwritable home or source-tree paths:
+
+```bash
+NUMBA_CACHE_DIR=/tmp/numba_cache MPLCONFIGDIR=/tmp/matplotlib python scripts/imaging/model_fit.py
+```
+
+This workspace is often imported from `/mnt/c/...` and Codex may not be able to write to module `__pycache__` directories or `/home/jammy/.cache`, which can cause import-time `numba` caching failures without this override.
+
 To run all tests and log failures to `failed/`:
 
 ```bash

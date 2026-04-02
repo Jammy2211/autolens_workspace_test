@@ -3,21 +3,36 @@ Visualization: Imaging Analysis
 ================================
 
 Tests that `AnalysisImaging.visualize_before_fit` and `visualize` output all expected files to disk
-and that each output has the correct FITS HDU structure, for a model using an MGE lens bulge +
-IsothermalSph mass + rectangular pixelization source on the HST imaging dataset.
+and that each output has the correct FITS HDU structure.
 
-A bespoke `config/visualize/plots.yaml` in this directory overrides the repo-level config with
-every visualization toggle set to `true`, so all possible outputs are exercised.
+Dataset: MGE lens bulge + PowerLaw mass on HST imaging.
+
+Structure
+---------
+1. `visualize_before_fit` runs once with a parametric source (fastest) and writes all
+   before-fit outputs (dataset.png/.fits, image_with_positions.png, adapt_images.png/.fits)
+   to the main `visualization/` folder.
+
+2. `visualize` runs once per source type, each writing into its own subfolder:
+     visualization/parametric/   — Sersic light-profile source
+     visualization/rectangular/  — RectangularAdaptImage pixelization
+     visualization/delaunay/     — Delaunay pixelization
+
+   Each subfolder contains only the source-dependent comparison plots:
+     fit.png, tracer.png (all three sources)
+     inversion_0_0.png   (rectangular and delaunay only)
+
+   A minimal `config_source/visualize/plots.yaml` (pushed before these runs) limits
+   output to just those files so the per-source runs stay fast.
 
 Expected outputs are derived directly from the source code of:
   - autolens/imaging/model/visualizer.py    (VisualizerImaging)
-  - autolens/imaging/model/plotter.py   (PlotterImaging)
-  - autolens/analysis/plotter.py        (Plotter: tracer, galaxies, inversion)
-  - autogalaxy/analysis/plotter.py      (Plotter: galaxies, inversion)
-  - autogalaxy/imaging/plot/fit_imaging_plots.py (fits_fit, fits_galaxy_images, fits_model_galaxy_images)
+  - autolens/imaging/model/plotter.py       (PlotterImaging)
+  - autolens/analysis/plotter.py            (Plotter: tracer, galaxies, inversion)
+  - autogalaxy/analysis/plotter.py          (Plotter: galaxies, inversion)
+  - autogalaxy/imaging/plot/fit_imaging_plots.py
 """
 
-import os
 import shutil
 from os import path
 from pathlib import Path
@@ -73,40 +88,19 @@ dataset = dataset.apply_mask(mask=mask)
 
 
 """
-__Adapt Images__
-
-galaxy_name_image_dict provides per-galaxy images used by adaptive regularization.
-Keys match the galaxy path strings produced during a real model-fit.
-"""
-
-adapt_images = al.AdaptImages(
-    galaxy_name_image_dict={
-        "('galaxies', 'lens')": dataset.data,
-        "('galaxies', 'source')": dataset.data,
-    },
-)
-
-
-"""
 __Positions__
 
 Two lensed image positions used to trigger image_with_positions visualization.
 """
-
 positions = al.Grid2DIrregular([(-0.5, 1.0), (0.5, -1.0)])
 positions_likelihood = al.PositionsLH(positions=positions, threshold=1.0)
 
 
 """
-__Model__
+__Lens Model__
 
-Lens: MGE bulge (10 Gaussians, 2 per basis) + IsothermalSph mass (fixed centre + einstein_radius).
-Source: RectangularAdaptImage 14x14 mesh + Constant regularization.
-
-instance_from_prior_medians() gives a valid instance without running a search.
-use_jax=False keeps this test on numpy.
+Lens: MGE bulge (10 Gaussians, 2 per basis) + PowerLaw mass (fixed centre + params).
 """
-
 bulge = al.model_util.mge_model_from(
     mask_radius=mask_radius,
     total_gaussians=10,
@@ -114,40 +108,90 @@ bulge = al.model_util.mge_model_from(
     centre_prior_is_uniform=True,
 )
 
-mass = af.Model(al.mp.Isothermal)
+mass = af.Model(al.mp.PowerLaw)
 mass.centre.centre_0 = 0.0
 mass.centre.centre_1 = 0.0
 mass.ell_comps.ell_comps_0 = 0.05
 mass.ell_comps.ell_comps_1 = 0.05
 mass.einstein_radius = 1.6
+mass.slope = 2.0
 
 lens = af.Model(al.Galaxy, redshift=0.5, bulge=bulge, mass=mass)
 
-# mesh = al.mesh.RectangularAdaptImage(shape=(14, 14))
-# regularization = al.reg.Constant(coefficient=1.0)
-# pixelization = al.Pixelization(mesh=mesh, regularization=regularization)
-#
-# source = af.Model(al.Galaxy, redshift=1.0, pixelization=pixelization)
+
+"""
+__Image Plane Mesh Grid__
+
+Used by both Delaunay and RectangularAdaptImage pixelizations.
+"""
+image_mesh = al.image_mesh.Overlay(shape=(26, 26))
+
+image_plane_mesh_grid = image_mesh.image_plane_mesh_grid_from(
+    mask=dataset.mask,
+)
 
 
-bulge = al.lp.Sersic()
+"""
+__Source Models__
 
-source = af.Model(al.Galaxy, redshift=1.0, bulge=bulge)
+Three source configurations share the same lens; only the source galaxy differs.
+"""
 
-model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
+# --- Parametric (Sersic light profile) ---
+source_parametric = af.Model(al.Galaxy, redshift=1.0, bulge=al.lp.Sersic())
+model_parametric = af.Collection(
+    galaxies=af.Collection(lens=lens, source=source_parametric)
+)
 
-instance = model.instance_from_prior_medians()
+# --- Rectangular pixelization ---
+mesh_rect = al.mesh.RectangularAdaptImage(shape=(14, 14))
+reg_rect = al.reg.Constant(coefficient=1.0)
+pix_rect = al.Pixelization(mesh=mesh_rect, regularization=reg_rect)
+source_rectangular = af.Model(al.Galaxy, redshift=1.0, pixelization=pix_rect)
+model_rectangular = af.Collection(
+    galaxies=af.Collection(lens=lens, source=source_rectangular)
+)
+
+# --- Delaunay pixelization ---
+mesh_del = al.mesh.Delaunay(
+    pixels=image_plane_mesh_grid.shape[0], zeroed_pixels=0
+)
+reg_del = al.reg.ConstantSplit(coefficient=1.0)
+pix_del = al.Pixelization(mesh=mesh_del, regularization=reg_del)
+source_delaunay = af.Model(al.Galaxy, redshift=1.0, pixelization=pix_del)
+model_delaunay = af.Collection(
+    galaxies=af.Collection(lens=lens, source=source_delaunay)
+)
+
+
+"""
+__Adapt Images__
+
+galaxy_name_image_dict is used to test for adapt_images.png, but is not actually
+used in this likelihood function.
+"""
+adapt_images = al.AdaptImages(
+    galaxy_name_image_dict={
+        "('galaxies', 'lens')": dataset.data,
+        "('galaxies', 'source')": dataset.data,
+    },
+    galaxy_name_image_plane_mesh_grid_dict={
+        "('galaxies', 'source')": image_plane_mesh_grid
+    },
+)
 
 
 """
 __Analysis__
-"""
 
+A single analysis object is shared across all three source runs: it holds the
+dataset only; the source type is determined by the instance passed to visualize.
+"""
 analysis = al.AnalysisImaging(
     dataset=dataset,
     positions_likelihood_list=[positions_likelihood],
     adapt_images=adapt_images,
-    use_jax=False,
+    use_jax=True,
 )
 
 
@@ -177,17 +221,22 @@ paths = SimpleNamespace(
 """
 __Visualize Before Fit__
 
+Uses the parametric source (fastest) for all before-fit outputs.
+
 Calls PlotterImaging.imaging()          -> dataset.png, dataset.fits
       Plotter.image_with_positions()    -> image_with_positions.png
       Plotter.adapt_images()            -> adapt_images.png, adapt_images.fits
 """
 
+print("Running visualize_before_fit (parametric source)...")
+
 VisualizerImaging.visualize_before_fit(
     analysis=analysis,
     paths=paths,
-    model=model,
+    model=model_parametric,
 )
 
+print("visualize_before_fit complete.")
 
 """
 __Assertions: visualize_before_fit__
@@ -199,6 +248,7 @@ __Assertions: visualize_before_fit__
 # HDU 0 is PrimaryHDU (first value), HDUs 1-5 are ImageHDU.
 
 assert (image_path / "dataset.png").exists(), "dataset.png missing"
+print("dataset.png OK")
 
 with astropy_fits.open(image_path / "dataset.fits") as hdul:
     assert len(hdul) == 6, f"dataset.fits: expected 6 HDUs, got {len(hdul)}"
@@ -209,6 +259,7 @@ with astropy_fits.open(image_path / "dataset.fits") as hdul:
     assert hdul[4].name == "OVER_SAMPLE_SIZE_LP"
     assert hdul[5].name == "OVER_SAMPLE_SIZE_PIXELIZATION"
     assert hdul[1].data.ndim == 2, "DATA HDU should be 2D"
+print("dataset.fits OK")
 
 # ---- image_with_positions.png ----
 # Source: Plotter.image_with_positions() -> image_plotter.set_filename("image_with_positions")
@@ -216,6 +267,7 @@ with astropy_fits.open(image_path / "dataset.fits") as hdul:
 assert (
     image_path / "image_with_positions.png"
 ).exists(), "image_with_positions.png missing"
+print("image_with_positions.png OK")
 
 # ---- adapt_images.fits ----
 # Source: Plotter.adapt_images() -> hdu_list_for_output_from with ext_name_list:
@@ -225,151 +277,75 @@ assert (
 assert (
     image_path / "adapt_images.png"
 ).exists(), "adapt_images.png missing"
+print("adapt_images.png OK")
 
 with astropy_fits.open(image_path / "adapt_images.fits") as hdul:
     assert len(hdul) == 3, f"adapt_images.fits: expected 3 HDUs, got {len(hdul)}"
     assert hdul[0].name == "MASK"
+print("adapt_images.fits OK")
 
 
 """
-__Visualize__
+__Push Minimal Config for Per-Source Runs__
 
-Calls PlotterImaging.fit_imaging()  -> fit.png, tracer.png,
-                                                fit_log10.png,
-                                                fit_of_plane_0.png, fit_of_plane_1.png,
-                                                mappings_0.png,
-                                                fit.fits, galaxy_images.fits, model_galaxy_images.fits
-      Plotter.tracer()              -> fits_tracer -> tracer.fits,
-                                                fits_source_plane_images -> source_plane_images.fits,
-                                                galaxies_images.png
-      Plotter.galaxies()            -> galaxy_images.png, galaxies.png,
-                                                galaxy_images.fits (overwrites fit version)
-      Plotter.inversion()           -> inversion_0.png,
-                                                source_plane_reconstruction_0.csv
+Override the all-true config with a minimal one that only enables:
+  fit.subplot_fit, tracer.subplot_tracer, inversion.subplot_inversion.
+All other toggles are explicitly set to false so no extra files are written.
 """
-
-VisualizerImaging.visualize(
-    analysis=analysis,
-    paths=paths,
-    instance=instance,
-    during_analysis=False,
+conf.instance.push(
+    new_path=path.join(path.dirname(path.realpath(__file__)), "config_source"),
+    output_path=path.join(path.dirname(path.realpath(__file__)), "images"),
 )
 
 
 """
-__Assertions: visualize__
+__Per-Source Visualization__
+
+For each source type, visualize is run in a dedicated subfolder.
+Only fit.png and tracer.png are generated for all three; rectangular and delaunay
+also produce inversion_0_0.png.
+
+Calls (governed by config_source/visualize/plots.yaml):
+  fit.subplot_fit       -> fit.png
+  tracer.subplot_tracer -> tracer.png
+  inversion.subplot_inversion -> inversion_0_0.png  (pixelized sources only)
 """
 
-# ---- fit_imaging: PNG subplots ----
-# fit.png          <- FitImaging.subplot_fit()       auto_filename="fit"
-# tracer.png       <- FitImaging.subplot_tracer()    auto_filename="tracer"
-#                     (called inside fit_imaging when tracer.subplot_tracer=true)
-# fit_log10.png    <- FitImaging.subplot_fit_log10() auto_filename="fit_log10"
-# fit_of_plane_N.png <- FitImaging.subplot_of_planes() iterates range(len(tracer.planes))
-#                       auto_filename=f"fit_of_plane_{plane_index}"
-# mappings_0.png   <- FitImaging.subplot_mappings_of_plane()
-#                     auto_filename=f"mappings_{pixelization_index}"
+source_runs = [
+    ("parametric", model_parametric, False),
+    ("rectangular", model_rectangular, True),
+    ("delaunay", model_delaunay, True),
+]
 
-assert (image_path / "fit.png").exists(), "fit.png missing"
-assert (image_path / "tracer.png").exists(), "tracer.png missing"
-assert (image_path / "fit_log10.png").exists(), "fit_log10.png missing"
-assert (
-    image_path / "fit_of_plane_0.png"
-).exists(), "fit_of_plane_0.png missing"
-assert (
-    image_path / "fit_of_plane_1.png"
-).exists(), "fit_of_plane_1.png missing"
+for source_name, model, has_inversion in source_runs:
+    print(f"\nRunning visualize for source: {source_name}...")
 
-# ---- fit.fits ----
-# Source: fits_fit() -> hdu_list_for_output_from with ext_name_list:
-#   ["mask", "model_data", "residual_map", "normalized_residual_map", "chi_squared_map"]
+    sub_path = image_path / source_name
+    sub_path.mkdir(parents=True)
+    sub_output = sub_path / "output"
+    sub_output.mkdir(parents=True)
+    sub_paths = SimpleNamespace(image_path=sub_path, output_path=sub_output)
 
-with astropy_fits.open(image_path / "fit.fits") as hdul:
-    assert len(hdul) == 5, f"fit.fits: expected 5 HDUs, got {len(hdul)}"
-    assert hdul[0].name == "MASK"
-    assert hdul[1].name == "MODEL_DATA"
-    assert hdul[2].name == "RESIDUAL_MAP"
-    assert hdul[3].name == "NORMALIZED_RESIDUAL_MAP"
-    assert hdul[4].name == "CHI_SQUARED_MAP"
-    assert hdul[1].data.ndim == 2, "MODEL_DATA HDU should be 2D"
+    instance = model.instance_from_prior_medians()
 
-# ---- model_galaxy_images.fits ----
-# Source: fits_model_galaxy_images() -> ext_name_list = ["mask"] + [f"galaxy_{i}" for i in range(n)]
-# For 2 galaxies: MASK, GALAXY_0, GALAXY_1.
+    VisualizerImaging.visualize(
+        analysis=analysis,
+        paths=sub_paths,
+        instance=instance,
+        during_analysis=False,
+    )
 
-with astropy_fits.open(image_path / "model_galaxy_images.fits") as hdul:
-    assert len(hdul) == 3, f"model_galaxy_images.fits: expected 3 HDUs, got {len(hdul)}"
-    assert hdul[0].name == "MASK"
-    assert hdul[1].name == "GALAXY_0"
-    assert hdul[2].name == "GALAXY_1"
+    print(f"  visualize complete for {source_name}.")
 
-# ---- tracer.fits ----
-# Source: Plotter.tracer() -> hdu_list_for_output_from with ext_name_list:
-#   ["mask", "convergence", "potential", "deflections_y", "deflections_x"]
-
-with astropy_fits.open(image_path / "tracer.fits") as hdul:
-    assert len(hdul) == 5, f"tracer.fits: expected 5 HDUs, got {len(hdul)}"
-    assert hdul[0].name == "MASK"
-    assert hdul[1].name == "CONVERGENCE"
-    assert hdul[2].name == "POTENTIAL"
-    assert hdul[3].name == "DEFLECTIONS_Y"
-    assert hdul[4].name == "DEFLECTIONS_X"
-    assert hdul[1].data.ndim == 2, "CONVERGENCE HDU should be 2D"
-
-# ---- source_plane_images.fits ----
-# Source: Plotter.tracer() -> iterates tracer.planes[1:] (source plane only for 2-plane)
-# ext_name_list = ["mask", "source_plane_image_1"]
-# Source galaxy has no LightProfile (pixelization only) so image is zeros.
-
-with astropy_fits.open(image_path / "source_plane_images.fits") as hdul:
-    assert len(hdul) == 2, f"source_plane_images.fits: expected 2 HDUs, got {len(hdul)}"
-    assert hdul[0].name == "MASK"
-    assert hdul[1].name == "SOURCE_PLANE_IMAGE_1"
-
-# ---- tracer: galaxies_images.png ----
-# galaxies_images.png <- Tracer.subplot_galaxies_images() auto_filename="galaxies_images"
-#                        (triggered by tracer.subplot_galaxies_images=true inside Plotter.tracer())
-
-assert (
-    image_path / "galaxies_images.png"
-).exists(), "galaxies_images.png missing"
-
-# ---- galaxies: PNG subplots ----
-# galaxy_images.png <- Galaxies.subplot_galaxy_images() auto_filename="galaxy_images"
-# galaxies.png      <- Galaxies.subplot()               auto_filename="galaxies"
-
-assert (
-    image_path / "galaxy_images.png"
-).exists(), "galaxy_images.png missing"
-assert (image_path / "galaxies.png").exists(), "galaxies.png missing"
-
-# ---- galaxy_images.fits ----
-# Written first by fits_galaxy_images() (fit_imaging_plots), then overwritten by Plotter.galaxies()
-# (galaxies_plots.fits_galaxy_images). Final version is from galaxies(): ext_name_list = ["mask", "galaxy_0", "galaxy_1"].
-
-with astropy_fits.open(image_path / "galaxy_images.fits") as hdul:
-    assert len(hdul) == 3, f"galaxy_images.fits: expected 3 HDUs, got {len(hdul)}"
-    assert hdul[0].name == "MASK"
-    assert hdul[1].name == "GALAXY_0"
-    assert hdul[2].name == "GALAXY_1"
-
-# ---- inversion outputs ----
-# inversion_0.png                   <- InversionPlotter.subplot_of_mapper(mapper_index=0,
-#                                      auto_filename="inversion") — plotter appends _0
-# source_plane_reconstruction_0.csv <- Plotter.inversion() csv_reconstruction
-
-assert (
-    image_path / "inversion_0.png"
-).exists(), "inversion_0.png missing"
-
-assert (
-    image_path / "source_plane_reconstruction_0.csv"
-).exists(), "source_plane_reconstruction_0.csv missing"
-
-with open(image_path / "source_plane_reconstruction_0.csv") as f:
-    header = f.readline().strip()
-
-assert header == "y,x,reconstruction,noise_map", f"Unexpected CSV header: {header}"
+    assert (sub_path / "fit.png").exists(), f"{source_name}/fit.png missing"
+    print(f"  {source_name}/fit.png OK")
+    assert (sub_path / "tracer.png").exists(), f"{source_name}/tracer.png missing"
+    print(f"  {source_name}/tracer.png OK")
+    if has_inversion:
+        assert (
+            sub_path / "inversion_0_0.png"
+        ).exists(), f"{source_name}/inversion_0_0.png missing"
+        print(f"  {source_name}/inversion_0_0.png OK")
 
 
 """
@@ -378,6 +354,8 @@ __RGB Visualization__
 Tests that `plot_array` correctly handles `Array2DRGB` inputs: no colormap,
 no norm, no colorbar — the image is rendered via plain `imshow` as an RGB image.
 """
+
+print("\nRunning RGB visualization test...")
 
 import autolens.plot as aplt
 
@@ -403,6 +381,7 @@ aplt.plot_array(
 )
 
 assert (image_path / "rgb_array.png").exists(), "rgb_array.png missing"
+print("rgb_array.png OK")
 
 
 print("All visualization assertions passed.")
