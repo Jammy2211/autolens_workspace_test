@@ -40,5 +40,5 @@ colorbar:
   fraction: 0.047
   pad: 0.01
   labelrotation: 90
-  labelsize: 18
-  labelsize_subplot: 18
+  labelsize: 16
+  labelsize_subplot: 16

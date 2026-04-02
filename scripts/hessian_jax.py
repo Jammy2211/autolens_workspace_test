@@ -37,7 +37,7 @@ mp = ag.mp.Isothermal(
     centre=(0.0, 0.0), ell_comps=(0.0, -0.111111), einstein_radius=2.0
 )
 
-od = LensCalc.from_mass_obj(mp)
+lens_calc = LensCalc.from_mass_obj(mp)
 
 grid_irregular = ag.Grid2DIrregular(values=[(0.5, 0.5), (1.0, 1.0)])
 grid_uniform = ag.Grid2D.uniform(shape_native=(10, 10), pixel_scales=0.3)
@@ -134,7 +134,7 @@ available and the JAX path falls back to the default `(0.05, 0.05)`.
 The NumPy path returns a tuple of four plain `numpy.ndarray` components.
 The JAX path returns a tuple of four `jax.Array` components.
 """
-hessian_np = od.hessian_from(grid=grid_irregular)
+hessian_np = lens_calc.hessian_from(grid=grid_irregular)
 
 assert isinstance(hessian_np, tuple), "hessian_from (numpy): expected tuple"
 assert len(hessian_np) == 4, "hessian_from (numpy): expected 4 components"
@@ -145,7 +145,7 @@ for component, name in zip(
         component, np.ndarray
     ), f"hessian_from (numpy, irregular grid): {name} expected np.ndarray, got {type(component)}"
 
-hessian_jax_fn = jax.jit(lambda: od.hessian_from(grid=grid_irregular, xp=jnp))
+hessian_jax_fn = jax.jit(lambda: lens_calc.hessian_from(grid=grid_irregular, xp=jnp))
 hessian_jax = hessian_jax_fn()
 
 assert isinstance(hessian_jax, tuple), "hessian_from (jax): expected tuple"
@@ -179,7 +179,7 @@ A looser tolerance (`rtol=5e-3`) is used here because some grid points fall clos
 the profile centre where the Isothermal Hessian has high curvature, raising the
 finite-difference truncation error above the typical `~1e-4` level.
 """
-hessian_np_uniform = od.hessian_from(grid=grid_uniform)
+hessian_np_uniform = lens_calc.hessian_from(grid=grid_uniform)
 
 assert isinstance(
     hessian_np_uniform, tuple
@@ -191,7 +191,7 @@ for component, name in zip(
         component, np.ndarray
     ), f"hessian_from (numpy, uniform grid): {name} expected np.ndarray, got {type(component)}"
 
-hessian_jax_uniform_fn = jax.jit(lambda: od.hessian_from(grid=grid_uniform, xp=jnp))
+hessian_jax_uniform_fn = jax.jit(lambda: lens_calc.hessian_from(grid=grid_uniform, xp=jnp))
 hessian_jax_uniform = hessian_jax_uniform_fn()
 
 assert isinstance(
@@ -226,14 +226,14 @@ supported:
   - `xp=np`  → returns `aa.ArrayIrregular`
   - `xp=jnp` → returns a raw `jax.Array` (the `@to_array` decorator skips wrapping)
 """
-convergence_np = od.convergence_2d_via_hessian_from(grid=grid_irregular)
+convergence_np = lens_calc.convergence_2d_via_hessian_from(grid=grid_irregular)
 
 assert isinstance(
     convergence_np, aa.ArrayIrregular
 ), f"convergence_2d_via_hessian_from (numpy): expected aa.ArrayIrregular, got {type(convergence_np)}"
 
 convergence_jax_fn = jax.jit(
-    lambda: od.convergence_2d_via_hessian_from(grid=grid_irregular, xp=jnp)
+    lambda: lens_calc.convergence_2d_via_hessian_from(grid=grid_irregular, xp=jnp)
 )
 convergence_jax = convergence_jax_fn()
 
@@ -260,14 +260,14 @@ The `xp` parameter is threaded through into `hessian_from`:
   - `xp=jnp` → returns a raw `jax.Array` of shape `(N, 2)` with the same column
     ordering (`ShearYX2DIrregular` wrapping is guarded with `if xp is np:`)
 """
-shear_np = od.shear_yx_2d_via_hessian_from(grid=grid_irregular)
+shear_np = lens_calc.shear_yx_2d_via_hessian_from(grid=grid_irregular)
 
 assert isinstance(
     shear_np, ag.ShearYX2DIrregular
 ), f"shear_yx_2d_via_hessian_from (numpy): expected ag.ShearYX2DIrregular, got {type(shear_np)}"
 
 shear_jax_fn = jax.jit(
-    lambda: od.shear_yx_2d_via_hessian_from(grid=grid_irregular, xp=jnp)
+    lambda: lens_calc.shear_yx_2d_via_hessian_from(grid=grid_irregular, xp=jnp)
 )
 shear_jax = shear_jax_fn()
 
@@ -293,14 +293,14 @@ Hessian components. The `xp` parameter is threaded through from this function in
 When `xp=np` the result is an `aa.ArrayIrregular`. When `xp=jnp` the result is a raw
 `jax.Array` because the `@to_array` decorator skips autoarray wrapping for the JAX path.
 """
-mag_np = od.magnification_2d_via_hessian_from(grid=grid_irregular)
+mag_np = lens_calc.magnification_2d_via_hessian_from(grid=grid_irregular)
 
 assert isinstance(
     mag_np, aa.ArrayIrregular
 ), f"magnification_2d_via_hessian_from (numpy): expected aa.ArrayIrregular, got {type(mag_np)}"
 
 mag_jax_fn = jax.jit(
-    lambda: od.magnification_2d_via_hessian_from(grid=grid_irregular, xp=jnp)
+    lambda: lens_calc.magnification_2d_via_hessian_from(grid=grid_irregular, xp=jnp)
 )
 mag_jax = mag_jax_fn()
 
@@ -326,7 +326,7 @@ The NumPy and JAX paths must agree on all four components to within the same tol
 as `hessian_from` itself, since the Jacobian is a simple linear transformation of the
 Hessian.
 """
-jacobian_np = od.jacobian_from(grid=grid_irregular)
+jacobian_np = lens_calc.jacobian_from(grid=grid_irregular)
 
 assert (
     isinstance(jacobian_np, list) and len(jacobian_np) == 2
@@ -339,7 +339,7 @@ for i, j, name in ((0, 0, "a11"), (0, 1, "a12"), (1, 0, "a21"), (1, 1, "a22")):
         jacobian_np[i][j], np.ndarray
     ), f"jacobian_from (numpy): {name} expected np.ndarray, got {type(jacobian_np[i][j])}"
 
-jacobian_jax_fn = jax.jit(lambda: od.jacobian_from(grid=grid_irregular, xp=jnp))
+jacobian_jax_fn = jax.jit(lambda: lens_calc.jacobian_from(grid=grid_irregular, xp=jnp))
 jacobian_jax = jacobian_jax_fn()
 
 assert (
@@ -372,14 +372,14 @@ require a uniform `Grid2D` (which carries a `mask`).
   - `xp=jnp` → returns a raw `jax.Array`; the `@to_array` decorator skips wrapping,
     and shear magnitudes are computed from the raw `(N, 2)` array as `sqrt(col0²+col1²)`
 """
-tangential_eigen_np = od.tangential_eigen_value_from(grid=grid_uniform)
+tangential_eigen_np = lens_calc.tangential_eigen_value_from(grid=grid_uniform)
 
 assert isinstance(
     tangential_eigen_np, aa.Array2D
 ), f"tangential_eigen_value_from (numpy): expected aa.Array2D, got {type(tangential_eigen_np)}"
 
 tangential_eigen_jax_fn = jax.jit(
-    lambda: od.tangential_eigen_value_from(grid=grid_uniform, xp=jnp)
+    lambda: lens_calc.tangential_eigen_value_from(grid=grid_uniform, xp=jnp)
 )
 tangential_eigen_jax = tangential_eigen_jax_fn()
 
@@ -401,14 +401,14 @@ The radial eigenvalue is `1 - convergence + |shear|`.  Return-type behaviour is
 identical to `tangential_eigen_value_from`: `aa.Array2D` for the NumPy path,
 `jax.Array` for the JAX path inside `jax.jit`.
 """
-radial_eigen_np = od.radial_eigen_value_from(grid=grid_uniform)
+radial_eigen_np = lens_calc.radial_eigen_value_from(grid=grid_uniform)
 
 assert isinstance(
     radial_eigen_np, aa.Array2D
 ), f"radial_eigen_value_from (numpy): expected aa.Array2D, got {type(radial_eigen_np)}"
 
 radial_eigen_jax_fn = jax.jit(
-    lambda: od.radial_eigen_value_from(grid=grid_uniform, xp=jnp)
+    lambda: lens_calc.radial_eigen_value_from(grid=grid_uniform, xp=jnp)
 )
 radial_eigen_jax = radial_eigen_jax_fn()
 
@@ -433,13 +433,13 @@ __magnification_2d_from__
   - `xp=np`  → returns `aa.Array2D`
   - `xp=jnp` → returns a raw `jax.Array` (the `@to_array` decorator skips wrapping)
 """
-mag2d_np = od.magnification_2d_from(grid=grid_uniform)
+mag2d_np = lens_calc.magnification_2d_from(grid=grid_uniform)
 
 assert isinstance(
     mag2d_np, aa.Array2D
 ), f"magnification_2d_from (numpy): expected aa.Array2D, got {type(mag2d_np)}"
 
-mag2d_jax_fn = jax.jit(lambda: od.magnification_2d_from(grid=grid_uniform, xp=jnp))
+mag2d_jax_fn = jax.jit(lambda: lens_calc.magnification_2d_from(grid=grid_uniform, xp=jnp))
 mag2d_jax = mag2d_jax_fn()
 
 assert isinstance(
