@@ -32,6 +32,20 @@ def fit():
     dataset_name = "with_lens_light"
     dataset_path = path.join("dataset", "imaging", dataset_name)
 
+    """
+    __Dataset Auto-Simulation__
+
+    If the dataset does not already exist on your system, it will be created by running the corresponding
+    simulator script. This ensures that all example scripts can be run without manually simulating data first.
+    """
+    if not path.exists(dataset_path):
+        import subprocess
+        import sys
+        subprocess.run(
+            [sys.executable, "scripts/imaging/simulator/with_lens_light.py"],
+            check=True,
+        )
+
     dataset = al.Imaging.from_fits(
         data_path=path.join(dataset_path, "data.fits"),
         noise_map_path=path.join(dataset_path, "noise_map.fits"),

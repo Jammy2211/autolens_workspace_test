@@ -61,6 +61,20 @@ def fit():
     dataset_name = "lens_sersic"
     dataset_main_path = path.join("dataset", "multi", dataset_name)
 
+    """
+    __Dataset Auto-Simulation__
+
+    If the dataset does not already exist on your system, it will be created by running the corresponding
+    simulator script. This ensures that all example scripts can be run without manually simulating data first.
+    """
+    if not path.exists(dataset_main_path):
+        import subprocess
+        import sys
+        subprocess.run(
+            [sys.executable, "scripts/jax_likelihood_functions/multi/simulator.py"],
+            check=True,
+        )
+
     dataset_list = []
 
     for dataset_waveband, pixel_scale in zip(dataset_waveband_list, pixel_scale_list):

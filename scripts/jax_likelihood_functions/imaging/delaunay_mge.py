@@ -78,6 +78,20 @@ Load the dataset for this instrument / resolution.
 """
 dataset_path = path.join("dataset", "imaging", "instruments", instrument)
 
+"""
+__Dataset Auto-Simulation__
+
+If the dataset does not already exist on your system, it will be created by running the corresponding
+simulator script. This ensures that all example scripts can be run without manually simulating data first.
+"""
+if not path.exists(dataset_path):
+    import subprocess
+    import sys
+    subprocess.run(
+        [sys.executable, "scripts/jax_likelihood_functions/imaging/simulator.py"],
+        check=True,
+    )
+
 dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
