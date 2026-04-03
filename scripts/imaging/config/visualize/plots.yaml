@@ -1,0 +1,62 @@
+subplot_format: [png]
+fits_are_zoomed: false
+
+dataset:
+  subplot_dataset: true
+  fits_dataset: true
+
+positions:
+  image_with_positions: true
+
+fit:
+  subplot_fit: true
+  subplot_fit_log10: true
+  subplot_of_planes: true
+  subplot_of_galaxies: true
+  subplot_galaxies_images: true
+  subplot_galaxy_images: true
+  fits_fit: true
+  fits_galaxy_images: true
+  fits_model_galaxy_images: true
+
+fit_imaging: {}
+
+tracer:
+  subplot_tracer: true
+  subplot_galaxies_images: true
+  fits_tracer: true
+  fits_source_plane_images: true
+  fits_source_plane_shape: (100, 100)
+
+galaxies:
+  subplot_galaxies: true
+  subplot_galaxy_images: true
+  fits_galaxy_images: true
+
+inversion:
+  subplot_inversion: true
+  subplot_mappings: true
+  csv_reconstruction: true
+
+adapt:
+  subplot_adapt_images: true
+  fits_adapt_images: true
+
+fit_interferometer:
+  subplot_fit_dirty_images: true
+  subplot_fit_real_space: true
+  fits_dirty_images: true
+
+point_dataset:
+  subplot_dataset: true
+
+fit_point_dataset: {}
+
+fit_ellipse:
+  subplot_fit_ellipse: true
+  data: true
+  data_no_ellipse: true
+  ellipse_residuals: true
+
+fit_quantity:
+  subplot_fit: true
