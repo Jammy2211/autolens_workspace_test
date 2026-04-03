@@ -63,6 +63,20 @@ TransformerDFT is used (dataset is small enough for exact DFT).
 
 dataset_path = path.join("dataset", "build", "interferometer", "no_lens_light")
 
+"""
+__Dataset Auto-Simulation__
+
+If the dataset does not already exist on your system, it will be created by running the corresponding
+simulator script. This ensures that all example scripts can be run without manually simulating data first.
+"""
+if not path.exists(dataset_path):
+    import subprocess
+    import sys
+    subprocess.run(
+        [sys.executable, "scripts/interferometer/simulator/no_lens_light.py"],
+        check=True,
+    )
+
 mask_radius = 3.0
 
 real_space_mask = al.Mask2D.circular(
