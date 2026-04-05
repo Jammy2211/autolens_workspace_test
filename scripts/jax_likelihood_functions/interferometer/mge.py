@@ -193,5 +193,3 @@ np.testing.assert_allclose(
     rtol=1e-4,
     err_msg="interferometer/mge: JAX vmap likelihood mismatch",
 )
-
-analysis.print_vram_use(model=model, batch_size=batch_size)

@@ -44,11 +44,9 @@ from autoconf import conf
 """
 __Dataset__
 
-Load and plot the galaxy dataset `operated` via .fits files, which we will fit with 
-the model.
+Load and plot the galaxy dataset via .fits files.
 """
-dataset_name = "source_complex"
-dataset_path = path.join("dataset", "imaging", dataset_name)
+dataset_path = path.join("dataset", "imaging", "jax_test")
 
 """
 __Dataset Auto-Simulation__
@@ -68,7 +66,7 @@ dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    pixel_scales=0.1,
+    pixel_scales=0.2,
 )
 
 """
@@ -83,7 +81,7 @@ The model-fit requires a 2D mask defining the regions of the image we fit the mo
 and use to set up the `Imaging` object that the model fits.
 """
 mask = al.Mask2D.circular(
-    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=7.5
+    shape_native=dataset.shape_native, pixel_scales=dataset.pixel_scales, radius=4.0
 )
 
 dataset = dataset.apply_mask(mask=mask)
@@ -306,7 +304,7 @@ print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
 np.testing.assert_allclose(
     np.array(result),
-    -69525.2831128,
+    -29018.535715,
     rtol=1e-4,
     err_msg="mge_group: JAX vmap likelihood mismatch",
 )

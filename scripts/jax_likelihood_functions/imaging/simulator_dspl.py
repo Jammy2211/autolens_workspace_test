@@ -15,7 +15,6 @@ This script simulates `Imaging` of a strong lens where:
 
 from os import path
 import autolens as al
-import autolens.plot as aplt
 
 """
 The `dataset_type` describes the type of data being simulated and `dataset_name` gives it a descriptive name. They define the folder the dataset is output to on your hard-disk:
@@ -24,15 +23,7 @@ The `dataset_type` describes the type of data being simulated and `dataset_name`
  - The noise-map will be output to `/autolens_workspace/dataset/dataset_type/dataset_label/dataset_name/noise_map.fits`.
  - The psf will be output to `/autolens_workspace/dataset/dataset_type/dataset_label/dataset_name/psf.fits`.
 """
-dataset_type = "instruments"
-dataset_instrument = "hst_dspl"
-# dataset_instrument = "jwst"
-
-"""
-The path where the dataset will be output, which in this case is:
-`/autolens_workspace/dataset/imaging/instruments/hst/mass_sie__source_sersic`
-"""
-dataset_path = path.join("dataset", "imaging", dataset_type, dataset_instrument)
+dataset_path = path.join("dataset", "imaging", "jax_test_dspl")
 
 """
 For simulating an image of a strong lens, we recommend using a Grid2DIterate object. This represents a grid of (y,x) 
@@ -43,13 +34,13 @@ sub-size of the grid is iteratively increased (in steps of 2, 4, 8, 16, 24) unti
 This ensures that the divergent and bright central regions of the source galaxy are fully resolved when determining the
 total flux emitted within a pixel.
 """
-grid = al.Grid2D.uniform(shape_native=(180, 180), pixel_scales=0.05)
+grid = al.Grid2D.uniform(shape_native=(180, 180), pixel_scales=0.2)
 
 """
 Simulate a simple Gaussian PSF for the image.
 """
 psf = al.Convolver.from_gaussian(
-    shape_native=(21, 21), sigma=0.05, pixel_scales=grid.pixel_scales, normalize=True
+    shape_native=(21, 21), sigma=0.2, pixel_scales=grid.pixel_scales, normalize=True
 )
 
 """
@@ -61,6 +52,7 @@ simulator = al.SimulatorImaging(
     psf=psf,
     background_sky_level=1.0,
     add_poisson_noise_to_data=True,
+    noise_seed=1,
 )
 
 """
@@ -115,11 +107,6 @@ Use these galaxies to setup a tracer, which will generate the image for the simu
 tracer = al.Tracer(galaxies=[lens_galaxy, lens_galaxy_1, source_galaxy])
 
 """
-Lets look at the tracer`s image, this is the image we'll be simulating.
-"""
-aplt.plot_array(array=tracer.image_2d_from(grid=grid))
-
-"""
 Pass the simulator a tracer, which creates the image which is simulated as an imaging dataset.
 """
 dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
@@ -127,30 +114,18 @@ dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
 """
 Output the simulated dataset to the dataset path as .fits files.
 """
-dataset.output_to_fits(
-    data_path=path.join(dataset_path, "data.fits"),
-    psf_path=path.join(dataset_path, "psf.fits"),
-    noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    overwrite=True,
+al.output_to_fits(
+    values=dataset.data.native, file_path=path.join(dataset_path, "data.fits"), overwrite=True,
+)
+al.output_to_fits(
+    values=dataset.psf.kernel.native, file_path=path.join(dataset_path, "psf.fits"), overwrite=True,
+)
+al.output_to_fits(
+    values=dataset.noise_map.native, file_path=path.join(dataset_path, "noise_map.fits"), overwrite=True,
 )
 
 """
-Plot the simulated `Imaging` dataset before outputting it to fits.
-"""
-aplt.plot_array(array=dataset.data)
-
-"""
-Output a subplot of the simulated dataset, the image and a subplot of the `Tracer`'s quantities to the dataset path 
-as .png files.
-"""
-aplt.plot_array(array=dataset.data, output=aplt.Output(path=dataset_path, format="png"))
-aplt.subplot_tracer(tracer=tracer, grid=grid, output=aplt.Output(path=dataset_path, format="png"))
-
-"""
-Pickle the `Tracer` in the dataset folder, ensuring the true `Tracer` is safely stored and available if we need to 
-check how the dataset was simulated in the future. 
-
-This will also be accessible via the `Aggregator` if a model-fit is performed using the dataset.
+Save the `Tracer` in the dataset folder as a .json file.
 """
 al.output_to_json(
     obj=tracer,
@@ -174,12 +149,8 @@ lens_image = lens_image.trimmed_after_convolution_from(
 
 snr_no_lens = (dataset.data - lens_image) / dataset.noise_map
 
-aplt.plot_array(array=snr_no_lens, output=aplt.Output(path=dataset_path, format="png"), filename="snr_no_lens")
-
-snr_no_lens.output_to_fits(
-    file_path=path.join(dataset_path, "snr_no_lens.fits"), overwrite=True
+al.output_to_fits(
+    values=snr_no_lens.native, file_path=path.join(dataset_path, "snr_no_lens.fits"), overwrite=True,
 )
 
-"""
-The dataset can be viewed in the folder `autolens_workspace/imaging/instruments/hst`.
-"""
+print("DSPL dataset written to", dataset_path)

@@ -63,11 +63,14 @@ for band, source_galaxy in [("g", source_g), ("r", source_r)]:
     )
     tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
     dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
-    dataset.output_to_fits(
-        data_path=path.join(dataset_path, f"{band}_data.fits"),
-        psf_path=path.join(dataset_path, f"{band}_psf.fits"),
-        noise_map_path=path.join(dataset_path, f"{band}_noise_map.fits"),
-        overwrite=True,
+    al.output_to_fits(
+        values=dataset.data.native, file_path=path.join(dataset_path, f"{band}_data.fits"), overwrite=True,
+    )
+    al.output_to_fits(
+        values=dataset.psf.kernel.native, file_path=path.join(dataset_path, f"{band}_psf.fits"), overwrite=True,
+    )
+    al.output_to_fits(
+        values=dataset.noise_map.native, file_path=path.join(dataset_path, f"{band}_noise_map.fits"), overwrite=True,
     )
     al.output_to_json(
         obj=tracer,

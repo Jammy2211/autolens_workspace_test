@@ -57,6 +57,7 @@ simulator = al.SimulatorInterferometer(
     exposure_time=300.0,
     noise_sigma=1000.0,
     transformer_class=al.TransformerDFT,
+    noise_seed=1,
 )
 
 """
@@ -98,11 +99,18 @@ __Output__
 
 Overwrite the dataset files in `dataset/interferometer/simple/`.
 """
-dataset.output_to_fits(
-    data_path=path.join(dataset_path, "data.fits"),
-    noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    uv_wavelengths_path=path.join(dataset_path, "uv_wavelengths.fits"),
-    overwrite=True,
+import numpy as np
+
+al.output_to_fits(
+    values=np.stack([dataset.data.real, dataset.data.imag], axis=-1),
+    file_path=path.join(dataset_path, "data.fits"), overwrite=True,
+)
+al.output_to_fits(
+    values=np.stack([dataset.noise_map.real, dataset.noise_map.imag], axis=-1),
+    file_path=path.join(dataset_path, "noise_map.fits"), overwrite=True,
+)
+al.output_to_fits(
+    values=dataset.uv_wavelengths, file_path=path.join(dataset_path, "uv_wavelengths.fits"), overwrite=True,
 )
 
 """
