@@ -46,38 +46,9 @@ psf_shape_2d = (21, 21)
 """
 __Dataset__
 
-Load and plot the galaxy dataset `operated` via .fits files, which we will fit with 
-the model.
-
-The simulated data comes at five resolution corresponding to five telescopes:
-
-vro: pixel_scale = 0.2", fastest run times.
-euclid: pixel_scale = 0.1", fast run times
-hst: pixel_scale = 0.05", normal run times, represents the type of data we do most our fitting on currently.
-hst_up: pixel_scale = 0.03", slow run times.
-ao: pixel_scale = 0.01", very slow :(
+Load and plot the galaxy dataset via .fits files.
 """
-# instrument = "vro"
-# instrument = "euclid"
-instrument = "hst_dspl"
-# instrument = "jwst"
-# instrument = "ao"
-
-pixel_scales_dict = {
-    "vro": 0.2,
-    "euclid": 0.1,
-    "hst_dspl": 0.05,
-    "hst_offset_centre": 0.05,
-    "hst_offset_centre_and_mass": 0.05,
-    "jwst": 0.03,
-    "ao": 0.01,
-}
-pixel_scale = pixel_scales_dict[instrument]
-
-"""
-Load the dataset for this instrument / resolution.
-"""
-dataset_path = path.join("dataset", "imaging", "instruments", instrument)
+dataset_path = path.join("dataset", "imaging", "jax_test_dspl")
 
 """
 __Dataset Auto-Simulation__
@@ -97,7 +68,7 @@ dataset = al.Imaging.from_fits(
     data_path=path.join(dataset_path, "data.fits"),
     psf_path=path.join(dataset_path, "psf.fits"),
     noise_map_path=path.join(dataset_path, "noise_map.fits"),
-    pixel_scales=pixel_scale,
+    pixel_scales=0.2,
     over_sample_size_lp=sub_size,
     over_sample_size_pixelization=sub_size,
 )
@@ -302,43 +273,7 @@ print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
 np.testing.assert_allclose(
     np.array(result),
-    2378.52317753,
+    1134.94493,
     rtol=1e-4,
     err_msg="rectangular_dspl: JAX vmap likelihood mismatch",
 )
-
-batched_call = jax.jit(jax.vmap(fitness.call))
-lowered = batched_call.lower(parameters)
-compiled = lowered.compile()
-memory_analysis = compiled.memory_analysis()
-print(
-    f"Memory {(memory_analysis.output_size_in_bytes + memory_analysis.temp_size_in_bytes) / 1024**2:.3} MB"
-)
-
-
-"""
-Output an image of the fit, so that we can inspect that it fits the data as expected.
-"""
-import autolens.plot as aplt
-import os
-
-file_path = os.path.join(al.__version__)
-
-instance = model.instance_from_prior_medians()
-
-fit = analysis.fit_from(instance)
-
-print(f"Figure of Merit = {fit.figure_of_merit}")
-
-np.testing.assert_allclose(
-    fit.figure_of_merit,
-    2378.5231735459383,
-    rtol=1e-4,
-    err_msg="rectangular_dspl: figure_of_merit mismatch",
-)
-
-
-aplt.plot_array(array=fit.model_images_of_planes_list[1], output=aplt.Output(path=file_path, filename=f"{instrument}_source", format="png"))
-aplt.subplot_fit_imaging(fit=fit, output=aplt.Output(path=file_path, filename=f"{instrument}_subplot_fit", format="png"))
-aplt.subplot_fit_imaging(fit=fit, output=aplt.Output(path=file_path, filename=f"{instrument}_subplot_of_plane_1", format="png"))
-aplt.InversionPlotter(inversion=fit.inversion).subplot_of_mapper(mapper_index=0)

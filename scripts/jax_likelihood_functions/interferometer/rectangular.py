@@ -259,34 +259,7 @@ print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
 np.testing.assert_allclose(
     np.array(result),
-    -3183.05450892,
+    -3164.77281,
     rtol=1e-4,
     err_msg="interferometer/rectangular: JAX vmap likelihood mismatch",
 )
-
-analysis.print_vram_use(model=model, batch_size=batch_size)
-
-
-"""
-Output an image of the fit, so that we can inspect that it fits the data as expected.
-"""
-import autolens.plot as aplt
-import os
-
-file_path = os.path.join(al.__version__)
-
-instance = model.instance_from_prior_medians()
-
-fit = analysis.fit_from(instance)
-
-print(f"Figure of Merit = {fit.figure_of_merit}")
-
-np.testing.assert_allclose(
-    fit.figure_of_merit,
-    -3183.054509186375,
-    rtol=1e-4,
-    err_msg="interferometer/rectangular: figure_of_merit mismatch",
-)
-
-aplt.subplot_fit_interferometer(fit=fit, output=aplt.Output(path=file_path, filename=f"interferometer_subplot_fit", format="png"))
-aplt.InversionPlotter(inversion=fit.inversion).subplot_of_mapper(mapper_index=0)

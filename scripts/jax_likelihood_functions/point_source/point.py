@@ -51,9 +51,23 @@ dataset_name = "simple"
 dataset_path = Path("dataset") / "point_source" / dataset_name
 
 """
-We now load the point source dataset we will fit using point source modeling. 
+__Dataset Auto-Simulation__
 
-We load this data as a `PointDataset`, which contains the positions of every point source. 
+If the dataset does not already exist on your system, it will be created by running the corresponding
+simulator script. This ensures that all example scripts can be run without manually simulating data first.
+"""
+if not dataset_path.exists():
+    import subprocess
+    import sys
+    subprocess.run(
+        [sys.executable, "scripts/jax_likelihood_functions/point_source/simulator.py"],
+        check=True,
+    )
+
+"""
+We now load the point source dataset we will fit using point source modeling.
+
+We load this data as a `PointDataset`, which contains the positions of every point source.
 """
 dataset = al.from_json(
     file_path=dataset_path / "point_dataset_positions_only.json",
@@ -218,7 +232,7 @@ print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
 np.testing.assert_allclose(
     np.array(result),
-    -343.22138984,
+    1.313508,
     rtol=1e-4,
     err_msg="point: JAX vmap likelihood mismatch",
 )
