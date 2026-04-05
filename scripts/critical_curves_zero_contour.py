@@ -80,7 +80,7 @@ For two sets of (y, x) coordinates representing a closed curve, compute:
 def mean_radius(curve: aa.Grid2DIrregular) -> float:
     y = np.array(curve[:, 0])
     x = np.array(curve[:, 1])
-    return float(np.mean(np.sqrt(y ** 2 + x ** 2)))
+    return float(np.mean(np.sqrt(y**2 + x**2)))
 
 
 def centroid(curve: aa.Grid2DIrregular):
@@ -111,9 +111,9 @@ assert isinstance(tan_cc_zc, list), (
     f"tangential_critical_curve_list_via_zero_contour_from: expected list, "
     f"got {type(tan_cc_zc)}"
 )
-assert len(tan_cc_zc) >= 1, (
-    "tangential_critical_curve_list_via_zero_contour_from: returned empty list"
-)
+assert (
+    len(tan_cc_zc) >= 1
+), "tangential_critical_curve_list_via_zero_contour_from: returned empty list"
 for i, curve in enumerate(tan_cc_zc):
     assert isinstance(curve, aa.Grid2DIrregular), (
         f"tangential_critical_curve_list_via_zero_contour_from: curve {i} "
@@ -161,11 +161,15 @@ npt.assert_allclose(
 cy_ref, cx_ref = centroid(tan_ref_main)
 cy_zc, cx_zc = centroid(tan_zc_main)
 npt.assert_allclose(
-    cy_zc, cy_ref, atol=0.15,
+    cy_zc,
+    cy_ref,
+    atol=0.15,
     err_msg="Tangential critical curve centroid-y mismatch",
 )
 npt.assert_allclose(
-    cx_zc, cx_ref, atol=0.15,
+    cx_zc,
+    cx_ref,
+    atol=0.15,
     err_msg="Tangential critical curve centroid-x mismatch",
 )
 
@@ -234,11 +238,15 @@ if len(rad_cc_ref) >= 1 and len(rad_cc_zc) >= 1:
     cy_rad_ref, cx_rad_ref = centroid(rad_ref_main)
     cy_rad_zc, cx_rad_zc = centroid(rad_zc_main)
     npt.assert_allclose(
-        cy_rad_zc, cy_rad_ref, atol=0.1,
+        cy_rad_zc,
+        cy_rad_ref,
+        atol=0.1,
         err_msg="Radial critical curve centroid-y mismatch",
     )
     npt.assert_allclose(
-        cx_rad_zc, cx_rad_ref, atol=0.1,
+        cx_rad_zc,
+        cx_rad_ref,
+        atol=0.1,
         err_msg="Radial critical curve centroid-x mismatch",
     )
 
@@ -259,9 +267,9 @@ assert isinstance(tan_ca_zc, list), (
     f"tangential_caustic_list_via_zero_contour_from: expected list, "
     f"got {type(tan_ca_zc)}"
 )
-assert len(tan_ca_zc) >= 1, (
-    "tangential_caustic_list_via_zero_contour_from: returned empty list"
-)
+assert (
+    len(tan_ca_zc) >= 1
+), "tangential_caustic_list_via_zero_contour_from: returned empty list"
 for i, curve in enumerate(tan_ca_zc):
     assert isinstance(curve, aa.Grid2DIrregular), (
         f"tangential_caustic_list_via_zero_contour_from: caustic {i} "
@@ -304,9 +312,9 @@ if len(rad_cc_zc) >= 1:
         f"radial_caustic_list_via_zero_contour_from: expected list, "
         f"got {type(rad_ca_zc)}"
     )
-    assert len(rad_ca_zc) >= 1, (
-        "radial_caustic_list_via_zero_contour_from: returned empty list"
-    )
+    assert (
+        len(rad_ca_zc) >= 1
+    ), "radial_caustic_list_via_zero_contour_from: returned empty list"
     for i, curve in enumerate(rad_ca_zc):
         assert isinstance(curve, aa.Grid2DIrregular), (
             f"radial_caustic_list_via_zero_contour_from: caustic {i} "
@@ -331,15 +339,17 @@ assert isinstance(er_list_zc, list), (
     f"einstein_radius_list_via_zero_contour_from: expected list, "
     f"got {type(er_list_zc)}"
 )
-assert len(er_list_zc) >= 1, (
-    "einstein_radius_list_via_zero_contour_from: returned empty list"
-)
+assert (
+    len(er_list_zc) >= 1
+), "einstein_radius_list_via_zero_contour_from: returned empty list"
 for er in er_list_zc:
     assert isinstance(er, float), (
         f"einstein_radius_list_via_zero_contour_from: expected float entries, "
         f"got {type(er)}"
     )
-    assert er > 0, "einstein_radius_list_via_zero_contour_from: Einstein radius must be positive"
+    assert (
+        er > 0
+    ), "einstein_radius_list_via_zero_contour_from: Einstein radius must be positive"
 
 er_list_ref = lens_calc.einstein_radius_list_from(grid=grid_ref)
 
@@ -359,9 +369,9 @@ er_scalar_zc = lens_calc.einstein_radius_via_zero_contour_from(
     N=500,
 )
 
-assert isinstance(er_scalar_zc, float), (
-    f"einstein_radius_via_zero_contour_from: expected float, got {type(er_scalar_zc)}"
-)
+assert isinstance(
+    er_scalar_zc, float
+), f"einstein_radius_via_zero_contour_from: expected float, got {type(er_scalar_zc)}"
 
 npt.assert_allclose(
     er_scalar_zc,
@@ -419,12 +429,12 @@ tan_cc_offset_zc = lc_offset.tangential_critical_curve_list_via_zero_contour_fro
 grid_offset = ag.Grid2D.uniform(shape_native=(100, 100), pixel_scales=0.1)
 tan_cc_offset_ref = lc_offset.tangential_critical_curve_list_from(grid=grid_offset)
 
-assert len(tan_cc_offset_zc) >= 1, (
-    "Offset lens tangential_critical_curve_list_via_zero_contour_from: empty list"
-)
-assert len(tan_cc_offset_ref) >= 1, (
-    "Offset lens tangential_critical_curve_list_from: empty list"
-)
+assert (
+    len(tan_cc_offset_zc) >= 1
+), "Offset lens tangential_critical_curve_list_via_zero_contour_from: empty list"
+assert (
+    len(tan_cc_offset_ref) >= 1
+), "Offset lens tangential_critical_curve_list_from: empty list"
 
 # Centroid should be near the lens centre (0.5, -0.3)
 cy_off, cx_off = centroid(max(tan_cc_offset_zc, key=len))
@@ -434,7 +444,9 @@ npt.assert_allclose(cx_off, -0.3, atol=0.2, err_msg="Offset lens centroid-x")
 r_off_zc = mean_radius(max(tan_cc_offset_zc, key=len))
 r_off_ref = mean_radius(max(tan_cc_offset_ref, key=len))
 npt.assert_allclose(
-    r_off_zc, r_off_ref, rtol=0.05,
+    r_off_zc,
+    r_off_ref,
+    rtol=0.05,
     err_msg="Offset lens tangential CC mean radius mismatch",
 )
 

@@ -43,9 +43,7 @@ import autolens as al
 """
 __Grids__
 """
-grid_irr = ag.Grid2DIrregular(
-    values=[(0.5, 0.5), (1.0, -0.5), (-0.5, 1.0), (1.5, 1.5)]
-)
+grid_irr = ag.Grid2DIrregular(values=[(0.5, 0.5), (1.0, -0.5), (-0.5, 1.0), (1.5, 1.5)])
 grid_uni = ag.Grid2D.uniform(shape_native=(8, 8), pixel_scales=0.3)
 
 """
@@ -92,14 +90,14 @@ print("Test 1: traced_grid_2d_list_from (2-plane, irregular grid)...")
 traced_np_2p_irr = tracer_2p.traced_grid_2d_list_from(grid=grid_irr)
 traced_jax_2p_irr = tracer_2p.traced_grid_2d_list_from(grid=grid_irr, xp=jnp)
 
-assert len(traced_np_2p_irr) == len(traced_jax_2p_irr), (
-    "traced_grid_2d_list_from 2p irr: plane count mismatch"
-)
+assert len(traced_np_2p_irr) == len(
+    traced_jax_2p_irr
+), "traced_grid_2d_list_from 2p irr: plane count mismatch"
 
 for i, (g_np, g_jax) in enumerate(zip(traced_np_2p_irr, traced_jax_2p_irr)):
-    assert isinstance(g_jax._array, jax.Array), (
-        f"traced_grid_2d_list_from 2p irr: plane {i} ._array is not jax.Array"
-    )
+    assert isinstance(
+        g_jax._array, jax.Array
+    ), f"traced_grid_2d_list_from 2p irr: plane {i} ._array is not jax.Array"
     npt.assert_allclose(
         np.array(g_jax._array),
         np.array(g_np._array),
@@ -117,14 +115,14 @@ print("Test 2: traced_grid_2d_list_from (3-plane, irregular grid)...")
 traced_np_3p_irr = tracer_3p.traced_grid_2d_list_from(grid=grid_irr)
 traced_jax_3p_irr = tracer_3p.traced_grid_2d_list_from(grid=grid_irr, xp=jnp)
 
-assert len(traced_np_3p_irr) == len(traced_jax_3p_irr) == 3, (
-    "traced_grid_2d_list_from 3p irr: expected 3 planes"
-)
+assert (
+    len(traced_np_3p_irr) == len(traced_jax_3p_irr) == 3
+), "traced_grid_2d_list_from 3p irr: expected 3 planes"
 
 for i, (g_np, g_jax) in enumerate(zip(traced_np_3p_irr, traced_jax_3p_irr)):
-    assert isinstance(g_jax._array, jax.Array), (
-        f"traced_grid_2d_list_from 3p irr: plane {i} ._array is not jax.Array"
-    )
+    assert isinstance(
+        g_jax._array, jax.Array
+    ), f"traced_grid_2d_list_from 3p irr: plane {i} ._array is not jax.Array"
     npt.assert_allclose(
         np.array(g_jax._array),
         np.array(g_np._array),
@@ -145,18 +143,20 @@ Results must match the NumPy path.
 print("Test 3: traced_grid_2d_list_from inside jax.jit (2-plane, irregular grid)...")
 
 jitted_traced_2p = jax.jit(
-    lambda: [g._array for g in tracer_2p.traced_grid_2d_list_from(grid=grid_irr, xp=jnp)]
+    lambda: [
+        g._array for g in tracer_2p.traced_grid_2d_list_from(grid=grid_irr, xp=jnp)
+    ]
 )
 traced_jit_2p = jitted_traced_2p()
 
-assert isinstance(traced_jit_2p, list) and len(traced_jit_2p) == 2, (
-    "JIT traced_grid 2p: expected list of 2 jax.Arrays"
-)
+assert (
+    isinstance(traced_jit_2p, list) and len(traced_jit_2p) == 2
+), "JIT traced_grid 2p: expected list of 2 jax.Arrays"
 
 for i, (arr_jit, g_np) in enumerate(zip(traced_jit_2p, traced_np_2p_irr)):
-    assert isinstance(arr_jit, jax.Array), (
-        f"JIT traced_grid 2p: plane {i} is not jax.Array"
-    )
+    assert isinstance(
+        arr_jit, jax.Array
+    ), f"JIT traced_grid 2p: plane {i} is not jax.Array"
     npt.assert_allclose(
         np.array(arr_jit),
         np.array(g_np._array),
@@ -172,13 +172,13 @@ __Test 4: traced_grid_2d_list_from inside jax.jit (three-plane, irregular grid)_
 print("Test 4: traced_grid_2d_list_from inside jax.jit (3-plane, irregular grid)...")
 
 jitted_traced_3p = jax.jit(
-    lambda: [g._array for g in tracer_3p.traced_grid_2d_list_from(grid=grid_irr, xp=jnp)]
+    lambda: [
+        g._array for g in tracer_3p.traced_grid_2d_list_from(grid=grid_irr, xp=jnp)
+    ]
 )
 traced_jit_3p = jitted_traced_3p()
 
-assert len(traced_jit_3p) == 3, (
-    "JIT traced_grid 3p: expected list of 3 jax.Arrays"
-)
+assert len(traced_jit_3p) == 3, "JIT traced_grid 3p: expected list of 3 jax.Arrays"
 
 for i, (arr_jit, g_np) in enumerate(zip(traced_jit_3p, traced_np_3p_irr)):
     npt.assert_allclose(
@@ -201,15 +201,15 @@ print("Test 5: image_2d_from (irregular grid)...")
 image_np_irr = tracer_2p.image_2d_from(grid=grid_irr)
 image_jax_irr = tracer_2p.image_2d_from(grid=grid_irr, xp=jnp)
 
-assert isinstance(image_np_irr, aa.ArrayIrregular), (
-    f"image_2d_from irr (numpy): expected aa.ArrayIrregular, got {type(image_np_irr)}"
-)
-assert isinstance(image_jax_irr, aa.ArrayIrregular), (
-    f"image_2d_from irr (jax outer): expected aa.ArrayIrregular, got {type(image_jax_irr)}"
-)
-assert isinstance(image_jax_irr._array, jax.Array), (
-    "image_2d_from irr (jax outer): ._array is not jax.Array"
-)
+assert isinstance(
+    image_np_irr, aa.ArrayIrregular
+), f"image_2d_from irr (numpy): expected aa.ArrayIrregular, got {type(image_np_irr)}"
+assert isinstance(
+    image_jax_irr, aa.ArrayIrregular
+), f"image_2d_from irr (jax outer): expected aa.ArrayIrregular, got {type(image_jax_irr)}"
+assert isinstance(
+    image_jax_irr._array, jax.Array
+), "image_2d_from irr (jax outer): ._array is not jax.Array"
 
 npt.assert_allclose(
     np.array(image_jax_irr._array),
@@ -228,9 +228,7 @@ print("Test 6: image_2d_from inside jax.jit (irregular grid)...")
 jitted_image = jax.jit(lambda: tracer_2p.image_2d_from(grid=grid_irr, xp=jnp)._array)
 image_jit = jitted_image()
 
-assert isinstance(image_jit, jax.Array), (
-    "image_2d_from JIT: output is not jax.Array"
-)
+assert isinstance(image_jit, jax.Array), "image_2d_from JIT: output is not jax.Array"
 
 npt.assert_allclose(
     np.array(image_jit),
@@ -253,15 +251,15 @@ print("Test 7: deflections_yx_2d_from (irregular grid)...")
 deflections_np = tracer_2p.deflections_yx_2d_from(grid=grid_irr)
 deflections_jax = tracer_2p.deflections_yx_2d_from(grid=grid_irr, xp=jnp)
 
-assert isinstance(deflections_np, aa.VectorYX2DIrregular), (
-    f"deflections_yx_2d_from (numpy): expected VectorYX2DIrregular, got {type(deflections_np)}"
-)
-assert isinstance(deflections_jax, aa.VectorYX2DIrregular), (
-    f"deflections_yx_2d_from (jax outer): expected VectorYX2DIrregular, got {type(deflections_jax)}"
-)
-assert isinstance(deflections_jax._array, jax.Array), (
-    "deflections_yx_2d_from (jax outer): ._array is not jax.Array"
-)
+assert isinstance(
+    deflections_np, aa.VectorYX2DIrregular
+), f"deflections_yx_2d_from (numpy): expected VectorYX2DIrregular, got {type(deflections_np)}"
+assert isinstance(
+    deflections_jax, aa.VectorYX2DIrregular
+), f"deflections_yx_2d_from (jax outer): expected VectorYX2DIrregular, got {type(deflections_jax)}"
+assert isinstance(
+    deflections_jax._array, jax.Array
+), "deflections_yx_2d_from (jax outer): ._array is not jax.Array"
 
 npt.assert_allclose(
     np.array(deflections_jax._array),
@@ -282,9 +280,9 @@ jitted_deflections = jax.jit(
 )
 deflections_jit = jitted_deflections()
 
-assert isinstance(deflections_jit, jax.Array), (
-    "deflections_yx_2d_from JIT: output is not jax.Array"
-)
+assert isinstance(
+    deflections_jit, jax.Array
+), "deflections_yx_2d_from JIT: output is not jax.Array"
 
 npt.assert_allclose(
     np.array(deflections_jit),
@@ -306,15 +304,15 @@ print("Test 9: convergence_2d_from (irregular grid)...")
 convergence_np = tracer_2p.convergence_2d_from(grid=grid_irr)
 convergence_jax = tracer_2p.convergence_2d_from(grid=grid_irr, xp=jnp)
 
-assert isinstance(convergence_np, aa.ArrayIrregular), (
-    f"convergence_2d_from (numpy): expected aa.ArrayIrregular, got {type(convergence_np)}"
-)
-assert isinstance(convergence_jax, aa.ArrayIrregular), (
-    f"convergence_2d_from (jax outer): expected aa.ArrayIrregular, got {type(convergence_jax)}"
-)
-assert isinstance(convergence_jax._array, jax.Array), (
-    "convergence_2d_from (jax outer): ._array is not jax.Array"
-)
+assert isinstance(
+    convergence_np, aa.ArrayIrregular
+), f"convergence_2d_from (numpy): expected aa.ArrayIrregular, got {type(convergence_np)}"
+assert isinstance(
+    convergence_jax, aa.ArrayIrregular
+), f"convergence_2d_from (jax outer): expected aa.ArrayIrregular, got {type(convergence_jax)}"
+assert isinstance(
+    convergence_jax._array, jax.Array
+), "convergence_2d_from (jax outer): ._array is not jax.Array"
 
 npt.assert_allclose(
     np.array(convergence_jax._array),
@@ -335,9 +333,9 @@ jitted_convergence = jax.jit(
 )
 convergence_jit = jitted_convergence()
 
-assert isinstance(convergence_jit, jax.Array), (
-    "convergence_2d_from JIT: output is not jax.Array"
-)
+assert isinstance(
+    convergence_jit, jax.Array
+), "convergence_2d_from JIT: output is not jax.Array"
 
 npt.assert_allclose(
     np.array(convergence_jit),

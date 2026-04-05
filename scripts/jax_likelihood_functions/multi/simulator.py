@@ -7,6 +7,7 @@ the multi-wavelength JAX likelihood function tests in this folder.
 Each band shares the same lens mass but has its own source intensity,
 written to `dataset/multi/lens_sersic/`.
 """
+
 from os import path
 import autolens as al
 import autolens.plot as aplt
@@ -64,13 +65,19 @@ for band, source_galaxy in [("g", source_g), ("r", source_r)]:
     tracer = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
     dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
     al.output_to_fits(
-        values=dataset.data.native, file_path=path.join(dataset_path, f"{band}_data.fits"), overwrite=True,
+        values=dataset.data.native,
+        file_path=path.join(dataset_path, f"{band}_data.fits"),
+        overwrite=True,
     )
     al.output_to_fits(
-        values=dataset.psf.kernel.native, file_path=path.join(dataset_path, f"{band}_psf.fits"), overwrite=True,
+        values=dataset.psf.kernel.native,
+        file_path=path.join(dataset_path, f"{band}_psf.fits"),
+        overwrite=True,
     )
     al.output_to_fits(
-        values=dataset.noise_map.native, file_path=path.join(dataset_path, f"{band}_noise_map.fits"), overwrite=True,
+        values=dataset.noise_map.native,
+        file_path=path.join(dataset_path, f"{band}_noise_map.fits"),
+        overwrite=True,
     )
     al.output_to_json(
         obj=tracer,

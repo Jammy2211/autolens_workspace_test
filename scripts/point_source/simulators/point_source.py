@@ -117,7 +117,10 @@ We now output the image of this strong lens to `.fits` which can be used for vis
 modeling and to `.png` for general inspection.
 """
 aplt.plot_array(array=tracer.image_2d_from(grid=grid))
-aplt.plot_array(array=tracer.image_2d_from(grid=grid), output=aplt.Output(path=dataset_path, format="png"))
+aplt.plot_array(
+    array=tracer.image_2d_from(grid=grid),
+    output=aplt.Output(path=dataset_path, format="png"),
+)
 
 """
 Create a point-source dictionary data object and output this to a `.json` file, which is the format used to load and
@@ -143,7 +146,9 @@ __Visualize__
 
 Output a subplot of the simulated point source dataset and the tracer's quantities to the dataset path as .png files.
 """
-aplt.subplot_tracer(tracer=tracer, grid=grid, output=aplt.Output(path=dataset_path, format="png"))
+aplt.subplot_tracer(
+    tracer=tracer, grid=grid, output=aplt.Output(path=dataset_path, format="png")
+)
 
 """
 __Tracer json__

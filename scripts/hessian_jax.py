@@ -191,7 +191,9 @@ for component, name in zip(
         component, np.ndarray
     ), f"hessian_from (numpy, uniform grid): {name} expected np.ndarray, got {type(component)}"
 
-hessian_jax_uniform_fn = jax.jit(lambda: lens_calc.hessian_from(grid=grid_uniform, xp=jnp))
+hessian_jax_uniform_fn = jax.jit(
+    lambda: lens_calc.hessian_from(grid=grid_uniform, xp=jnp)
+)
 hessian_jax_uniform = hessian_jax_uniform_fn()
 
 assert isinstance(
@@ -439,7 +441,9 @@ assert isinstance(
     mag2d_np, aa.Array2D
 ), f"magnification_2d_from (numpy): expected aa.Array2D, got {type(mag2d_np)}"
 
-mag2d_jax_fn = jax.jit(lambda: lens_calc.magnification_2d_from(grid=grid_uniform, xp=jnp))
+mag2d_jax_fn = jax.jit(
+    lambda: lens_calc.magnification_2d_from(grid=grid_uniform, xp=jnp)
+)
 mag2d_jax = mag2d_jax_fn()
 
 assert isinstance(

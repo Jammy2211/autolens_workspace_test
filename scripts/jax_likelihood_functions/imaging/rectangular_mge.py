@@ -58,6 +58,7 @@ simulator script. This ensures that all example scripts can be run without manua
 if not path.exists(dataset_path):
     import subprocess
     import sys
+
     subprocess.run(
         [sys.executable, "scripts/jax_likelihood_functions/imaging/simulator.py"],
         check=True,

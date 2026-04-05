@@ -6,6 +6,7 @@ imaging model using the `FactorGraphModel` API. Two imaging datasets (g and r ba
 are fitted simultaneously with a shared Isothermal+ExternalShear lens mass and shared
 MGE source.
 """
+
 import numpy as np
 import jax
 import jax.numpy as jnp
@@ -28,6 +29,7 @@ simulator script. This ensures that all example scripts can be run without manua
 if not path.exists(dataset_path):
     import subprocess
     import sys
+
     subprocess.run(
         [sys.executable, "scripts/jax_likelihood_functions/multi/simulator.py"],
         check=True,
@@ -53,8 +55,7 @@ mask_list = [
 ]
 
 dataset_list = [
-    dataset.apply_mask(mask=mask)
-    for dataset, mask in zip(dataset_list, mask_list)
+    dataset.apply_mask(mask=mask) for dataset, mask in zip(dataset_list, mask_list)
 ]
 
 for dataset in dataset_list:
@@ -84,10 +85,7 @@ model = af.Collection(galaxies=af.Collection(lens=lens, source=source))
 print(model.info)
 
 # FactorGraphModel: same model instance for both analyses (fully shared parameters)
-analysis_list = [
-    al.AnalysisImaging(dataset=dataset)
-    for dataset in dataset_list
-]
+analysis_list = [al.AnalysisImaging(dataset=dataset) for dataset in dataset_list]
 
 analysis_factor_list = [
     af.AnalysisFactor(prior_model=model, analysis=analysis)
@@ -110,11 +108,17 @@ fitness = Fitness(
     resample_figure_of_merit=-1.0e99,
 )
 
-param_vector = jnp.array(factor_graph.global_prior_model.physical_values_from_prior_medians)
+param_vector = jnp.array(
+    factor_graph.global_prior_model.physical_values_from_prior_medians
+)
 
-parameters = np.zeros((batch_size, factor_graph.global_prior_model.total_free_parameters))
+parameters = np.zeros(
+    (batch_size, factor_graph.global_prior_model.total_free_parameters)
+)
 for i in range(batch_size):
-    parameters[i, :] = factor_graph.global_prior_model.physical_values_from_prior_medians
+    parameters[i, :] = (
+        factor_graph.global_prior_model.physical_values_from_prior_medians
+    )
 parameters = jnp.array(parameters)
 
 start = time.time()

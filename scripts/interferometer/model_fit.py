@@ -57,6 +57,7 @@ simulator script. This ensures that all example scripts can be run without manua
 if not path.exists(dataset_path):
     import subprocess
     import sys
+
     subprocess.run(
         [sys.executable, "scripts/interferometer/simulator/with_lens_light.py"],
         check=True,
@@ -183,7 +184,9 @@ __Result__
 """
 print(result.max_log_likelihood_instance)
 
-aplt.subplot_tracer(tracer=result.max_log_likelihood_tracer, grid=real_space_mask.derive_grid.all_false)
+aplt.subplot_tracer(
+    tracer=result.max_log_likelihood_tracer, grid=real_space_mask.derive_grid.all_false
+)
 
 aplt.subplot_fit_interferometer(fit=result.max_log_likelihood_fit)
 

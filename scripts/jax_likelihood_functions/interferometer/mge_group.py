@@ -4,6 +4,7 @@ Func Grad: Interferometer MGE + Extra Galaxies
 Tests that JAX can compute batched log-likelihood evaluations for an interferometer
 model with extra galaxies, using the same dataset as interferometer/mge.py.
 """
+
 import numpy as np
 import jax
 import jax.numpy as jnp
@@ -31,8 +32,12 @@ simulator script. This ensures that all example scripts can be run without manua
 if not path.exists(dataset_path):
     import subprocess
     import sys
+
     subprocess.run(
-        [sys.executable, "scripts/jax_likelihood_functions/interferometer/simulator.py"],
+        [
+            sys.executable,
+            "scripts/jax_likelihood_functions/interferometer/simulator.py",
+        ],
         check=True,
     )
 

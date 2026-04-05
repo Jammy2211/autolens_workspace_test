@@ -115,13 +115,19 @@ dataset = simulator.via_tracer_from(tracer=tracer, grid=grid)
 Output the simulated dataset to the dataset path as .fits files.
 """
 al.output_to_fits(
-    values=dataset.data.native, file_path=path.join(dataset_path, "data.fits"), overwrite=True,
+    values=dataset.data.native,
+    file_path=path.join(dataset_path, "data.fits"),
+    overwrite=True,
 )
 al.output_to_fits(
-    values=dataset.psf.kernel.native, file_path=path.join(dataset_path, "psf.fits"), overwrite=True,
+    values=dataset.psf.kernel.native,
+    file_path=path.join(dataset_path, "psf.fits"),
+    overwrite=True,
 )
 al.output_to_fits(
-    values=dataset.noise_map.native, file_path=path.join(dataset_path, "noise_map.fits"), overwrite=True,
+    values=dataset.noise_map.native,
+    file_path=path.join(dataset_path, "noise_map.fits"),
+    overwrite=True,
 )
 
 """
@@ -150,7 +156,9 @@ lens_image = lens_image.trimmed_after_convolution_from(
 snr_no_lens = (dataset.data - lens_image) / dataset.noise_map
 
 al.output_to_fits(
-    values=snr_no_lens.native, file_path=path.join(dataset_path, "snr_no_lens.fits"), overwrite=True,
+    values=snr_no_lens.native,
+    file_path=path.join(dataset_path, "snr_no_lens.fits"),
+    overwrite=True,
 )
 
 print("DSPL dataset written to", dataset_path)

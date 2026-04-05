@@ -24,6 +24,7 @@ simulator script. This ensures that all example scripts can be run without manua
 if not path.exists(dataset_path):
     import subprocess
     import sys
+
     subprocess.run(
         [sys.executable, "scripts/jax_likelihood_functions/imaging/simulator.py"],
         check=True,
@@ -99,7 +100,9 @@ param_vector = jnp.array(model.physical_values_from_prior_medians)
 # Perturb ell_comps away from (0,0) to avoid degenerate gradients at the
 # circular-profile singularity (arctan2 gradient is undefined at exactly (0,0)).
 key = jax.random.PRNGKey(0)
-perturbation = jax.random.uniform(key, shape=param_vector.shape, minval=0.01, maxval=0.05)
+perturbation = jax.random.uniform(
+    key, shape=param_vector.shape, minval=0.01, maxval=0.05
+)
 param_vector = param_vector + perturbation
 
 value, grad = jax.value_and_grad(fitness.call)(param_vector)
@@ -109,8 +112,12 @@ print(f"Gradient shape = {grad.shape}")
 print(f"Gradient = {np.array(grad)}")
 
 assert np.isfinite(float(value)), "Log likelihood is not finite"
-assert grad.shape == (model.total_free_parameters,), f"Gradient shape mismatch: {grad.shape}"
-assert np.all(np.isfinite(np.array(grad))), f"Gradient contains non-finite values: {np.array(grad)}"
+assert grad.shape == (
+    model.total_free_parameters,
+), f"Gradient shape mismatch: {grad.shape}"
+assert np.all(
+    np.isfinite(np.array(grad))
+), f"Gradient contains non-finite values: {np.array(grad)}"
 assert not np.all(np.array(grad) == 0.0), "Gradient is all zeros"
 
 print("imaging_lp.py JAX gradient checks passed.")

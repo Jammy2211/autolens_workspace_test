@@ -113,21 +113,21 @@ def check_profile_method(
 
     # --- 1. NumPy path ---
     result_np = method(grid=grid)
-    assert isinstance(result_np, np_type), (
-        f"{label} (numpy): expected {np_type.__name__}, got {type(result_np)}"
-    )
-    assert isinstance(result_np._array, np.ndarray), (
-        f"{label} (numpy): ._array expected np.ndarray, got {type(result_np._array)}"
-    )
+    assert isinstance(
+        result_np, np_type
+    ), f"{label} (numpy): expected {np_type.__name__}, got {type(result_np)}"
+    assert isinstance(
+        result_np._array, np.ndarray
+    ), f"{label} (numpy): ._array expected np.ndarray, got {type(result_np._array)}"
 
     # --- 2. JAX path outside JIT ---
     result_jax_outer = method(grid=grid, xp=jnp)
-    assert isinstance(result_jax_outer, jax_type), (
-        f"{label} (jax outer): expected {jax_type.__name__}, got {type(result_jax_outer)}"
-    )
-    assert isinstance(result_jax_outer._array, jax.Array), (
-        f"{label} (jax outer): ._array expected jax.Array, got {type(result_jax_outer._array)}"
-    )
+    assert isinstance(
+        result_jax_outer, jax_type
+    ), f"{label} (jax outer): expected {jax_type.__name__}, got {type(result_jax_outer)}"
+    assert isinstance(
+        result_jax_outer._array, jax.Array
+    ), f"{label} (jax outer): ._array expected jax.Array, got {type(result_jax_outer._array)}"
 
     # --- 3. JAX path inside jax.jit ---
     # Extract ._array at the JIT boundary so the output is a raw jax.Array.
@@ -136,9 +136,9 @@ def check_profile_method(
     jitted_fn = jax.jit(lambda: method(grid=grid, xp=jnp)._array)
     result_jax_jit = jitted_fn()
 
-    assert isinstance(result_jax_jit, jax.Array), (
-        f"{label} (jax jit): expected jax.Array, got {type(result_jax_jit)}"
-    )
+    assert isinstance(
+        result_jax_jit, jax.Array
+    ), f"{label} (jax jit): expected jax.Array, got {type(result_jax_jit)}"
 
     npt.assert_allclose(
         np.array(result_jax_jit),

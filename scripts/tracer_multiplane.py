@@ -42,9 +42,7 @@ __Grids__
 An irregular grid with well-separated, off-centre points is used for most tests.
 A uniform grid is used where array-shape reasoning is needed (test 6).
 """
-grid_irr = ag.Grid2DIrregular(
-    values=[(0.5, 0.5), (1.0, -0.5), (-0.5, 1.0), (1.5, 1.5)]
-)
+grid_irr = ag.Grid2DIrregular(values=[(0.5, 0.5), (1.0, -0.5), (-0.5, 1.0), (1.5, 1.5)])
 grid_uni = ag.Grid2D.uniform(shape_native=(8, 8), pixel_scales=0.3)
 
 """
@@ -80,9 +78,9 @@ tracer_no_mass = al.Tracer(galaxies=[source_only])
 
 traced_grids = tracer_no_mass.traced_grid_2d_list_from(grid=grid_irr)
 
-assert len(traced_grids) == 1, (
-    f"No-mass tracer: expected 1 traced grid, got {len(traced_grids)}"
-)
+assert (
+    len(traced_grids) == 1
+), f"No-mass tracer: expected 1 traced grid, got {len(traced_grids)}"
 
 npt.assert_allclose(
     np.array(traced_grids[0]),
@@ -112,17 +110,17 @@ tracer_two_plane = al.Tracer(galaxies=[lens_galaxy, source_galaxy])
 
 traced_two = tracer_two_plane.traced_grid_2d_list_from(grid=grid_irr)
 
-assert len(traced_two) == 2, (
-    f"Two-plane tracer: expected 2 traced grids, got {len(traced_two)}"
-)
+assert (
+    len(traced_two) == 2
+), f"Two-plane tracer: expected 2 traced grids, got {len(traced_two)}"
 
 # Source-plane grid must differ from image-plane grid.
 image_plane_coords = np.array(traced_two[0])
 source_plane_coords = np.array(traced_two[1])
 
-assert not np.allclose(image_plane_coords, source_plane_coords), (
-    "Two-plane tracer: source-plane grid equals image-plane grid — no deflection occurred"
-)
+assert not np.allclose(
+    image_plane_coords, source_plane_coords
+), "Two-plane tracer: source-plane grid equals image-plane grid — no deflection occurred"
 
 print("  PASSED")
 
@@ -141,9 +139,9 @@ tracer_reversed = al.Tracer(galaxies=[source_galaxy, lens_galaxy])
 traced_forward = tracer_forward.traced_grid_2d_list_from(grid=grid_irr)
 traced_reversed = tracer_reversed.traced_grid_2d_list_from(grid=grid_irr)
 
-assert len(traced_forward) == len(traced_reversed), (
-    "Redshift order invariance: different number of planes"
-)
+assert len(traced_forward) == len(
+    traced_reversed
+), "Redshift order invariance: different number of planes"
 
 for i, (g_fwd, g_rev) in enumerate(zip(traced_forward, traced_reversed)):
     npt.assert_allclose(
@@ -230,9 +228,9 @@ tracer_3p = al.Tracer(galaxies=[lens_z05, lens_z10, source_z20])
 traced_2p = tracer_2p.traced_grid_2d_list_from(grid=grid_irr)
 traced_3p = tracer_3p.traced_grid_2d_list_from(grid=grid_irr)
 
-assert len(traced_3p) == 3, (
-    f"Three-plane tracer: expected 3 planes, got {len(traced_3p)}"
-)
+assert (
+    len(traced_3p) == 3
+), f"Three-plane tracer: expected 3 planes, got {len(traced_3p)}"
 
 # First plane (z=0.5) should be the same: no upstream mass deflects light before
 # reaching z=0.5 in either tracer.
@@ -244,9 +242,9 @@ npt.assert_allclose(
 )
 
 # Source plane (last) must differ: the extra lens at z=1.0 adds deflection.
-assert not np.allclose(np.array(traced_2p[-1]), np.array(traced_3p[-1])), (
-    "Three-plane test: source-plane grids are equal — second lens had no effect"
-)
+assert not np.allclose(
+    np.array(traced_2p[-1]), np.array(traced_3p[-1])
+), "Three-plane test: source-plane grids are equal — second lens had no effect"
 
 print("  PASSED")
 
@@ -267,9 +265,9 @@ traced_limited = tracer_3p_full.traced_grid_2d_list_from(
     grid=grid_irr, plane_index_limit=1
 )
 
-assert len(traced_limited) == 2, (
-    f"plane_index_limit=1: expected 2 grids, got {len(traced_limited)}"
-)
+assert (
+    len(traced_limited) == 2
+), f"plane_index_limit=1: expected 2 grids, got {len(traced_limited)}"
 
 for i in range(2):
     npt.assert_allclose(
@@ -292,25 +290,27 @@ We also verify that `total_planes` matches the length of the `planes` list.
 print("Test 7: Plane grouping...")
 
 gal_a = al.Galaxy(redshift=0.5, mass=isothermal_lens)
-gal_b = al.Galaxy(redshift=0.5, mass=ag.mp.IsothermalSph(centre=(0.5, 0.5), einstein_radius=0.5))
+gal_b = al.Galaxy(
+    redshift=0.5, mass=ag.mp.IsothermalSph(centre=(0.5, 0.5), einstein_radius=0.5)
+)
 gal_c = al.Galaxy(redshift=1.0)
 
 tracer_grouped = al.Tracer(galaxies=[gal_a, gal_b, gal_c])
 
-assert tracer_grouped.total_planes == 2, (
-    f"Plane grouping: expected 2 planes, got {tracer_grouped.total_planes}"
-)
-assert tracer_grouped.total_planes == len(tracer_grouped.planes), (
-    "Plane grouping: total_planes != len(planes)"
-)
-assert len(tracer_grouped.galaxies) == 3, (
-    "Plane grouping: galaxy count changed unexpectedly"
-)
+assert (
+    tracer_grouped.total_planes == 2
+), f"Plane grouping: expected 2 planes, got {tracer_grouped.total_planes}"
+assert tracer_grouped.total_planes == len(
+    tracer_grouped.planes
+), "Plane grouping: total_planes != len(planes)"
+assert (
+    len(tracer_grouped.galaxies) == 3
+), "Plane grouping: galaxy count changed unexpectedly"
 
 # The first plane must contain both co-redshift galaxies.
-assert len(tracer_grouped.planes[0]) == 2, (
-    f"Plane grouping: expected 2 galaxies in plane 0, got {len(tracer_grouped.planes[0])}"
-)
+assert (
+    len(tracer_grouped.planes[0]) == 2
+), f"Plane grouping: expected 2 galaxies in plane 0, got {len(tracer_grouped.planes[0])}"
 
 print("  PASSED")
 

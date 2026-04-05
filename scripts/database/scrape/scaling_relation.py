@@ -60,6 +60,7 @@ simulator script. This ensures that all example scripts can be run without manua
 if not path.exists(dataset_path):
     import subprocess
     import sys
+
     subprocess.run(
         [sys.executable, "scripts/imaging/simulator/no_lens_light.py"],
         check=True,
@@ -107,7 +108,7 @@ extra_galaxy_mass = af.Model(al.mp.Isothermal)
 extra_galaxy_mass.centre = extra_galaxy_centre
 extra_galaxy_mass.ell_comps = (0.0, 0.0)
 extra_galaxy_mass.einstein_radius = (
-    scaling_factor * extra_galaxy_luminosity ** scaling_exponent
+    scaling_factor * extra_galaxy_luminosity**scaling_exponent
 )
 
 extra_galaxy = af.Model(al.Galaxy, redshift=0.5, mass=extra_galaxy_mass)
@@ -175,9 +176,7 @@ if False:
         pass
 
     agg = Aggregator.from_database(database_file)
-    agg.add_directory(
-        path.join("output", "database", "scrape", dataset_name, name)
-    )
+    agg.add_directory(path.join("output", "database", "scrape", dataset_name, name))
 
     assert len(agg) > 0
 
@@ -288,7 +287,9 @@ if False:
             tracer_plotter.figures_2d(convergence=True, potential=True)
 
         except al.exc.ProfileException:
-            print("TracerAgg with linear light profiles raises correct ProfileException")
+            print(
+                "TracerAgg with linear light profiles raises correct ProfileException"
+            )
 
         assert tracer.galaxies[0].mass.einstein_radius > 0.0
 

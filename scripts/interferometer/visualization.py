@@ -72,6 +72,7 @@ simulator script. This ensures that all example scripts can be run without manua
 if not path.exists(dataset_path):
     import subprocess
     import sys
+
     subprocess.run(
         [sys.executable, "scripts/interferometer/simulator/no_lens_light.py"],
         check=True,
@@ -162,9 +163,7 @@ model_rectangular = af.Collection(
 )
 
 # --- Delaunay pixelization ---
-mesh_del = al.mesh.Delaunay(
-    pixels=image_plane_mesh_grid.shape[0], zeroed_pixels=0
-)
+mesh_del = al.mesh.Delaunay(pixels=image_plane_mesh_grid.shape[0], zeroed_pixels=0)
 reg_del = al.reg.ConstantSplit(coefficient=1.0)
 pix_del = al.Pixelization(mesh=mesh_del, regularization=reg_del)
 source_delaunay = af.Model(al.Galaxy, redshift=1.0, pixelization=pix_del)
@@ -284,9 +283,7 @@ print("image_with_positions.png OK")
 #   ["mask", "('galaxies', 'lens')", "('galaxies', 'source')"]
 # HDU 0 = MASK (Primary), HDU 1 = lens key (uppercased), HDU 2 = source key (uppercased).
 
-assert (
-    image_path / "adapt_images.png"
-).exists(), "adapt_images.png missing"
+assert (image_path / "adapt_images.png").exists(), "adapt_images.png missing"
 print("adapt_images.png OK")
 
 with astropy_fits.open(image_path / "adapt_images.fits") as hdul:
@@ -351,9 +348,7 @@ for source_name, model, has_inversion in source_runs:
 
     assert (sub_path / "fit.png").exists(), f"{source_name}/fit.png missing"
     print(f"  {source_name}/fit.png OK")
-    assert (
-        sub_path / "tracer.png"
-    ).exists(), f"{source_name}/tracer.png missing"
+    assert (sub_path / "tracer.png").exists(), f"{source_name}/tracer.png missing"
     print(f"  {source_name}/tracer.png OK")
     assert (
         sub_path / "fit_dirty_images.png"

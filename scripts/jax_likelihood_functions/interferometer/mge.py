@@ -71,8 +71,12 @@ simulator script. This ensures that all example scripts can be run without manua
 if not path.exists(dataset_path):
     import subprocess
     import sys
+
     subprocess.run(
-        [sys.executable, "scripts/jax_likelihood_functions/interferometer/simulator.py"],
+        [
+            sys.executable,
+            "scripts/jax_likelihood_functions/interferometer/simulator.py",
+        ],
         check=True,
     )
 
@@ -189,7 +193,7 @@ print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
 np.testing.assert_allclose(
     np.array(result),
-    -7.94439429e+08,
+    -7.94439429e08,
     rtol=1e-4,
     err_msg="interferometer/mge: JAX vmap likelihood mismatch",
 )

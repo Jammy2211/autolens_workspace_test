@@ -26,6 +26,7 @@ conf.instance.push(
 )
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -59,6 +60,7 @@ simulator script. This ensures that all example scripts can be run without manua
 if not path.exists(dataset_path):
     import subprocess
     import sys
+
     subprocess.run(
         [sys.executable, "scripts/jax_likelihood_functions/imaging/simulator.py"],
         check=True,
@@ -146,11 +148,14 @@ out_dir.mkdir(parents=True)
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def fmt_kb(n_bytes: int) -> str:
     return f"{n_bytes / 1024:.1f} KB"
 
 
-def compress_png(src: Path, dst: Path, compress_level: int, optimize: bool = True) -> int:
+def compress_png(
+    src: Path, dst: Path, compress_level: int, optimize: bool = True
+) -> int:
     """Re-save a PNG with a given PIL compress_level (0-9) and return new byte size."""
     img = Image.open(src)
     img.save(dst, format="PNG", compress_level=compress_level, optimize=optimize)
@@ -170,7 +175,11 @@ def savefig_dpi(fig, dst: Path, dpi: int) -> int:
 # ---------------------------------------------------------------------------
 
 import autoarray as aa
-from autolens.imaging.plot.fit_imaging_plots import _get_source_vmax, _plot_source_plane, _symmetric_vmax
+from autolens.imaging.plot.fit_imaging_plots import (
+    _get_source_vmax,
+    _plot_source_plane,
+    _symmetric_vmax,
+)
 from autoarray.plot.array import plot_array
 from autoarray.plot.utils import hide_unused_axes
 
@@ -179,7 +188,9 @@ _cc_grid = aa.Grid2D.from_extent(
     extent=_zoom.extent_from(buffer=0), shape_native=_zoom.shape_native
 )
 tracer = fit.tracer_linear_light_profiles_to_light_profiles
-ip_lines, ip_colors, sp_lines, sp_colors = _compute_critical_curve_lines(tracer, _cc_grid)
+ip_lines, ip_colors, sp_lines, sp_colors = _compute_critical_curve_lines(
+    tracer, _cc_grid
+)
 
 source_vmax = _get_source_vmax(fit)
 final_plane_index = len(fit.tracer.planes) - 1
@@ -195,39 +206,83 @@ def build_fit_fig():
     plot_array(array=fit.data, ax=ax[0], title="Data")
     plot_array(array=fit.data, ax=ax[1], title="Data (Source Scale)", vmax=source_vmax)
     plot_array(array=fit.signal_to_noise_map, ax=ax[2], title="Signal-To-Noise Map")
-    plot_array(array=fit.model_data, ax=ax[3], title="Model Image",
-               lines=ip_lines, line_colors=ip_colors)
+    plot_array(
+        array=fit.model_data,
+        ax=ax[3],
+        title="Model Image",
+        lines=ip_lines,
+        line_colors=ip_colors,
+    )
     try:
-        plot_array(array=fit.model_images_of_planes_list[0], ax=ax[4],
-                   title="Lens Light Model Image")
+        plot_array(
+            array=fit.model_images_of_planes_list[0],
+            ax=ax[4],
+            title="Lens Light Model Image",
+        )
     except (IndexError, AttributeError):
         ax[4].axis("off")
     try:
         sub = fit.subtracted_images_of_planes_list[final_plane_index]
-        plot_array(array=sub, ax=ax[5], title="Lens Light Subtracted",
-                   vmin=0.0 if source_vmax is not None else None, vmax=source_vmax)
+        plot_array(
+            array=sub,
+            ax=ax[5],
+            title="Lens Light Subtracted",
+            vmin=0.0 if source_vmax is not None else None,
+            vmax=source_vmax,
+        )
     except (IndexError, AttributeError):
         ax[5].axis("off")
     try:
-        plot_array(array=fit.model_images_of_planes_list[final_plane_index], ax=ax[6],
-                   title="Source Model Image", vmax=source_vmax,
-                   lines=ip_lines, line_colors=ip_colors)
+        plot_array(
+            array=fit.model_images_of_planes_list[final_plane_index],
+            ax=ax[6],
+            title="Source Model Image",
+            vmax=source_vmax,
+            lines=ip_lines,
+            line_colors=ip_colors,
+        )
     except (IndexError, AttributeError):
         ax[6].axis("off")
-    _plot_source_plane(fit, ax[7], final_plane_index, zoom_to_brightest=True,
-                       title="Source Plane (Zoomed)",
-                       lines=sp_lines, line_colors=sp_colors)
+    _plot_source_plane(
+        fit,
+        ax[7],
+        final_plane_index,
+        zoom_to_brightest=True,
+        title="Source Plane (Zoomed)",
+        lines=sp_lines,
+        line_colors=sp_colors,
+    )
     norm_resid = fit.normalized_residual_map
     _abs_max = _symmetric_vmax(norm_resid)
-    plot_array(array=norm_resid, ax=ax[8], title="Normalized Residual Map",
-               vmin=-_abs_max, vmax=_abs_max)
-    plot_array(array=norm_resid, ax=ax[9], title=r"Normalized Residual Map $1\sigma$",
-               vmin=-1.0, vmax=1.0)
-    plot_array(array=fit.chi_squared_map, ax=ax[10], title="Chi-Squared Map",
-               cb_unit=r"$\chi^2$")
-    _plot_source_plane(fit, ax[11], final_plane_index, zoom_to_brightest=False,
-                       title="Source Plane (No Zoom)",
-                       lines=sp_lines, line_colors=sp_colors)
+    plot_array(
+        array=norm_resid,
+        ax=ax[8],
+        title="Normalized Residual Map",
+        vmin=-_abs_max,
+        vmax=_abs_max,
+    )
+    plot_array(
+        array=norm_resid,
+        ax=ax[9],
+        title=r"Normalized Residual Map $1\sigma$",
+        vmin=-1.0,
+        vmax=1.0,
+    )
+    plot_array(
+        array=fit.chi_squared_map,
+        ax=ax[10],
+        title="Chi-Squared Map",
+        cb_unit=r"$\chi^2$",
+    )
+    _plot_source_plane(
+        fit,
+        ax[11],
+        final_plane_index,
+        zoom_to_brightest=False,
+        title="Source Plane (No Zoom)",
+        lines=sp_lines,
+        line_colors=sp_colors,
+    )
     hide_unused_axes(ax)
     plt.tight_layout()
     return fig
@@ -238,19 +293,35 @@ def build_fit_log10_fig():
     ax = list(axes.flatten())
     plot_array(array=fit.data, ax=ax[0], title="Data", use_log10=True)
     try:
-        plot_array(array=fit.data, ax=ax[1], title="Data (Source Scale)", use_log10=True)
+        plot_array(
+            array=fit.data, ax=ax[1], title="Data (Source Scale)", use_log10=True
+        )
     except ValueError:
         ax[1].axis("off")
     try:
-        plot_array(array=fit.signal_to_noise_map, ax=ax[2], title="Signal-To-Noise Map",
-                   use_log10=True)
+        plot_array(
+            array=fit.signal_to_noise_map,
+            ax=ax[2],
+            title="Signal-To-Noise Map",
+            use_log10=True,
+        )
     except ValueError:
         ax[2].axis("off")
-    plot_array(array=fit.model_data, ax=ax[3], title="Model Image", use_log10=True,
-               lines=ip_lines, line_colors=ip_colors)
+    plot_array(
+        array=fit.model_data,
+        ax=ax[3],
+        title="Model Image",
+        use_log10=True,
+        lines=ip_lines,
+        line_colors=ip_colors,
+    )
     try:
-        plot_array(array=fit.model_images_of_planes_list[0], ax=ax[4],
-                   title="Lens Light Model Image", use_log10=True)
+        plot_array(
+            array=fit.model_images_of_planes_list[0],
+            ax=ax[4],
+            title="Lens Light Model Image",
+            use_log10=True,
+        )
     except (IndexError, AttributeError):
         ax[4].axis("off")
     try:
@@ -259,25 +330,61 @@ def build_fit_log10_fig():
     except (IndexError, AttributeError):
         ax[5].axis("off")
     try:
-        plot_array(array=fit.model_images_of_planes_list[final_plane_index], ax=ax[6],
-                   title="Source Model Image", use_log10=True,
-                   lines=ip_lines, line_colors=ip_colors)
+        plot_array(
+            array=fit.model_images_of_planes_list[final_plane_index],
+            ax=ax[6],
+            title="Source Model Image",
+            use_log10=True,
+            lines=ip_lines,
+            line_colors=ip_colors,
+        )
     except (IndexError, AttributeError):
         ax[6].axis("off")
-    _plot_source_plane(fit, ax[7], final_plane_index, zoom_to_brightest=True,
-                       use_log10=True, lines=sp_lines, line_colors=sp_colors,
-                       title="Source Plane (Zoomed)")
+    _plot_source_plane(
+        fit,
+        ax[7],
+        final_plane_index,
+        zoom_to_brightest=True,
+        use_log10=True,
+        lines=sp_lines,
+        line_colors=sp_colors,
+        title="Source Plane (Zoomed)",
+    )
     norm_resid = fit.normalized_residual_map
     _abs_max = _symmetric_vmax(norm_resid)
-    plot_array(array=norm_resid, ax=ax[8], title="Normalized Residual Map",
-               vmin=-_abs_max, vmax=_abs_max, cb_unit=r"$\sigma$")
-    plot_array(array=norm_resid, ax=ax[9], title=r"Normalized Residual Map $1\sigma$",
-               vmin=-1.0, vmax=1.0, cb_unit=r"$\sigma$")
-    plot_array(array=fit.chi_squared_map, ax=ax[10], title="Chi-Squared Map",
-               use_log10=True, cb_unit=r"$\chi^2$")
-    _plot_source_plane(fit, ax[11], final_plane_index, zoom_to_brightest=False,
-                       use_log10=True, lines=sp_lines, line_colors=sp_colors,
-                       title="Source Plane (No Zoom)")
+    plot_array(
+        array=norm_resid,
+        ax=ax[8],
+        title="Normalized Residual Map",
+        vmin=-_abs_max,
+        vmax=_abs_max,
+        cb_unit=r"$\sigma$",
+    )
+    plot_array(
+        array=norm_resid,
+        ax=ax[9],
+        title=r"Normalized Residual Map $1\sigma$",
+        vmin=-1.0,
+        vmax=1.0,
+        cb_unit=r"$\sigma$",
+    )
+    plot_array(
+        array=fit.chi_squared_map,
+        ax=ax[10],
+        title="Chi-Squared Map",
+        use_log10=True,
+        cb_unit=r"$\chi^2$",
+    )
+    _plot_source_plane(
+        fit,
+        ax[11],
+        final_plane_index,
+        zoom_to_brightest=False,
+        use_log10=True,
+        lines=sp_lines,
+        line_colors=sp_colors,
+        title="Source Plane (No Zoom)",
+    )
     hide_unused_axes(ax)
     plt.tight_layout()
     return fig
@@ -290,8 +397,10 @@ def build_fit_log10_fig():
 DPIS = [300, 200, 150, 100]
 COMPRESS_LEVELS = [6, 7, 8, 9]  # PNG compress_level (higher = smaller but slower)
 
-for fig_name, build_fn in [("subplot_fit", build_fit_fig),
-                             ("subplot_fit_log10", build_fit_log10_fig)]:
+for fig_name, build_fn in [
+    ("subplot_fit", build_fit_fig),
+    ("subplot_fit_log10", build_fit_log10_fig),
+]:
 
     print(f"\n{'─'*50}")
     print(f"  {fig_name}.png")
@@ -360,9 +469,7 @@ for row, fig_name in enumerate(["subplot_fit", "subplot_fit_log10"]):
     sz_comp = (out_dir / f"{fig_name}_dpi150_compress9.png").stat().st_size
 
     axes[row, 0].imshow(baseline)
-    axes[row, 0].set_title(
-        f"{fig_name} — DPI 300\n{fmt_kb(sz_orig)}", fontsize=10
-    )
+    axes[row, 0].set_title(f"{fig_name} — DPI 300\n{fmt_kb(sz_orig)}", fontsize=10)
     axes[row, 0].axis("off")
 
     axes[row, 1].imshow(compressed)
@@ -393,7 +500,9 @@ if sys.platform.startswith("linux"):
         try:
             subprocess.Popen(["xdg-open", str(comparison_path.resolve())])
         except Exception:
-            print("Could not open image automatically — open manually:", comparison_path)
+            print(
+                "Could not open image automatically — open manually:", comparison_path
+            )
 elif sys.platform == "darwin":
     subprocess.Popen(["open", str(comparison_path.resolve())])
 else:

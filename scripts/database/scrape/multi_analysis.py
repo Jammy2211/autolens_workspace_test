@@ -70,6 +70,7 @@ def fit():
     if not path.exists(dataset_main_path):
         import subprocess
         import sys
+
         subprocess.run(
             [sys.executable, "scripts/jax_likelihood_functions/multi/simulator.py"],
             check=True,

@@ -132,7 +132,9 @@ Output a subplot of the simulated dataset, the image and a subplot of the `Trace
 as .png files.
 """
 aplt.plot_array(array=dataset.data, output=aplt.Output(path=dataset_path, format="png"))
-aplt.subplot_tracer(tracer=tracer, grid=grid, output=aplt.Output(path=dataset_path, format="png"))
+aplt.subplot_tracer(
+    tracer=tracer, grid=grid, output=aplt.Output(path=dataset_path, format="png")
+)
 
 """
 Pickle the `Tracer` in the dataset folder, ensuring the true `Tracer` is safely stored and available if we need to 

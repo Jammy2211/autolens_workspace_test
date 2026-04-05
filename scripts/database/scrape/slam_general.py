@@ -41,6 +41,7 @@ def fit():
     if not path.exists(dataset_path):
         import subprocess
         import sys
+
         subprocess.run(
             [sys.executable, "scripts/imaging/simulator/with_lens_light.py"],
             check=True,
