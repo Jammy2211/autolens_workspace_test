@@ -194,3 +194,75 @@ def assert_eager_jit_consistent(f_eager, f_jit, x, rtol=1e-10):
         f"Eager ({v_eager}) and jitted ({v_jit}) evaluations disagree — "
         "possible pure_callback constant-folding; do not trust jitted gradients."
     )
+
+
+def assert_mesh_callback_not_constant_folded(
+    f_eager, f_jit, x, x_perturbed, *, min_abs_diff, rtol=1e-6
+):
+    """
+    Test the ``pure_callback`` constant-folding hazard **directly**, for
+    likelihoods whose mesh connectivity comes from a host callback (qhull
+    Delaunay tables, KNN neighbour lists).
+
+    The hazard: under a single JIT trace the host callback's int32 tables can
+    be baked into the compiled program, so every subsequent evaluation of the
+    jitted function reuses the *trace point's* triangulation while the traced
+    vertex positions keep moving. The jitted value is then wrong away from the
+    trace point, and its gradients are worthless — but it is still finite,
+    still parameter-dependent and still smooth, so no self-consistency check
+    on the jitted function alone can see it.
+
+    Measured on ``imaging/jax_grad/delaunay.py`` (2026-09-07, jax 0.10.2) by
+    freezing the qhull callback's return value at the trace point:
+
+    - ``|f_jit(x) - f_jit(x_perturbed)|`` stayed large (1.4e2 .. 1.4e3) with
+      the tables frozen, i.e. asserting only that the two jitted values
+      *differ* does not detect the hazard — a frozen table does not flatten
+      the likelihood, it corrupts it.
+    - ``f_eager`` vs ``f_jit`` **at the perturbed point** separated by
+      8.3e-3 .. 2.7e-1 relative when frozen, against 2.2e-10 .. 3.5e-9 when
+      honest — six to eight orders of margin, and no tolerance to calibrate
+      against float64 reassociation noise.
+
+    So the check is: evaluate both functions at ``x_perturbed``, a point whose
+    triangulation genuinely differs from ``x``'s, and require they agree.
+    ``f_eager`` recomputes the tables on every call by construction, so it is
+    the reference.
+
+    ``min_abs_diff`` guards the test against being vacuous: the eager
+    likelihood must move by more than this floor between ``x`` and
+    ``x_perturbed``, otherwise the perturbation is too small to re-triangulate
+    the mesh and agreement at ``x_perturbed`` would prove nothing. Choose
+    ``x_perturbed`` by perturbing the parameters that *define* the mesh (for a
+    ray-traced source mesh, the mass model), by enough to re-wire the
+    triangulation — a few per cent on the Einstein radius rewires >90% of the
+    simplex table on the production Delaunay meshes.
+    """
+    # Call the jitted function at ``x`` FIRST. Whichever point it is first
+    # executed at is the point a constant-folded callback would freeze its
+    # tables at, so this pins that point to ``x`` — the base point the rest of
+    # the script works at. Without it the perturbed evaluation below would be
+    # the trace point, the tables would freeze there, and the comparison would
+    # agree by construction (observed 2026-09-07: the check passed under an
+    # injected fold until this call was added).
+    float(f_jit(jnp.asarray(x)))
+
+    v_eager = float(f_eager(jnp.asarray(x)))
+    v_eager_perturbed = float(f_eager(jnp.asarray(x_perturbed)))
+
+    shift = abs(v_eager_perturbed - v_eager)
+    assert shift > min_abs_diff, (
+        f"Vacuous constant-folding test: the perturbation moved the eager "
+        f"likelihood by only {shift} (floor {min_abs_diff}), so it likely "
+        "leaves the triangulation intact. Perturb the mesh-defining "
+        "parameters harder."
+    )
+
+    v_jit_perturbed = float(f_jit(jnp.asarray(x_perturbed)))
+    assert np.isclose(v_eager_perturbed, v_jit_perturbed, rtol=rtol), (
+        f"Eager ({v_eager_perturbed}) and jitted ({v_jit_perturbed}) "
+        "evaluations disagree at a point whose mesh differs from the JIT "
+        "trace point — the host mesh callback has been constant-folded into "
+        "the compiled program (its tables are frozen at the trace point). Do "
+        "not trust jitted values or gradients away from that point."
+    )

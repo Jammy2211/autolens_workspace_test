@@ -213,7 +213,51 @@ assert not np.all(np.array(grad) == 0.0), "Gradient is all zeros"
 
 f_jit = jax.jit(fitness.call)
 
-util.assert_eager_jit_consistent(fitness.call, f_jit, param_vector)
+"""
+__Jitted-evaluation honesty__
+
+``compare_gradients`` below runs its finite differences on ``f_jit`` for speed,
+so the jitted function must be shown to be honest first. Two checks, testing
+two different propositions:
+
+1. The qhull ``pure_callback`` has NOT been constant-folded into the compiled
+   program. This is the hazard that matters: if the int32 tables are baked in
+   at the trace point, the jitted likelihood keeps moving with the parameters
+   (the vertex positions are still traced) but is computed on the *wrong*
+   triangulation everywhere except the trace point, and its FD gradients are
+   worthless. Probed 2026-09-07 by freezing the host callback's return value:
+   the folded and honest jitted values still differ from each other by
+   1.4e2..1.4e3 between two parameter vectors, so "the jitted value changes"
+   proves nothing — but eager-vs-jitted at a *re-triangulated* point separates
+   by 8.3e-3..2.7e-1 relative when folded against 2.2e-10..3.5e-9 when honest.
+   Scaling the Einstein radius by 3% rewires >90% of the simplex table here.
+
+2. A loose eager-vs-jitted agreement at the base point, to catch a gross
+   divergence. ``rtol=1e-6`` is a deliberate per-call override of the shared
+   helper's ``rtol=1e-10`` default (which the other ten call sites keep). At
+   1e-10 this script failed deterministically in CI — eager
+   -11887.623538031896 vs jitted -11887.623574207466, relative 3.04e-9,
+   bit-identical across two independent runs on two env profiles. That is a
+   reproducible XLA fusion/reassociation difference on the in-graph dual-area
+   scatter-add, not constant-folding (which would corrupt the value by
+   ~1e-2, per check 1) and not run-to-run scatter. 1e-10 was measuring float64
+   summation-order reproducibility of this problem, not the hazard it names;
+   1e-6 sits three orders above that signal and four below check 1's, and is
+   still four orders tighter than the FD certification underneath.
+"""
+einstein_radius_index = param_names.index("galaxies.lens.mass.einstein_radius")
+param_vector_remeshed = param_vector.at[einstein_radius_index].multiply(1.03)
+
+util.assert_mesh_callback_not_constant_folded(
+    fitness.call,
+    f_jit,
+    param_vector,
+    param_vector_remeshed,
+    min_abs_diff=1.0,
+    rtol=1e-6,
+)
+
+util.assert_eager_jit_consistent(fitness.call, f_jit, param_vector, rtol=1e-6)
 
 comparison = util.compare_gradients(
     fitness.call,
