@@ -507,10 +507,10 @@ assert (
 ), "nufftax must satisfy the adjoint property between nufft2d1 and nufft2d2"
 
 # (d.2) Forward -> adjoint round trip on a known image
-# We use the lensed image from test (b). Push it through nufftax forward,
-# then through nufftax adjoint, and check the dirty image peaks within a
-# couple of pixels of the brightest pixel of the original.
-peak_image = np.unravel_index(np.argmax(np.abs(image_b_native)), image_b_native.shape)
+# We use the lensed image from test (b): push it through the nufftax forward
+# transform, then through the nufftax adjoint, and check the resulting dirty
+# image two ways — against the exact DFT adjoint of the same visibilities
+# (d.2a) and by how far the flux-weighted centroid moved (d.2b).
 vis_round = visibilities_via_nufftax(
     image_b_native, dataset.uv_wavelengths, real_space_mask.pixel_scales
 )
@@ -520,24 +520,95 @@ img_round = image_via_nufftax_adjoint(
     real_space_mask.pixel_scales,
     shape_native=real_space_mask.shape_native,
 )
-peak_round = np.unravel_index(np.argmax(np.abs(img_round)), img_round.shape)
-distance = float(
-    np.sqrt((peak_image[0] - peak_round[0]) ** 2 + (peak_image[1] - peak_round[1]) ** 2)
+
+# (d.2a) The adjoint must reproduce the exact DFT adjoint of the same
+# visibilities. `dft_b` (built in test (b)) carries the same uv coverage and
+# real-space mask, so `image_from` is the unapproximated reference for
+# `image_via_nufftax_adjoint`, exactly as `visibilities_from` was for the
+# forward direction. This is the assertion that actually tests nufftax, and
+# like (a)/(b)/(c) it is a relative-accuracy number, not a positional slop.
+img_round_dft = np.asarray(
+    dft_b.image_from(
+        visibilities=al.Visibilities(
+            np.stack([vis_round.real, vis_round.imag], axis=-1)
+        )
+    ).native.array
+)
+unmasked = ~np.asarray(real_space_mask)
+dirty_scale = float(np.max(np.abs(img_round_dft[unmasked])))
+adjoint_rel = float(
+    np.max(np.abs(img_round[unmasked] - img_round_dft[unmasked])) / dirty_scale
 )
 print(
-    f"(d.2) round trip: peak of original = {peak_image}, "
-    f"peak of dirty image = {peak_round}, "
-    f"pixel distance = {distance:.2f}"
+    f"(d.2a) round-trip dirty image, nufftax adjoint vs exact DFT adjoint: "
+    f"max |Δ| rel = {adjoint_rel:.4e}"
 )
-# Allow a few pixels of slack because the dirty image is smoothed by the
-# uv-coverage PSF; the peak can wander slightly relative to a sharply-
-# peaked source. Bumped from 5.0 to 6.0 in 2026-05-20 — TransformerNUFFT's
-# strict-adjoint scaling produces a slightly larger positional offset
-# (~5.0 px observed) than the Kaiser-Bessel adjoint used before it.
-# Acceptable for downstream parity checks.
+# Measured 2026-09-07: 9.4e-15 to 1.8e-14 across 0.05"-0.4" pixel scales
+# (64x64 through 512x512), i.e. machine precision and grid-size independent —
+# the same 1e-9 relative tolerance the forward tests use.
 assert (
-    distance < 6.0
-), f"Round-trip dirty-image peak too far from original peak: {distance:.2f} px"
+    adjoint_rel < 1e-9
+), f"nufftax adjoint should match the exact DFT adjoint to ~1e-9 relative: {adjoint_rel:.4e}"
+
+# (d.2b) The round trip must not translate the image. The right positional
+# statement is the shift of the flux-weighted centroid inside the real-space
+# mask, in arcseconds — NOT the pixel distance between the two argmax pixels,
+# which this check used until 2026-09-07.
+#
+# Why the argmax was wrong: this is a two-image lens, and the dirty beam
+# (190 SMA baselines) smooths the extended counter-image more favourably than
+# the compact arc. Original and dirty image therefore each have two nearly
+# equal maxima, and which one wins is a tie-break, not a property of the
+# transform. Measured 2026-09-07 on the shipped 128x128/0.2" data: the dirty
+# image at the original's peak is 96.1% of its own peak. Coarsening the grid
+# from 256x256/0.1" to 128x128/0.2" in `fb6e709` flipped the original's argmax
+# to the other lensed image, and the "distance" jumped 3.61 px (0.361") to
+# 15.81 px (3.162") — the image separation — with the transform unchanged
+# (d.2a is 1e-14 in both geometries, and the numbers are identical on the
+# pre-2026-08-31 library). Any pixel or angular pin on that distance is a pin
+# on a coin flip, so it is replaced rather than rescaled.
+peak_image = np.unravel_index(np.argmax(np.abs(image_b_native)), image_b_native.shape)
+peak_round = np.unravel_index(np.argmax(np.abs(img_round)), img_round.shape)
+
+
+def centroid_2d(array_2d, mask_2d):
+    """Flux-weighted (row, col) centroid of ``|array_2d|`` over the unmasked pixels."""
+    weights = np.abs(array_2d) * mask_2d
+    rows, cols = np.indices(weights.shape)
+    total = weights.sum()
+    return (weights * rows).sum() / total, (weights * cols).sum() / total
+
+
+centroid_image = centroid_2d(image_b_native, unmasked)
+centroid_round = centroid_2d(img_round, unmasked)
+centroid_shift_pixels = float(
+    np.sqrt(
+        (centroid_image[0] - centroid_round[0]) ** 2
+        + (centroid_image[1] - centroid_round[1]) ** 2
+    )
+)
+centroid_shift_arcsec = centroid_shift_pixels * real_space_mask.pixel_scales[0]
+print(
+    f"(d.2b) round trip: peak of original = {peak_image}, "
+    f"peak of dirty image = {peak_round}  (argmax, not asserted — see comment); "
+    f"centroid shift = {centroid_shift_pixels:.3f} px "
+    f'= {centroid_shift_arcsec:.4f}"'
+)
+# Unlike the argmax distance, the centroid shift is a geometry-independent
+# angular quantity: measured 2026-09-07 as 0.0359", 0.0362", 0.0364", 0.0366",
+# 0.0450" and 0.0506" at pixel scales 0.05", 0.15", 0.1", 0.2", 0.3" and 0.4"
+# (an 8x range), i.e. always a small fraction of a beam and stable to 0.005".
+# The 0.06" pin is the worst of those (0.0506", the coarsest grid tested) with
+# the same ~1.2x margin the old 5.0 -> 6.0 pixel bump used; on the shipped 0.2"
+# geometry the margin is 1.6x. Verified non-vacuous 2026-09-07: it fires on a
+# one-pixel translation of the adjoint output, and (d.2a) additionally fires on
+# a dropped half-pixel shift and on a 5% gain error — three hazards the retired
+# `distance < 6.0` assert passed unchanged.
+assert centroid_shift_arcsec < 0.06, (
+    f"Round-trip dirty image is displaced from the original: "
+    f'centroid moved {centroid_shift_arcsec:.4f}" '
+    f"({centroid_shift_pixels:.3f} px)"
+)
 
 
 print()
