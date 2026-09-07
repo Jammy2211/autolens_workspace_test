@@ -117,6 +117,33 @@ example we fit a model where:
  - The galaxy's point source emission is a parametric operated `Gaussian` centred on the bulge [4 parameters].
 
 The number of free parameters and therefore the dimensionality of non-linear parameter space is N=11.
+
+__Model Anchoring__
+
+Every prior below whose median matters is anchored on the corresponding truth in
+`scripts/imaging/simulator/simple.py`, and none of them is fixed — the free-parameter count, and
+therefore the vmap/jit shape this script tests, is unchanged.
+
+The reason is the positive-only solver. This script evaluates the likelihood at the model's prior
+medians, and the inversion there solves 140 non-negative linear components (60 lens Gaussians, 30
+source Gaussians, 5 x 10 extra-galaxy Gaussians) against 556 masked image pixels. When the median
+model is far from the data, the lens-plane bases absorb the arcs and the solver returns the entire
+source block as exactly zero — at which point the likelihood carries no source-plane mass
+information at all and the mass-sensitivity assertion below cannot fire, however large the
+perturbation (audit 2026-08-06, autolens_workspace_test#253; recurrence after the dataset moved to
+100x100 @ 0.3", autolens_workspace_test#299).
+
+Anchored here, with the measured effect of each:
+
+ - the main mass at einstein_radius=1.6 (#253),
+ - the lens MGE `ell_comps` on the simulator's bulge and disk, and the source MGE `ell_comps` and
+   centre on the simulator's source, so the median model actually fits: chi-squared 562 on 556
+   pixels, against 5650 before,
+ - the extra-galaxy masses near their truth of zero (`simple.py` simulates no group members).
+
+With all four anchored the median fit retains the source basis and a +5% mass perturbation moves the
+likelihood by ~29, monotonically across satellite einstein_radius ceilings 0.01"-0.15" (19-115).
+Un-anchor any one of them and the source block collapses back to zero.
 """
 # Lens:
 
@@ -139,6 +166,22 @@ for j in range(gaussian_per_basis):
 
     gaussian_list = af.Collection(
         af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
+
+    # The two Gaussian groups stand in for the simulator's lens bulge (axis_ratio=0.9,
+    # angle=45.0) and disk (axis_ratio=0.7, angle=30.0). Their `ell_comps` priors are anchored
+    # on those truths rather than left at the config default (whose median is circular): at the
+    # circular median the lens MGE cannot reproduce the data and the fit is dominated by that
+    # mismatch, which is what starves the source basis (see __Model Anchoring__ above).
+
+    axis_ratio, angle = [(0.9, 45.0), (0.7, 30.0)][j]
+    ell_comps_truth = al.convert.ell_comps_from(axis_ratio=axis_ratio, angle=angle)
+
+    gaussian_list[0].ell_comps.ell_comps_0 = af.UniformPrior(
+        lower_limit=ell_comps_truth[0] - 0.05, upper_limit=ell_comps_truth[0] + 0.05
+    )
+    gaussian_list[0].ell_comps.ell_comps_1 = af.UniformPrior(
+        lower_limit=ell_comps_truth[1] - 0.05, upper_limit=ell_comps_truth[1] + 0.05
     )
 
     # Iterate over every Gaussian and customize its parameters.
@@ -183,9 +226,11 @@ total_gaussians = 30
 gaussian_per_basis = 1
 
 # By defining the centre here, it creates two free parameters that are assigned to the source Gaussians.
+# The centre is anchored on the simulator's source centre, (0.1, 0.1), not on (0.0, 0.0): the source
+# basis has to sit where the arcs actually land in the source plane for the solver to retain it.
 
-centre_0 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
-centre_1 = af.UniformPrior(lower_limit=-0.1, upper_limit=0.1)
+centre_0 = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
+centre_1 = af.UniformPrior(lower_limit=0.0, upper_limit=0.2)
 
 log10_sigma_list = np.linspace(-2, np.log10(1.0), total_gaussians)
 
@@ -194,6 +239,18 @@ bulge_gaussian_list = []
 for j in range(gaussian_per_basis):
     gaussian_list = af.Collection(
         af.Model(al.lp_linear.Gaussian) for _ in range(total_gaussians)
+    )
+
+    # Anchored on the simulator's source (axis_ratio=0.8, angle=60.0), for the same reason as the
+    # lens basis above.
+
+    ell_comps_truth = al.convert.ell_comps_from(axis_ratio=0.8, angle=60.0)
+
+    gaussian_list[0].ell_comps.ell_comps_0 = af.UniformPrior(
+        lower_limit=ell_comps_truth[0] - 0.05, upper_limit=ell_comps_truth[0] + 0.05
+    )
+    gaussian_list[0].ell_comps.ell_comps_1 = af.UniformPrior(
+        lower_limit=ell_comps_truth[1] - 0.05, upper_limit=ell_comps_truth[1] + 0.05
     )
 
     for i, gaussian in enumerate(gaussian_list):
@@ -243,8 +300,14 @@ for extra_galaxy_centre in centre_list:
 
     mass = af.Model(al.mp.IsothermalSph)
 
+    # `simulator/simple.py` contains no group members, so the truth for every extra-galaxy mass is
+    # zero. The prior is anchored near that truth for the same reason the main mass is anchored at
+    # its own truth above: at the old median (einstein_radius=0.25 each) the five satellites add
+    # ~1.25" of deflection, all of it on one side, which displaces the traced source plane centroid
+    # to (0.0, +0.57)" and makes the positive-only solver zero the whole source basis.
+
     mass.centre = extra_galaxy_centre
-    mass.einstein_radius = af.UniformPrior(lower_limit=0.0, upper_limit=0.5)
+    mass.einstein_radius = af.UniformPrior(lower_limit=0.0, upper_limit=0.02)
 
     extra_galaxy = af.Model(
         al.Galaxy, redshift=0.5, bulge=extra_galaxy_bulge, mass=mass
@@ -322,7 +385,7 @@ print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
 np.testing.assert_allclose(
     np.array(result),
-    -1358.450245,
+    1185.535713,
     rtol=1e-4,
     err_msg="mge_group: JAX vmap likelihood mismatch",
 )
@@ -334,8 +397,13 @@ __Mass Sensitivity__
 The literal above is evaluated at the model's prior medians, where a +5% change of
 every lens mass parameter moves this likelihood by less than the literal's rtol
 (audit 2026-08-06, autolens_workspace_test#253) — the literal alone would pass a
-source-plane mass regression. This block pins mass sensitivity directly; the floor
-is the audit-measured response divided by five (margin for platform drift).
+source-plane mass regression. This block pins mass sensitivity directly.
+
+The floor is 9.0, set by the 2026-08-06 audit as its measured response divided by five. On the
+model anchored above (see __Model Anchoring__) the measured response is 29.2 (median 1185.5357,
+perturbed 1156.3320), so the floor still clears by a factor of three. Do not raise the floor to
+the current response: it is the guard against the source basis being zeroed, not a pin on the
+response itself, and it must keep firing on any model whose source is retained at all.
 """
 mass_indices = [
     i
@@ -359,7 +427,9 @@ assert abs(ll_perturbed - ll_median) > 9.0, (
     f"imaging/mge_group: likelihood insensitive to a +5% lens-mass perturbation "
     f"(median={ll_median}, perturbed={ll_perturbed}) — source-plane mass pipeline regression?"
 )
-print("PASS: mass-sensitivity floor exceeded.")
+print(
+    f"PASS: mass-sensitivity floor exceeded (|delta| = {abs(ll_perturbed - ll_median):.4f} > 9.0)."
+)
 
 
 """
