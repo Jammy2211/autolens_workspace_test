@@ -264,15 +264,34 @@ comparison = util.compare_gradients(
     param_vector,
     param_names=param_names,
     f_fd=f_jit,
-    rel_steps=(1e-8, 1e-7, 1e-6),
+    rel_steps=(1e-6, 2e-6, 3e-6, 1e-5, 3e-5),
 )
 
-# Documented tolerance: central FD steps can straddle triangle-flip
-# (re-wiring) events, contaminating individual FD samples on mass/shear
-# (measured probe scatter up to ~2e-3 while lens light matches at 1e-8..1e-10;
-# see module docstring). Autodiff differentiates the branch the evaluation
-# point is on — a *wrong* autodiff would miss at every parameter, not sit at
-# the flip-crossing noise floor.
+# Documented tolerance and step window (measured 2026-09-07 on the rebuilt
+# 100x100 / 0.3" dataset, jax 0.10.2, source install at the CI SHAs):
+#
+# The likelihood carries a summation-order noise floor of ~1.0e-5 rms /
+# 4.4e-5 peak-to-peak as a function of the seven mesh-moving mass+shear
+# parameters (present eagerly too, so not an XLA artefact; the curvature
+# matrix is well conditioned, cond ~77). Lens-light parameters do not move
+# the source-plane vertices and match at 1e-10..1e-8 at any step. The old
+# sweep (1e-8, 1e-7, 1e-6) decided `mass.ell_comps_0` (x=0.113, |ad|=2.85e3)
+# inside that floor — ±6.8% of the gradient at rel_step 1e-6, wrong sign at
+# 1e-8 — and failed in CI (fd=-2944 vs ad=-2850) while passing locally: the
+# CI value is a fixed per-environment draw from the band.
+#
+# The clean window differs per parameter, so the sweep spans both ends and
+# `compare_gradients` keeps the step closest to autodiff per parameter:
+# - `mass.ell_comps_0`: central FD brackets AD for h in [1e-7, 3.4e-6]
+#   (rel_step 1e-6..3e-5); at 3e-5 fd=-2852.86 vs ad=-2849.63 (0.11%),
+#   noise band ±0.23%. First triangle re-wiring at h=+1.13e-5 (rel ~1e-4:
+#   101/617 simplices, LL jumps 3.24), ~3x above the largest step.
+# - `mass.einstein_radius` (x=1.6, |ad|=8.3e2): clean for h <= 4.8e-6
+#   (rel_step <= 3e-6, noise band ±0.55% at 3e-6), re-wires at h=-8e-6
+#   (rel 5e-6, LL jumps 3.21) — so 1e-5 and 3e-5 are flip-contaminated for
+#   it and 2e-6/3e-6 carry the verdict.
+# Autodiff differentiates the branch the evaluation point is on — a *wrong*
+# autodiff misses at every clean step, not only at the noisy ones.
 util.assert_gradients_match(comparison, rtol=1e-2)
 
 # Mass/shear must be genuinely live — a flat likelihood would pass the FD
