@@ -381,7 +381,7 @@ pixel_values = jnp.linspace(0.0, 1.0, mesh_points_np.shape[0])
 
 
 def interpolated_sum(mesh_points):
-    _, _, mappings, split_points, split_mappings = jax_delaunay(
+    _, _, mappings, split_points, split_mappings, _ = jax_delaunay(
         mesh_points, query_points
     )
     weights = pixel_weights_delaunay_from(query_points, mesh_points, mappings, xp=jnp)
