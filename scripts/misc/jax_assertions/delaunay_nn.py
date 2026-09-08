@@ -11,6 +11,12 @@ synthetic production-sized arrays so they can be timed on an accelerator:
 * exact linear precision and its analytic query-coordinate gradient;
 * continuity of values and gradients through a Delaunay diagonal flip;
 * a jitted ``vmap`` through independent qhull callbacks;
+* single-pass parity: the one concatenated data-grid + split-point Sibson pass
+  inside ``jax_delaunay_nn`` reproduces two separate ``jax_sibson`` passes
+  exactly, for both halves;
+* query-chunk invariance: the ``jax.lax.map`` block size is a pure memory
+  guard, so 64, 256 and 1024 give bit-identical tables, and the import-time
+  ``PYAUTO_SIBSON_QUERY_CHUNK`` override reaches ``DelaunayNN.query_chunk``;
 * warm runtime against the current barycentric Delaunay interpolation.
 
 Override ``SIBSON_POINTS``, ``SIBSON_QUERIES`` and ``SIBSON_REPEATS`` for a
@@ -22,12 +28,17 @@ Test-harness configuration (PyAutoHands docs/env_profile_redesign.md §10).
 Every check below gates a JAX code path — JIT execution, the analytic
 query-coordinate gradient and a jitted ``vmap`` through the qhull callbacks —
 so JAX must stay enabled. The timing gate runs on synthetic production-sized
-arrays, so the SMALL_DATASETS cap must stay off or it measures nothing.
+arrays, so the SMALL_DATASETS cap must stay off or it measures nothing. The
+env-override check spawns one short subprocess with
+``PYAUTO_SIBSON_QUERY_CHUNK`` set; that variable must be unset in the parent,
+because the library reads it once at import.
 
 ENV: jax full_datasets
 """
 
 import os
+import subprocess
+import sys
 import time
 
 import autoarray as aa
@@ -42,6 +53,7 @@ from autoarray.inversion.mesh.interpolator.delaunay import (
     pixel_weights_delaunay_from,
 )
 from autoarray.inversion.mesh.interpolator.sibson import (
+    SIBSON_QUERY_CHUNK,
     InterpolatorDelaunayNN,
     jax_delaunay_nn,
     jax_sibson,
@@ -313,6 +325,139 @@ assert not np.asarray(delaunay_nn_full_output[11]).any()
 assert not np.asarray(delaunay_nn_full_output[13]).any()
 assert not np.asarray(delaunay_nn_full_output[14]).any()
 
+
+def arrays_identical(left, right):
+    """Return whether two arrays match element-for-element, NaN included.
+
+    Overflow and Watson degeneracy deliberately produce NaN weights, so a
+    parity check that used ``==`` would pass on any pair of NaN tables and
+    fail on a legitimately NaN one. Floating point is compared with
+    ``equal_nan``; integer and boolean tables are compared exactly.
+    """
+    left = np.asarray(left)
+    right = np.asarray(right)
+    if left.shape != right.shape or left.dtype != right.dtype:
+        return False
+    if np.issubdtype(left.dtype, np.inexact):
+        return np.array_equal(left, right, equal_nan=True)
+    return np.array_equal(left, right)
+
+
+# Single-pass parity (issue #532). `jax_delaunay_nn` locates and interpolates
+# the data grid and its own 4N split-cross points in ONE concatenated Sibson
+# pass and slices the six outputs at `n_query`; that halves the kernel-launch
+# count of a latency-bound program but must not move a single per-query row.
+# Both halves are therefore compared with `jax_sibson` run separately on
+# exactly the same coordinates -- the split points are taken from
+# `jax_delaunay_nn`'s own return (index 5) so both sides see identical inputs
+# -- with the same caps and the same chunk.
+#
+# The two functions return different tuple layouts, mapped explicitly here:
+#   jax_sibson      -> (points, simplices, mappings, sizes, weights,
+#                       cavity_sizes, overflow, degenerate)
+#   jax_delaunay_nn -> (points, simplices, mappings, sizes, weights,
+#                       split_points, split_mappings, split_sizes,
+#                       split_weights, cavity_sizes, overflow, degenerate,
+#                       split_cavity_sizes, split_overflow, split_degenerate)
+# `sibson_tables` already returns `jax_sibson(...)[2:]`, i.e. the six outputs
+# in the order below, and `sibson_output` is that call on `query_points`.
+SIBSON_OUTPUT_NAMES = (
+    "mappings",
+    "sizes",
+    "weights",
+    "cavity_sizes",
+    "overflow",
+    "degenerate",
+)
+DATA_HALF_INDEXES = (2, 3, 4, 9, 10, 11)
+SPLIT_HALF_INDEXES = (6, 7, 8, 12, 13, 14)
+
+split_points_single_pass = delaunay_nn_full_output[5]
+single_pass_parity_start = time.perf_counter()
+split_output_separate_pass = jax.jit(sibson_tables)(points, split_points_single_pass)
+jax.block_until_ready(split_output_separate_pass)
+
+for name, index, separate in zip(SIBSON_OUTPUT_NAMES, DATA_HALF_INDEXES, sibson_output):
+    assert arrays_identical(delaunay_nn_full_output[index], separate), (
+        f"single-pass parity failed on the data half for {name}: the "
+        "concatenated jax_delaunay_nn pass and a separate jax_sibson pass "
+        "disagree"
+    )
+for name, index, separate in zip(
+    SIBSON_OUTPUT_NAMES, SPLIT_HALF_INDEXES, split_output_separate_pass
+):
+    assert arrays_identical(delaunay_nn_full_output[index], separate), (
+        f"single-pass parity failed on the split half for {name}: the "
+        "concatenated jax_delaunay_nn pass and a separate jax_sibson pass "
+        "disagree"
+    )
+single_pass_parity_s = time.perf_counter() - single_pass_parity_start
+
+# Chunk invariance. `query_chunk` sets the `jax.lax.map` block size and is a
+# memory guard on the per-cavity intermediates only, so every value must give
+# bit-identical tables. `sibson_output` is already the QUERY_CHUNK leg, so
+# only the other chunks are recomputed.
+CHUNK_INVARIANCE_CHUNKS = (64, 256, 1024)
+chunk_invariance_start = time.perf_counter()
+chunk_invariance_outputs = {QUERY_CHUNK: sibson_output}
+for chunk in CHUNK_INVARIANCE_CHUNKS:
+    if chunk in chunk_invariance_outputs:
+        continue
+    chunk_output = jax.jit(
+        lambda mesh_points, queries, chunk=chunk: jax_sibson(
+            mesh_points,
+            queries,
+            max_cavity_triangles=MAX_CAVITY_TRIANGLES,
+            max_neighbors=MAX_NEIGHBORS,
+            query_chunk=chunk,
+        )[2:]
+    )(points, query_points)
+    jax.block_until_ready(chunk_output)
+    chunk_invariance_outputs[chunk] = chunk_output
+
+for chunk in CHUNK_INVARIANCE_CHUNKS:
+    for name, reference, candidate in zip(
+        SIBSON_OUTPUT_NAMES, sibson_output, chunk_invariance_outputs[chunk]
+    ):
+        assert arrays_identical(reference, candidate), (
+            f"query_chunk={chunk} changed {name}: the chunk is a memory guard "
+            "and must not alter a single output"
+        )
+chunk_invariance_s = time.perf_counter() - chunk_invariance_start
+
+# The chunk is also settable without a source edit, for the accelerator sweep.
+# `PYAUTO_SIBSON_QUERY_CHUNK` is read once at import, so the override can only
+# be proven in a fresh interpreter -- and only if this process did not itself
+# inherit the variable.
+assert os.environ.get("PYAUTO_SIBSON_QUERY_CHUNK") is None, (
+    "unset PYAUTO_SIBSON_QUERY_CHUNK before running this gate: it is read at "
+    "import time, so a value inherited here would silence the override check"
+)
+assert aa.mesh.DelaunayNN.query_chunk == SIBSON_QUERY_CHUNK
+
+chunk_override_start = time.perf_counter()
+override_environment = dict(os.environ, PYAUTO_SIBSON_QUERY_CHUNK="64")
+override_process = subprocess.run(
+    [
+        sys.executable,
+        "-c",
+        "import autoarray as aa;"
+        "from autoarray.inversion.mesh.interpolator.sibson import"
+        " SIBSON_QUERY_CHUNK;"
+        "print(aa.mesh.DelaunayNN.query_chunk, SIBSON_QUERY_CHUNK)",
+    ],
+    capture_output=True,
+    text=True,
+    env=override_environment,
+    check=True,
+)
+override_chunks = override_process.stdout.strip().splitlines()[-1].split()
+assert override_chunks == ["64", "64"], (
+    "PYAUTO_SIBSON_QUERY_CHUNK=64 did not reach DelaunayNN.query_chunk; the "
+    f"subprocess printed {override_process.stdout!r}"
+)
+chunk_override_s = time.perf_counter() - chunk_override_start
+
 # Natural-neighbour coordinates reproduce every affine field exactly.  This
 # simultaneously checks the weights and their JAX derivative with respect to
 # the moving query coordinates.
@@ -387,6 +532,22 @@ print(
 print(
     "delaunay_nn/delaunay full mapper ratio: "
     f"{delaunay_nn_full_warm_s / delaunay_full_warm_s:.3f}x"
+)
+print(
+    "single-pass parity: "
+    f"data half {len(SIBSON_OUTPUT_NAMES)}/{len(SIBSON_OUTPUT_NAMES)} identical "
+    f"({QUERY_COUNT} queries), "
+    f"split half {len(SIBSON_OUTPUT_NAMES)}/{len(SIBSON_OUTPUT_NAMES)} identical "
+    f"({split_points_single_pass.shape[0]} split points) "
+    f"in {single_pass_parity_s:.3f}s"
+)
+print(
+    "chunk invariance: "
+    f"chunks {CHUNK_INVARIANCE_CHUNKS} identical on "
+    f"{len(SIBSON_OUTPUT_NAMES)}/{len(SIBSON_OUTPUT_NAMES)} outputs "
+    f"in {chunk_invariance_s:.3f}s; "
+    f"PYAUTO_SIBSON_QUERY_CHUNK=64 -> DelaunayNN.query_chunk=64 "
+    f"(default {SIBSON_QUERY_CHUNK}) in {chunk_override_s:.3f}s"
 )
 print(
     "sibson diagnostics: "
