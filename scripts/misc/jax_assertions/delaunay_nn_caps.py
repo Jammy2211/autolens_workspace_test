@@ -9,7 +9,11 @@ candidate cap of 16 against:
 * a broad deterministic sample of mass ellipticity, orientation, Einstein
   radius, centre and shear;
 * both data-grid interpolation and the 4*N split points used by split
-  regularization.
+  regularization;
+* the split-regularization wide-row budget: the per-geometry count of split
+  rows wider than ``SPLIT_REG_COMPACT_WIDTH``, which the compacted
+  ``ConstantSplit`` assembly supplements at full width and NaNs out beyond
+  ``SPLIT_REG_WIDE_ROW_BUDGET`` rows.
 
 The image-plane mesh is a 1,200-vertex Hilbert mesh built from an arc-like
 adapt image. Every mass model ray-traces the same image-plane data and mesh
@@ -43,6 +47,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from autoarray.inversion.mesh.interpolator.sibson import jax_delaunay_nn
+from autoarray.inversion.regularization.regularization_util import (
+    SPLIT_REG_COMPACT_WIDTH,
+    SPLIT_REG_WIDE_ROW_BUDGET,
+)
 
 jax.config.update("jax_enable_x64", True)
 
@@ -165,6 +173,7 @@ main_sizes = []
 main_cavity_sizes = []
 split_sizes = []
 split_cavity_sizes = []
+split_wide_row_counts = []
 worst = None
 
 parameters_list = mass_parameter_sets()
@@ -191,6 +200,11 @@ for sample_index, parameters in enumerate(parameters_list):
     main_cavity_sizes.append(sample_main_cavity_sizes)
     split_sizes.append(sample_split_sizes)
     split_cavity_sizes.append(sample_split_cavity_sizes)
+    # `reg_split_from` inserts the row's own pixel when the stencil does not already
+    # contain it, so `size + 1` bounds the width the compacted assembly sees.
+    split_wide_row_counts.append(
+        int((sample_split_sizes + 1 > SPLIT_REG_COMPACT_WIDTH).sum())
+    )
 
     sample_maximum = max(
         sample_main_sizes.max(),
@@ -275,6 +289,14 @@ print(
 print(
     "split-neighbor percentiles (99, 99.9, 99.99): "
     f"{np.percentile(split_sizes, [99.0, 99.9, 99.99])}"
+)
+print(
+    "split rows above the regularization compact width "
+    f"{SPLIT_REG_COMPACT_WIDTH} (post-split bound, per geometry): "
+    f"max={max(split_wide_row_counts)} "
+    f"mean={np.mean(split_wide_row_counts):.1f} "
+    f"of {split_sizes.size // len(split_wide_row_counts)} split rows each; "
+    f"wide-row budget {SPLIT_REG_WIDE_ROW_BUDGET}"
 )
 print(
     "rows exceeding cap 16: "
