@@ -121,3 +121,24 @@ overrides:
   - pattern: "jax_grad/"
     set:
       BUILD_SCRIPT_TIMEOUT: "900"
+
+  # Smoke-sized run of the DelaunayNN fixed-shape cap audit (PyAutoBrain
+  # /ci_speedup, 2026-09-08). The script samples 25 local perturbations + N
+  # random mass models + one FIXED stress geometry, and its own docstring says
+  # the reduction is safe: "Override DELAUNAY_NN_CAP_RANDOM_SAMPLES for a
+  # shorter exploratory run. The fixed stress geometry is always included, so
+  # the cap-16 regression remains covered even in a reduced run."
+  #
+  # Measured locally under this profile (libs from source, 4 cores):
+  #   75 samples (default)  40.9s cold jax cache / 29.2s warm   (CI: 41.5s, cache miss)
+  #   10 samples            ~24s cold (est.)      / 12.7s warm
+  #    0 samples                                  / 10.5s warm
+  # Every assertion held at 10 and at 0 (cap-16 overflow rows 94, cap-24 rows 4
+  # — the same worst geometry, the fixed stress case, wins either way). The
+  # remaining ~12s is six distinct XLA compiles (caps 64/16/24/32 × query
+  # shapes) paid in full on a cache miss; only the JAX compile cache removes
+  # that. The release profile is untouched: the full 75-sample audit still
+  # runs there.
+  - pattern: "misc/jax_assertions/delaunay_nn_caps.py"
+    set:
+      DELAUNAY_NN_CAP_RANDOM_SAMPLES: "10"
