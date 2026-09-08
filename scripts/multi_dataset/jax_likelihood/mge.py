@@ -76,7 +76,7 @@ dataset_list = [
 # rebuilt from its return value — assigning to the loop variable discarded it and left the default
 # over-sampling in force.
 dataset_list = [
-    dataset.apply_over_sampling(over_sample_size_lp=1) for dataset in dataset_list
+    dataset.apply_over_sampling(over_sample_size_lp=2) for dataset in dataset_list
 ]
 
 # Model: shared across both bands

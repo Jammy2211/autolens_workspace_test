@@ -81,7 +81,7 @@ mask = al.Mask2D.circular(
 
 dataset = dataset.apply_mask(mask=mask)
 
-dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
+dataset = dataset.apply_over_sampling(over_sample_size_lp=2)
 
 positions = al.Grid2DIrregular(
     al.from_json(file_path=path.join(dataset_path, "positions.json"))
