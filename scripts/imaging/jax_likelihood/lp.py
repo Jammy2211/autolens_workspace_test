@@ -261,9 +261,13 @@ print(result)
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
+# re-pinned 2026-09-08: lp radial bins sub-size 1 retired (autolens_profiling#235,
+# #311). Shift is 1.33 %, above the 1 % gate, so the over-sample ladder was run:
+# 1: 617.994, 2: 626.224, 4: 627.818, 8: 628.039 — monotonic, converging, and
+# NumPy/JAX parity is exact at every rung. Plain over-sampling convergence.
 np.testing.assert_allclose(
     np.array(result),
-    6.17993925e02,
+    626.2235846074373,
     rtol=1e-4,
     err_msg="lp: JAX vmap likelihood mismatch",
 )

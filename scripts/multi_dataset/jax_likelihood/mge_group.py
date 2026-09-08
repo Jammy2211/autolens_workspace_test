@@ -237,7 +237,8 @@ print(result)
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
-EXPECTED_VMAP_LOG_LIKELIHOOD = -172602.23034148
+# re-pinned 2026-09-08: lp radial bins sub-size 1 retired (autolens_profiling#235, #311)
+EXPECTED_VMAP_LOG_LIKELIHOOD = -172536.0665715087
 
 np.testing.assert_allclose(
     np.array(result),

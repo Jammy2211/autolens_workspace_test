@@ -224,9 +224,10 @@ print(result)
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
+# re-pinned 2026-09-08: lp radial bins sub-size 1 retired (autolens_profiling#235, #311)
 np.testing.assert_allclose(
     np.array(result),
-    620.28888413,
+    625.3093499882572,
     rtol=1e-4,
     err_msg="smbh: JAX vmap likelihood mismatch",
 )
