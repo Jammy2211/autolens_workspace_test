@@ -244,7 +244,7 @@ __Visualize Before Fit__
 
 Uses the parametric source (fastest) for all before-fit outputs.
 
-Calls PlotterInterferometer.interferometer() -> dataset.png, dataset.fits
+Calls PlotterInterferometer.interferometer() -> dataset.png
       Plotter.image_with_positions()         -> image_with_positions.png
       Plotter.adapt_images()                 -> adapt_images.png, adapt_images.fits
 """
@@ -263,21 +263,17 @@ print("visualize_before_fit complete.")
 __Assertions: visualize_before_fit__
 """
 
-# ---- dataset.png / dataset.fits ----
-# Source: PlotterInterferometer.interferometer() -> hdu_list_for_output_from with ext_name_list:
-#   ["mask", "data", "noise_map", "uv_wavelengths"]
-# HDU 0 is PrimaryHDU (mask), HDUs 1-3 are ImageHDU.
-
 assert (image_path / "dataset.png").exists(), "dataset.png missing"
 print("dataset.png OK")
 
-with astropy_fits.open(image_path / "dataset.fits") as hdul:
-    assert len(hdul) == 4, f"dataset.fits: expected 4 HDUs, got {len(hdul)}"
-    assert hdul[0].name == "MASK"
-    assert hdul[1].name == "DATA"
-    assert hdul[2].name == "NOISE_MAP"
-    assert hdul[3].name == "UV_WAVELENGTHS"
-print("dataset.fits OK")
+# ---- dataset.fits (must NOT be written by the plotter) ----
+# Since PyAutoGalaxy#608 `dataset.fits` is written once per search by
+# `Analysis.save_attributes` (to the search's `image/` folder) and the plotter
+# no longer writes it; the HDU layout is covered by the library
+# `save_attributes` tests. Assert the plotter left no copy behind, so a
+# reintroduced plotter write (a duplicate) fails here.
+assert not (image_path / "dataset.fits").exists(), "plotter must not write dataset.fits"
+print("dataset.fits not written by plotter OK")
 
 # ---- image_with_positions.png ----
 # Source: Plotter.image_with_positions() -> uses dataset.dirty_image as base
