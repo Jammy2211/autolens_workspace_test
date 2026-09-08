@@ -14,6 +14,10 @@ synthetic production-sized arrays so they can be timed on an accelerator:
 * single-pass parity: the one concatenated data-grid + split-point Sibson pass
   inside ``jax_delaunay_nn`` reproduces two separate ``jax_sibson`` passes
   exactly, for both halves;
+* split-regularization compaction parity: the compacted JAX assembly of the
+  ``ConstantSplit`` matrix (a narrow main scatter plus a wide-row supplement)
+  reproduces the NumPy matrix, including on a table with a forced row wider
+  than the compact width, and NaNs out when the wide-row budget overflows;
 * query-chunk invariance: the ``jax.lax.map`` block size is a pure memory
   guard, so 64, 256 and 1024 give bit-identical tables, and the import-time
   ``PYAUTO_SIBSON_QUERY_CHUNK`` override reaches ``DelaunayNN.query_chunk``;
@@ -57,6 +61,10 @@ from autoarray.inversion.mesh.interpolator.sibson import (
     InterpolatorDelaunayNN,
     jax_delaunay_nn,
     jax_sibson,
+)
+from autoarray.inversion.regularization import regularization_util
+from autoarray.inversion.regularization.regularization_util import (
+    SPLIT_REG_COMPACT_WIDTH,
 )
 
 jax.config.update("jax_enable_x64", True)
@@ -393,6 +401,135 @@ for name, index, separate in zip(
     )
 single_pass_parity_s = time.perf_counter() - single_pass_parity_start
 
+
+# Split-regularization compaction parity (PyAutoArray issue #536). The JAX
+# assembly of the `ConstantSplit` matrix no longer scatters the full padded
+# `(4P, K, K)` outer product: it scatters the first
+# `SPLIT_REG_COMPACT_WIDTH` columns of every row and supplements the
+# `SPLIT_REG_WIDE_ROW_BUDGET` widest rows with the blocks the compact pass did
+# not cover. The result must stay exact, so it is checked against the NumPy
+# builder both through the public `ConstantSplit` object and on the
+# production-size split tables with a row forced wider than the compact width
+# (the supplement path, which the production geometry itself never reaches).
+compaction_parity_start = time.perf_counter()
+
+constant_split = aa.reg.ConstantSplit(coefficient=1.0)
+
+public_split_matrix_np = constant_split.regularization_matrix_from(
+    linear_obj=delaunay_nn_mapper, xp=np
+)
+public_split_matrix_jax = np.asarray(
+    constant_split.regularization_matrix_from(linear_obj=delaunay_nn_mapper, xp=jnp)
+)
+np.testing.assert_allclose(
+    public_split_matrix_jax, public_split_matrix_np, rtol=1.0e-10, atol=1.0e-14
+)
+
+
+def split_regularization_matrix_from(mappings, sizes, weights, xp, **kwargs):
+    """The `ConstantSplit.regularization_matrix_from` chain, on explicit tables."""
+    (
+        splitted_mappings,
+        splitted_sizes,
+        splitted_weights,
+    ) = regularization_util.reg_split_from(
+        splitted_mappings=mappings,
+        splitted_sizes=sizes,
+        splitted_weights=weights,
+        xp=xp,
+    )
+    pixels = len(splitted_mappings) // 4
+    return regularization_util.pixel_splitted_regularization_matrix_from(
+        regularization_weights=xp.full(fill_value=1.0, shape=(pixels,)),
+        splitted_mappings=splitted_mappings,
+        splitted_sizes=splitted_sizes,
+        splitted_weights=splitted_weights,
+        xp=xp,
+        **kwargs,
+    )
+
+
+split_mappings_np = np.asarray(delaunay_nn_full_output[6]).astype(np.int32).copy()
+split_sizes_np = np.asarray(delaunay_nn_full_output[7]).astype(np.int32).copy()
+split_weights_np = np.asarray(delaunay_nn_full_output[8]).astype(np.float64).copy()
+
+SPLIT_TABLE_WIDTH = split_mappings_np.shape[1]
+FORCED_WIDE_SIZE = SPLIT_REG_COMPACT_WIDTH + 8
+
+assert SPLIT_TABLE_WIDTH > FORCED_WIDE_SIZE
+assert int(split_sizes_np.max()) <= SPLIT_REG_COMPACT_WIDTH, (
+    "the production split geometry is already wider than the compact width; the "
+    "forced-wide-row check below no longer isolates the supplement path"
+)
+
+forced_row = int(np.argmax(split_sizes_np))
+forced_pixels = np.arange(FORCED_WIDE_SIZE) % POINT_COUNT
+forced_weights = np.linspace(0.05, 1.0, FORCED_WIDE_SIZE)
+split_mappings_np[forced_row] = -1
+split_weights_np[forced_row] = 0.0
+split_mappings_np[forced_row, :FORCED_WIDE_SIZE] = forced_pixels
+split_weights_np[forced_row, :FORCED_WIDE_SIZE] = forced_weights / forced_weights.sum()
+split_sizes_np[forced_row] = FORCED_WIDE_SIZE
+
+wide_row_count = int((split_sizes_np > SPLIT_REG_COMPACT_WIDTH).sum())
+assert wide_row_count >= 1
+
+split_matrix_np = split_regularization_matrix_from(
+    split_mappings_np.copy(), split_sizes_np.copy(), split_weights_np.copy(), xp=np
+)
+
+split_matrix_jax_jit = jax.jit(
+    lambda mappings, sizes, weights: split_regularization_matrix_from(
+        mappings, sizes, weights, xp=jnp
+    )
+)
+split_matrix_jax = np.asarray(
+    split_matrix_jax_jit(
+        jnp.asarray(split_mappings_np),
+        jnp.asarray(split_sizes_np),
+        jnp.asarray(split_weights_np),
+    )
+)
+np.testing.assert_allclose(
+    split_matrix_jax, split_matrix_np, rtol=1.0e-10, atol=1.0e-14
+)
+assert np.isfinite(split_matrix_jax).all()
+
+# The same tables through the uncompacted scatter (compact width = the table
+# width), i.e. the pre-#536 path, as a direct old-versus-new comparison that
+# does not go through the NumPy builder.
+split_matrix_uncompacted = np.asarray(
+    jax.jit(
+        lambda mappings, sizes, weights: split_regularization_matrix_from(
+            mappings, sizes, weights, xp=jnp, compact_width=SPLIT_TABLE_WIDTH
+        )
+    )(
+        jnp.asarray(split_mappings_np),
+        jnp.asarray(split_sizes_np),
+        jnp.asarray(split_weights_np),
+    )
+)
+np.testing.assert_allclose(
+    split_matrix_jax, split_matrix_uncompacted, rtol=1.0e-12, atol=1.0e-14
+)
+
+# Budget overflow poisons the matrix with NaN (the Sibson cap convention)
+# rather than silently truncating the wide rows.
+split_matrix_overflow = np.asarray(
+    jax.jit(
+        lambda mappings, sizes, weights: split_regularization_matrix_from(
+            mappings, sizes, weights, xp=jnp, wide_row_budget=wide_row_count - 1
+        )
+    )(
+        jnp.asarray(split_mappings_np),
+        jnp.asarray(split_sizes_np),
+        jnp.asarray(split_weights_np),
+    )
+)
+assert np.isnan(split_matrix_overflow).all()
+
+compaction_parity_s = time.perf_counter() - compaction_parity_start
+
 # Chunk invariance. `query_chunk` sets the `jax.lax.map` block size and is a
 # memory guard on the per-cavity intermediates only, so every value must give
 # bit-identical tables. `sibson_output` is already the QUERY_CHUNK leg, so
@@ -540,6 +677,17 @@ print(
     f"split half {len(SIBSON_OUTPUT_NAMES)}/{len(SIBSON_OUTPUT_NAMES)} identical "
     f"({split_points_single_pass.shape[0]} split points) "
     f"in {single_pass_parity_s:.3f}s"
+)
+print(
+    "split-regularization compaction parity: "
+    f"public ConstantSplit max|jax-numpy|={np.abs(public_split_matrix_jax - public_split_matrix_np).max():.3e}, "
+    f"production tables ({split_mappings_np.shape[0]} rows x {SPLIT_TABLE_WIDTH}) "
+    f"max|jax-numpy|={np.abs(split_matrix_jax - split_matrix_np).max():.3e} "
+    f"with {wide_row_count} row(s) wider than the compact width "
+    f"{SPLIT_REG_COMPACT_WIDTH}; uncompacted scatter identical to "
+    f"{np.abs(split_matrix_jax - split_matrix_uncompacted).max():.3e}; "
+    f"budget {wide_row_count - 1} -> NaN "
+    f"in {compaction_parity_s:.3f}s"
 )
 print(
     "chunk invariance: "
