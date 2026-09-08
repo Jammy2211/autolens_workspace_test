@@ -41,6 +41,7 @@ size datasets.
 ENV: jax full_datasets
 """
 
+import functools
 import numpy as np
 import jax
 import jax.numpy as jnp
@@ -69,7 +70,13 @@ if al.util.dataset.should_simulate(dataset_path):
     )
 
 
+@functools.lru_cache(maxsize=None)
 def _dataset(band):
+    # Cached per band: the five factor graphs below load the same one or two
+    # exposures ten times over, and every load is followed by a Hilbert image
+    # mesh (`_adapt_images`) — ~2s of the run for identical inputs. The dataset
+    # is never mutated downstream (`apply_mask` / `apply_over_sampling` return
+    # new objects), so sharing one instance is safe.
     dataset = al.Imaging.from_fits(
         data_path=path.join(dataset_path, f"{band}_data.fits"),
         psf_path=path.join(dataset_path, f"{band}_psf.fits"),
@@ -146,16 +153,25 @@ def _model():
     return af.Collection(galaxies=af.Collection(lens=lens, source=source))
 
 
+@functools.lru_cache(maxsize=None)
+def _band_inputs(band):
+    """The (dataset, adapt images) pair for a band, built once per run: the
+    Hilbert image mesh in `_adapt_images` is the expensive half, and every
+    graph below asks for the same bands."""
+    dataset = _dataset(band)
+    return dataset, _adapt_images(dataset)
+
+
 def _factor_graph(band_list, shared_preloads, use_jax):
     model = _model()
 
     analysis_list = []
     for band in band_list:
-        dataset = _dataset(band)
+        dataset, adapt_images = _band_inputs(band)
         analysis_list.append(
             al.AnalysisImaging(
                 dataset=dataset,
-                adapt_images=_adapt_images(dataset),
+                adapt_images=adapt_images,
                 use_jax=use_jax,
                 shared_preloads=shared_preloads,
                 raise_inversion_positions_likelihood_exception=False,
@@ -171,13 +187,28 @@ def _factor_graph(band_list, shared_preloads, use_jax):
 
 
 def _log_likelihood(factor_graph, use_jax):
-    xp = jnp if use_jax else np
     params = factor_graph.global_prior_model.physical_values_from_prior_medians
-    vector = jnp.array(params) if use_jax else params
-    instance = factor_graph.global_prior_model.instance_from_vector(
-        vector=vector, xp=xp
-    )
-    return float(factor_graph.log_likelihood_function(instance))
+    if not use_jax:
+        instance = factor_graph.global_prior_model.instance_from_vector(
+            vector=params, xp=np
+        )
+        return float(factor_graph.log_likelihood_function(instance))
+
+    # Evaluated under ONE `jax.jit`, the same shape `_assert_two_band_shared_jit`
+    # round-trips below. Eagerly, each of the ~500 primitives in this likelihood
+    # dispatched as its own tiny XLA program (measured: 496 compiles, ~11s, plus
+    # ~7s of op-by-op dispatch per run) — and none of them ever hit the
+    # persistent compile cache, which only keeps programs that took >1s to
+    # build. One traced program compiles once, caches, and executes in
+    # milliseconds; the value it returns is the same likelihood.
+    @jax.jit
+    def log_l(vector):
+        instance = factor_graph.global_prior_model.instance_from_vector(
+            vector=vector, xp=jnp
+        )
+        return factor_graph.log_likelihood_function(instance)
+
+    return float(log_l(jnp.array(params)))
 
 
 def _assert_identical_exposure_parity(use_jax):
