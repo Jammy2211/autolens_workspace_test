@@ -72,7 +72,7 @@ dataset_list = [
 ]
 
 for dataset in dataset_list:
-    dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
+    dataset = dataset.apply_over_sampling(over_sample_size_lp=2)
 
 """
 __Model__

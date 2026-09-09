@@ -102,7 +102,7 @@ dataset = dataset.apply_over_sampling(over_sample_size_lp=4)
 
 over_sample_size = al.util.over_sample.over_sample_size_via_radial_bins_from(
     grid=dataset.grid,
-    sub_size_list=[2, 2, 1],
+    sub_size_list=[2, 2, 2],
     radial_list=[0.3, 0.6],
     centre_list=[(0.0, 0.0)],
 )
@@ -224,9 +224,14 @@ print(result)
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
+# re-pinned 2026-09-08: lp radial bins sub-size 1 retired (autolens_profiling#235,
+# #311). This script tests NumPy/JAX parity, not a converged likelihood:
+# over-sample ladder 1: -1126.147, 2: -1380.289, 4: -1522.342, 8: -1522.381 —
+# sub-size 2 is still ~9 % unconverged for this MGE; keep [2,2,2] for speed,
+# parity holds at every rung.
 np.testing.assert_allclose(
     np.array(result),
-    -1126.14748415,
+    -1380.28863645,
     rtol=1e-4,
     err_msg="mge: JAX vmap likelihood mismatch",
 )

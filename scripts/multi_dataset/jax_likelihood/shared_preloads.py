@@ -90,7 +90,7 @@ def _dataset(band):
     )
     dataset = dataset.apply_mask(mask=mask)
     return dataset.apply_over_sampling(
-        over_sample_size_lp=1, over_sample_size_pixelization=1
+        over_sample_size_lp=2, over_sample_size_pixelization=1
     )
 
 

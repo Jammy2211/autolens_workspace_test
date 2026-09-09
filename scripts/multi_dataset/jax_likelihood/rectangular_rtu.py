@@ -83,7 +83,7 @@ dataset_list = [
 ]
 
 dataset_list = [
-    dataset.apply_over_sampling(over_sample_size_lp=1, over_sample_size_pixelization=1)
+    dataset.apply_over_sampling(over_sample_size_lp=2, over_sample_size_pixelization=1)
     for dataset in dataset_list
 ]
 

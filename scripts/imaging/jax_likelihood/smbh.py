@@ -91,7 +91,7 @@ mask = al.Mask2D.circular(
 
 dataset = dataset.apply_mask(mask=mask)
 
-dataset = dataset.apply_over_sampling(over_sample_size_lp=1)
+dataset = dataset.apply_over_sampling(over_sample_size_lp=2)
 
 positions = al.Grid2DIrregular(
     al.from_json(file_path=path.join(dataset_path, "positions.json"))
@@ -224,9 +224,10 @@ print(result)
 print("JAX Time Taken using VMAP:", time.time() - start)
 print("JAX Time Taken per Likelihood:", (time.time() - start) / batch_size)
 
+# re-pinned 2026-09-08: lp radial bins sub-size 1 retired (autolens_profiling#235, #311)
 np.testing.assert_allclose(
     np.array(result),
-    620.28888413,
+    625.3093499882572,
     rtol=1e-4,
     err_msg="smbh: JAX vmap likelihood mismatch",
 )
