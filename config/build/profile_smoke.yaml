@@ -142,3 +142,147 @@ overrides:
   - pattern: "misc/jax_assertions/delaunay_nn_caps.py"
     set:
       DELAUNAY_NN_CAP_RANDOM_SAMPLES: "10"
+
+  # JAX persistent-cache threshold for the Delaunay JAX-likelihood script
+  # (PyAutoBrain /ci_speedup, 2026-09-10). NOT a coverage change and NOT a
+  # script change: no byte of delaunay.py moves. This only changes which XLA
+  # executables CI is allowed to reuse from the cache it already restores.
+  #
+  # THE COST. `fit.log_likelihood` in the Path-A block is evaluated EAGERLY,
+  # op by op. `jax.jit(analysis_jit.fit_from)` traces only the FitImaging
+  # constructor -- measured, the jitted call itself is 0.018s -- and the
+  # cached_property chain that actually computes the likelihood then runs
+  # OUTSIDE the jit. cProfile of that single attribute access, cold cache:
+  # 504 distinct executables, 471 of them compiled from scratch, 11.0s in
+  # backend_compile_and_load. That is 50% of the whole 25.4s script.
+  #
+  # WHY THE CACHE DOES NOT HELP TODAY. Each of those 471 compiles takes
+  # ~23ms, and JAX's default jax_persistent_cache_min_compile_time_secs is
+  # 1.0s, so not one of them is ever written to JAX_COMPILATION_CACHE_DIR.
+  # The board's `cache_jax: HIT` is a hit on a cache holding 3 entries
+  # (616K) -- the two big compiles and nothing else. CI therefore re-pays the
+  # eager compile in full on every run, hit or miss.
+  #
+  # MEASURED locally under this profile (libs from source, 4 cores, timing
+  # runs serialised under a lock), warm cache in both regimes, n=4 each:
+  #   threshold 1.0 (JAX default == CI today)  22.7 / 23.0 / 24.2 / 31.2s
+  #                                            cache: 3 entries, 616K
+  #   threshold 0   (this override)            10.1 / 10.3 / 10.6 / 10.6s
+  #                                            cache: 513 entries, 2.9M
+  # First-ever run against an empty cache is unchanged (26.3s vs 28.0s):
+  # writing the extra entries costs nothing measurable. CI reports 32.8s on
+  # py3.13, which matches the threshold-1.0 regime, not the threshold-0 one.
+  #
+  # WHY THE ASSERTIONS SURVIVE. Nothing about the computation changes -- the
+  # persistent cache is a memo of XLA compilation keyed on the lowered HLO,
+  # so a cache hit returns the same executable the compiler would have built.
+  # Printed output was diffed byte-for-byte across the two regimes and is
+  # identical, including [-541.50627819 x3], NumPy -44.32005541739227, JIT
+  # -44.32005541740216 and all four PASS lines; RC=0 both ways. The release
+  # profile is untouched -- this file is smoke-only.
+  #
+  # SCOPED TO ONE SCRIPT because profile_smoke.yaml is shared. The same
+  # measurement argues for putting this in `defaults:` (every jax_likelihood
+  # and jax_grad script pays the same eager-compile tax), or better still in
+  # PyAutoHeart's reusable smoke-tests.yml beside the cache_jax step that
+  # owns JAX_COMPILATION_CACHE_DIR. That is a wider decision -- it grows the
+  # cached artefact by roughly 500 entries per script -- so it is left to a
+  # human rather than taken here.
+  - pattern: "imaging/jax_likelihood/delaunay.py"
+    set:
+      JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS: "0"
+
+# ---------------------------------------------------------------------------
+# A3 — append this entry to `overrides:` in
+#      autolens_workspace_test/config/build/profile_smoke.yaml
+# ---------------------------------------------------------------------------
+
+  # Make the restored JAX compile cache actually serve the DelaunayNN
+  # correctness gate (PyAutoBrain /ci_speedup, 2026-09-10).
+  #
+  # NOTHING IS REDUCED. This is not a smoke-sizing override like the
+  # delaunay_nn_caps.py entry below/above it: the script runs exactly the work
+  # it ran before, on exactly the same shapes, and every printed value is
+  # byte-identical. The only change is that the compiled executables are
+  # persisted and reloaded instead of re-derived on every run.
+  #
+  # THE COST. Compile census (JAX_LOG_COMPILES=1, cold cache, jax 0.11.1):
+  #   312 distinct XLA compiles, 20.72s of the script's 32.9s total
+  #     308 of them take UNDER ONE SECOND each   15.00s
+  #       4 of them take over a second            5.72s
+  # `jax_persistent_cache_min_compile_time_secs` defaults to 1.0, so JAX
+  # refuses to WRITE those 308 entries to the persistent cache. PyAutoHeart's
+  # smoke-tests.yml restores and saves `${workspace}/.pyauto_jax_cache` and
+  # exports JAX_COMPILATION_CACHE_DIR into every script subprocess, but sets no
+  # threshold — so the cache can only ever hold 4 of this script's 312 entries
+  # and the other 15.0s is recompiled every single run. That is why the Heart
+  # board reports `cache_jax: HIT` next to a number that matches a cold run.
+  #
+  # MEASURED locally under this profile (libs from source, 4 cores, jax 0.11.1,
+  # byte-identical copies of the script so each threshold gets its own cache):
+  #   warm cache, threshold 1.0 (JAX default = CI today)   29.0s / 25.2s
+  #   warm cache, threshold 0   (this override)            13.5s / 13.6s
+  #   cold cache, empty dir, either way                    32.9s / 33.0s
+  # The "before" bracket reproduces CI closely: the board has this script at
+  # 31.8s on py3.13 and 25.4s on py3.12, both with cache_jax: HIT. Cold is
+  # unchanged — the first run after a PYAUTO_CACHE_EPOCH bump still pays every
+  # compile; the win is on every run after it.
+  #
+  # ASSERTIONS. All of them, re-verified against the unmodified run and
+  # byte-identical: source reconstruction parity relative_l2=9.884215e-05
+  # correlation=0.998595442; shape 1200 mesh points x 15000 queries; single-pass
+  # parity 6/6 on both halves (15000 queries, 4800 split points);
+  # split-regularization compaction parity max|jax-numpy|=3.553e-15 with 1 row
+  # wider than compact width 12 and budget 0 -> NaN; chunk invariance 6/6 across
+  # (64, 256, 1024); flip values/gradients identical to the last digit; and the
+  # cap-headroom diagnostics max_cavity=11 max_neighbors=13 against the caps of
+  # 32. RC=0 under smoke and under PROFILE=release (13.6s).
+  #
+  # THE SIX SIBSON_* KNOBS THE SCRIPT READS WERE MEASURED AND REJECTED:
+  #   SIBSON_POINTS / SIBSON_QUERIES — measured, not worth it. 1200x15000 ->
+  #     300x3000 buys 1.5s (32.9 -> 31.5s cold, 4%), because the cost is compile
+  #     of the Sibson graph, not the arrays: the three biggest sections run on
+  #     the FIXED 9-point mesh and the FIXED 4-point flip geometry. And it is
+  #     not free — it drops max_cavity 11 -> 8 and max_neighbors 13 -> 10,
+  #     weakening the headroom that `assert not overflow.any()` demonstrates,
+  #     against the script's own __Env__ note that these arrays are
+  #     production-sized on purpose.
+  #   SIBSON_CAVITY / SIBSON_NEIGHBORS — forbidden. Both are caps an assertion
+  #     compares against: `assert not overflow.any()` ("Sibson cavity cap
+  #     overflowed"), `full_tables[6].shape == (4*N, MAX_NEIGHBORS)`, and
+  #     `SPLIT_TABLE_WIDTH > SPLIT_REG_COMPACT_WIDTH + 8` (= 20), which the
+  #     forced-wide-row supplement path needs. Lowering either changes what is
+  #     checked.
+  #   SIBSON_REPEATS — already 1; 0 would take np.median of an empty list.
+  #   SIBSON_CHUNK — measured, rejected: 1024 is SLOWER (34.1s vs 32.9s cold),
+  #     and 256 is already reused as one of the three chunk-invariance legs, so
+  #     any other value adds a fourth compile.
+  #
+  # PRICE. This script's share of the shared CI cache grows from 7 entries /
+  # 1.1 MB to 299 / 3.0 MB. No cold-run penalty was measurable (33.5s writing 7
+  # entries vs 33.0s writing 299).
+  #
+  # WHY THE delaunay_nn_caps.py ENTRY DOES NOT NEED THIS, though it sits in the
+  # same file and audits the same kernel. Censused at its shipped 10-sample
+  # setting: 6 compiles, 4.29s, and FOUR of the six take 1.048-1.094s, i.e. they
+  # clear the 1.0s threshold and are cached in CI as its block claims. Measured
+  # warm: 17.0s at threshold 1.0 against 15.1s at threshold 0 - a 1.9s spread,
+  # so that script is genuinely threshold-insensitive. Two caveats worth
+  # recording: those four compiles clear 1.0s by under 10%, so a faster runner
+  # would drop them under it and silently stop caching them; and that block's
+  # quoted warm figure was taken with a harness that hardcodes threshold 0, so
+  # it is a threshold-0 number, not the CI regime. The two scripts are opposite
+  # shapes - caps.py compiles one lambda a few times at different static caps,
+  # this script runs a long chain of eager jnp ops and many small jits - which
+  # is exactly why the threshold is worth ~1.9s there and ~11.6-15.4s here.
+  #
+  # BETTER HOME. Every JAX smoke script whose compiles are small pays this same
+  # tax and none of them sets the threshold either, so the general fix is one
+  # line in PyAutoHeart's smoke-tests.yml job env beside
+  # JAX_COMPILATION_CACHE_DIR. This per-script override is the in-lane change;
+  # it does not preclude the workflow one.
+  # (JAX_PERSISTENT_CACHE_MIN_ENTRY_SIZE_BYTES already defaults to 0 and is not
+  # needed.)
+  - pattern: "misc/jax_assertions/delaunay_nn.py"
+    set:
+      JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS: "0"
